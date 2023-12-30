@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import {Book} from './db/index'
 
 export default function App() {
-	let book =new Book().Name("test")
+	let book =new Book().Name("test");
 	return (
 	<View style={styles.container}>
       <Text>
