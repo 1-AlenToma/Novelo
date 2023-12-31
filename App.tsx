@@ -2,14 +2,13 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import {Book} from './db/index';
 import "./Global.d"
+import ParserTester from "./components/ParserTester";
+import Parser from "./parsers/ReadNovelFull";
 
 export default function App() {
-	let book =new Book().Name("test");
 	return (
 	<View style={styles.container}>
-      <Text>
-      {JSON.stringify(book)}
-	</Text>
+      <ParserTester parser={Parser} />
 		<StatusBar style="auto" />
 	</View>
 	);
