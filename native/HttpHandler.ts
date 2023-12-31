@@ -1,4 +1,47 @@
 import Html from "./Html";
+const tempData = new Map<string, HttpTemp>();
+
+const createKey = (...args) => {
+  return JSON.stringify(args).replace(
+    /(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim,
+    ""
+  );
+};
+
+const validateSize = () => {
+  if (tempData.size <= 400) return;
+  while (tempData.size > 200) {
+    tempData.delete(
+      tempData.entries().next().key
+    );
+  }
+};
+
+const getFetch = async (...args) => {
+  validateSize();
+  let key = createKey(args);
+  if (tempData.has(key))
+    return this.tempData.get(key);
+  let data = await fetch(...args);
+  let text = await data.text();
+  let item = new HttpTemp(key, item);
+  tempData.set(key, item);
+  return item;
+};
+
+class HttpTemp {
+  value: string;
+  key: string;
+  date: Date;
+  constructor(value: string, key: string) {
+    this.key = key;
+    thi.value = value;
+    this.date = new Date();
+  }
+  async text() {
+    return this.value;
+  }
+}
 class HttpValue {
   value: string;
   baseUrl?: string;
@@ -55,11 +98,11 @@ class HttpHandler {
     try {
       if (item) url = this.queryString(url, item);
       console.info("get_html", url);
-      const data = await fetch(
+      const data = await getFetch(
         url,
         this.header()
       );
-      
+
       return new HttpValue(
         await data.text(),
         baseurl || url
@@ -76,7 +119,7 @@ class HttpHandler {
       for (let k in item) {
         data.append(k, item[k]);
       }
-      let res = await fetch(url, {
+      let res = await getFetch(url, {
         ...this.header(),
         method: "POST",
         body: data
@@ -103,7 +146,7 @@ class HttpHandler {
       }
       formBody = formBody.join("&");
 
-      const res = await fetch(url, {
+      const res = await getFetch(url, {
         body: formBody,
         method: "POST",
         ...this.header({

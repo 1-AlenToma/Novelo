@@ -29,6 +29,6 @@ export default (initValue) => {
 		<ActivityIndicator size="large" style={{position:"absolute", left:(size.width/2) -25, top:(size.height/2)-25}} /> 
 		</View>)
 		)
-    return {show, hide, elem};
+    return {show, hide, elem,loading};
 
 }

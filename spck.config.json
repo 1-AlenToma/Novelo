@@ -1,6 +1,0 @@
-{
-  "run": {
-    "type": "task",
-    "task": "npm/start"
-  }
-}
