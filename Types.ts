@@ -28,3 +28,13 @@ export type MemorizeOptions = {
   ) => string;
   validator?: (params: any) => boolean;
 };
+
+export type TabIcon = {
+  name: string;
+  type: string;
+};
+export type TabChild = {
+  title: string;
+  icon?: TabIcon;
+} & ReactNode;
+

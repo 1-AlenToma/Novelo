@@ -25,31 +25,40 @@ export default class ReadNovelFull extends Parser {
       await this.http.get_html(this.url)
     ).html;
 
-    this.settings.genre = html
-      .$(".dropdown-menu a")
-      .filter(x => x.attr("href").has("genres/"))
-      .map(x =>
-        Value.n()
-          .Text(x.text)
-          .Value(x.attr("href"))
-      );
+    //  console.log(html.$(".dropdown-menu a").html);
 
-    this.settings.status = [
+    this.settings.Genre(
+      html
+        .$(".dropdown-menu a")
+        .filter(x =>
+          x.attr("href").has("genres/")
+        )
+        .map(x =>
+          Value.n()
+            .Text(x.text)
+            .Value(x.attr("href"))
+        )
+    );
+
+    this.settings.Status([
       Value.n()
         .Text("Complated")
         .Value("completed")
-    ];
+    ]);
 
-    this.settings.group = html
-      .$(".dropdown-menu a")
-      .filter(x =>
-        x.attr("href").has("novel-list/")
-      )
-      .map(x =>
-        Value.n()
-          .Text(x.text)
-          .Value(x.attr("href"))
-      );
+    this.settings.Group(
+      html
+        .$(".dropdown-menu a")
+        .filter(x =>
+          x.attr("href").has("novel-list/")
+        )
+        .map(x =>
+          Value.n()
+            .Text(x.text)
+            .Value(x.attr("href"))
+        )
+    );
+
     return this.settings;
   }
 
@@ -58,30 +67,26 @@ export default class ReadNovelFull extends Parser {
       `novel-list/search?keyword=${options.text}`
     );
 
-    if (!options.genre.empty())
+    if (!options.genre.has())
       this.url = this.url.join(
-        this.genre,
-        options.status
+        options.genre.firstOrDefault("value"),
+        options.status.firstOrDefault("value")
       );
-    else if (!options.group.empty())
+    else if (options.group.has())
       url = this.url.join(
-        options.group,
-        options.status
+        options.group.firstOrDefault("value"),
+        options.status.firstOrDefault("value")
       );
     url = url.query({ page: options.page || 1 });
 
     let html = (
-      await this.http.get_html(
-        url,
-        undefined,
-        this.url
-      )
+      await this.http.get_html(url, this.url)
     ).html;
     return html
       .$(".list-novel > .row")
       .map(x => {
         return x.map(f => {
-          if (f.find("img").attr("src") !== "")
+          if (f.find("img").attr("src").has())
             return LightInfo.n()
               .Name(f.find(".novel-title").text)
               .Url(
@@ -98,8 +103,9 @@ export default class ReadNovelFull extends Parser {
   }
 
   async group(value: Value, page: number) {
+    
     return await this.search(
-      SearchDetail.n().group([value]).Page(page)
+      SearchDetail.n().Group([value]).Page(page)
     );
   }
 
@@ -111,11 +117,7 @@ export default class ReadNovelFull extends Parser {
 
   async detail(url: string) {
     let html = (
-      await this.http.get_html(
-        url,
-        undefined,
-        this.url
-      )
+      await this.http.get_html(url, this.url)
     ).html.$("body");
     let item = DetailInfo.n();
     item
@@ -148,7 +150,6 @@ export default class ReadNovelFull extends Parser {
     let cHhtml = (
       await this.http.get_html(
         url.trimEnd("/") + "#tab-chapters",
-        undefined,
         this.url
       )
     ).html;

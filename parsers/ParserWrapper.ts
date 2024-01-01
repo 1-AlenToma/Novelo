@@ -10,6 +10,7 @@ export default class ParserWrapper extends Parser {
   constructor(parser: Parser) {
     super(parser.url, parser.name, parser.icon);
     this.parser = parser;
+    this.settings = parser.settings
   }
 
   static getAllParsers() {

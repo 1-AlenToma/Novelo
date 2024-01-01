@@ -1,3 +1,4 @@
+import uuid from "react-native-uuid";
 const public_m = (...Items: any[]) => {
   Items.forEach(Item => {
     let keys = (
@@ -18,8 +19,30 @@ const public_m = (...Items: any[]) => {
   });
 };
 
+const newId = () => {
+  return uuid.v4();
+};
+
 const sleep = (ms: number) => {
   return new Promise(r => setTimeout(r, ms));
+};
+
+const removeProps = (
+  item: any,
+  ...keys: string[]
+) => {
+  if (!item) return item;
+
+  if (Array.isArray(item))
+    item = item.map(x => removeProps(x, ...keys));
+  else {
+    item= {...item}
+    keys.forEach(k => {
+      if (item[k] !== undefined) delete item[k];
+    });
+  }
+
+  return item;
 };
 
 const days_between = function (date: Date) {
@@ -36,4 +59,10 @@ const days_between = function (date: Date) {
   return diffDays;
 };
 
-export { public_m, sleep, days_between };
+export {
+  public_m,
+  sleep,
+  days_between,
+  newId,
+  removeProps
+};

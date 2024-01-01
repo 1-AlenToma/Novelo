@@ -22,7 +22,9 @@ class Html {
       this.io =
         htext && htext.find
           ? htext
-          : this.p(htext);
+          : this.p
+          ? this.p(htext)
+          : htext;
     }
   }
 
@@ -62,7 +64,6 @@ class Html {
       if (item !== undefined && item !== null)
         items.push(item);
     });
-
     return items;
   }
 
@@ -70,12 +71,8 @@ class Html {
     fn: (x: Html, index: number) => boolean
   ) {
     return new Html(
-      this.io.filter(
-        (i, x) =>
-          fn(
-            new Html(x, this.uurl, this.p),
-            i
-          ) === true
+      this.io.filter((i, x) =>
+        fn(new Html(x, this.uurl, this.p), i)
       ),
       this.uurl,
       this.p

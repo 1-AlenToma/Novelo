@@ -30,7 +30,7 @@ class Storage implements IStorage {
     if (item) {
       item.data = JSON.parse(item.data);
     }
-    return item || null;
+    return item?.data || null;
   }
 
   async has(file: string) {

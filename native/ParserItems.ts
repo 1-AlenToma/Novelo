@@ -33,13 +33,12 @@ class ParserDetail {
   searchEnabled: boolean = true;
 }
 
-
 class SearchDetail {
   text: string = "";
   page: number = 1;
-  genre: string = "";
-  status: string = "";
-  group: string = "";
+  genre: Value[] = [];
+  status: Value[] = [];
+  group: Value[] = [];
 }
 
 abstract class Parser {

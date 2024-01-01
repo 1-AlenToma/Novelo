@@ -17,14 +17,17 @@ const validateSize = () => {
   }
 };
 
-const getFetch = async (...args) => {
+const getFetch = async (
+  url: string,
+  options: any
+) => {
   validateSize();
-  let key = createKey(args);
+  let key = createKey({ url, options });
   if (tempData.has(key))
     return this.tempData.get(key);
-  let data = await fetch(...args);
+  let data = await fetch(url, options);
   let text = await data.text();
-  let item = new HttpTemp(key, item);
+  let item = new HttpTemp(text, key);
   tempData.set(key, item);
   return item;
 };
@@ -35,7 +38,7 @@ class HttpTemp {
   date: Date;
   constructor(value: string, key: string) {
     this.key = key;
-    thi.value = value;
+    this.value = value;
     this.date = new Date();
   }
   async text() {
@@ -92,8 +95,8 @@ class HttpHandler {
 
   async get_html(
     url: string,
-    item?: any,
-    baseurl?: string
+    baseurl?: string,
+    item?: any
   ) {
     try {
       if (item) url = this.queryString(url, item);
@@ -102,7 +105,6 @@ class HttpHandler {
         url,
         this.header()
       );
-
       return new HttpValue(
         await data.text(),
         baseurl || url

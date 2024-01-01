@@ -24,9 +24,10 @@ class Session extends IBaseModule<TableNames> {
       .column("id")
       .primary.autoIncrement.number.column("data")
       .encrypt("novelo.enc")
-      .column("file").encrypt("novelo.enc")
+      .column("file")
+      .encrypt("novelo.enc")
       .column("date")
-      .datetime.objectPrototype(
+      .dateTime.objectPrototype(
         Session.prototype
       );
   }
