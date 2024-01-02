@@ -10,7 +10,7 @@ export default class ParserWrapper extends Parser {
   constructor(parser: Parser) {
     super(parser.url, parser.name, parser.icon);
     this.parser = parser;
-    this.settings = parser.settings
+    this.settings = parser.settings;
   }
 
   static getAllParsers() {
@@ -37,7 +37,17 @@ export default class ParserWrapper extends Parser {
   async search(options: SearchDetail) {
     return await this.parser.search(options);
   }
-
+  @Memo({
+    daysToSave: 20,
+    keyModifier: (target, key) =>
+      `${key}${target.name}`,
+    validator: (data: any) =>
+      data && (
+      data.status?.has() ||
+      data.genre?.has() ||
+      data.group?.has()
+      )
+  })
   async load() {
     return await this.parser.load();
   }
@@ -48,12 +58,17 @@ export default class ParserWrapper extends Parser {
       `${key}${target.name}`,
     validator: (data: any) =>
       data &&
-      data.length > 0 &&
+      data.has() &&
       !data[0].name.empty() &&
       !data[0].url.empty()
   })
   async group(value: Value, page: number) {
-    return await this.parser.group(value, page);
+    try {
+      return await this.parser.group(value, page);
+    } catch (e) {
+      console.error("group", value, e);
+      return [];
+    }
   }
 
   async chapter(url: string) {

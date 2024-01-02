@@ -67,8 +67,8 @@ export default class ReadNovelFull extends Parser {
       `novel-list/search?keyword=${options.text}`
     );
 
-    if (!options.genre.has())
-      this.url = this.url.join(
+    if (options.genre.has())
+      url = this.url.join(
         options.genre.firstOrDefault("value"),
         options.status.firstOrDefault("value")
       );
@@ -77,7 +77,9 @@ export default class ReadNovelFull extends Parser {
         options.group.firstOrDefault("value"),
         options.status.firstOrDefault("value")
       );
-    url = url.query({ page: options.page || 1 });
+    url = url.query({
+      page: (1).sureValue(options.page)
+    });
 
     let html = (
       await this.http.get_html(url, this.url)
@@ -96,14 +98,14 @@ export default class ReadNovelFull extends Parser {
               )
               .Image(f.find("img").url("src"))
               .Info(f.find(".chr-text").text)
-              .Decription(f.find(".author").text);
+              .Decription(f.find(".author").text)
+              .ParserName(this.name);
         });
       })
       .flatMap(x => x);
   }
 
   async group(value: Value, page: number) {
-    
     return await this.search(
       SearchDetail.n().Group([value]).Page(page)
     );
@@ -146,7 +148,8 @@ export default class ReadNovelFull extends Parser {
       .Rating(
         html.find('span[itemprop="ratingValue"]')
           .text
-      );
+      )
+      .ParserName(this.name);
     let cHhtml = (
       await this.http.get_html(
         url.trimEnd("/") + "#tab-chapters",
@@ -160,6 +163,7 @@ export default class ReadNovelFull extends Parser {
           ChapterInfo.n()
             .Name(x.attr("title"))
             .Url(x.url("href"))
+            .ParserName(this.name)
         )
     );
 

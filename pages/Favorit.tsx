@@ -6,7 +6,7 @@ import {
 
 export default (props: any) => {
   return (
-    <View>
+    <View css="flex">
       <Text>Favorit</Text>
     </View>
   );

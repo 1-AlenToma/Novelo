@@ -15,6 +15,10 @@ declare global {
     trimEnd(...items): String;
     has(selector: string): boolean;
     css(): any;
+    safeSplit: (
+      c: string,
+      index: number
+    ) => string;
   }
 
   interface Number {
@@ -42,7 +46,9 @@ Array.prototype.firstOrDefault = function (
   key: string
 ) {
   let item = undefined;
-  let items = this.filter(x => x !== undefined);
+  let items = this.filter(
+    x => x !== undefined && x !== null
+  );
   if (items.length <= 0) return undefined;
   item = items[0];
   if (key) item = item[key];
@@ -54,14 +60,14 @@ Array.prototype.distinct = function (
   itemsB: any[]
 ) {
   let items = this;
-  if(itemsB)
-  for (let value of itemsB) {
-    if (
-      value &&
-      !items.find(x => x[key] === value[key])
-    )
-      items.push(value);
-  }
+  if (itemsB)
+    for (let value of itemsB) {
+      if (
+        value &&
+        !items.find(x => x[key] === value[key])
+      )
+        items.push(value);
+    }
 
   return items;
 };
@@ -78,25 +84,121 @@ Array.prototype.mapAsync = async function (
   return items;
 };
 
+String.prototype.safeSplit = function (
+  c: string,
+  index: number
+) {
+  let ar = new String(this).toString().split(c);
+  if (index === -1) return ar[ar.length - 1];
+  return ar[index] || "";
+};
+let styleShortKeys = [];
 String.prototype.css = function () {
   let value = String(this).toString().split(" ");
   let style = {};
+  let aKeys = Object.keys(CStyle);
+
+  let styleKeys = `
+    height width maxHeight maxWidth position
+    bottom top zIndex alignItems justifyContent
+    flex opacity fontSize color backgroundColor
+    fontWeight left right fontFamily fontStyle
+    textAlign lineHeight textAlignVertical
+    userSelect padding paddingLeft paddingRight
+    paddingBottom paddingTop margin marginTop
+    marginBottom marginLeft marginRight
+    display borderRadius borderWidth borderColor
+    borderBottomWidth borderBottomColor
+    borderTopWidth borderTopColor borderLeftWidth
+    borderLeftColor borderRightWidth borderRightColor
+  `;
+  if (!styleShortKeys.has()) {
+    styleKeys
+      .split(/\r?\n/)
+      .filter(x => !x.empty())
+      .forEach(x => {
+        x.split(" ")
+          .filter(k => !k.empty())
+          .forEach(k => {
+            let kshortName = "";
+            let item = { key: k, shorts: [] };
+            for (let s of k.split("")) {
+              if (kshortName.empty())
+                kshortName = s;
+              else if (s.toUpperCase() == s) {
+                kshortName += s;
+                item.shorts = [];
+              }
+              if (
+                !item.shorts.find(
+                  f => f === kshortName
+                )
+              ) {
+                item.shorts.push(kshortName);
+              }
+              if (kshortName.length >= 3) break;
+            }
+            if (
+              styleShortKeys.find(m =>
+                m.shorts.find(
+                  s =>
+                    s.toLowerCase() ==
+                    item.shorts
+                      .firstOrDefault()
+                      .toLowerCase()
+                )
+              )
+            ) {
+              item.shorts = [
+                kshortName +
+                  k[
+                    kshortName.length -
+                      (kshortName.length > 1
+                        ? 1
+                        : 0)
+                  ]
+              ];
+            }
+            styleShortKeys.push(item);
+          });
+      });
+  }
   for (let s of value) {
-    if (s.has("-")) {
-      style.color = `"${s.split("-")[1]}"`;
+    if (s.has("-#")) {
+      style.color = `${s.split("-")[1]}`;
       s = s.split("-")[0];
     }
 
-    if (s.has("[")) {
+    if (s.has("[") || s.has(":")) {
       s = s.replace(/\[\]/g, "");
-      let k = s.split(":")[0];
-      let v = s.split(":")[1];
-      if (!/^\d+$/.test(v)) v = `"${v}"`;
+      let k = s.safeSplit(":", 0);
+      if (k.length <= 3) {
+        let st = styleShortKeys.find(x =>
+          x.shorts.find(
+            f =>
+              f.toLowerCase() === k.toLowerCase()
+          )
+        );
+        if (st) k = st.key;
+        else {
+          console.warn(
+            k,
+            "could not be found in",
+            styleShortKeys
+          );
+          continue;
+        }
+      }
+      let v = s.safeSplit(":", -1).trim();
+      if (/^\d+$/.test(v)) v = eval(v);
       style[k] = v;
       continue;
     }
-
-    let item = CStyle[s];
+    let key = aKeys.find(
+      k => k.toLowerCase() === s.toLowerCase()
+    );
+    if (!key) continue;
+    let item = CStyle[key];
     if (item) style = { ...style, ...item };
   }
   return style;
@@ -105,8 +207,12 @@ String.prototype.css = function () {
 String.prototype.has = function (
   selector: string
 ) {
+  if(!selector)
+    return !new String(this)
+      .toString().empty()
   return (
-    selector != "" &&
+    selector &&
+    !selector.empty() &&
     new String(this)
       .toString()
       .toLowerCase()
@@ -137,7 +243,7 @@ String.prototype.query = function (item: any) {
     url = url.substring(0, url.length - 1);
   Object.keys(item).forEach(x => {
     let v = item[x];
-    if (url.indexOf("?") === -1) url += "?";
+    if (!url.has("?")) url += "?";
     if (url.endsWith("&&")) url += `${x}=${v}`;
     else url += `&&${x}=${v}`;
   });
@@ -149,24 +255,24 @@ String.prototype.join = function (
   this: string,
   ...relative: String[]
 ) {
-  let url: string = new String(this).toString();
-  relative.forEach(x => {
-    if (
-      x &&
-      !x.empty() &&
-      !(
-        x.startsWith("http") ||
-        x.startsWith("https") ||
-        x.startsWith("www")
-      )
-    ) {
-      if (x.startsWith("/")) x = x.substring(1);
-      if (url.endsWith("/"))
-        url = url.substring(1, url.length - 1);
+  let url = new String(this).toString();
+  relative
+    .filter(x => x && !x.empty())
+    .forEach(x => {
+      if (
+        !(
+          x.startsWith("http") ||
+          x.startsWith("https") ||
+          x.startsWith("www")
+        )
+      ) {
+        if (x.startsWith("/")) x = x.substring(1);
+        if (url.endsWith("/"))
+          url = url.substring(1, url.length - 1);
 
-      url = `${url}/${x}`;
-    } else url = x;
-  });
+        url = `${url}/${x}`;
+      } else url = x;
+    });
 
   return url;
 };

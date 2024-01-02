@@ -36,9 +36,13 @@ const data = GlobalState(
       ...Dimensions.get("screen")
     },
     init: async () => {
+      //await globalDb.database.dropTables();
       await globalDb.database.setUpDataBase();
-      await data.parser.current().load();
-      //console.log("settings", data.parser.current().settings);
+     data.parser.current().settings= await data.parser.current().load();
+      /*console.log(
+        "settings",
+        data.parser.current().settings
+      );*/
     }
   },
   undefined,

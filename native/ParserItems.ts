@@ -4,6 +4,7 @@ import HttpHandler from "./HttpHandler";
 class ChapterInfo {
   name: string = "";
   url: string = "";
+  parserName:string ="";
 }
 
 class LightInfo extends ChapterInfo {
@@ -55,7 +56,7 @@ abstract class Parser {
     this.url = url;
     this.http = new HttpHandler();
     this.name = name;
-    this.icon = url.join(icon);
+    this.icon = url?.join(icon) ?? "";
     this.settings = new ParserDetail();
   }
 

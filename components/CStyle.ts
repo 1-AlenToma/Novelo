@@ -9,12 +9,12 @@ export default StyleSheet.create({
   bold: {
     fontWeight: "bold"
   },
-  clearBoth:{
-    width:"100%",
-    height:"100%"
+  clearBoth: {
+    width: "100%",
+    height: "100%"
   },
-  clearWidth:{
-    width:"100%"
+  clearWidth: {
+    width: "100%"
   },
   flexDisplay: {
     display: "flex"
@@ -42,5 +42,19 @@ export default StyleSheet.create({
   },
   flex: {
     flex: 1
+  },
+  bottom: {
+    position: "absolute",
+    bottom: 0
+  },
+  blur: {
+    opacity: 0.3,
+    backgroundColor: "#000"
+  },
+  overflow:{
+    overflow:"hidden"
+  },
+  hidden:{
+    display:"none"
   }
 });

@@ -110,7 +110,7 @@ class HttpHandler {
         baseurl || url
       );
     } catch (e) {
-      console.error(e);
+      console.error("httget",e);
       return new HttpValue("<div></div>", url);
     }
   }

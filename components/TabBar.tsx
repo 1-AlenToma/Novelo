@@ -84,8 +84,9 @@ const TabBar = ({
   }, [selectedIndex]);
 
   const animateLeft = async () => {
-    while (isAnimating.current) await sleep(40);
+    while (isAnimating.current) await sleep(100);
     if (!size || isAnimating.current) return;
+    let i = index;
     let left = -(index * size.width);
     if (isNaN(left)) return;
     isAnimating.current = true;
@@ -197,7 +198,7 @@ const TabBar = ({
               (size?.width ?? 0) * children.length
           }
         ]}>
-        {rItems.map((x, i) => (
+        {children.map((x, i) => (
           <ScrollView
             scrollEnabled={!disableScrolling}
             style={{
@@ -209,7 +210,8 @@ const TabBar = ({
               width: size?.width
             }}
             key={i}>
-            {x.child}
+            {rItems.find(x => x.index == i)
+              ?.child ?? null}
           </ScrollView>
         ))}
       </Animated.View>

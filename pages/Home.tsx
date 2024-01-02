@@ -3,9 +3,10 @@ import {
   Text,
   View,
   TouchableOpacity,
-  useLoader
+  useLoader,
+  Image
 } from "../components/";
-import { FlatList, Image } from "react-native";
+import { FlatList } from "react-native";
 import {
   useState,
   useEffect,
@@ -22,13 +23,23 @@ const NovelItemView = ({
   isVMode?: boolean;
 }) => {
   return (
-    <View css="row aCenter jCenter">
-      <Image source={item.image} />
-      <View css="aLeft">
-        <Text css="header bold">{item.name}</Text>
-        <Text css="desc">{item.description}</Text>
+    <View css="clearBoth">
+      <Image
+        url={item.image}
+        css="absolute resizeMode:cover clearwidth"
+      />
+      <View css="clearwidth bottom h:50% overflow">
+        <View css="blur bottom clearboth" />
+        <Text css="clearwidth mh:50% overflow header bold-#fff pa:4 ta:center">
+          {item.name}
+        </Text>
+        <Text css="desc-#fff fs:8 bold clearwidth ta:center">
+          {item.decription}
+        </Text>
+        <Text css="desc-#e30505 clearwidth bold bottom pa:4 ta:center">
+          {item.info}
+        </Text>
       </View>
-      <Text css="desc-#2828f7">{item.name}</Text>
     </View>
   );
 };
@@ -38,7 +49,7 @@ const Group = ({
   vMode
 }: {
   item: Value;
-  vMode: boolran;
+  vMode?: boolean;
 }) => {
   const loader = useLoader(true);
   const [items, setItems] = useState([]);
@@ -53,7 +64,7 @@ const Group = ({
       oldItems.distinct("url", gitems);
       if (oldItems.length > items.length) {
         page.current = p;
-        setItems(gitems);
+        setItems(oldItems);
       }
     } catch (e) {
       console.error(e);
@@ -67,9 +78,24 @@ const Group = ({
   }, []);
 
   return (
-    <View css="clearWidth [height:30%]">
+    <View css="height:220 m:5 mb:10">
       {loader.elem}
+      <View css="clearwidth row jc:space-between">
+        <Text css="header h:20 bold">
+          {item.text}
+        </Text>
+        <TouchableOpacity>
+          <Text css="bold">Browse</Text>
+        </TouchableOpacity>
+      </View>
       <ItemList
+        onEndReached={() => {
+          if (!loader.loading) {
+            loader.show();
+            getItems();
+          }
+        }}
+        itemCss="bco:#ccc bw:1 h:200 w:150 pa:4 ml:5 br:5 overflow"
         items={items}
         container={NovelItemView}
         props={{ vMode: true }}
@@ -81,27 +107,52 @@ const Group = ({
 const ItemList = ({
   items,
   container,
-  props
+  props,
+  itemCss,
+  vMode,
+  onPress,
+  onEndReached
 }: {
   items: any[];
   container: Funtion;
   props?: any;
+  itemCss?: string;
+  vMode?: boolean;
+  onPress?: (item: any) => void;
+  onEndReached?: () => void;
 }) => {
+  const onEndReachedCalledDuringMomentum =
+    useRef(true);
   const render = item => {
     let d = { item };
     if (props) d = { ...d, ...props };
-    console.log(d);
     let VR = container;
     return (
-      <TouchableOpacity>
+      <TouchableOpacity
+        css={itemCss}
+        onPress={() => onPress?.(item)}>
         <VR {...d} />
       </TouchableOpacity>
     );
   };
   return (
     <FlatList
-      horizontal={true}
+      horizontal={!vMode}
       data={items}
+      onEndReachedThreshold={0.5}
+      onMomentumScrollBegin={() => {
+        onEndReachedCalledDuringMomentum.current =
+          false;
+      }}
+      onEndReached={({ distanceFromEnd }) => {
+        if (
+          !onEndReachedCalledDuringMomentum.current
+        ) {
+          onEndReached?.();
+          onEndReachedCalledDuringMomentum.current =
+            true;
+        }
+      }}
       renderItem={item => render(item.item)}
       keyExtractor={(item, index) => index}
     />
@@ -112,12 +163,15 @@ export default (props: any) => {
   //return null
   return (
     <View css="flex">
-      <Group
-        item={g.parser
-          .current()
-          .settings.group.firstOrDefault()}
-        vMode={true}
-      />
+      {g.parser
+        .current()
+        .settings.group.map((x, i) => (
+          <Group
+            key={i + g.parser.current().name}
+            item={x}
+            vMode={true}
+          />
+        ))}
     </View>
   );
 };

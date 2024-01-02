@@ -6,7 +6,8 @@ export default ({
   style,
   children,
   invertColor,
-  css
+  css,
+  ...props
 }: any) => {
   let themeSettings = {
     ...(!invertColor
@@ -24,7 +25,7 @@ export default ({
   }
 
   return (
-    <Text
+    <Text {...props}
       style={removeProps(st, "backgroundColor")}>
       {children}
     </Text>

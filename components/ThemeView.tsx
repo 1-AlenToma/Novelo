@@ -5,7 +5,8 @@ export default ({
   style,
   children,
   invertColor,
-  css
+  css,
+  ...props
 }: any) => {
   let themeSettings = {
     ...(!invertColor
@@ -21,5 +22,5 @@ export default ({
   st = [themeSettings, ...st];
   if (css) st.push(css.css());
 
-  return <View style={st}>{children}</View>;
+  return <View {...props} style={st}>{children}</View>;
 };
