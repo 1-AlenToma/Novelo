@@ -1,10 +1,11 @@
 import {
-  TabBar,
   Text,
   View,
   TouchableOpacity,
   useLoader,
-  Image
+  Image,
+  ItemList,
+  Icon
 } from "../components/";
 import { FlatList } from "react-native";
 import {
@@ -17,31 +18,71 @@ import { Value } from "../native";
 
 const NovelItemView = ({
   item,
-  isVMode
+  vMode
 }: {
   item: any;
-  isVMode?: boolean;
+  vMode?: boolean;
 }) => {
-  return (
-    <View css="clearBoth">
-      <Image
-        url={item.image}
-        css="absolute resizeMode:cover clearwidth"
-      />
-      <View css="clearwidth bottom h:50% overflow">
-        <View css="blur bottom clearboth" />
-        <Text css="clearwidth mh:50% overflow header bold-#fff pa:4 ta:center">
-          {item.name}
-        </Text>
-        <Text css="desc-#fff fs:8 bold clearwidth ta:center">
-          {item.decription}
-        </Text>
-        <Text css="desc-#e30505 clearwidth bold bottom pa:4 ta:center">
-          {item.info}
-        </Text>
+  if (!vMode) {
+    return (
+      <View css="clearBoth br:5 overflow">
+        <Image
+          url={item.image}
+          css=" resizeMode:contain br:5 clearwidth w:100% h:100%"
+        />
+        <View css="clearwidth bottom h:50% overflow">
+          <View css="blur bottom clearboth" />
+          <Text css="clearwidth mh:40% overflow header bold-#fff pa:4 ta:center">
+            {item.name}
+          </Text>
+          <View css="row w:100% pl:5 pr:5 d:flex ai:flex-start jc:center">
+            <Icon
+              type="EvilIcons"
+              name="pencil"
+              size={15}
+              color="#fff"
+            />
+            <Text css="desc-#fff fs:8 bold ta:center">
+              {item.decription}
+            </Text>
+          </View>
+
+          <Text css="desc-#e30505 clearwidth bold bottom pa:4 ta:center">
+            {item.info}
+          </Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  } else
+    return (
+      <View css="clearboth row flex ai:flex-start jc:flex-start">
+        
+          <Image
+            resizeMethod="scale"
+            url={item.image}
+            css="resizeMode:contain h:100% w:150 br:5"
+          />
+        
+        <View css="flex clearboth pl:5">
+          <Text css="header bold">
+            {item.name}
+          </Text>
+          <View css="row clearwidth ai:center">
+            <Icon
+              type="EvilIcons"
+              name="pencil"
+              size={15}
+            />
+            <Text css="desc fs:9 bold">
+              {item.decription}
+            </Text>
+          </View>
+          <Text css="desc-#e30505 bottom bold pl:5">
+            {item.info}
+          </Text>
+        </View>
+      </View>
+    );
 };
 
 const Group = ({
@@ -78,100 +119,57 @@ const Group = ({
   }, []);
 
   return (
-    <View css="height:220 m:5 mb:10">
+    <View
+      css={
+        !vMode
+          ? "h:240 mb:10 clearwidth"
+          : "flex mb:10 mt:10"
+      }>
       {loader.elem}
-      <View css="clearwidth row jc:space-between">
+      <View css="pl:5 clearwidth pr:5 row jc:space-between">
         <Text css="header h:20 bold">
           {item.text}
         </Text>
-        <TouchableOpacity>
-          <Text css="bold">Browse</Text>
-        </TouchableOpacity>
+        {!vMode ? (
+          <TouchableOpacity>
+            <Text css="bold">Browse</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
       <ItemList
+        vMode={vMode}
         onEndReached={() => {
           if (!loader.loading) {
             loader.show();
             getItems();
           }
         }}
-        itemCss="bco:#ccc bw:1 h:200 w:150 pa:4 ml:5 br:5 overflow"
+        itemCss={
+          !vMode
+            ? "bco:#ccc bw:1 h:220 w:170 pa:4 ml:5 br:5 overflow"
+            : "bco:#ccc bw:1 h:170 w:98% mt:5 pa:4 ml:5 br:5"
+        }
         items={items}
         container={NovelItemView}
-        props={{ vMode: true }}
       />
     </View>
   );
 };
 
-const ItemList = ({
-  items,
-  container,
-  props,
-  itemCss,
-  vMode,
-  onPress,
-  onEndReached
-}: {
-  items: any[];
-  container: Funtion;
-  props?: any;
-  itemCss?: string;
-  vMode?: boolean;
-  onPress?: (item: any) => void;
-  onEndReached?: () => void;
-}) => {
-  const onEndReachedCalledDuringMomentum =
-    useRef(true);
-  const render = item => {
-    let d = { item };
-    if (props) d = { ...d, ...props };
-    let VR = container;
-    return (
-      <TouchableOpacity
-        css={itemCss}
-        onPress={() => onPress?.(item)}>
-        <VR {...d} />
-      </TouchableOpacity>
-    );
-  };
-  return (
-    <FlatList
-      horizontal={!vMode}
-      data={items}
-      onEndReachedThreshold={0.5}
-      onMomentumScrollBegin={() => {
-        onEndReachedCalledDuringMomentum.current =
-          false;
-      }}
-      onEndReached={({ distanceFromEnd }) => {
-        if (
-          !onEndReachedCalledDuringMomentum.current
-        ) {
-          onEndReached?.();
-          onEndReachedCalledDuringMomentum.current =
-            true;
-        }
-      }}
-      renderItem={item => render(item.item)}
-      keyExtractor={(item, index) => index}
-    />
-  );
-};
-
 export default (props: any) => {
   //return null
+  let groups = g.parser.current().settings.group;
+  // test
+  groups = [groups[0]];
   return (
     <View css="flex">
-      {g.parser
-        .current()
-        .settings.group.map((x, i) => (
-          <Group
-            key={i + g.parser.current().name}
-            item={x}
-            vMode={true}
-          />
-        ))}
+      {groups.map((x, i) => (
+        <Group
+          key={i + g.parser.current().name}
+          item={x}
+          vMode={true}
+        />
+      ))}
     </View>
   );
 };

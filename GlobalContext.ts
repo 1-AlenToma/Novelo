@@ -19,7 +19,7 @@ const data = GlobalState(
     theme: {
       settings: {},
       invertSettings: () => {},
-      themeMode: "dark" as ThemeMode,
+      themeMode: "light" as ThemeMode,
       textTheme: () => {
         return { color: data.theme.color };
       },
@@ -38,7 +38,8 @@ const data = GlobalState(
     init: async () => {
       //await globalDb.database.dropTables();
       await globalDb.database.setUpDataBase();
-     data.parser.current().settings= await data.parser.current().load();
+      data.parser.current().settings =
+        await data.parser.current().load();
       /*console.log(
         "settings",
         data.parser.current().settings

@@ -88,7 +88,7 @@ export default class ReadNovelFull extends Parser {
       .$(".list-novel > .row")
       .map(x => {
         return x.map(f => {
-          if (f.find("img").attr("src").has())
+          if (f.find(".cover").attr("src").has())
             return LightInfo.n()
               .Name(f.find(".novel-title").text)
               .Url(
@@ -96,7 +96,12 @@ export default class ReadNovelFull extends Parser {
                   .find(".novel-title a")
                   .url("href")
               )
-              .Image(f.find("img").url("src"))
+              .Image(
+                f
+                  .find(".cover")
+                  .url("src")
+                  .imageUrlSize("200x250")
+              )
               .Info(f.find(".chr-text").text)
               .Decription(f.find(".author").text)
               .ParserName(this.name);
@@ -125,7 +130,7 @@ export default class ReadNovelFull extends Parser {
     item
       .Name(html.find(".books .title").text)
       .Url(url)
-      .Image(html.find(".books img").url("src"))
+      .Image(html.find(".books img").url("src").imageUrlSize("200x250"))
       .Decription(html.find(".desc-text").text)
       .AlternativeNames(
         html

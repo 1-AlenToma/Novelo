@@ -28,7 +28,8 @@
     "react-native-uuid": "^2.0.1",
     "react-native-webview": "13.2.2",
     "util": "^0.12.5",
-    "expo-navigation-bar": "~2.3.0"
+    "expo-navigation-bar": "~2.3.0",
+    "@shopify/flash-list": "1.4.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

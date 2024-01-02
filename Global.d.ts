@@ -14,6 +14,7 @@ declare global {
     query(item: any): String;
     trimEnd(...items): String;
     has(selector: string): boolean;
+    imageUrlSize: () => string;
     css(): any;
     safeSplit: (
       c: string,
@@ -111,6 +112,7 @@ String.prototype.css = function () {
     borderBottomWidth borderBottomColor
     borderTopWidth borderTopColor borderLeftWidth
     borderLeftColor borderRightWidth borderRightColor
+    flexGrow
   `;
   if (!styleShortKeys.has()) {
     styleKeys
@@ -190,7 +192,7 @@ String.prototype.css = function () {
         }
       }
       let v = s.safeSplit(":", -1).trim();
-      if (/^\d+$/.test(v)) v = eval(v);
+      if (/^(-?)\d+$/.test(v)) v = eval(v);
       style[k] = v;
       continue;
     }
@@ -204,12 +206,18 @@ String.prototype.css = function () {
   return style;
 };
 
+String.prototype.imageUrlSize = function (
+  size: string
+) {
+  let url = new String(this).toString();
+  return url.replace(/\d+[x]\d+/gim, size);
+};
+
 String.prototype.has = function (
   selector: string
 ) {
-  if(!selector)
-    return !new String(this)
-      .toString().empty()
+  if (!selector)
+    return !new String(this).toString().empty();
   return (
     selector &&
     !selector.empty() &&

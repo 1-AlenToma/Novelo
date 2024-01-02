@@ -10,20 +10,21 @@ export default ({
   css: string;
 }) => {
   const [imgSize, setImgSize] = useState({});
-  useEffect(() => {
-    Image.getSizeWithHeaders(
+  //img.readnovelfull.com/thumb/t-200x200/re-evolution-online-1640424174.jpg
+  https: useEffect(() => {
+  /*  Image.getSizeWithHeaders(
       url,
-       {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
-        },
+      {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
+      },
       (width, height) => {
         setImgSize({ width, height });
       },
       e => {
         alert(e);
       }
-    );
+    );*/
   }, []);
   let st =
     style && Array.isArray(style)

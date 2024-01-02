@@ -48,13 +48,13 @@ export default StyleSheet.create({
     bottom: 0
   },
   blur: {
-    opacity: 0.3,
-    backgroundColor: "#000"
+    opacity: 0.7,
+    backgroundColor: "#000000"
   },
-  overflow:{
-    overflow:"hidden"
+  overflow: {
+    overflow: "hidden"
   },
-  hidden:{
-    display:"none"
+  hidden: {
+    display: "none"
   }
 });

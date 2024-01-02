@@ -1,4 +1,7 @@
-import { StatusBar } from "expo-status-bar";
+import {
+  StatusBar,
+  setStatusBarHidden
+} from "expo-status-bar";
 import { useState, useEffect } from "react";
 import {
   StyleSheet,
@@ -14,14 +17,18 @@ import Parser from "./parsers/ReadNovelFull";
 import useLoader from "./components/Loader";
 import GlobalData from "./GlobalContext";
 import { Menu } from "./pages";
-import {AppMenu} from "./pages";
+import { AppMenu } from "./pages";
 import * as NavigationBar from "expo-navigation-bar";
 LogBox.ignoreLogs([
   /getprop/gim,
   /require cycle/gim
 ]);
 export default function App() {
-  GlobalData.hook("size", "theme.settings");
+  GlobalData.hook(
+    "size",
+    "theme.settings",
+    "isFullScreen"
+  );
   const visibility =
     NavigationBar.useVisibility();
   const loader = useLoader(true);
@@ -61,8 +68,9 @@ export default function App() {
     GlobalData.fullscreen = v => {
       GlobalData.isFullScreen = v;
       NavigationBar.setVisibilityAsync(
-        !v ? "hidden" : "visible"
+        v ? "hidden" : "visible"
       );
+      setStatusBarHidden(v);
       if (!v)
         NavigationBar.setBehaviorAsync(
           "overlay-swipe"
@@ -80,6 +88,7 @@ export default function App() {
       try {
         loader.show();
         await GlobalData.init();
+        GlobalData.fullscreen(false);
       } catch (e) {
         console.error(e);
       } finally {
@@ -104,11 +113,14 @@ export default function App() {
             : GlobalData.size.screen)
         }
       ]}>
-      <AppMenu />
       <StatusBar
-        style="auto"
-        hidden={true}
+        style={
+          GlobalData.theme.themeMode == "light"
+            ? "dark"
+            : "light"
+        }
       />
+      <AppMenu />
     </View>
   );
 }

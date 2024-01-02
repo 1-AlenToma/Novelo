@@ -5,6 +5,8 @@ import Text from "./ThemeText";
 import View from "./ThemeView";
 import TouchableOpacity from "./TouchableOpacityView";
 import Image from "./Image";
+import ItemList from "./ItemList";
+import Icon from "./Icons";
 
 export {
   TabBar,
@@ -13,5 +15,7 @@ export {
   Text,
   View,
   TouchableOpacity,
-  Image
+  Image,
+  ItemList,
+  Icon
 };
