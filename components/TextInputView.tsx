@@ -1,30 +1,28 @@
-import * as Icons from "@expo/vector-icons";
+import { TextInput } from "react-native";
 import {
   removeProps,
   parseThemeStyle
 } from "../Methods";
 
 export default ({
-  name,
-  type,
-  size,
   style,
-  css,
   invertColor,
+  css,
   ...props
 }: any) => {
-  let ICO = Icons[type];
   let st = parseThemeStyle(
     style,
     css,
     invertColor
   );
+
   return (
-    <ICO
+    <TextInput
+    disableFullscreenUI={true}
+      inputMode="search"
       {...props}
-      style={removeProps(st, "backgroundColor")}
-      size={parseInt((24).sureValue(size))}
-      name={name}
+      
+      style={st}
     />
   );
 };

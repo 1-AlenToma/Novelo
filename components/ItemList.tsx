@@ -12,7 +12,8 @@ export default ({
   vMode,
   onPress,
   onEndReached,
-  scrollIndex
+  scrollIndex,
+  nested
 }: {
   items: any[];
   container: Funtion;
@@ -22,11 +23,12 @@ export default ({
   onPress?: (item: any) => void;
   onEndReached?: () => void;
   scrollIndex?: number;
+  nested?:boolean
 }) => {
   const onEndReachedCalledDuringMomentum =
     useRef(true);
   const render = item => {
-    let d = { item ,vMode};
+    let d = { item, vMode };
     if (props) d = { ...d, ...props };
     let VR = container;
     return (
@@ -40,11 +42,12 @@ export default ({
   if (!items || !items.has()) return null;
   return (
     <FlashList
+      nestedScrollEnabled={nested}
       initialScrollIndex={scrollIndex}
       horizontal={vMode !== true}
       data={items}
       estimatedItemSize={Math.max(
-        items.length,
+        items.length * 2,
         500
       )}
       onEndReachedThreshold={0.5}

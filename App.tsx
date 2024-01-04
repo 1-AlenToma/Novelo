@@ -16,13 +16,11 @@ import ParserTester from "./components/ParserTester";
 import Parser from "./parsers/ReadNovelFull";
 import useLoader from "./components/Loader";
 import GlobalData from "./GlobalContext";
-import { Menu } from "./pages";
-import { AppMenu } from "./pages";
 import * as NavigationBar from "expo-navigation-bar";
-LogBox.ignoreLogs([
-  /getprop/gim,
-  /require cycle/gim
-]);
+import { NavigationContainer } from "@react-navigation/native";
+import { AppStack } from "./pages";
+
+LogBox.ignoreLogs([/require cycle/gim]);
 export default function App() {
   GlobalData.hook(
     "size",
@@ -77,17 +75,11 @@ export default function App() {
         );
     };
     setThemeStyle();
-    let windowEvent = Dimensions.addEventListener(
-      "change",
-      e => {
-        GlobalData.size = { ...e };
-      }
-    );
-
+let itemToRemove = [];
     (async () => {
       try {
         loader.show();
-        await GlobalData.init();
+        itemToRemove = await GlobalData.init();
         GlobalData.fullscreen(false);
       } catch (e) {
         console.error(e);
@@ -97,22 +89,13 @@ export default function App() {
     })();
 
     return () => {
-      windowEvent.remove();
+      itemToRemove?.forEach(x => x.remove());
     };
   }, []);
 
   if (loader.loading) return loader.elem;
   return (
-    <View
-      style={[
-        styles.container,
-        GlobalData.theme.settings,
-        {
-          ...(visibility !== "hidden"
-            ? GlobalData.size.window
-            : GlobalData.size.screen)
-        }
-      ]}>
+    <>
       <StatusBar
         style={
           GlobalData.theme.themeMode == "light"
@@ -120,8 +103,10 @@ export default function App() {
             : "light"
         }
       />
-      <AppMenu />
-    </View>
+      <NavigationContainer>
+        <AppStack />
+      </NavigationContainer>
+    </>
   );
 }
 

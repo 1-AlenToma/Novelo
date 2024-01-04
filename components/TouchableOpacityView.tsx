@@ -1,5 +1,8 @@
 import { TouchableOpacity } from "react-native";
-import globalData from "../GlobalContext";
+import {
+  removeProps,
+  parseThemeStyle
+} from "../Methods";
 
 export default ({
   style,
@@ -8,13 +11,11 @@ export default ({
   css,
   ...props
 }: any) => {
-  let st =
-    style && Array.isArray(style)
-      ? [...style]
-      : [style || {}];
-  if (css) st.push(css.css());
+  let st = parseThemeStyle(style, css,invertColor);
   return (
-    <TouchableOpacity {...props} style={st}>
+    <TouchableOpacity
+      {...props}
+      style={st}>
       {children}
     </TouchableOpacity>
   );

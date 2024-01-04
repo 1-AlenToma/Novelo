@@ -10,22 +10,26 @@ export default ({
   css: string;
 }) => {
   const [imgSize, setImgSize] = useState({});
-  //img.readnovelfull.com/thumb/t-200x200/re-evolution-online-1640424174.jpg
-  https: useEffect(() => {
-  /*  Image.getSizeWithHeaders(
-      url,
-      {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
-      },
-      (width, height) => {
-        setImgSize({ width, height });
-      },
-      e => {
-        alert(e);
-      }
-    );*/
+  const [source, setSource] = useState();
+  let loadImage = () => {
+    if (url && url.startsWith("[")) {
+      // image selector
+      let g = require("../GlobalContext").default;
+      g.parser
+        .current()
+        .fetchSelectorImage(url)
+        .then(x => setSource(x));
+    } else setSource(url);
+  };
+  useEffect(() => {
+    loadImage();
+    // https://www.novelupdates.com/?s=super_gene&post_type=seriesplans
+    //https://www.novelupdates.com/?s=Reincarnation+Of+The+Strongest+Sword+God&post_type=seriesplans
   }, []);
+  useEffect(() => {
+    loadImage();
+  }, [url]);
+  if (!source || source.empty()) return null; // for now
   let st =
     style && Array.isArray(style)
       ? [...style]
@@ -35,7 +39,7 @@ export default ({
   return (
     <Image
       source={{
-        uri: url,
+        uri: source,
         method: "GET",
         headers: {
           "User-Agent":

@@ -11,6 +11,8 @@ const getKey = (
   target: any,
   ...args: any[]
 ) => {
+  if (option.argsOverride)
+    args = option.argsOverride(...args);
   let key = JSON.stringify(args) + propertyName;
   key =
     "memoizing." +
@@ -75,7 +77,7 @@ export default function Memorize(
             !data ||
             days_between(data.date) >=
               option.daysToSave
-          ) {
+          || (option.updateIfTrue && option.updateIfTrue(data.data))) {
             try {
               let data2 = await currentFn.bind(
                 this

@@ -1,4 +1,5 @@
 import CStyle from "./components/CStyle";
+const cheerio = require("react-native-cheerio");
 declare global {
   interface Array<T> {
     mapAsync(
@@ -7,6 +8,9 @@ declare global {
     distinct: (key: keyof T, itemsB: T[]) => T[];
     firstOrDefault: (key?: keyof T) => T[];
     has: () => boolean;
+    niceJson: (
+      ...keyToRemove: (keyof T)[]
+    ) => string;
   }
   interface String {
     join(...relative: String[]): String;
@@ -16,6 +20,15 @@ declare global {
     has(selector: string): boolean;
     imageUrlSize: () => string;
     css(): any;
+    sSpace(total?: number): string;
+    eSpace(total?: number): string;
+    cleanHtml(): string;
+    splitSearch(searchFor: string): boolean;
+    imageFetchBuilder(
+      selector: string,
+      baseUrl: string,
+      attr?: string
+    ): string;
     safeSplit: (
       c: string,
       index: number
@@ -73,6 +86,20 @@ Array.prototype.distinct = function (
   return items;
 };
 
+Array.prototype.niceJson = function (
+  ...keyToRemove: string[]
+) {
+  let items = [];
+  if (!keyToRemove.has())
+    return JSON.stringify(this, undefined, 4);
+  for (let item of this) {
+    let t = { ...item };
+    keyToRemove.forEach(x => delete t[x]);
+    items.push(t);
+  }
+  return JSON.stringify(items, undefined, 4);
+};
+
 Array.prototype.mapAsync = async function (
   fn: (item: any, index: number) => Promise<any[]>
 ) {
@@ -83,6 +110,60 @@ Array.prototype.mapAsync = async function (
       items.push(t);
   }
   return items;
+};
+
+String.prototype.imageFetchBuilder = function (
+  selector: string,
+  baseUrl: string,
+  attr?: string
+) {
+  let url = new String(this).toString();
+  attr = attr || "src";
+  return `[${baseUrl}][${url}][${selector}][${attr}]`;
+};
+
+String.prototype.splitSearch = function (
+  searchFor: string
+) {
+  if (!this) return false;
+  let str = new String(this).toString().trim();
+  if (str.empty()) return false;
+  if (!searchFor || searchFor.empty())
+    return false;
+  for (let s of searchFor.split(" ")) {
+    if (!str.has(s) && !s.empty()) return false;
+  }
+  return true;
+};
+
+String.prototype.cleanHtml = function () {
+  let str = new String(this).toString();
+  let html = cheerio.load(str).text();
+  return html;
+};
+
+String.prototype.sSpace = function (
+  total?: number
+) {
+  total = (1).sureValue(total);
+  let str = new String(this || "").toString();
+  while (total > 0) {
+    str = " " + str;
+    total--;
+  }
+  return str;
+};
+
+String.prototype.eSpace = function (
+  total?: number
+) {
+  total = (1).sureValue(total);
+  let str = new String(this || "").toString();
+  while (total > 0) {
+    str += " ";
+    total--;
+  }
+  return str;
 };
 
 String.prototype.safeSplit = function (
@@ -112,7 +193,7 @@ String.prototype.css = function () {
     borderBottomWidth borderBottomColor
     borderTopWidth borderTopColor borderLeftWidth
     borderLeftColor borderRightWidth borderRightColor
-    flexGrow
+    flexGrow fontVariant fontStyle
   `;
   if (!styleShortKeys.has()) {
     styleKeys
@@ -186,13 +267,18 @@ String.prototype.css = function () {
           console.warn(
             k,
             "could not be found in",
-            styleShortKeys
+            JSON.stringify(
+              styleShortKeys,
+              undefined,
+              4
+            )
           );
           continue;
         }
       }
       let v = s.safeSplit(":", -1).trim();
-      if (/^(-?)\d+$/.test(v)) v = eval(v);
+      if (/^(-?)((\d)|(\d\.\d))+$/.test(v))
+        v = eval(v);
       style[k] = v;
       continue;
     }
@@ -201,6 +287,8 @@ String.prototype.css = function () {
     );
     if (!key) continue;
     let item = CStyle[key];
+    if (item && typeof item === "string")
+      item = item.css();
     if (item) style = { ...style, ...item };
   }
   return style;
@@ -252,7 +340,12 @@ String.prototype.query = function (item: any) {
   Object.keys(item).forEach(x => {
     let v = item[x];
     if (!url.has("?")) url += "?";
-    if (url.endsWith("&&")) url += `${x}=${v}`;
+    if (
+      url.endsWith("&") ||
+      url.endsWith("&&") ||
+      url.endsWith("?")
+    )
+      url += `${x}=${v}`;
     else url += `&&${x}=${v}`;
   });
 

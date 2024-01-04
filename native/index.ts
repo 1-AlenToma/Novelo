@@ -1,5 +1,6 @@
 import HttpHandler from "./HttpHandler";
 import Html from "./Html";
+import useState from "./StateManager";
 import {
   LightInfo,
   ChapterInfo,
@@ -7,8 +8,9 @@ import {
   Value,
   ParserDetail,
   SearchDetail,
-  Parser
-} from "./ParserItems"
+  Parser,
+  NovelInfo
+} from "./ParserItems";
 export {
   HttpHandler,
   Html,
@@ -18,5 +20,7 @@ export {
   Value,
   ParserDetail,
   SearchDetail,
-  Parser
+  Parser,
+  useState,
+  NovelInfo
 };

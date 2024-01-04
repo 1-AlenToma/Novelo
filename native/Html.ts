@@ -79,6 +79,10 @@ class Html {
     );
   }
 
+  get length() {
+    return this.io?.length ?? 0;
+  }
+
   forEach(fn: (x: Html, index: number) => void) {
     this.io.each((i, x) => {
       fn(new Html(x, this.uurl, this.p), i);

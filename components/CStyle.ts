@@ -56,5 +56,6 @@ export default StyleSheet.create({
   },
   hidden: {
     display: "none"
-  }
+  },
+  boxS: "br:5 w:95% minHeight:200 mb:5 jc:flex-start ai:flex-start pa:5"
 });

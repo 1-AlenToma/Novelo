@@ -1,9 +1,13 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "allowJs": true,
     "strict": false,
     "target": "ES5",
     "experimentalDecorators": true,
-    "resolveJsonModule": true
-  }
+    "resolveJsonModule": true,
+    "baseUrl": "."
+  },
+  "extends": "expo/tsconfig.base",
+  "include": []
 }

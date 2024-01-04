@@ -27,6 +27,33 @@ const sleep = (ms: number) => {
   return new Promise(r => setTimeout(r, ms));
 };
 
+function proc(partialValue, totalValue) {
+  return (partialValue / 100) * totalValue;
+}
+
+const parseThemeStyle = (
+  style: any,
+  css: any,
+  invertColor: any
+) => {
+  let globalData =
+    require("./GlobalContext").default;
+  let themeSettings = {
+    ...(!invertColor
+      ? globalData.theme.settings
+      : globalData.theme.invertSettings())
+  };
+  if (invertColor === undefined)
+    delete themeSettings.backgroundColor;
+  let st =
+    style && Array.isArray(style)
+      ? [...style]
+      : [style || {}];
+  st = [themeSettings, ...st];
+  if (css) st.push(css.css());
+  return st;
+};
+
 const removeProps = (
   item: any,
   ...keys: string[]
@@ -36,7 +63,7 @@ const removeProps = (
   if (Array.isArray(item))
     item = item.map(x => removeProps(x, ...keys));
   else {
-    item= {...item}
+    item = { ...item };
     keys.forEach(k => {
       if (item[k] !== undefined) delete item[k];
     });
@@ -64,5 +91,7 @@ export {
   sleep,
   days_between,
   newId,
-  removeProps
+  proc,
+  removeProps,
+  parseThemeStyle
 };

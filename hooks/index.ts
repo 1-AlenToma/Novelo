@@ -1,4 +1,3 @@
 import useUpdate from "./UseUpdate";
-export {
-  useUpdate
-}
+import useNavigation from "./useNavigation";
+export { useUpdate,useNavigation };

@@ -125,51 +125,70 @@ export default class ReadNovelFull extends Parser {
   async detail(url: string) {
     let html = (
       await this.http.get_html(url, this.url)
-    ).html.$("body");
+    ).html;
+    let body = html.$("body");
     let item = DetailInfo.n();
     item
-      .Name(html.find(".books .title").text)
+      .Name(body.find(".books .title").text)
       .Url(url)
-      .Image(html.find(".books img").url("src").imageUrlSize("200x250"))
-      .Decription(html.find(".desc-text").text)
+      .Image(
+        body
+          .find(".books img")
+          .url("src")
+          .imageUrlSize("200x250")
+      )
+      .Decription(body.find(".desc-text").text)
       .AlternativeNames(
-        html
-          .find(".info-meta li:first-child")
-          .remove("h3").text
+        body
+          .find(
+            '.info-meta li h3:contains("Alternative")'
+          ).parent.remove("h3").text
       )
       .Author(
-        html.find(".info-meta li:nth-child(2) a")
+        body.find('.info-meta a[href*="authors"]')
           .text
       )
       .Genre(
-        html
-          .find(".info-meta li:nth-child(3) a")
+        body
+          .find('.info-meta a[href*="genres"]')
           .map(x => x.text)
       )
       .Status(
-        html.find(".info-meta li:nth-child(5) a")
-          .text
+        body.find(
+          '.info-meta li h3:contains("Status")'
+        ).parent.find("a").text
       )
       .Rating(
-        html.find('span[itemprop="ratingValue"]')
+        body.find('span[itemprop="ratingValue"]')
           .text
       )
       .ParserName(this.name);
     let cHhtml = (
       await this.http.get_html(
-        url.trimEnd("/") + "#tab-chapters",
+        this.url
+          .join("ajax/chapter-archive")
+          .query({
+            novelId: html
+              .$("[data-novel-id]")
+              .attr("data-novel-id")
+          }),
         this.url
       )
     ).html;
     item.Chapters(
       cHhtml
-        .$(".list-chapter a")
+        .$(".list-chapter")
         .map(x =>
-          ChapterInfo.n()
-            .Name(x.attr("title"))
-            .Url(x.url("href"))
-            .ParserName(this.name)
+          x
+            .find("a")
+            .map(a =>
+              ChapterInfo.n()
+                .Name(a.attr("title"))
+                .Url(a.url("href"))
+                .ParserName(this.name)
+            )
         )
+        .flatMap(x => x)
     );
 
     return item;

@@ -1,11 +1,11 @@
 import {
-  View,
   StyleSheet,
   Animated,
   Easing,
   ScrollView,
   TouchableOpacity
 } from "react-native";
+import View from "./ThemeView";
 import * as Icons from "@expo/vector-icons";
 import {
   useState,
@@ -22,19 +22,22 @@ import GlobalData from "../GlobalContext";
 import { useUpdate } from "../hooks";
 import Text from "./ThemeText";
 import { TabIcon, TabChild } from "../Types";
-
 const TabBar = ({
   children,
   selectedIndex,
   style,
   position,
-  disableScrolling
+  disableScrolling,
+  change,
+  rootView
 }: {
   children: TabChild[];
   style?: any;
   selectedIndex?: number;
   position?: "Bottom" | "Top";
   disableScrolling: boolean;
+  change?: (index) => void;
+  rootView?: boolean;
 }) => {
   //GlobalData.hook("theme.settings");
   const update = useUpdate();
@@ -79,9 +82,14 @@ const TabBar = ({
     },
     children.map(x => x)
   );
+
   useEffect(() => {
     setIndex(selectedIndex);
   }, [selectedIndex]);
+
+  useEffect(() => {
+    if (index !== undefined) change?.(index);
+  }, [index]);
 
   const animateLeft = async () => {
     while (isAnimating.current) await sleep(100);
@@ -172,6 +180,7 @@ const TabBar = ({
   );
   return (
     <View
+      rootView={rootView}
       style={[
         style,
         {
@@ -199,20 +208,27 @@ const TabBar = ({
           }
         ]}>
         {children.map((x, i) => (
-          <ScrollView
-            scrollEnabled={!disableScrolling}
-            style={{
-              width: size?.width
-            }}
-            contentContainerStyle={{
-              flexGrow: 1,
-              padding: 5,
-              width: size?.width
-            }}
+          <View
+            css="flex"
             key={i}>
-            {rItems.find(x => x.index == i)
-              ?.child ?? null}
-          </ScrollView>
+            {x.props.head &&
+            rItems.find(x => x.index == i)
+              ? x.props.head
+              : null}
+            <ScrollView
+              scrollEnabled={!disableScrolling}
+              style={{
+                width: size?.width
+              }}
+              contentContainerStyle={{
+                flexGrow: 1,
+                padding: 5,
+                width: size?.width
+              }}>
+              {rItems.find(x => x.index == i)
+                ?.child ?? null}
+            </ScrollView>
+          </View>
         ))}
       </Animated.View>
       {position !== "Top" ? menu : null}

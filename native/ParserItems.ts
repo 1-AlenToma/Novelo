@@ -4,7 +4,7 @@ import HttpHandler from "./HttpHandler";
 class ChapterInfo {
   name: string = "";
   url: string = "";
-  parserName:string ="";
+  parserName: string = "";
 }
 
 class LightInfo extends ChapterInfo {
@@ -15,8 +15,12 @@ class LightInfo extends ChapterInfo {
 
 class DetailInfo extends LightInfo {
   rating: string = "";
+  novelUpdateRating = "";
+  novelUpdateUrl = "";
+  novelUpdateRecommendations: LightInfo[] = [];
   alternativeNames: string[] = [];
   genre: string[] = [];
+  tags: string[] = [];
   author: string = "";
   status: string = "";
   chapters: ChapterInfo[] = [];
@@ -40,6 +44,20 @@ class SearchDetail {
   genre: Value[] = [];
   status: Value[] = [];
   group: Value[] = [];
+}
+
+abstract class NovelInfo {
+  url: string;
+  http: HttpHandler;
+  type: string = "NovelInfos";
+  constructor(url: string) {
+    this.url = url;
+    this.http = new HttpHandler();
+  }
+
+  abstract async search(
+    item: DetailInfo
+  ): Promise<DetailInfo>;
 }
 
 abstract class Parser {
@@ -94,5 +112,6 @@ export {
   Value,
   ParserDetail,
   SearchDetail,
-  Parser
+  Parser,
+  NovelInfo
 };

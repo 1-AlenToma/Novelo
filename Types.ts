@@ -22,6 +22,8 @@ export type MemorizeOptions = {
   isDebug?: boolean;
   storage?: IStorage;
   daysToSave: number;
+  argsOverride?: (...args: any[]) => any[];
+  updateIfTrue?: (args: any) => boolean;
   keyModifier?: (
     target: any,
     key: string
@@ -36,5 +38,5 @@ export type TabIcon = {
 export type TabChild = {
   title: string;
   icon?: TabIcon;
+  head?: any; /// an element
 } & ReactNode;
-

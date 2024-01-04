@@ -1,32 +1,43 @@
-import {
-  TabBar,
-  Text,
-  View
-} from "../components/";
 import Home from "./Home";
 import Favorit from "./Favorit";
 import Settings from "./Settings";
-export default () => {
+import Header from "./Header";
+import { TabBar, View } from "../components";
+import { useState } from "react";
+export default ({ ...props }) => {
   return (
-    <TabBar>
-      <Home
-        icon={{ name: "home", type: "Entypo" }}
-        title="home"
-      />
-      <Favorit
-        icon={{
-          name: "favorite",
-          type: "MaterialIcons"
-        }}
-        title="favorit"
-      />
-      <Settings
-        icon={{
-          name: "settings",
-          type: "Ionicons"
-        }}
-        title="Settings"
-      />
-    </TabBar>
+      <TabBar rootView={true}>
+        <Home
+          head={
+            <Header
+              {...props}
+              inputEnabled={true}
+            />
+          }
+          {...props}
+          icon={{
+            name: "home",
+            type: "Entypo"
+          }}
+          title="home"
+        />
+
+        <Favorit
+          {...props}
+          icon={{
+            name: "favorite",
+            type: "MaterialIcons"
+          }}
+          title="favorit"
+        />
+        <Settings
+          {...props}
+          icon={{
+            name: "settings",
+            type: "Ionicons"
+          }}
+          title="Settings"
+        />
+      </TabBar>
   );
 };

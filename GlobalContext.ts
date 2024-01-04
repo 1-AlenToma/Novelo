@@ -1,6 +1,9 @@
 import GlobalState from "react-global-state-management";
 import dbContext from "./db/dbContext";
-import { Dimensions } from "react-native";
+import {
+  Dimensions,
+  Keyboard
+} from "react-native";
 import ParserWrapper from "./parsers/ParserWrapper";
 const globalDb = new dbContext();
 type ThemeMode = "light" | "dark";
@@ -8,6 +11,7 @@ const parsers = ParserWrapper.getAllParsers();
 let currentParser = parsers[0];
 const data = GlobalState(
   {
+    KeyboardState: false,
     isFullScreen: false,
     fullscreen: isVisible => {},
     parser: {
@@ -18,7 +22,9 @@ const data = GlobalState(
     },
     theme: {
       settings: {},
-      invertSettings: () => {},
+      invertSettings: () => {
+        
+      },
       themeMode: "light" as ThemeMode,
       textTheme: () => {
         return { color: data.theme.color };
@@ -32,18 +38,42 @@ const data = GlobalState(
     },
     db: () => globalDb.database,
     size: {
-      ...Dimensions.get("window"),
-      ...Dimensions.get("screen")
+      window: Dimensions.get("window"),
+      screen: Dimensions.get("screen")
     },
     init: async () => {
       //await globalDb.database.dropTables();
       await globalDb.database.setUpDataBase();
       data.parser.current().settings =
         await data.parser.current().load();
-      /*console.log(
-        "settings",
-        data.parser.current().settings
-      );*/
+      const showSubscription =
+        Keyboard.addListener(
+          "keyboardDidShow",
+          () => {
+            data.KeyboardState = true;
+          }
+        );
+      const hideSubscription =
+        Keyboard.addListener(
+          "keyboardDidHide",
+          () => {
+            data.KeyboardState = false;
+          }
+        );
+
+      let windowEvent =
+        Dimensions.addEventListener(
+          "change",
+          e => {
+            data.size = { ...e };
+          }
+        );
+
+      return [
+        hideSubscription,
+        showSubscription,
+        windowEvent
+      ];
     }
   },
   undefined,

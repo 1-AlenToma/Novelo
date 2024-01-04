@@ -1,31 +1,25 @@
 import { Text } from "react-native";
-import { removeProps } from "../Methods";
-import globalData from "../GlobalContext";
+import {
+  removeProps,
+  parseThemeStyle
+} from "../Methods";
 
 export default ({
   style,
   children,
   invertColor,
   css,
+  ifTrue,
   ...props
 }: any) => {
-  let themeSettings = {
-    ...(!invertColor
-      ? globalData.theme.settings
-      : globalData.theme.invertSettings())
-  };
-
+  if(ifTrue === null || ifTrue === false)
+    return null;
   let st =
-    style && Array.isArray(style)
-      ? [...style]
-      : [style || {}];
-  st = [themeSettings, ...st];
-  if (css) {
-    st.push(css.css());
-  }
-
+    parseThemeStyle(style, css, invertColor)
+  
   return (
-    <Text {...props}
+    <Text
+      {...props}
       style={removeProps(st, "backgroundColor")}>
       {children}
     </Text>

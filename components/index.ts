@@ -7,6 +7,11 @@ import TouchableOpacity from "./TouchableOpacityView";
 import Image from "./Image";
 import ItemList from "./ItemList";
 import Icon from "./Icons";
+import HomeNovelItem from "./HomeNovelItem";
+import NovelGroup from "./NovelGroup";
+import SizeAnimator from "./SizeAnimator";
+import TextInput from "./TextInputView";
+import FText from "./FoldAbleText"
 
 export {
   TabBar,
@@ -17,5 +22,10 @@ export {
   TouchableOpacity,
   Image,
   ItemList,
-  Icon
+  Icon,
+  HomeNovelItem,
+  NovelGroup,
+  SizeAnimator,
+  TextInput,
+  FText
 };
