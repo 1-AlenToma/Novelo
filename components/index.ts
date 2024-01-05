@@ -11,7 +11,14 @@ import HomeNovelItem from "./HomeNovelItem";
 import NovelGroup from "./NovelGroup";
 import SizeAnimator from "./SizeAnimator";
 import TextInput from "./TextInputView";
-import FText from "./FoldAbleText"
+import FText from "./FoldAbleText";
+import ActionSheet from "./ActionSheet";
+import ActionSheetButton from "./ActionSheetButton";
+
+import {
+  AppContainer,
+  ElementsContext
+} from "./AppContainer";
 
 export {
   TabBar,
@@ -27,5 +34,9 @@ export {
   NovelGroup,
   SizeAnimator,
   TextInput,
-  FText
+  FText,
+  AppContainer,
+  ElementsContext,
+  ActionSheet,
+  ActionSheetButton
 };

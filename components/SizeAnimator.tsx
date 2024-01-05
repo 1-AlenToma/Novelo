@@ -5,6 +5,7 @@ import {
   useRef
 } from "react";
 import gdata from "../GlobalContext";
+import { sleep } from "../Methods";
 
 export default ({
   children,
@@ -12,18 +13,26 @@ export default ({
   refItem,
   speed,
   status,
-  css
+  css,
+  ifTrue
 }: any) => {
   const [size, setSize] = useState({});
   const [animWidth, setAnimWidth] = useState();
   const [animHeight, setAnimHeight] = useState();
+  const [isTrue, setIsTrue] = useState(ifTrue);
   const [isAnimate, setIsAnimate] =
     useState(false);
   let animated = useRef(false);
   let init = useRef(false);
 
-  let toggle = async show => {
-    if (show === animated.current) return;
+  let toggle = async (
+    show: boolean,
+    force: boolean
+  ) => {
+    
+    while (isAnimate) await sleep(50);
+    if (show === animated.current && !force)
+      return;
     animated.current = show;
     init.current = true;
 
@@ -31,7 +40,7 @@ export default ({
       typeof refItem.width === "number" &&
       animWidth
     ) {
-      //wait setIsAnimate(true);
+      await setIsAnimate(true);
       Animated.timing(animWidth, {
         toValue: !show
           ? size.width
@@ -45,7 +54,7 @@ export default ({
       typeof refItem.height === "number" &&
       animHeight
     ) {
-      //await setIsAnimate(true);
+      await setIsAnimate(true);
       Animated.timing(animHeight, {
         toValue: !show
           ? size.height
@@ -63,6 +72,14 @@ export default ({
     setAnimHeight(null);
   }, "size");
 
+  useEffect(() => {
+    // if (!animated.current && !isAnimate)
+    //  setIsTrue(ifTrue);
+    toggle(animated.current).then(x =>
+      setIsTrue(ifTrue)
+    );
+  }, [ifTrue]);
+
   if (
     status == false &&
     !isAnimate &&
@@ -76,6 +93,8 @@ export default ({
   if (css) {
     st.push(css.css());
   }
+  let render =
+    isTrue == undefined || isTrue || isAnimate;
   return (
     <Animated.View
       style={[
@@ -83,11 +102,14 @@ export default ({
         ...st,
         {
           ...(typeof refItem.height ===
-            "number" && animHeight
+            "number" &&
+          animHeight &&
+          render
             ? { height: animHeight }
             : {}),
           ...(typeof refItem.width === "number" &&
-          animWidth
+          animWidth &&
+          render
             ? { width: animWidth }
             : {})
         }
@@ -103,7 +125,7 @@ export default ({
           setSize(event.nativeEvent.layout);
         }
       }}>
-      {children}
+      {render ? children : null}
     </Animated.View>
   );
 };

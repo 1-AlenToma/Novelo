@@ -9,8 +9,11 @@ export default ({
   children,
   invertColor,
   css,
+  ifTrue,
   ...props
 }: any) => {
+  if( ifTrue === false)
+     return null;
   let st = parseThemeStyle(style, css,invertColor);
   return (
     <TouchableOpacity

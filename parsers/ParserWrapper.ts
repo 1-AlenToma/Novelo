@@ -71,16 +71,16 @@ export default class ParserWrapper extends Parser {
     try {
       let baseUrl = selector
         .safeSplit("]", 0)
-        .replace(/\[\]/g, "");
+        .replace(/\[|\]/g, "");
       let url = selector
         .safeSplit("]", 1)
-        .replace(/\[\]/g, "");
+        .replace(/\[|\]/g, "");
       let path = selector
         .safeSplit("]", 2)
-        .replace(/\[\]/g, "");
+        .replace(/\[|\]/g, "");
       let attr = selector
         .safeSplit("]", 3)
-        .replace(/\[\]/g, "");
+        .replace(/\[|\]/g, "");
       let html = (
         await this.http.get_html(url, baseUrl)
       ).html;

@@ -3,6 +3,12 @@ export type DataCache = {
   data: any;
 };
 
+export type Button = {
+  Text: Element | Function;
+  press: Function;
+  ifTrue: boolean;
+};
+
 export type IStorage = {
   set: (
     file: string,

@@ -8,19 +8,25 @@ import {
   View,
   useColorScheme,
   Dimensions,
-  TouchableOpacity,
   LogBox
 } from "react-native";
 import "./Global.d";
-import ParserTester from "./components/ParserTester";
-import Parser from "./parsers/ReadNovelFull";
-import useLoader from "./components/Loader";
+import {
+  useLoader,
+  AppContainer,
+  ActionSheet,
+  TouchableOpacity,
+  Text
+} from "./components";
 import GlobalData from "./GlobalContext";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 
-LogBox.ignoreLogs([/require cycle/gim]);
+LogBox.ignoreLogs([
+  /require cycles?/gim,
+  /Require cycle/gim
+]);
 export default function App() {
   GlobalData.hook(
     "size",
@@ -30,7 +36,7 @@ export default function App() {
   const visibility =
     NavigationBar.useVisibility();
   const loader = useLoader(true);
-
+  
   const setThemeStyle = () => {
     const colorScheme =
       GlobalData.theme.themeMode;
@@ -75,7 +81,7 @@ export default function App() {
         );
     };
     setThemeStyle();
-let itemToRemove = [];
+    let itemToRemove = [];
     (async () => {
       try {
         loader.show();
@@ -96,16 +102,18 @@ let itemToRemove = [];
   if (loader.loading) return loader.elem;
   return (
     <>
-      <StatusBar
-        style={
-          GlobalData.theme.themeMode == "light"
-            ? "dark"
-            : "light"
-        }
-      />
-      <NavigationContainer>
-        <AppStack />
-      </NavigationContainer>
+      <AppContainer>
+        <NavigationContainer>
+          <AppStack />
+        </NavigationContainer>
+        <StatusBar
+          style={
+            GlobalData.theme.themeMode == "light"
+              ? "dark"
+              : "light"
+          }
+        />
+      </AppContainer>
     </>
   );
 }

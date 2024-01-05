@@ -14,8 +14,11 @@ export default ({
   css,
   ready,
   rootView,
+  ifTrue,
   ...props
 }: any) => {
+   if( ifTrue === false)
+     return null;
   if(rootView)
     g.hook("isFullScreen")
   const [state, setState] = useState(

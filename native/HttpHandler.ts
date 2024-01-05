@@ -24,7 +24,7 @@ const getFetch = async (
   validateSize();
   let key = createKey({ url, options });
   if (tempData.has(key))
-    return this.tempData.get(key);
+    return tempData.get(key);
   let data = await fetch(url, options);
   let text = await data.text();
   let item = new HttpTemp(text, key);

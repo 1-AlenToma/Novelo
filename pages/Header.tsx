@@ -10,6 +10,7 @@ import { useState } from "../native";
 import gdata from "../GlobalContext";
 import { proc } from "../Methods";
 import { useNavigation } from "../hooks";
+import { Button } from "../types";
 
 export default ({
   inputEnabled,
@@ -18,6 +19,7 @@ export default ({
   title,
   onBack,
   titleCss,
+  buttons,
   ...props
 }: {
   title?: boolean;
@@ -25,7 +27,8 @@ export default ({
   inputEnabled?: boolean;
   css?: string;
   onBack?: () => boolean;
-  titleCss?:string;
+  titleCss?: string;
+  buttons?: Button[];
 }) => {
   const [params, navOption] =
     useNavigation(props);
@@ -44,7 +47,10 @@ export default ({
   );
 
   gdata.subscribe(() => {
-    if (inputEnabled && state.inputAnimator.show) {
+    if (
+      inputEnabled &&
+      state.inputAnimator.show
+    ) {
       if (gdata.KeyboardState)
         state.inputAnimator.show();
       else state.inputAnimator.hide();
@@ -98,10 +104,27 @@ export default ({
       ) : title && !title.empty() ? (
         <Text
           invertColor={true}
-          css={"header bold fs:18 fso:italic " + titleCss}>
+          css={
+            "header bold fs:18 fso:italic " +
+            titleCss
+          }>
           {title}
         </Text>
       ) : null}
+      <View
+        css="row jc:center ai:center absolute r:5"
+        ifTrue={buttons?.has() ?? false}>
+        {buttons?.map((x, i) => (
+          <TouchableOpacity
+            ifTrue={x.ifTrue}
+            onPress={x.press}
+            key={i}>
+            {typeof x.text == "function"
+              ? x.text()
+              : x.text}
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };

@@ -175,8 +175,12 @@ String.prototype.safeSplit = function (
   return ar[index] || "";
 };
 let styleShortKeys = [];
+let cachedStyle = new Map();
 String.prototype.css = function () {
-  let value = String(this).toString().split(" ");
+  let styleText = String(this).toString();
+  if (cachedStyle.has(styleText))
+    return { ...cachedStyle.get(styleText) };
+  let value = styleText.split(" ");
   let style = {};
   let aKeys = Object.keys(CStyle);
 
@@ -291,6 +295,7 @@ String.prototype.css = function () {
       item = item.css();
     if (item) style = { ...style, ...item };
   }
+  cachedStyle.set(styleText, { ...style });
   return style;
 };
 

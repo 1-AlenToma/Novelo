@@ -23,7 +23,7 @@ export default ({
   onPress?: (item: any) => void;
   onEndReached?: () => void;
   scrollIndex?: number;
-  nested?:boolean
+  nested?: boolean;
 }) => {
   const onEndReachedCalledDuringMomentum =
     useRef(true);

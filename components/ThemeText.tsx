@@ -12,7 +12,7 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if(ifTrue === null || ifTrue === false)
+  if( ifTrue === false)
     return null;
   let st =
     parseThemeStyle(style, css, invertColor)

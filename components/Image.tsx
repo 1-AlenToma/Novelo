@@ -1,5 +1,6 @@
 import { Image } from "react-native";
 import { useState, useEffect } from "react";
+let noImage = require("../assets/noimage.png");
 export default ({
   style,
   url,
@@ -10,7 +11,7 @@ export default ({
   css: string;
 }) => {
   const [imgSize, setImgSize] = useState({});
-  const [source, setSource] = useState();
+  const [source, setSource] = useState(noImage);
   let loadImage = () => {
     if (url && url.startsWith("[")) {
       // image selector
@@ -18,7 +19,8 @@ export default ({
       g.parser
         .current()
         .fetchSelectorImage(url)
-        .then(x => setSource(x));
+        .then(x => setSource(x))
+        .catch(x => {});
     } else setSource(url);
   };
   useEffect(() => {
@@ -29,7 +31,7 @@ export default ({
   useEffect(() => {
     loadImage();
   }, [url]);
-  if (!source || source.empty()) return null; // for now
+  // if (!source || source.empty()) return null; // for now
   let st =
     style && Array.isArray(style)
       ? [...style]
@@ -38,14 +40,19 @@ export default ({
 
   return (
     <Image
-      source={{
-        uri: source,
-        method: "GET",
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
-        }
-      }}
+      onError={()=> setSource(noImage)}
+      source={
+        typeof source == "number"
+          ? source
+          : {
+              uri: source,
+              method: "GET",
+              headers: {
+                "User-Agent":
+                  "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
+              }
+            }
+      }
       style={[imgSize, ...st]}
     />
   );
