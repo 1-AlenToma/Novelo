@@ -62,12 +62,12 @@ export default ({
   );
   return (
     <View
-      css="clearwidth h:40 row jc:center ai:center d:flex"
+      css="clearwidth he:40 row juc:center ali:center di:flex"
       style={[css?.css()]}
       invertColor={true}>
       {navOption.canGoBack() ? (
         <TouchableOpacity
-          css="absolute l:5"
+          css="absolute le:5"
           onPress={() => {
             if (!onBack || onBack())
               navOption.back();
@@ -81,7 +81,7 @@ export default ({
       ) : null}
       {inputEnabled && onInputChange ? (
         <SizeAnimator
-          css="w:50% clearheight jc:center bc:red mw:80%"
+          css="wi:50% clearheight juc:center bac:red maw:80%"
           refItem={state.inputAnimator}>
           <TextInput
             onChangeText={txt => {
@@ -89,7 +89,7 @@ export default ({
               onInputChange?.(txt);
             }}
             placeholder="Search Novels"
-            css="h:90% clearwidth bw:1 bco:#ccc pl:5"
+            css="he:90% clearwidth bow:1 boc:#ccc pal:5"
             onFocus={() =>
               state.inputAnimator.show()
             }
@@ -98,21 +98,21 @@ export default ({
       ) : inputEnabled ? (
         <TouchableOpacity
           invertColor={false}
-          css="flex mw:98% h:85% jc:center  pl:5 br:2">
+          css="flex maw:98% he:85% juc:center pal:5 bor:2">
           <Text css="bold">Search Novels</Text>
         </TouchableOpacity>
       ) : title && !title.empty() ? (
         <Text
           invertColor={true}
           css={
-            "header bold fs:18 fso:italic " +
+            "header bold fos:18 foso:italic " +
             titleCss
           }>
           {title}
         </Text>
       ) : null}
       <View
-        css="row jc:center ai:center absolute r:5"
+        css="row juc:center ali:center absolute ri:5"
         ifTrue={buttons?.has() ?? false}>
         {buttons?.map((x, i) => (
           <TouchableOpacity

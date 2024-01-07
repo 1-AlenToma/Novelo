@@ -7,7 +7,7 @@ import TouchableOpacity from "./TouchableOpacityView";
 import HomeNovelItem from "./HomeNovelItem";
 import g from "../GlobalContext";
 import { useNavigation } from "../hooks";
-import {Header} from "../pages";
+import { Header } from "../pages";
 import {
   useState,
   useRef,
@@ -56,13 +56,13 @@ export default memo(
       <View
         css={
           !vMode
-            ? "h:240 mb:10 clearwidth"
-            : "flex mb:10 mt:10"
+            ? "he:240 mab:10 clearwidth"
+            : "flex mab:10 mat:10"
         }>
         {loader.elem}
-        <View css="pl:5 clearwidth pr:5 row jc:space-between">
+        <View css="pal:5 clearwidth par:5 row juc:space-between">
           {!vMode ? (
-            <Text css="header h:20 bold">
+            <Text css="header he:20 bold">
               {item.text}
             </Text>
           ) : null}
@@ -91,11 +91,14 @@ export default memo(
           />
         ) : null}
         <ItemList
-          onPress={(item)=> {
-            option.nav("NovelItemDetail").add({
-              url:item.url,
-              parserName:item.parserName
-            }).push()
+          onPress={item => {
+            option
+              .nav("NovelItemDetail")
+              .add({
+                url: item.url,
+                parserName: item.parserName
+              })
+              .push();
           }}
           vMode={vMode}
           onEndReached={() => {
@@ -106,8 +109,8 @@ export default memo(
           }}
           itemCss={
             !vMode
-              ? "bco:#ccc bw:1 h:220 w:170 pa:4 ml:5 br:5 overflow"
-              : "bco:#ccc bw:1 h:170 w:98% mt:5 pa:4 ml:5 br:5"
+              ? "boc:#ccc bow:1 he:220 wi:170 pa:4 mal:5 bor:5 overflow"
+              : "boc:#ccc bow:1 he:170 wi:98% mat:5 pa:4 mal:5 bor:5"
           }
           items={items}
           container={HomeNovelItem}

@@ -1,8 +1,11 @@
 import { Text } from "react-native";
 import {
   removeProps,
-  parseThemeStyle
+  parseThemeStyle,
+  StyledView
 } from "../Methods";
+
+const Txt = StyledView(Text, "Text");
 
 export default ({
   style,
@@ -12,16 +15,18 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if( ifTrue === false)
-    return null;
-  let st =
-    parseThemeStyle(style, css, invertColor)
-  
+  if (ifTrue === false) return null;
+  let st = parseThemeStyle(
+    style,
+    css,
+    invertColor
+  );
+
   return (
-    <Text
+    <Txt
       {...props}
       style={removeProps(st, "backgroundColor")}>
       {children}
-    </Text>
+    </Txt>
   );
 };

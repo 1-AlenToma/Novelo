@@ -131,20 +131,20 @@ export default ({
                 }
               ]
             },
-            "absolute mh:95% overflow clearwidth jc:flex-start borderTopLeftRadius:25 borderTopRightRadius:25".css()
+            "absolute mah:95% overflow clearwidth juc:flex-start boTLR:25 botrr:25".css()
           ]}>
           <View
             invertColor={true}
-            css="clearboth pa:10">
-            <View css="h:30 zi:1 ">
+            css="clearboth pa:10 flex">
+            <View css="he:30 zi:1">
               <View
                 invertColor={false}
-                css="br:5 zi:1 t:5 w:40 h:15 jc:center ai:center absolute l:45%">
+                css="bor:5 zi:1 to:5 wi:40 he:15 juc:center ali:center absolute le:45%">
                 <TouchableOpacity
                   onPress={() => {
                     (onHide || setIsV)(false);
                   }}
-                  css="clearboth flex jc:center ai:center">
+                  css="clearboth flex juc:center ali:center">
                   <Icon
                     css="bold"
                     type="Entypo"
@@ -157,13 +157,11 @@ export default ({
               <Text
                 ifTrue={title != undefined}
                 invertColor={true}
-                css="header fs:18 bold c:white clearwidth flex">
+                css="header fos:18 bold co:white clearwidth flex">
                 {title}
               </Text>
             </View>
-            <View css="flex overflow">
-              {children}
-            </View>
+            <View css="flex clearboth">{children}</View>
           </View>
         </Animated.View>
       </>,

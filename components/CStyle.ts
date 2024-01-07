@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-export default StyleSheet.create({
+import { NestedStyleSheet } from "../styles";
+export default NestedStyleSheet.create({
   desc: {
     fontSize: 10
   },
@@ -9,15 +9,12 @@ export default StyleSheet.create({
   bold: {
     fontWeight: "bold"
   },
-  clearBoth: {
+  clearboth: {
     width: "100%",
     height: "100%"
   },
-  clearWidth: {
+  clearwidth: {
     width: "100%"
-  },
-  flexDisplay: {
-    display: "flex"
   },
   relative: {
     position: "relative"
@@ -27,18 +24,6 @@ export default StyleSheet.create({
   },
   row: {
     flexDirection: "row"
-  },
-  aCenter: {
-    alignItems: "center"
-  },
-  jCenter: {
-    justifyContent: "center"
-  },
-  aLeft: {
-    alignItems: "flex-start"
-  },
-  jLeft: {
-    justifyContent: "flext-start"
   },
   flex: {
     flex: 1
@@ -57,6 +42,7 @@ export default StyleSheet.create({
   hidden: {
     display: "none"
   },
-  button: "br:10 pa:5 h:100% w:60 jc:center ai:center",
-  boxS: "br:5 w:95% minHeight:200 mb:5 jc:flex-start ai:flex-start pa:5"
+  button:
+    "bor:10 pa:5 he:100% wi:60 juc:center ali:center",
+  box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5"
 });

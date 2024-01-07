@@ -1,8 +1,14 @@
 import { TouchableOpacity } from "react-native";
 import {
   removeProps,
-  parseThemeStyle
+  parseThemeStyle,
+  StyledView
 } from "../Methods";
+
+const Btn = StyledView(
+  TouchableOpacity,
+  "TouchableOpacity"
+);
 
 export default ({
   style,
@@ -12,14 +18,17 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if( ifTrue === false)
-     return null;
-  let st = parseThemeStyle(style, css,invertColor);
+  if (ifTrue === false) return null;
+  let st = parseThemeStyle(
+    style,
+    css,
+    invertColor
+  );
   return (
-    <TouchableOpacity
+    <Btn
       {...props}
       style={st}>
       {children}
-    </TouchableOpacity>
+    </Btn>
   );
 };

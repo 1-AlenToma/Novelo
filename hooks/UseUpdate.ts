@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { newId } from "../Methods";
 
-export default () => {
+export default onUpdate => {
   const [id, setId] = useState();
   const update = () => {
     setId(newId());
   };
-  
-  return ()=> update()
+
+  useEffect(() => {
+    onUpdate?.();
+  }, [id]);
+
+  return () => update();
 };

@@ -1,4 +1,5 @@
 import CStyle from "./components/CStyle";
+import { cssTranslator } from "./styles";
 const cheerio = require("react-native-cheerio");
 declare global {
   interface Array<T> {
@@ -175,128 +176,10 @@ String.prototype.safeSplit = function (
   return ar[index] || "";
 };
 let styleShortKeys = [];
-let cachedStyle = new Map();
+
 String.prototype.css = function () {
   let styleText = String(this).toString();
-  if (cachedStyle.has(styleText))
-    return { ...cachedStyle.get(styleText) };
-  let value = styleText.split(" ");
-  let style = {};
-  let aKeys = Object.keys(CStyle);
-
-  let styleKeys = `
-    height width maxHeight maxWidth position
-    bottom top zIndex alignItems justifyContent
-    flex opacity fontSize color backgroundColor
-    fontWeight left right fontFamily fontStyle
-    textAlign lineHeight textAlignVertical
-    userSelect padding paddingLeft paddingRight
-    paddingBottom paddingTop margin marginTop
-    marginBottom marginLeft marginRight
-    display borderRadius borderWidth borderColor
-    borderBottomWidth borderBottomColor
-    borderTopWidth borderTopColor borderLeftWidth
-    borderLeftColor borderRightWidth borderRightColor
-    flexGrow fontVariant fontStyle
-  `;
-  if (!styleShortKeys.has()) {
-    styleKeys
-      .split(/\r?\n/)
-      .filter(x => !x.empty())
-      .forEach(x => {
-        x.split(" ")
-          .filter(k => !k.empty())
-          .forEach(k => {
-            let kshortName = "";
-            let item = { key: k, shorts: [] };
-            for (let s of k.split("")) {
-              if (kshortName.empty())
-                kshortName = s;
-              else if (s.toUpperCase() == s) {
-                kshortName += s;
-                item.shorts = [];
-              }
-              if (
-                !item.shorts.find(
-                  f => f === kshortName
-                )
-              ) {
-                item.shorts.push(kshortName);
-              }
-              if (kshortName.length >= 3) break;
-            }
-            if (
-              styleShortKeys.find(m =>
-                m.shorts.find(
-                  s =>
-                    s.toLowerCase() ==
-                    item.shorts
-                      .firstOrDefault()
-                      .toLowerCase()
-                )
-              )
-            ) {
-              item.shorts = [
-                kshortName +
-                  k[
-                    kshortName.length -
-                      (kshortName.length > 1
-                        ? 1
-                        : 0)
-                  ]
-              ];
-            }
-            styleShortKeys.push(item);
-          });
-      });
-  }
-  for (let s of value) {
-    if (s.has("-#")) {
-      style.color = `${s.split("-")[1]}`;
-      s = s.split("-")[0];
-    }
-
-    if (s.has("[") || s.has(":")) {
-      s = s.replace(/\[\]/g, "");
-      let k = s.safeSplit(":", 0);
-      if (k.length <= 3) {
-        let st = styleShortKeys.find(x =>
-          x.shorts.find(
-            f =>
-              f.toLowerCase() === k.toLowerCase()
-          )
-        );
-        if (st) k = st.key;
-        else {
-          console.warn(
-            k,
-            "could not be found in",
-            JSON.stringify(
-              styleShortKeys,
-              undefined,
-              4
-            )
-          );
-          continue;
-        }
-      }
-      let v = s.safeSplit(":", -1).trim();
-      if (/^(-?)((\d)|(\d\.\d))+$/.test(v))
-        v = eval(v);
-      style[k] = v;
-      continue;
-    }
-    let key = aKeys.find(
-      k => k.toLowerCase() === s.toLowerCase()
-    );
-    if (!key) continue;
-    let item = CStyle[key];
-    if (item && typeof item === "string")
-      item = item.css();
-    if (item) style = { ...style, ...item };
-  }
-  cachedStyle.set(styleText, { ...style });
-  return style;
+  return cssTranslator(styleText, CStyle);
 };
 
 String.prototype.imageUrlSize = function (

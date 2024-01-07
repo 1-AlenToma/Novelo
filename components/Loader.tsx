@@ -20,7 +20,7 @@ export default initValue => {
 
   let elem = !loading ? null : (
     <View
-      css="absolute flex t:0 l:0 clearboth zi:9999 jc:center ai:center"
+      css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center"
       onLayout={event => {
         setSize(event.nativeEvent.layout);
       }}>

@@ -1,4 +1,14 @@
 import uuid from "react-native-uuid";
+import { Styleable } from "./styles";
+
+const StyledView = function <T>(
+  View: T,
+  name: string
+) {
+  const Style =
+    require("./components/CStyle").default;
+  return Styleable(View, name, Style);
+};
 const public_m = (...Items: any[]) => {
   Items.forEach(Item => {
     let keys = (
@@ -45,6 +55,8 @@ const parseThemeStyle = (
   };
   if (invertColor === undefined)
     delete themeSettings.backgroundColor;
+  
+  
   let st =
     style && Array.isArray(style)
       ? [...style]
@@ -93,5 +105,6 @@ export {
   newId,
   proc,
   removeProps,
-  parseThemeStyle
+  parseThemeStyle,
+  StyledView
 };

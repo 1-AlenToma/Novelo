@@ -40,9 +40,11 @@ const TabBar = ({
   rootView?: boolean;
 }) => {
   //GlobalData.hook("theme.settings");
-  const update = useUpdate();
+  const update = useUpdate(() => animateLeft());
   const [size, setSize] = useState(undefined);
-  const [rItems, setrItems] = useState([]);
+  const [rItems, setrItems] = useState(
+    children.map(x => {})
+  );
   const [animLeft, setAnimLeft] = useState(
     new Animated.Value(0)
   );
@@ -52,29 +54,19 @@ const TabBar = ({
   const isAnimating = useRef(false);
 
   useEffect(() => {
-    if (
-      !rItems.find(x => x.index == index) &&
-      children[index]
-    )
-      setrItems([
-        ...rItems,
-        {
-          index,
-          child: childPrep(children[index])
-        }
-      ]);
-    else animateLeft();
+    if (!rItems[index] && children[index]) {
+      rItems[index] = {
+        child: childPrep(children[index])
+      };
+    }
+    animateLeft();
   }, [size, index]);
 
-  useEffect(() => {
-    animateLeft();
-  }, [rItems]);
   useEffect(
     () => {
       children.forEach((x, i) => {
-        if (rItems.find(x => x.index == i)) {
-          rItems.find(x => x.index == i).child =
-            x;
+        if (rItems[i]) {
+          rItems[i].child = childPrep(x);
         }
       });
 
@@ -94,15 +86,18 @@ const TabBar = ({
   const animateLeft = async () => {
     while (isAnimating.current) await sleep(100);
     if (!size || isAnimating.current) return;
-    let i = index;
-    let left = -(index * size.width);
-    if (isNaN(left)) return;
     isAnimating.current = true;
     Animated.timing(animLeft, {
-      toValue: left,
+      toValue: index,
       duration: 400,
-      useNativeDriver: false
+      useNativeDriver: true
     }).start(() => (isAnimating.current = false));
+  };
+
+  const getWidth = (index: number) => {
+    let v = index * size?.width;
+    if (isNaN(v)) return 0;
+    return v;
   };
 
   const childPrep = child => {
@@ -199,7 +194,19 @@ const TabBar = ({
         style={[
           styles.container,
           {
-            left: animLeft,
+            transform: [
+              {
+                translateX: animLeft.interpolate({
+                  inputRange: children.map(
+                    (x, i) => i
+                  ),
+                  outputRange: children.map(
+                    (x, i) =>
+                      i == 0 ? 0 : -getWidth(i)
+                  )
+                })
+              }
+            ],
             height: (0).sureValue(
               size?.height - styles.menu.height
             ),
@@ -211,10 +218,7 @@ const TabBar = ({
           <View
             css="flex"
             key={i}>
-            {x.props.head &&
-            rItems.find(x => x.index == i)
-              ? x.props.head
-              : null}
+            {x.props.head}
             <ScrollView
               scrollEnabled={!disableScrolling}
               style={{
@@ -225,8 +229,7 @@ const TabBar = ({
                 padding: 5,
                 width: size?.width
               }}>
-              {rItems.find(x => x.index == i)
-                ?.child ?? null}
+              {rItems[i]?.child ?? null}
             </ScrollView>
           </View>
         ))}

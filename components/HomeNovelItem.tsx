@@ -13,29 +13,29 @@ export default ({
 }) => {
   if (!vMode) {
     return (
-      <View css="clearBoth br:5 overflow">
+      <View css="clearboth bor:5 overflow">
         <Image
           url={item.image}
-          css=" resizeMode:contain br:5 clearwidth w:100% h:100%"
+          css="resizeMode:contain bor:5 clearwidth wi:100% he:100%"
         />
-        <View css="clearwidth bottom h:50% overflow">
+        <View css="clearwidth bottom he:50% overflow">
           <View css="blur bottom clearboth" />
-          <Text css="clearwidth mh:40% overflow header bold-#fff pa:4 ta:center">
+          <Text css="clearwidth mih:40% wi:100% header bold co:#fff pa:4 teA:center">
             {item.name}
           </Text>
-          <View css="row w:100% pl:5 pr:5 d:flex ai:flex-start jc:center">
+          <View css="row wi:100% pal:5 par:5 di:flex ali:flex-start juc:center">
             <Icon
               type="EvilIcons"
               name="pencil"
               size={15}
-              css="c:#fff"
+              css="co:#fff"
             />
-            <Text css="desc-#fff fs:8 bold ta:center">
+            <Text css="desc co:#fff fos:8 bold tea:center">
               {item.decription}
             </Text>
           </View>
 
-          <Text css="desc-#e30505 clearwidth bold bottom pa:4 ta:center">
+          <Text css="desc co:#e30505 clearwidth bold bottom pa:4 tea:center">
             {item.info}
           </Text>
         </View>
@@ -43,28 +43,28 @@ export default ({
     );
   } else
     return (
-      <View css="clearboth overflow row flex ai:flex-start jc:flex-start">
+      <View css="clearboth overflow row flex ali:flex-start juc:flex-start">
         <Image
           resizeMethod="scale"
           url={item.image}
-          css="resizeMode:contain h:100% w:150 br:5"
+          css="resizeMode:contain he:100% wi:150 bor:5"
         />
 
-        <View css="flex clearboth pl:5">
+        <View css="flex clearboth pal:5">
           <Text css="header bold">
             {item.name}
           </Text>
-          <View css="row clearwidth ai:center">
+          <View css="row clearwidth ali:center">
             <Icon
               type="EvilIcons"
               name="pencil"
               size={15}
             />
-            <Text css="desc fs:9 bold">
+            <Text css="desc fos:9 bold">
               {item.decription}
             </Text>
           </View>
-          <Text css="desc-#e30505 bottom bold pl:5">
+          <Text css="desc co:#e30505 bottom bold pal:5">
             {item.info}
           </Text>
         </View>

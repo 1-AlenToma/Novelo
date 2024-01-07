@@ -22,7 +22,7 @@ export default ({ ...props }: any) => {
   return (
   
       
-      <View css="flex ai:flex-start jc:flex-start">
+      <View css="flex ali:flex-start juc:flex-start">
         {groups.map((x, i) => (
           <NovelGroup
             {...props}

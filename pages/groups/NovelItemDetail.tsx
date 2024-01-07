@@ -72,10 +72,10 @@ export default ({ ...props }: any) => {
   return (
     <View
       rootView={true}
-      css="flex pb:70">
+      css="flex pab:70">
       <Header
         {...props}
-        titleCss="fs:12"
+        titleCss="fos:12"
         buttons={[
           {
             ifTrue:
@@ -97,24 +97,24 @@ export default ({ ...props }: any) => {
         title={state.novel?.name}
       />
       {loader.elem}
-      <View css="flex mt:10">
+      <View css="flex mat:10">
         <ScrollView>
-          <View css="flex ai:center">
+          <View css="flex ali:center">
             <View
-              css="row boxS"
+              css="row box"
               invertColor={true}>
               <Image
                 resizeMethod="scale"
                 url={state.novel?.image}
-                css="resizeMode:contain h:100% w:150 br:5"
+                css="resizeMode:contain he:100% wi:150 bor:5"
               />
               <View css="flex pa:5">
                 <Text
-                  css="header flex fg:1 bold fs:18"
+                  css="header flex flg:1 bold fos:18"
                   invertColor={true}>
                   {state.novel.name}
                   <Text
-                    css="desc bold c:#775903 clearwidth"
+                    css="desc bold co:#775903 clearwidth"
                     ifTrue={state.infoLoading}>
                     {"\n"}
                     Looking for info in
@@ -175,26 +175,26 @@ export default ({ ...props }: any) => {
               </View>
             </View>
             <View
-              css="boxS pl:10 pr:10 minHeight:30"
+              css="box pal:10 par:10 mih:30"
               ifTrue={
                 state.novel.genre?.has() ||
                 state.novel.tags?.has()
               }
               invertColor={true}>
-              <View css="h:29 clearwidth">
+              <View css="he:29 clearwidth">
                 <ScrollView
                   horizontal={true}
                   contentContainerStyle={{
                     height: 28
                   }}>
-                  <View css="row w:100%">
+                  <View css="row wi:100%">
                     {state.novel.genre?.map(
                       (x, i) => (
                         <TouchableOpacity
-                          css="br:10 flex jc:center mr:5 bco:#c5bebe bw:0.5 pl:8 pr:8"
+                          css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8"
                           key={i}>
                           <Text
-                            css="desc bold fs:15"
+                            css="desc bold fos:15"
                             invertColor={true}>
                             #{x}
                           </Text>
@@ -208,22 +208,22 @@ export default ({ ...props }: any) => {
                 ifTrue={
                   state.novel.tags?.has() ?? false
                 }
-                css="h:29 mt:6 clearwidth">
+                css="he:29 mat:6 clearwidth">
                 <ScrollView
                   horizontal={true}
                   contentContainerStyle={{
                     height: 28
                   }}>
-                  <View css="row w:100%">
+                  <View css="row wi:100%">
                     {state.novel.tags?.map(
                       (x, i) => (
                         <TouchableOpacity
                           invertColor={false}
                           activeOpacity={1}
-                          css="br:10 flex jc:center mr:5 bco:#c5bebe bw:0.5 pl:8 pr:8"
+                          css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8"
                           key={i}>
                           <Text
-                            css="desc bold fs:15"
+                            css="desc bold fos:15"
                             invertColor={false}>
                             #{x}
                           </Text>
@@ -235,21 +235,21 @@ export default ({ ...props }: any) => {
               </View>
             </View>
             <View
-              css="boxS pl:10 pr:10"
+              css="box pal:10 par:10"
               invertColor={true}>
               <FText
-                css="bold lh:20 pb:10"
+                css="bold lih:20 pab:10"
                 invertColor={true}
                 text={state.novel.decription?.cleanHtml()}
               />
-              <View css="btw:1 row pt:5 pb:5 btc:gray clearwidth jc:space-between ai:center">
+              <View css="btw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center">
                 <Text
                   ifTrue={
                     state.novel.chapters?.has() ??
                     false
                   }
                   invertColor={true}
-                  css="header bold fs:15">
+                  css="header bold fos:15">
                   {state.novel.chapters?.length +
                     " Chapter "}
                   {(state.novel.status || "").has(
@@ -269,20 +269,20 @@ export default ({ ...props }: any) => {
                   }
                   title="Chapters"
                   height="80%">
-                  <View css="clearWidth minHeight:100% h:300 jc:flex-start">
-                    <View css="jc:flex-start clearboth ai:center h:30 mb:10 mt:10">
+                  <View css="clearboth mah:100% juc:flex-start">
+                    <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
                       <TextInput
                         onChangeText={x =>
                           (state.cText = x)
                         }
                         invertColor={false}
-                        css="w:90% pa:5 br:2"
+                        css="wi:90% pa:5 bor:2"
                         defaultValue={state.cText}
                         placeholder="Search for chapter"
                       />
                     </View>
                     <ItemList
-                      css="h:80%"
+                      css="flex"
                       items={state.novel.chapters?.filter(
                         x =>
                           x.name.has(state.cText)
@@ -294,7 +294,7 @@ export default ({ ...props }: any) => {
                           {item.name}
                         </Text>
                       )}
-                      itemCss="pa:5 clearwidth bbw:1 bco:gray"
+                      itemCss="pa:5 clearwidth bobw:1 boc:gray"
                       vMode={true}
                     />
                   </View>
@@ -307,23 +307,23 @@ export default ({ ...props }: any) => {
                 state.novel.novelUpdateRecommendations?.has() ??
                 false
               }
-              css="boxS h:265 pl:10 pr:10 jc:flex-start">
+              css="box he:265 pal:10 par:10 juc:flex-start">
               <Text
                 invertColor={true}
-                css="header bold pb:5">
+                css="header bold pab:5">
                 Recommendations
               </Text>
               <ItemList
-                itemCss="bco:#ccc bw:1 h:220 w:170 pa:4 ml:5 br:5 overflow"
+                itemCss="boc:#ccc bow:1 he:220 wi:170 pa:4 mal:5 bor:5 overflow"
                 container={({ item }) => (
-                  <View css="clearBoth br:5 overflow">
+                  <View css="clearboth bor:5 overflow">
                     <Image
                       url={item.image}
-                      css="resizeMode:contain br:5 clearwidth w:100% h:100%"
+                      css="resizeMode:contain bor:5 clearwidth wi:100% he:100%"
                     />
-                    <View css="clearwidth bottom h:30% overflow">
+                    <View css="clearwidth bottom he:30% overflow">
                       <View css="blur bottom clearboth" />
-                      <Text css="clearwidth mh:40% overflow header bold-#fff pa:4 ta:center">
+                      <Text css="clearwidth mih:40% overflow header bold co:#fff pa:4 tea:center">
                         {item.name}
                       </Text>
                     </View>
@@ -341,10 +341,10 @@ export default ({ ...props }: any) => {
         </ScrollView>
       </View>
       <View
-        css="boxS row bottom minHeight:50 jc:center ai:center clearwidth"
+        css="box row bottom mih:50 juc:center ali:center clearwidth"
         ifTrue={state.novel.url?.has() ?? false}>
         <TouchableOpacity
-          css="button mr:5"
+          css="button mar:5"
           invertColor={true}>
           <View css="blur" />
           <Icon
@@ -356,11 +356,11 @@ export default ({ ...props }: any) => {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          css="mr:5 button pa:5 w:65%"
+          css="mar:5 button pa:5 wi:65%"
           invertColor={true}>
           <Text
             invertColor={true}
-            css="bold fs:30">
+            css="bold fos:30">
             READ
           </Text>
         </TouchableOpacity>

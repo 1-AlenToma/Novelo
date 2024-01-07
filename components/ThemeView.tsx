@@ -3,9 +3,12 @@ import { useState } from "react";
 import Constants from "expo-constants";
 import {
   removeProps,
-  parseThemeStyle
+  parseThemeStyle,
+  StyledView
 } from "../Methods";
 import g from "../GlobalContext";
+
+const VS = StyledView(View, "View");
 
 export default ({
   style,
@@ -17,10 +20,8 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-   if( ifTrue === false)
-     return null;
-  if(rootView)
-    g.hook("isFullScreen")
+  if (ifTrue === false) return null;
+  if (rootView) g.hook("isFullScreen");
   const [state, setState] = useState(
     ready !== true
   );
@@ -38,7 +39,7 @@ export default ({
   }
 
   return (
-    <View
+    <VS
       {...props}
       style={st}
       onLayout={e => {
@@ -52,6 +53,6 @@ export default ({
         props?.onLayout?.(e);
       }}>
       {state ? children : null}
-    </View>
+    </VS>
   );
 };

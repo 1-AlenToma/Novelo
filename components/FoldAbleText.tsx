@@ -67,7 +67,7 @@ export default ({
           <>
             {txt}
             <Text
-              style={"c:#bf6416".css()}
+              style={"co:#bf6416".css()}
               onPress={() => setFState(true)}>
               {"More".sSpace(2)}
             </Text>

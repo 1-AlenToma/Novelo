@@ -51,7 +51,7 @@ const AppContainer = ({
   return (
     <ElementsContext.Provider value={data}>
       <>
-        <View css="zIndex:1 flex">
+        <View css="zi:1 flex">
           {isReady ? children : null}
         </View>
         <AppChildContainer />
@@ -82,8 +82,9 @@ const AppChildContainer = () => {
     <>
       {rItem.map((x, i) => (
         <View
+          style={{ zIndex: 9999 + i }}
           ifTrue={x.x.props.visible}
-          css="zIndex:99999 bc:transparent bottom clearboth flex"
+          css="bac:transparent bottom clearboth"
           key={x.k}>
           {x.x.elem}
         </View>

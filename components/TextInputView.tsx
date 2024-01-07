@@ -1,9 +1,11 @@
 import { TextInput } from "react-native";
+
 import {
   removeProps,
-  parseThemeStyle
+  parseThemeStyle,
+  StyledView
 } from "../Methods";
-
+const Input = StyledView(TextInput, "TextInput");
 export default ({
   style,
   invertColor,
@@ -17,11 +19,10 @@ export default ({
   );
 
   return (
-    <TextInput
-    disableFullscreenUI={true}
+    <Input
+      disableFullscreenUI={true}
       inputMode="search"
       {...props}
-      
       style={st}
     />
   );
