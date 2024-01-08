@@ -13,7 +13,9 @@ const getKey = (
 ) => {
   if (option.argsOverride)
     args = option.argsOverride(...args);
-  let key = JSON.stringify(args) + propertyName;
+  let key = JSON.stringify(args);
+  if(!option.argsOverride)
+    key+= propertyName;
   key =
     "memoizing." +
     key

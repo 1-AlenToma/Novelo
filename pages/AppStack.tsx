@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AppMenu from "./AppMenu";
 import GroupDetail from "./groups/GroupDetail";
 import NovelItemDetail from "./groups/NovelItemDetail";
+import Search from "./groups/Search";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,10 @@ export default () => {
       <Stack.Screen
         name="NovelItemDetail"
         component={NovelItemDetail}
+      />
+        <Stack.Screen
+        name="Search"
+        component={Search}
       />
     </Stack.Navigator>
   );

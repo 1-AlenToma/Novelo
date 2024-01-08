@@ -20,7 +20,6 @@ export type IStorage = {
   has: (file: string) => Promise<boolean>;
   delete: (...files: string[]) => Promise<void>;
   getFiles: (
-    files?: string[]
   ) => Promise<readonly string[]>;
 };
 

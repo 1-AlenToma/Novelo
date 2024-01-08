@@ -6,6 +6,7 @@ import {
 } from "react";
 import gdata from "../GlobalContext";
 import { sleep } from "../Methods";
+import View from "./ThemeView";
 
 export default ({
   children,
@@ -20,6 +21,7 @@ export default ({
   const [animWidth, setAnimWidth] = useState();
   const [animHeight, setAnimHeight] = useState();
   const [isTrue, setIsTrue] = useState(ifTrue);
+  const [state, setState] = useState(false);
   const [isAnimate, setIsAnimate] =
     useState(false);
   let animated = useRef(false);
@@ -29,11 +31,11 @@ export default ({
     show: boolean,
     force: boolean
   ) => {
-    
     while (isAnimate) await sleep(50);
     if (show === animated.current && !force)
       return;
     animated.current = show;
+    setState(show);
     init.current = true;
 
     if (
@@ -67,6 +69,7 @@ export default ({
 
   refItem.show = () => toggle(true);
   refItem.hide = () => toggle(false);
+    refItem.state = state;
   gdata.subscribe(() => {
     setAnimWidth(null);
     setAnimHeight(null);
@@ -96,36 +99,42 @@ export default ({
   let render =
     isTrue == undefined || isTrue || isAnimate;
   return (
-    <Animated.View
-      style={[
-        { backgroundColor: "transparent" },
-        ...st,
-        {
-          ...(typeof refItem.height ===
-            "number" &&
-          animHeight &&
-          render
-            ? { height: animHeight }
-            : {}),
-          ...(typeof refItem.width === "number" &&
-          animWidth &&
-          render
-            ? { width: animWidth }
-            : {})
-        }
-      ]}
-      onLayout={event => {
-        const { x, y, width, height } =
-          event.nativeEvent.layout;
-        if (!animHeight || !init.current) {
-          setAnimWidth(new Animated.Value(width));
-          setAnimHeight(
-            new Animated.Value(height)
-          );
-          setSize(event.nativeEvent.layout);
-        }
-      }}>
-      {render ? children : null}
-    </Animated.View>
+    <>
+      <Animated.View
+        style={[
+          { backgroundColor: "transparent" },
+          ...st,
+          {
+            zIndex: 101,
+            ...(typeof refItem.height ===
+              "number" &&
+            animHeight &&
+            render
+              ? { height: animHeight }
+              : {}),
+            ...(typeof refItem.width ===
+              "number" &&
+            animWidth &&
+            render
+              ? { width: animWidth }
+              : {})
+          }
+        ]}
+        onLayout={event => {
+          const { x, y, width, height } =
+            event.nativeEvent.layout;
+          if (!animHeight || !init.current) {
+            setAnimWidth(
+              new Animated.Value(width)
+            );
+            setAnimHeight(
+              new Animated.Value(height)
+            );
+            setSize(event.nativeEvent.layout);
+          }
+        }}>
+        {render ? children : null}
+      </Animated.View>
+    </>
   );
 };

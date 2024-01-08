@@ -25,6 +25,7 @@ export default ({
   return (
     <Txt
       {...props}
+      css={css}
       style={removeProps(st, "backgroundColor")}>
       {children}
     </Txt>

@@ -1,4 +1,5 @@
 import { TextInput } from "react-native";
+import * as React from "react";
 
 import {
   removeProps,
@@ -6,24 +7,25 @@ import {
   StyledView
 } from "../Methods";
 const Input = StyledView(TextInput, "TextInput");
-export default ({
-  style,
-  invertColor,
-  css,
-  ...props
-}: any) => {
-  let st = parseThemeStyle(
-    style,
-    css,
-    invertColor
-  );
-
-  return (
-    <Input
-      disableFullscreenUI={true}
-      inputMode="search"
-      {...props}
-      style={st}
-    />
-  );
-};
+export default React.forwardRef(
+  (
+    { style, invertColor, css, ...props },
+    ref
+  ) => {
+    let st = parseThemeStyle(
+      style,
+      css,
+      invertColor
+    );
+    
+    return (
+      <Input
+        ref={ref}
+        disableFullscreenUI={true}
+        inputMode="search"
+        {...props}
+        style={st}
+      />
+    );
+  }
+);

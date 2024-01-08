@@ -28,7 +28,7 @@ export default ({
   const [size, setSize] = useState();
   let st = parseThemeStyle(
     style,
-    css,
+    undefined,
     invertColor
   );
   st.push(size);
@@ -42,6 +42,7 @@ export default ({
     <VS
       {...props}
       style={st}
+      css={css}
       onLayout={e => {
         if (
           ready &&

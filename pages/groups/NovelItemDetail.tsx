@@ -242,7 +242,7 @@ export default ({ ...props }: any) => {
                 invertColor={true}
                 text={state.novel.decription?.cleanHtml()}
               />
-              <View css="btw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center">
+              <View css="botw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center">
                 <Text
                   ifTrue={
                     state.novel.chapters?.has() ??

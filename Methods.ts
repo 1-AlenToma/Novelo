@@ -16,7 +16,13 @@ const public_m = (...Items: any[]) => {
         ? Item.tb().props
         : Object.keys(new Item())
     ).map(x => x.columnName || x);
-    Item["n"] = () => new Item();
+    Item["n"] = (...args: any[]) =>
+      new Item(...args);
+    Item.prototype.clone = function () {
+      let item = Item.n();
+      for (let k in this) item[k] = this[k];
+      return item;
+    };
     keys.forEach(x => {
       let n = x[0].toUpperCase() + x.substring(1);
       if (!Item.prototype[n])
@@ -55,8 +61,7 @@ const parseThemeStyle = (
   };
   if (invertColor === undefined)
     delete themeSettings.backgroundColor;
-  
-  
+
   let st =
     style && Array.isArray(style)
       ? [...style]

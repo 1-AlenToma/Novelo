@@ -1,6 +1,7 @@
 import HttpHandler from "./HttpHandler";
 import Html from "./Html";
 import useState from "./StateManager";
+import FileHandler from "./FileHandler"
 import {
   LightInfo,
   ChapterInfo,
@@ -22,5 +23,6 @@ export {
   SearchDetail,
   Parser,
   useState,
-  NovelInfo
+  NovelInfo,
+  FileHandler
 };

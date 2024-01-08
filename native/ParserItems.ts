@@ -30,11 +30,15 @@ class Value {
   text: string = "";
   value: any = "";
 }
-
+type SearchCombination =
+  | "Genre"
+  | "Status"
+  | "Group";
 class ParserDetail {
   genre: Value[] = [];
   status: Value[] = [];
   group: Value[] = [];
+  searchCombination: SearchCombination[] = [];
   searchEnabled: boolean = true;
 }
 
@@ -44,6 +48,9 @@ class SearchDetail {
   genre: Value[] = [];
   status: Value[] = [];
   group: Value[] = [];
+  constructor(txt?: string) {
+    this.text = txt ?? "";
+  }
 }
 
 abstract class NovelInfo {

@@ -1,30 +1,34 @@
 import { IStorage, DataCache } from "../Types";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FileHandler } from "../native";
 
 class Storage implements IStorage {
+  handler: FileHandler;
+  constructor() {
+    this.handler = new FileHandler("Memo");
+  }
   async set(file: string, value: DataCache) {
-    await AsyncStorage.setItem(
+    await this.handler.write(
       file,
       JSON.stringify(value)
     );
   }
 
   async get(file: string) {
-    let data = await AsyncStorage.getItem(file);
+    let data = await this.handler.read(file);
     return data ? JSON.parse(data) : null;
   }
 
   async has(file: string) {
-    let data = await AsyncStorage.getItem(file);
-    return (data ?? "").has();
+    return this.handler.exists(file);
   }
 
   async delete(...files: string[]) {
-    await AsyncStorage.multiRemove(files);
+    for (let f of files)
+      await this.handler.delete(f);
   }
 
-  async getFiles(files?: string[]) {
-    return AsyncStorage.getAllKeys();
+  async getFiles() {
+    return await this.handler.allFiles();
   }
 }
 

@@ -55,91 +55,95 @@ class CSS {
   }
 }
 let CSSContext = React.createContext({});
-let StyledWrapper = ({
-  View,
-  styleFile,
-  name,
-  style,
-  css,
-  ...props
-}: any) => {
-  let ec = React.useContext(CSSContext);
-  let [_, setUpdater] = React.useState(0);
-  let parsedData = React.useRef({
-    style: undefined,
-    pk: undefined
-  }).current;
-  const validKeyStyle = View.displayName
-    ? allowedKeys[View.displayName]
-    : undefined;
-
-  React.useEffect(() => {
-    parsedData.style = undefined;
-    setUpdater(x => (x > 1000 ? 1 : x) + 1);
-  }, [css]);
-
-  if (
-    styleFile &&
-    parsedData.style == undefined
-  ) {
-    let sArray = [];
-    let pk = "";
-    let cpyCss = new CSS(css);
-    pk = ec.parentKey ? ec.parentKey() : "";
-    if (pk.length > 0 && !pk.endsWith("."))
-      pk += ".";
-    pk += name;
-    cpyCss.add(name, pk);
-    if (ec.parentClassNames) {
-      cpyCss.add(
-        ec.parentClassNames(
-          name,
-          cpyCss.toString()
-        )
-      );
-      css = cpyCss.toString();
-    }
-    let tCss = cssTranslator(
-      cpyCss.toString(),
+let StyledWrapper = React.forwardRef(
+  (
+    {
+      View,
       styleFile,
-      validKeyStyle
-    );
-    if (tCss) sArray.push(tCss);
-    parsedData.style = sArray;
-    parsedData.pk = pk;
-  }
+      name,
+      style,
+      css,
+      ...props
+    },
+    ref
+  ) => {
+    let ec = React.useContext(CSSContext);
+    let [_, setUpdater] = React.useState(0);
+    let parsedData = React.useRef({
+      style: undefined,
+      pk: undefined
+    }).current;
+    const validKeyStyle = View.displayName
+      ? allowedKeys[View.displayName]
+      : undefined;
 
-  let cValue = {
-    parentKey: () => parsedData.pk,
-    parentClassNames: (
-      name: string,
-      pk: string
-    ) => {
-      let ss = new CSS(css).add(pk);
-      if (!css) return "";
-      let c = new CSS();
-      for (let s of ss.classes) {
-        let m = ` ${s}.${name}`;
-        c.add(m);
+    React.useEffect(() => {
+      parsedData.style = undefined;
+      setUpdater(x => (x > 1000 ? 1 : x) + 1);
+    }, [css]);
+
+    if (
+      styleFile &&
+      parsedData.style == undefined
+    ) {
+      let sArray = [];
+      let pk = "";
+      let cpyCss = new CSS(css);
+      pk = ec.parentKey ? ec.parentKey() : "";
+      if (pk.length > 0 && !pk.endsWith("."))
+        pk += ".";
+      pk += name;
+      cpyCss.add(name, pk);
+      if (ec.parentClassNames) {
+        cpyCss.add(
+          ec.parentClassNames(
+            name,
+            cpyCss.toString()
+          )
+        );
+        css = cpyCss.toString();
       }
-      return c.toString();
+      let tCss = cssTranslator(
+        cpyCss.toString(),
+        styleFile,
+        validKeyStyle
+      );
+      if (tCss) sArray.push(tCss);
+      parsedData.style = sArray;
+      parsedData.pk = pk;
     }
-  };
 
-  return (
-    <CSSContext.Provider value={cValue}>
-      <View
-        {...props}
-        name={parsedData.pk}
-        style={[
-                    ...toArray(parsedData.style),
-          ...toArray(style),
-
-        ]}
-      />
-    </CSSContext.Provider>
-  );
-};
+    let cValue = {
+      parentKey: () => parsedData.pk,
+      parentClassNames: (
+        name: string,
+        pk: string
+      ) => {
+        let ss = new CSS(css).add(pk);
+        if (!css) return "";
+        let c = new CSS();
+        for (let s of ss.classes) {
+          let m = ` ${s}.${name}`;
+          c.add(m);
+        }
+        return c.toString();
+      }
+    };
+    return (
+      <CSSContext.Provider value={cValue}>
+        <View
+          {...props}
+          ref={ref}
+          name={parsedData.pk}
+          style={[
+            ...toArray(parsedData.style),
+            ...toArray(style)
+          ]}
+        />
+      </CSSContext.Provider>
+    );
+  }
+);
 
 export type Styled = {
   css?: string;
@@ -150,7 +154,7 @@ const Styleable = function <T>(
   identifier: string,
   styleFile: any
 ) {
-  let fn = function ({ ...props }: any) {
+  let fn = React.forwardRef((props, ref) => {
     let pr = {
       View,
       name: identifier,
@@ -160,9 +164,10 @@ const Styleable = function <T>(
       <StyledWrapper
         {...props}
         {...pr}
+        ref={ref}
       />
     );
-  };
+  });
   return fn as any as T & T<Styled>;
 };
 

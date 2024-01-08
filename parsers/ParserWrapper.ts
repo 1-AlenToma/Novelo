@@ -26,6 +26,9 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: 5,
     isDebug: false,
+    argsOverride: (args: any[]) => {
+      return args
+    },
     keyModifier: (target, key) =>
       `${key}${target.name}`,
     validator: (data: any) =>
