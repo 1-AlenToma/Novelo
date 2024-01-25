@@ -1,2 +1,2 @@
-type TableNames = "Books" | "Chapters" | "Sessions";
+type TableNames = "Books" | "Chapters" | "Sessions" | "AppSettings"
 export default TableNames

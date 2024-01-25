@@ -10,6 +10,7 @@ const StyledView = function <T>(
   return Styleable(View, name, Style);
 };
 const public_m = (...Items: any[]) => {
+  try{
   Items.forEach(Item => {
     let keys = (
       Item.tb
@@ -27,12 +28,15 @@ const public_m = (...Items: any[]) => {
       let n = x[0].toUpperCase() + x.substring(1);
       if (!Item.prototype[n])
         Item.prototype[n] = function (v: any) {
-          if (!this) throw "this is null" + Item;
+          if (!this) throw "this is null " + Item;
           this[x] = v;
           return this;
         };
     });
   });
+  }catch(e){
+    console.error(e,Items);
+  }
 };
 
 const newId = () => {
@@ -89,6 +93,14 @@ const removeProps = (
   return item;
 };
 
+const joinKeys = (a: any, b: any) => {
+  let keys = Object.keys(a);
+  for (let k in b) {
+    if (keys.find(f => f === k) && (k!="id" || b[k]!= undefined)) a[k] = b[k];
+  }
+  return a;
+};
+
 const days_between = function (date: Date) {
   // The number of milliseconds in one day
   const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
@@ -103,6 +115,47 @@ const days_between = function (date: Date) {
   return diffDays;
 };
 
+const arrayBuffer = (arr:any[])=>{
+  let str = "";
+  for(let a of arr){
+    str += String.fromCharCode(a);
+  }
+  return str;
+}
+
+function invertColor(hexcolor) {
+    try {
+      // If a leading # is provided, remove it
+      if (hexcolor.slice(0, 1) === "#") {
+        hexcolor = hexcolor.slice(1);
+      }
+
+      // If a three-character hexcode, make six-character
+      if (hexcolor.length === 3) {
+        hexcolor = hexcolor
+          .split("")
+          .map(function (hex) {
+            return hex + hex;
+          })
+          .join("");
+      }
+
+      // Convert to RGB value
+      let r = parseInt(hexcolor.substr(0, 2), 16);
+      let g = parseInt(hexcolor.substr(2, 2), 16);
+      let b = parseInt(hexcolor.substr(4, 2), 16);
+
+      // Get YIQ ratio
+      let yiq =
+        (r * 299 + g * 587 + b * 114) / 1000;
+
+      // Check contrast
+      return yiq >= 128 ? "black" : "white";
+    } catch (e) {
+      return "black";
+    }
+  }
+
 export {
   public_m,
   sleep,
@@ -111,5 +164,8 @@ export {
   proc,
   removeProps,
   parseThemeStyle,
-  StyledView
+  StyledView,
+  joinKeys,
+  arrayBuffer,
+  invertColor
 };

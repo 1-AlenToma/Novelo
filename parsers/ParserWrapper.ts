@@ -27,7 +27,7 @@ export default class ParserWrapper extends Parser {
     daysToSave: 5,
     isDebug: false,
     argsOverride: (args: any[]) => {
-      return args
+      return args;
     },
     keyModifier: (target, key) =>
       `${key}${target.name}`,
@@ -94,6 +94,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 20,
+    isDebug: false,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
     validator: (data: any) =>

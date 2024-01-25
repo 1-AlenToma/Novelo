@@ -84,7 +84,7 @@ export default function Memorize(
               let data2 = await currentFn.bind(
                 this
               )(...args);
-              if (!option.isDebug) {
+              if (!option.isDebug || 1==1) {
                 if (data2) {
                   if (
                     !option.validator ||

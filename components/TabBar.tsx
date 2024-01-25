@@ -219,18 +219,21 @@ const TabBar = ({
             css="flex"
             key={i}>
             {x.props.head}
-            <ScrollView
-              scrollEnabled={!disableScrolling}
-              style={{
-                width: size?.width
-              }}
-              contentContainerStyle={{
-                flexGrow: 1,
-                padding: 5,
-                width: size?.width
-              }}>
-              {rItems[i]?.child ?? null}
-            </ScrollView>
+            {!disableScrolling ? (
+              <ScrollView
+                style={{
+                  width: size?.width
+                }}
+                contentContainerStyle={{
+                  flexGrow: 1,
+                  padding: 5,
+                  width: size?.width
+                }}>
+                {rItems[i]?.child ?? null}
+              </ScrollView>
+            ) : (
+              rItems[i]?.child
+            )}
           </View>
         ))}
       </Animated.View>

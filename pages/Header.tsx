@@ -22,6 +22,7 @@ export default ({
   titleCss,
   buttons,
   value,
+  ifTrue,
   ...props
 }: {
   title?: boolean;
@@ -31,6 +32,7 @@ export default ({
   onBack?: () => boolean;
   titleCss?: string;
   buttons?: Button[];
+  ifTrue?: any;
 }) => {
   const [params, navOption] =
     useNavigation(props);
@@ -77,11 +79,13 @@ export default ({
       {state.inputAnimator.state &&
       gdata.KeyboardState ? (
         <TouchableOpacity
+          ifTrue={ifTrue}
           onPress={() => input.current.blur()}
           css="absolute to:0 le:0 clearboth zi:100 blur"
         />
       ) : null}
       <View
+        ifTrue={ifTrue}
         css="clearwidth zi:101 he:40 row juc:center ali:center di:flex"
         style={[css?.css()]}
         invertColor={true}>
@@ -152,6 +156,7 @@ export default ({
             <TouchableOpacity
               ifTrue={x.ifTrue}
               onPress={x.press}
+              css="mal:10"
               key={i}>
               {typeof x.text == "function"
                 ? x.text()

@@ -8,27 +8,33 @@ import TableNames from "./TableNames";
 import { public_m } from "../Methods";
 import Book from "./Book";
 
-class Chapter extends IBaseModule < TableNames > {
-  id ? : number;
+class Chapter extends IBaseModule<TableNames> {
+  id?: number;
   url: string = "";
   name: string = "";
   scrollProgress: number = 0;
   audioProgress: number = 0;
   isFinished: boolean = false;
-  content: string;
-  parent_Id ? : number;
+  content: string = "";
+  parent_Id?: number;
   constructor() {
     super("Chapters");
   }
 
   static tb() {
-    return TableBuilder < Parent, TableNames > ("Chapters")
+    return TableBuilder<Chapter, TableNames>(
+      "Chapters"
+    )
       .column("id")
       .primary.autoIncrement.number.column("name")
       .column("url")
       .encrypt("novelo.enc")
-      .column("parentId")
-      .number.nullable.constrain < Book > ("parent_Id", "Books", "id")
+      .column("parent_Id")
+      .number.nullable.constrain<Book>(
+        "parent_Id",
+        "Books",
+        "id"
+      )
       .column("content")
       .nullable.encrypt("novelo.enc")
       .column("isFinished")

@@ -38,7 +38,7 @@ class ParserDetail {
   genre: Value[] = [];
   status: Value[] = [];
   group: Value[] = [];
-  searchCombination: SearchCombination[] = [];
+  searchCombination: SearchCombination[]=[];
   searchEnabled: boolean = true;
 }
 

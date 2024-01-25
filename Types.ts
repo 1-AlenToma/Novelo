@@ -4,7 +4,7 @@ export type DataCache = {
 };
 
 export type Button = {
-  Text: Element | Function;
+  text: Element | Function;
   press: Function;
   ifTrue: boolean;
 };

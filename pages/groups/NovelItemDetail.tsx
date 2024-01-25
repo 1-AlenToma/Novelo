@@ -357,7 +357,13 @@ export default ({ ...props }: any) => {
         </TouchableOpacity>
         <TouchableOpacity
           css="mar:5 button pa:5 wi:65%"
-          invertColor={true}>
+          invertColor={true}
+          onPress={()=>{
+            options.nav("ReadChapter").add({
+              url: state.novel.url,
+              parserName:state.novel.parserName
+            }).push();
+          }}>
           <Text
             invertColor={true}
             css="bold fos:30">

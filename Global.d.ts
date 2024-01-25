@@ -1,5 +1,6 @@
 import CStyle from "./components/CStyle";
 import { cssTranslator } from "./styles";
+import IDOMParser from "advanced-html-parser";
 const cheerio = require("react-native-cheerio");
 declare global {
   interface Array<T> {
@@ -7,8 +8,14 @@ declare global {
       fn: (item: T, index: number) => Promise<T[]>
     );
     distinct: (key: keyof T, itemsB: T[]) => T[];
-    firstOrDefault: (key?: keyof T) => T[];
-    has: () => boolean;
+    firstOrDefault: (
+      key?: keyof T
+    ) => T | undefined;
+    lastOrDefault: (
+      key?: keyof T
+    ) => T | undefined;
+    clear: () => T[];
+    has: (item?: any) => boolean;
     niceJson: (
       ...keyToRemove: (keyof T)[]
     ) => string;
@@ -24,6 +31,7 @@ declare global {
     sSpace(total?: number): string;
     eSpace(total?: number): string;
     cleanHtml(): string;
+    cleanText(): string;
     splitSearch(searchFor: string): boolean;
     imageFetchBuilder(
       selector: string,
@@ -49,10 +57,29 @@ Number.prototype.sureValue = function (
   return a;
 };
 
-Array.prototype.has = function () {
+Array.prototype.lastOrDefault = function (
+  key: string
+) {
+  let item =
+    this.length > 0
+      ? this[this.length - 1]
+      : undefined;
+  return item ? item[key] : undefined;
+};
+
+Array.prototype.clear = function () {
+  while (this.length > 0) this.shift();
+
+  return this;
+};
+
+Array.prototype.has = function (item?: any) {
   return (
     this.filter(
-      x => x !== undefined && x !== null
+      x =>
+        x !== undefined &&
+        x !== null &&
+        (item === undefined || x == item)
     ).length > 0
   );
 };
@@ -141,6 +168,14 @@ String.prototype.cleanHtml = function () {
   let str = new String(this).toString();
   let html = cheerio.load(str).text();
   return html;
+};
+
+String.prototype.cleanText = function () {
+  let str = new String(this).toString();
+  const doc = IDOMParser.parse(`<div>${str}</div>`);
+  return doc.documentElement
+    .text()
+    .replace(/\<\/( )?br>|\<br( )?(\/)?>/gim, "");
 };
 
 String.prototype.sSpace = function (
@@ -245,8 +280,9 @@ String.prototype.join = function (
   ...relative: String[]
 ) {
   let url = new String(this).toString();
+
   relative
-    .filter(x => x && !x.empty())
+    .filter(x => x && x.has())
     .forEach(x => {
       if (
         !(

@@ -16,27 +16,38 @@ import {
   AppContainer,
   ActionSheet,
   TouchableOpacity,
-  Text
+  Text,
+  Modal
 } from "./components";
 import GlobalData from "./GlobalContext";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 
-LogBox.ignoreLogs([
-  /require cycles?/gim,
-  /Require cycle/gim
-]);
+
 export default function App() {
   GlobalData.hook(
     "size",
     "theme.settings",
     "isFullScreen"
   );
+
+  GlobalData.subscribe((item, props) => {
+    NavigationBar.setVisibilityAsync(
+      GlobalData.isFullScreen
+        ? "hidden"
+        : "visible"
+    );
+    setStatusBarHidden(GlobalData.isFullScreen);
+    if (!GlobalData.isFullScreen)
+      NavigationBar.setBehaviorAsync(
+        "overlay-swipe"
+      );
+  }, "isFullScreen");
   const visibility =
     NavigationBar.useVisibility();
   const loader = useLoader(true);
-  
+
   const setThemeStyle = () => {
     const colorScheme =
       GlobalData.theme.themeMode;
@@ -69,24 +80,13 @@ export default function App() {
     "theme.themeMode"
   );
   useEffect(() => {
-    GlobalData.fullscreen = v => {
-      GlobalData.isFullScreen = v;
-      NavigationBar.setVisibilityAsync(
-        v ? "hidden" : "visible"
-      );
-      setStatusBarHidden(v);
-      if (!v)
-        NavigationBar.setBehaviorAsync(
-          "overlay-swipe"
-        );
-    };
     setThemeStyle();
     let itemToRemove = [];
     (async () => {
       try {
         loader.show();
         itemToRemove = await GlobalData.init();
-        GlobalData.fullscreen(false);
+        GlobalData.isFullScreen = false;
       } catch (e) {
         console.error(e);
       } finally {
@@ -101,20 +101,18 @@ export default function App() {
 
   if (loader.loading) return loader.elem;
   return (
-    <>
-      <AppContainer>
-        <NavigationContainer>
-          <AppStack />
-        </NavigationContainer>
-        <StatusBar
-          style={
-            GlobalData.theme.themeMode == "light"
-              ? "dark"
-              : "light"
-          }
-        />
-      </AppContainer>
-    </>
+    <AppContainer>
+      <NavigationContainer>
+        <AppStack />
+      </NavigationContainer>
+      <StatusBar
+        style={
+          GlobalData.theme.themeMode == "light"
+            ? "dark"
+            : "light"
+        }
+      />
+    </AppContainer>
   );
 }
 

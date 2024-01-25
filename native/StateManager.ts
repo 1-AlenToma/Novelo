@@ -15,6 +15,7 @@ class StateManager<T> {
     let keys = Object.keys(d);
     for (let key of keys) {
       Object.defineProperty(this, key, {
+        enumerable: true,
         get: function () {
           return d[key];
         },

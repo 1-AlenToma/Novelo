@@ -19,7 +19,10 @@ import {
   ScrollView,
   Linking
 } from "react-native";
-import { useNavigation } from "../../hooks";
+import {
+  useNavigation,
+  useUpdate
+} from "../../hooks";
 import {
   useState,
   SearchDetail
@@ -27,7 +30,65 @@ import {
 import g from "../../GlobalContext";
 import Header from "../../pages/Header";
 
+const ActionItem = ({
+  keyName,
+  selection,
+  state
+}) => {
+  let items = state.parser.settings[keyName];
+
+  return (
+    <View
+      ifTrue={items?.has() ?? false}
+      invertColor={true}
+      css="mih:50 pa:10 pat:15">
+      <ActionSheetButton
+        height="30%"
+        title="Status"
+        btn={
+          <Text
+            invertColor={true}
+            css={`header co:#bf6416 ${
+              state.text[keyName].has()
+                ? "selected"
+                : ""
+            }`}>
+            Search by {keyName}
+          </Text>
+        }>
+        <ScrollView horizontal={false}>
+          <View css="wi:100%">
+            {items?.map((x, i) => (
+              <TouchableOpacity
+                css={`bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8`}
+                key={i}
+                onPress={() => {
+                  let item = {};
+                  item[keyName] = x;
+                  selection(item);
+                }}>
+                <Text
+                  css={`desc bold fos:15 ${
+                    state.text[keyName].find(
+                      f => x.text == f.text
+                    )
+                      ? "selected"
+                      : ""
+                  }`}
+                  invertColor={true}>
+                  {x.text}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </ActionSheetButton>
+    </View>
+  );
+};
+
 export default ({ ...props }: any) => {
+  const update = useUpdate();
   const [
     { searchTxt, parserName },
     option,
@@ -45,36 +106,70 @@ export default ({ ...props }: any) => {
       : g.parser.current()
   });
 
-  const fetchData = async () => {
+  const fetchData = async (page?: number) => {
     loader.show();
     let parser = state.parser;
     if (parser) {
       let txt = state.text.clone();
-      txt.page++;
+      if (page === undefined) txt.page++;
+      else txt.page = page;
       let currentItems =
         txt.page > 1 ? [...state.items] : [];
       let items = await parser.search(txt);
       if (txt.page <= 1) currentItems = items;
       else {
-        currentItems =
-          currentItems.distinct(items);
+        currentItems = currentItems.distinct(
+          "url",
+          items
+        );
       }
 
-      if (
-        txt.page == 1 ||
-        currentItems.length != state.items.length
-      ) {
-        state.text.Page(txt.page);
+      if (txt.page == 1 || items.length > 0) {
         state.items = currentItems;
+        state.text = txt;
       }
     }
-
     loader.hide();
   };
 
   useEffect(() => {
     if (state.text.text.has()) fetchData();
   }, []);
+
+  const selection = async ({
+    status,
+    genre,
+    group
+  }: any) => {
+    let co =
+      state.parser.settings.searchCombination;
+    if (!co.has("Group"))
+      state.text.group.clear();
+    if (!co.has("Status"))
+      state.text.status.clear();
+    if (!co.has("Genre"))
+      state.text.genre.clear();
+
+    if (group && !co.has("Group")) {
+      state.text.status.clear();
+      state.text.genre.clear();
+    }
+
+    if (status && !co.has("Status")) {
+      state.text.group.clear();
+      state.text.genre.clear();
+    }
+
+    if (genre && !co.has("Genre")) {
+      state.text.group.clear();
+      state.text.status.clear();
+    }
+
+    if (status) state.text.status.push(status);
+    if (genre) state.text.genre.push(genre);
+    if (group) state.text.group.push(group);
+    fetchData(1);
+  };
 
   return (
     <View
@@ -86,122 +181,33 @@ export default ({ ...props }: any) => {
         value={state.text.text}
         inputEnabled={true}
         onInputChange={txt => {
-          state.text.Text(txt).Page(0);
+          state.text =
+            SearchDetail.n(txt).Page(0);
           if (txt === "") state.items = [];
           else fetchData();
         }}
       />
+
       <View
         invertColor={true}
         css="row juc:space-between ali:center">
-        <View
-          ifTrue={
-            state.parser.settings.status?.has() ??
-            false
-          }
-          invertColor={true}
-          css="mih:50 pa:10 pat:15">
-          <ActionSheetButton
-            height="30%"
-            title="Status"
-            btn={
-              <Text
-                invertColor={true}
-                css="header co:#bf6416">
-                Search by status
-              </Text>
-            }>
-            <ScrollView horizontal={false}>
-              <View css="wi:100%">
-                {state.parser.settings.status?.map(
-                  (x, i) => (
-                    <TouchableOpacity
-                      css="bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8"
-                      key={i}>
-                      <Text
-                        css="desc bold fos:15"
-                        invertColor={true}>
-                        {x.text}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-              </View>
-            </ScrollView>
-          </ActionSheetButton>
-        </View>
-        <View
-          ifTrue={
-            state.parser.settings.group?.has() ??
-            false
-          }
-          invertColor={true}
-          css="mih:50 pa:10 pat:15">
-          <ActionSheetButton
-            height="30%"
-            title="Section"
-            btn={
-              <Text
-                invertColor={true}
-                css="header co:#bf6416">
-                Search by section
-              </Text>
-            }>
-            <ScrollView horizontal={false}>
-              <View css="wi:100%">
-                {state.parser.settings.group?.map(
-                  (x, i) => (
-                    <TouchableOpacity
-                      css="bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8"
-                      key={i}>
-                      <Text
-                        css="desc bold fos:15"
-                        invertColor={true}>
-                        {x.text}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-              </View>
-            </ScrollView>
-          </ActionSheetButton>
-        </View>
-        <View
-          ifTrue={
-            state.parser.settings.genre?.has() ??
-            false
-          }
-          invertColor={true}
-          css="mih:50 pa:10 pat:15">
-          <ActionSheetButton
-            height="80%"
-            title="Genres"
-            btn={
-              <Text
-                invertColor={true}
-                css="header co:#bf6416">
-                Search by genre
-              </Text>
-            }>
-            <ScrollView horizontal={false}>
-              <View css="wi:100%">
-                {state.parser.settings.genre?.map(
-                  (x, i) => (
-                    <TouchableOpacity
-                      css="bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8"
-                      key={i}>
-                      <Text
-                        css="desc bold fos:15"
-                        invertColor={true}>
-                        {x.text}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-              </View>
-            </ScrollView>
-          </ActionSheetButton>
-        </View>
+        <ActionItem
+          state={state}
+          selection={item => selection(item)}
+          keyName="status"
+        />
+
+        <ActionItem
+          state={state}
+          selection={item => selection(item)}
+          keyName="group"
+        />
+
+        <ActionItem
+          state={state}
+          selection={item => selection(item)}
+          keyName="genre"
+        />
       </View>
       <ItemList
         onPress={item => {

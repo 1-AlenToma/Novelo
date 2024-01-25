@@ -42,14 +42,14 @@ export default ({
   if (!items || !items.has()) return null;
   return (
     <FlashList
+      contentContainerStyle={{
+        padding: 1
+      }}
       nestedScrollEnabled={nested}
       initialScrollIndex={scrollIndex}
       horizontal={vMode !== true}
       data={items}
-      estimatedItemSize={Math.max(
-        items.length * 2,
-        500
-      )}
+      estimatedItemSize={200}
       onEndReachedThreshold={0.5}
       onMomentumScrollBegin={() => {
         onEndReachedCalledDuringMomentum.current =

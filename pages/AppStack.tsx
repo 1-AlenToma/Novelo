@@ -1,6 +1,7 @@
 import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import ReadChapter from "./groups/ReadChapter";
 import AppMenu from "./AppMenu";
 import GroupDetail from "./groups/GroupDetail";
 import NovelItemDetail from "./groups/NovelItemDetail";
@@ -27,9 +28,13 @@ export default () => {
         name="NovelItemDetail"
         component={NovelItemDetail}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="Search"
         component={Search}
+      />
+      <Stack.Screen
+        name="ReadChapter"
+        component={ReadChapter}
       />
     </Stack.Navigator>
   );

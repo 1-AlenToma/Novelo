@@ -14,6 +14,10 @@ import TextInput from "./TextInputView";
 import FText from "./FoldAbleText";
 import ActionSheet from "./ActionSheet";
 import ActionSheetButton from "./ActionSheetButton";
+import CheckBox from "./CheckBox";
+import Web from "./Web";
+import Slider from "./SliderView";
+import Modal from "./Modal";
 
 import {
   AppContainer,
@@ -38,5 +42,9 @@ export {
   AppContainer,
   ElementsContext,
   ActionSheet,
-  ActionSheetButton
+  ActionSheetButton,
+  CheckBox,
+  Web,
+  Slider,
+  Modal
 };

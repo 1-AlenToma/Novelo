@@ -18,14 +18,16 @@ export default class ReadNovelFull extends Parser {
       "/img/favicon.ico"
     );
     this.settings.searchEnabled = true;
+    this.settings.searchCombination = [
+      "Genre",
+      "Status"
+    ];
   }
 
   async load() {
     let html = (
       await this.http.get_html(this.url)
     ).html;
-
-    //  console.log(html.$(".dropdown-menu a").html);
 
     this.settings.Genre(
       html
@@ -69,13 +71,13 @@ export default class ReadNovelFull extends Parser {
 
     if (options.genre.has())
       url = this.url.join(
-        options.genre.firstOrDefault("value"),
-        options.status.firstOrDefault("value")
+        options.genre.lastOrDefault("value"),
+        options.status.lastOrDefault("value")
       );
     else if (options.group.has())
       url = this.url.join(
-        options.group.firstOrDefault("value"),
-        options.status.firstOrDefault("value")
+        options.group.lastOrDefault("value"),
+        options.status.lastOrDefault("value")
       );
     url = url.query({
       page: (1).sureValue(options.page)
@@ -142,7 +144,8 @@ export default class ReadNovelFull extends Parser {
         body
           .find(
             '.info-meta li h3:contains("Alternative")'
-          ).parent.remove("h3").text
+          )
+          .parent.remove("h3").text
       )
       .Author(
         body.find('.info-meta a[href*="authors"]')
@@ -154,9 +157,11 @@ export default class ReadNovelFull extends Parser {
           .map(x => x.text)
       )
       .Status(
-        body.find(
-          '.info-meta li h3:contains("Status")'
-        ).parent.find("a").text
+        body
+          .find(
+            '.info-meta li h3:contains("Status")'
+          )
+          .parent.find("a").text
       )
       .Rating(
         body.find('span[itemprop="ratingValue"]')
