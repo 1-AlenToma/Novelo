@@ -1,10 +1,12 @@
 import WebView from "react-native-webview";
 import script from "../assets/readerjs";
+import Fonts from "../assets/Fonts";
 import {
   useEffect,
   useRef,
   useState
 } from "react";
+import { useTimer } from "../hooks";
 import {
   arrayBuffer,
   newId
@@ -22,10 +24,15 @@ export default ({
   menuItems,
   content,
   css,
-  style
+  style,
+  fontName,
+  bottomReched,
+  topReched
 }: any) => {
   g.hook("size");
   const jsCode = useRef();
+  const loading = useRef(true);
+  const timer = useTimer(100);
   const webView = useRef();
   const [assets] = useAssets(
     require("../assets/gfont.ttf")
@@ -46,18 +53,37 @@ export default ({
   };
 
   const loadFonts = async () => {
-    let file = await FileSystem.readAsStringAsync(
-      assets.firstOrDefault("localUri"),
-      {
-        encoding: "base64"
-      }
-    );
-    let css = `
+    try {
+      let iconsFont =
+        await FileSystem.readAsStringAsync(
+          assets.firstOrDefault("localUri"),
+          {
+            encoding: "base64"
+          }
+        );
+      let asset = Asset.fromModule(
+        Fonts[fontName]
+      );
+      await asset.downloadAsync();
+
+      let font =
+        await FileSystem.readAsStringAsync(
+          asset.localUri,
+          {
+            encoding: "base64"
+          }
+        );
+      let css = `
       @font-face {
       font-family: 'Material Symbols Outlined';
       font-style: normal;
       font-weight: 400;
-      src: url(data:font/truetype;charset=utf-8;base64,${file}) format('woff2');
+      src: url(data:font/truetype;charset=utf-8;base64,${iconsFont}) format('woff2');
+      }
+      
+      @font-face {
+      font-family: '${fontName}';
+      src: url(data:font/truetype;charset=utf-8;base64,${font}) format('truetype')
       }
 
 .material-symbols-outlined {
@@ -75,8 +101,10 @@ export default ({
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }`;
-    postMessage("font", css);
-    // webView.current?.injectJavaScript(`load(${JSON.stringify({type:"font", data:css})});true`);
+      postMessage("font", css);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   let injectData = () => {
@@ -91,10 +119,11 @@ export default ({
         data: css
       });
       let js = `
-      loadData(${data});
       loadData(${cssData})
+      loadData(${data});
       true;`;
-      jsCode.current= js;
+      jsCode.current = js;
+      loading.current = true;
       postMessage("content", {
         ...content,
         menuItems
@@ -107,19 +136,25 @@ export default ({
 
   useEffect(() => {
     injectData();
-  }, [content, css]);
+  }, [content, css, fontName, g.size]);
 
   useEffect(() => {
     if (assets?.firstOrDefault("localUri"))
       loadFonts();
-  }, [assets]);
+  }, [assets, fontName]);
 
   const onMessage = ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
-    //console.log(data)
+    console.log(data);
     switch (data.type) {
       case "scroll":
         onScroll?.(data.data);
+        break;
+      case "bottomReched":
+        bottomReched?.();
+        break;
+      case "topReched":
+        topReched?.();
         break;
       case "click":
         click?.(data.data);
@@ -154,7 +189,7 @@ export default ({
       domStorageEnabled={true}
       originWhitelist={["*"]}
       style={[
-        { ...g.size.screen, zIndex: 99 },
+        { ...g.size.screen, zIndex: 99, flex: 1 },
         style
       ]}
       javaScriptEnabled={true}

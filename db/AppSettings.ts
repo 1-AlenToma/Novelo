@@ -13,6 +13,7 @@ class AppSettings extends IBaseModule<TableNames> {
   pitch: number = 0.9;
   voice: string = "";
   fontSize: number = 22;
+  fontName: string = "SourceSans3-Black";
   textAlign: string = "left";
   backgroundColor: string = "#ffffff";
   isBold: boolean = false;
@@ -35,7 +36,9 @@ class AppSettings extends IBaseModule<TableNames> {
       .column("backgroundColor")
       .column("isBold")
       .boolean
-      .column("lockScreen").boolean.objectPrototype(
+      .column("fontName")
+      .column("lockScreen")
+      .boolean.objectPrototype(
         AppSettings.prototype
       );
   }

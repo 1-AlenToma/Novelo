@@ -16,8 +16,10 @@ import {
   TabBar,
   Slider,
   CheckBox,
-  Modal
+  Modal,
+  DropdownList
 } from "../../components/";
+import Fonts from "../../assets/Fonts";
 import { useEffect, useRef } from "react";
 import {
   ScrollView,
@@ -113,6 +115,7 @@ const Controller = ({ state, ...props }) => {
 
   const editSettings = async ({
     fontSize,
+    fontName,
     isBold,
     backgroundColor,
     textAlign,
@@ -133,6 +136,9 @@ const Controller = ({ state, ...props }) => {
         g.orientation("LANDSCAPE");
       else g.orientation("Default");
     }
+    if (fontName)
+      g.appSettings.fontName = fontName;
+
     await g.db().save(g.appSettings);
   };
 
@@ -249,6 +255,38 @@ const Controller = ({ state, ...props }) => {
                     <View
                       title="Settings"
                       css="clearboth">
+                      <View css="form">
+                        <Text invertColor={true}>
+                          Font:
+                        </Text>
+                        <DropdownList
+                          height="50"
+                          items={Object.keys(
+                            Fonts
+                          )}
+                          render={item => {
+                            return (
+                              <Text
+                                css="bold desc"
+                                invertColor={
+                                  true
+                                }>
+                                {item}
+                              </Text>
+                            );
+                          }}
+                          onSelect={fontName => {
+                            editSettings({
+                              fontName
+                            });
+                          }}
+                          selectedValue={
+                            g.appSettings
+                              .fontName ||
+                            "SourceSans3-Black"
+                          }
+                        />
+                      </View>
                       <View css="form">
                         <Text invertColor={true}>
                           FontSize:
@@ -406,8 +444,11 @@ const InternalWeb = ({
   return (
     <>
       <Web
+        fontName={g.appSettings.fontName}
         css={`
           * {
+            font-family: "${g.appSettings
+              .fontName}";
             background-color: ${g.appSettings
               .backgroundColor};
             color: ${invertColor(
@@ -469,9 +510,15 @@ const InternalWeb = ({
             }
           ]
         }}
-        onScroll={(y: number) => {
+        bottomReched={() => g.player.next}
+        topReched={() => g.player.prev}
+        onScroll={async (y: number) => {
           g.player.currentChapterSettings.scrollProgress =
             y;
+            console.log(y)
+         await g.db().save(
+            g.player.currentChapterSettings
+          );
         }}
       />
     </>
@@ -528,7 +575,7 @@ export default (props: any) => {
       } catch (e) {
         console.error(e);
       } finally {
-        loader.hide();
+        // loader.hide();
       }
     })();
     return () => {

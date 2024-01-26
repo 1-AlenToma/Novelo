@@ -18,6 +18,7 @@ import CheckBox from "./CheckBox";
 import Web from "./Web";
 import Slider from "./SliderView";
 import Modal from "./Modal";
+import DropdownList from "./DropdownList";
 
 import {
   AppContainer,
@@ -46,5 +47,6 @@ export {
   CheckBox,
   Web,
   Slider,
-  Modal
+  Modal,
+  DropdownList
 };
