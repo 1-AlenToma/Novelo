@@ -64,43 +64,66 @@ const data = GlobalState(
       screen: Dimensions.get("screen")
     },
     init: async () => {
-      //await globalDb.database.dropTables();
-      await globalDb.database.setUpDataBase();
-      data.appSettings = await globalDb.database
-        .querySelector<AppSettings>("AppSettings")
-        .findOrSave(data.appSettings);
-      data.voices =
-        await Speech.getAvailableVoicesAsync();
-      data.parser.current().settings =
-        await data.parser.current().load();
-      const showSubscription =
-        Keyboard.addListener(
-          "keyboardDidShow",
-          () => {
-            data.KeyboardState = true;
-          }
-        );
-      const hideSubscription =
-        Keyboard.addListener(
-          "keyboardDidHide",
-          () => {
-            data.KeyboardState = false;
-          }
-        );
+      try {
+        //await globalDb.database.dropTables();
+        const loadVoices = (counter?: number) => {
+          setTimeout(
+            async () => {
+              var voices =
+                await Speech.getAvailableVoicesAsync();
 
-      let windowEvent =
-        Dimensions.addEventListener(
-          "change",
-          e => {
-            data.size = { ...e };
-          }
-        );
+              if (voices.length > 0)
+                data.voices = voices;
+              else {
+                console.log("voices not found");
+                if (!counter || counter < 10)
+                  loadVoices((counter ?? 0) + 1);
+              }
+            },
+            (counter ?? 1) * 300
+          );
+        };
+        await globalDb.database.setUpDataBase();
+        await globalDb.database.migrateNewChanges();
+        data.appSettings = await globalDb.database
+          .querySelector<AppSettings>(
+            "AppSettings"
+          )
+          .findOrSave(data.appSettings);
+        loadVoices();
+        data.parser.current().settings =
+          await data.parser.current().load();
+        const showSubscription =
+          Keyboard.addListener(
+            "keyboardDidShow",
+            () => {
+              data.KeyboardState = true;
+            }
+          );
+        const hideSubscription =
+          Keyboard.addListener(
+            "keyboardDidHide",
+            () => {
+              data.KeyboardState = false;
+            }
+          );
 
-      return [
-        hideSubscription,
-        showSubscription,
-        windowEvent
-      ];
+        let windowEvent =
+          Dimensions.addEventListener(
+            "change",
+            e => {
+              data.size = { ...e };
+            }
+          );
+
+        return [
+          hideSubscription,
+          showSubscription,
+          windowEvent
+        ];
+      } catch (e) {
+        console.error(e);
+      }
     }
   },
   undefined,

@@ -9,11 +9,12 @@ import {
 import { useTimer } from "../hooks";
 import {
   arrayBuffer,
-  newId
-} from "../../Methods";
+  newId,
+  sleep
+} from "../Methods";
+import { ScrollView } from "react-native";
 import { Asset, useAssets } from "expo-asset";
 import * as FileSystem from "expo-file-system";
-import { sleep } from "../Methods";
 import { Player, DetailInfo } from "../../native";
 import g from "../GlobalContext";
 
@@ -27,16 +28,13 @@ export default ({
   style,
   fontName,
   bottomReched,
-  topReched
+  topReched,
+  scrollDisabled
 }: any) => {
   g.hook("size");
-  const jsCode = useRef();
   const loading = useRef(true);
-  const timer = useTimer(100);
+  const timer = useTimer(200);
   const webView = useRef();
-  const [assets] = useAssets(
-    require("../assets/gfont.ttf")
-  );
 
   const postMessage = (
     type: string,
@@ -44,9 +42,13 @@ export default ({
   ) => {
     if (webView.current === undefined) return;
     let item = { type, data };
-    if (type == "content")
-      item = { type, ...data };
-    //console.error(type, data);
+    if(type== "content")
+      item.data = {...data}
+    webView.current.injectJavaScript(`
+    window.loadData(${JSON.stringify(item)});
+    true;
+    `);
+    return;
     webView.current.postMessage(
       JSON.stringify(item)
     );
@@ -54,14 +56,18 @@ export default ({
 
   const loadFonts = async () => {
     try {
+      let asset = Asset.fromModule(
+        require("../assets/gfont.ttf")
+      );
+      await asset.downloadAsync();
       let iconsFont =
         await FileSystem.readAsStringAsync(
-          assets.firstOrDefault("localUri"),
+          asset.localUri,
           {
             encoding: "base64"
           }
         );
-      let asset = Asset.fromModule(
+      asset = Asset.fromModule(
         Fonts[fontName]
       );
       await asset.downloadAsync();
@@ -101,53 +107,48 @@ export default ({
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }`;
+      return css;
       postMessage("font", css);
     } catch (e) {
+      return "";
       console.error(e);
     }
   };
 
-  let injectData = () => {
+  let injectData = async () => {
     try {
-      let data = JSON.stringify({
-        type: "content",
-        ...content,
-        menuItems
-      });
-      let cssData = JSON.stringify({
-        type: "style",
-        data: css
-      });
-      let js = `
-      loadData(${cssData})
-      loadData(${data});
-      true;`;
-      jsCode.current = js;
-      loading.current = true;
-      postMessage("content", {
-        ...content,
-        menuItems
-      });
-      postMessage("style", css);
+      while(!webView.current)
+        await sleep(100)
+    let getJs=(type, data)=>{
+      let item = {type,data}
+      if(type == "content")
+      item.data = {menuItems:data};
+      return `window.loadData(${JSON.stringify(item)});`
+    } 
+    let font =await loadFonts();
+      let js =`
+      ${getJs("style", css)}
+      ${getJs("font", font)}
+       ${getJs("content", menuItems)}
+      true;
+      `;
+      webView.current.injectJavaScript(js);
+      //postMessage("content", {menuItems});
+     // await sleep(100)
+     // postMessage("style", css);
+      //await sleep(100)
+     //await loadFonts();
     } catch (e) {
       console.error(e);
     }
   };
-
-  useEffect(() => {
-    injectData();
-  }, [content, css, fontName, g.size]);
-
-  useEffect(() => {
-    if (assets?.firstOrDefault("localUri"))
-      loadFonts();
-  }, [assets, fontName]);
 
   const onMessage = ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
-    console.log(data);
+    //console.log(data);
     switch (data.type) {
-      case "scroll":
+      case "scrollValue":
+        alert(data.data);
         onScroll?.(data.data);
         break;
       case "bottomReched":
@@ -173,23 +174,78 @@ export default ({
         break;
     }
   };
-
+  loading.current = true;
   return (
     <WebView
       ref={r => {
         if (r) {
           webView.current = r;
-          injectData();
+          //r.clearCache(true);
+          //injectData();
         }
       }}
+      nestedScrollEnabled={true}
+      scrollEnabled={false}
       source={{
+        html: `
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width,  initial-scale=1" />
+        </head>
+        <body>
+        ${content?.content.replace(/\<\/( )?br>|\<br( )?(\/)?>/gim, '')}
+        <script>
+          if(${scrollDisabled ? "1==0" : "1 == 1"})
+              window.scroll(0, ${content.scroll});
+          function sleep(ms){
+            return new Promise((r)=> setTimeout(r,ms))
+          }
+          async function psg(){
+          while(window.postmsg === undefined || !document.getElementById("novel"))
+             await sleep(100);
+            window.postmsg("data",true);
+          }
+          psg();
+        </script>
+        </body>
+        </html>
+        `,
         basUrl: ""
       }}
-      injectedJavaScript={jsCode.current}
-      domStorageEnabled={true}
+      onScroll={syntheticEvent => {
+        if (scrollDisabled) return;
+        if (loading.current) {
+          timer(() => (loading.current = false));
+          return;
+        }
+        const {
+          contentOffset,
+          layoutMeasurement,
+          contentSize
+        } = syntheticEvent.nativeEvent;
+
+        const offset = Math.round(
+          contentOffset.y +
+            layoutMeasurement.height
+        );
+        const contentHeight = Math.round(
+          contentSize.height
+        );
+        //console.warn("scroll", offset);
+        timer(() => {
+          if (offset == contentHeight) {
+            bottomReched?.();
+          } else if (contentOffset.y <= 10) {
+            topReched?.();
+          } else onScroll?.(contentOffset.y);
+        });
+      }}
+      contentMode="mobile"
+      scalesPageToFit={true}
       originWhitelist={["*"]}
-      style={[
-        { ...g.size.screen, zIndex: 99, flex: 1 },
+      scrollEnabled={true}
+      containerStyle={[
+        { ...g.size.screen, zIndex: 99, flex: 0 },
         style
       ]}
       javaScriptEnabled={true}

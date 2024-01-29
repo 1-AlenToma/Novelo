@@ -2,9 +2,11 @@ import {
   StyleSheet,
   Animated,
   Easing,
+  TouchableOpacity,
   ScrollView,
-  TouchableOpacity
+  SafeAreaView
 } from "react-native";
+
 import View from "./ThemeView";
 import * as Icons from "@expo/vector-icons";
 import {
@@ -16,7 +18,8 @@ import {
 import {
   sleep,
   newId,
-  removeProps
+  removeProps,
+  proc
 } from "../Methods";
 import GlobalData from "../GlobalContext";
 import { useUpdate } from "../hooks";
@@ -29,7 +32,8 @@ const TabBar = ({
   position,
   disableScrolling,
   change,
-  rootView
+  rootView,
+  scrollHeight
 }: {
   children: TabChild[];
   style?: any;
@@ -59,7 +63,7 @@ const TabBar = ({
         child: childPrep(children[index])
       };
     }
-    animateLeft();
+    update();
   }, [size, index]);
 
   useEffect(
@@ -222,7 +226,8 @@ const TabBar = ({
             {!disableScrolling ? (
               <ScrollView
                 style={{
-                  width: size?.width
+                  width: size?.width,
+                  maxHeight: scrollHeight
                 }}
                 contentContainerStyle={{
                   flexGrow: 1,

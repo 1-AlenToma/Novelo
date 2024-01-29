@@ -15,7 +15,6 @@ class Chapter extends IBaseModule<TableNames> {
   scrollProgress: number = 0;
   audioProgress: number = 0;
   isFinished: boolean = false;
-  content: string = "";
   parent_Id?: number;
   constructor() {
     super("Chapters");
@@ -35,8 +34,6 @@ class Chapter extends IBaseModule<TableNames> {
         "Books",
         "id"
       )
-      .column("content")
-      .nullable.encrypt("novelo.enc")
       .column("isFinished")
       .boolean.column("scrollProgress")
       .decimal.column("audioProgress")

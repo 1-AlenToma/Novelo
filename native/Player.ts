@@ -10,10 +10,14 @@ class Player {
   book: Book;
   novel: DetailInfo;
   currentChapterIndex: number = 0;
-  currentChapter: ChapterInfo;
-  currentChapterSettings: Chapter;
+  currentChapter: ChapterInfo = {};
+  currentChapterSettings: Chapter = {};
   loader: any;
   showController: boolean = true;
+  chapterArray: string[] = [];
+  html: string = "";
+  _playing: boolean = false;
+  showPlayer: boolean = false;
   constructor(
     novel: DetailInfo,
     book: Book,
@@ -22,10 +26,10 @@ class Player {
     this.book = book;
     this.novel = novel;
     this.loader = loader;
-    this.jumpTo(book.selectedChapterIndex);
+    //this.jumpTo(book.selectedChapterIndex);
   }
 
-  get procent() {
+  procent() {
     return `${this.currentChapterIndex + 1}/${
       this.novel.chapters.length
     }`;
@@ -37,14 +41,21 @@ class Player {
       if (
         this.currentChapterSettings?.content?.has() ??
         false
-      )
-        return this.currentChapterSettings
-          .content;
+      ) {
+        this.chapterArray =
+          this.currentChapterSettings.content.htmlArray();
+        return (this.html =
+          this.currentChapterSettings.content);
+      }
       let parser = g.parser.find(
         this.book.parserName
       );
       let str = await parser.chapter(url);
-      this.currentChapterSettings.content = str;
+      this.chapterArray = str.htmlArray();
+      this.html =
+        this.currentChapterSettings.content = str;
+
+      //console.warn(this.chapterArray[0]);
       return str;
     } catch (e) {
       console.error(e);
@@ -54,20 +65,24 @@ class Player {
     }
   }
 
-  get paddingBottom() {
+  paddingBottom() {
+    if (this.showPlayer) return 2;
     return this.currentChapterIndex <
       this.novel.chapters.length
       ? 150
       : 10;
   }
 
-  get paddingTop() {
+  paddingTop() {
+    if (this.showPlayer) return 2;
     return this.currentChapterIndex > 0
       ? 100
       : 10;
   }
 
-  async jumpTo(index: number | string) {
+  async jumpTo(index?: number | string) {
+    if (index === undefined)
+      index = this.book.selectedChapterIndex;
     if (typeof index === "string")
       index = this.novel.chapters.findIndex(
         x => x.url === index
@@ -86,52 +101,96 @@ class Player {
         this.book.chapterSettings.find(
           x => x.name === this.currentChapter.name
         );
-       // alert(this.currentChapterSettings.scrollProgress);
+      // alert(this.currentChapterSettings.scrollProgress);
     } else {
-      this.currentChapterSettings = Chapter.n()
+    let  chSettings = Chapter.n()
         .Url(this.currentChapter.url)
         .Name(this.currentChapter.name)
+        .ScrollProgress(this.currentChapterIndex > 0
+      ? 100
+      : 10)
         .Parent_Id(this.book.id);
+        await g
+            .db()
+            .save<Chapter>(chSettings);
       this.currentChapterSettings = await g
         .db()
-        .save<Chapter>(
-          this.currentChapterSettings
-        );
+        .asQueryable<Chapter>(chSettings);
       this.book.chapterSettings.push(
         this.currentChapterSettings
       );
     }
 
-    await g.db().save(this.book);
+    await this.book.saveChanges();
     await this.getChapterContent(
       this.currentChapter.url
     );
+    if (this.playing()) this.speak();
     this.loader?.hide();
   }
 
-  get hasPrev() {
+  hasPrev() {
     return this.currentChapterIndex - 1 >= 0;
   }
 
-  get hasNext() {
+  hasNext() {
     return (
       this.novel.chapters.length >
       this.currentChapterIndex + 1
     );
   }
 
-  get next() {
-    if (this.hasNext)
+  next() {
+    if (this.hasNext())
       this.jumpTo(this.currentChapterIndex + 1);
   }
 
-  get prev() {
-    if (this.hasPrev)
+  prev() {
+    if (this.hasPrev())
       this.jumpTo(this.currentChapterIndex - 1);
   }
 
-  speak(text: string) {
-    g.speech.speak(item.data);
+  playing(v?: boolean) {
+    if (v == undefined) return this._playing;
+    this._playing = v;
+    if (!v) this.stop();
+    else this.speak();
+    return this._playing;
+  }
+
+  currentPlaying() {
+    let txt =
+      this.chapterArray[
+        this.currentChapterSettings.audioProgress
+      ];
+    return txt;
+  }
+
+  speak() {
+    let text =
+      this.currentPlaying()?.cleanText() ?? "";
+    g.speech.speak(text, {
+      language: undefined,
+      pitch: g.appSettings.pitch,
+      rate: g.appSettings.rate,
+      voice: g.appSettings.voice,
+      onDone: async () => {
+        if (this.playing()) {
+          if (
+            this.currentChapterSettings
+              .audioProgress >=
+            this.chapterArray.length
+          ) {
+            this.next;
+            return;
+          } else {
+            this.currentChapterSettings
+              .audioProgress++;
+            this.speak();
+          }
+        }
+      }
+    });
   }
 
   stop() {

@@ -1,0 +1,49 @@
+import g from "../GlobalContext";
+import { useEffect, useRef } from "react";
+import useUpdate from "./UseUpdate";
+
+export default (
+  tbName: string,
+  validator: (item: any) => boolean,
+  currentItem: () => any,
+  ...keys: string[]
+) => {
+  const updater = useUpdate();
+  let currentValues = useRef({}).current;
+  let setValues = (item: any) => {
+    if(!item)
+     return;
+    for (let k of keys) {
+      if(k=="*")
+        return;
+      currentValues[k] = item[k];
+    }
+  };
+
+  let hasChange = (item: any) => {
+    if (validator(item)) {
+      for (let k of keys) {
+        if(k=="*")
+        return true;
+        let a = currentValues[k];
+        let b = item[k];
+        if (a !== b) return true;
+      }
+    }
+  };
+  useEffect(() => {
+    setValues(currentItem());
+    var watcher = g.db().watch<any>(tbName);
+    watcher.onSave = async (items, operation) => {
+      for (let item of items) {
+        if (hasChange(item)) {
+          setValues(item);
+          updater();
+        }
+      }
+    };
+    return () => watcher.removeWatch();
+  }, []);
+
+  return null;
+};

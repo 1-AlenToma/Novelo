@@ -32,6 +32,7 @@ declare global {
     eSpace(total?: number): string;
     cleanHtml(): string;
     cleanText(): string;
+    htmlArray(): string[];
     splitSearch(searchFor: string): boolean;
     imageFetchBuilder(
       selector: string,
@@ -46,8 +47,19 @@ declare global {
 
   interface Number {
     sureValue: (a: number) => number;
+    readAble: () => any;
   }
 }
+
+Number.prototype.readAble = function () {
+  let nr = new Number(this).toFixed(2);
+  let nrs = nr.toString().split(".");
+
+  if (nrs.length <= 1)
+    return new Number(this).toString();
+  if (/[1-9]/g.test(nrs[1])) return nr.toString();
+  return new Number(this).toString();
+};
 
 Number.prototype.sureValue = function (
   a: number
@@ -172,10 +184,25 @@ String.prototype.cleanHtml = function () {
 
 String.prototype.cleanText = function () {
   let str = new String(this).toString();
-  const doc = IDOMParser.parse(`<div>${str}</div>`);
+  const doc = IDOMParser.parse(
+    `<div>${str}</div>`
+  );
   return doc.documentElement
     .text()
     .replace(/\<\/( )?br>|\<br( )?(\/)?>/gim, "");
+};
+
+String.prototype.htmlArray = function () {
+  let str = new String(this).toString();
+  const doc = IDOMParser.parse(
+    `<div>${str}</div>`
+  );
+  let elems = [
+    ...doc.documentElement.querySelectorAll(
+      "p,h1,h2,h3,h4,h5"
+    )
+  ];
+  return elems.map(x => x.outerHTML);
 };
 
 String.prototype.sSpace = function (

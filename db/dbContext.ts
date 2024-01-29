@@ -2,24 +2,33 @@ import createDbContext, {
   IDatabase,
   IQueryResultItem,
   IBaseModule
-} from "expo-sqlite-wrapper";
-import * as SQLite from "expo-sqlite";
+} from "../expo-sqlite-wrapper/src";
+import {
+  openDatabaseAsync,
+  SQLiteProvider,
+  useSQLiteContext,
+  addDatabaseChangeListener
+} from "expo-sqlite/next";
 import {
   Book,
   Chapter,
   Tables,
   TableNames
 } from "./";
+
 export default class DbContext {
-  databaseName: string = "mydatabase.db";
+  databaseName: string = "Novelo";
   database: IDatabase<TableNames>;
   constructor() {
     this.database = createDbContext<TableNames>(
       Tables,
       async () => {
-        return SQLite.openDatabase(
+        let db = await openDatabaseAsync(
           this.databaseName
         );
+        //console.error(db.execAsync);
+        //console.error(db.execSync);
+        return db;
       },
       async db => {
         try {
@@ -45,5 +54,4 @@ export default class DbContext {
       !__DEV__
     );
   }
-  
 }

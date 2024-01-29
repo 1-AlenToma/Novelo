@@ -24,6 +24,7 @@ export default ({
   visible,
   onHide,
   speed,
+  ready,
   ...props
 }: {
   speed?: number;
@@ -33,9 +34,11 @@ export default ({
   visible: boolean;
   onHide?: () => void;
 }) => {
+  g.hook("size");
   let context = useContext(ElementsContext);
   const [started, setStarted] = useState(false);
   const [isV, setIsV] = useState(false);
+  const [onReady, setOnReady] = useState(!ready);
   const [animTop, setAnimTop] = useState(
     new Animated.Value(
       -proc(
@@ -61,7 +64,7 @@ export default ({
   let toggle = async (show: boolean) => {
     while (animating.current || !animTop) return;
     //await sleep(50);
-
+    if (show && ready) setOnReady(false);
     animating.current = true;
     Animated.timing(animTop, {
       toValue: !show ? 0 : 1,
@@ -72,6 +75,8 @@ export default ({
       animating.current = false;
       setIsV(visible);
       context.update();
+      if (show) setOnReady(true);
+
       //setIsV(visible);
     });
   };
@@ -114,7 +119,7 @@ export default ({
         <Animated.View
           style={[
             {
-              height: height,
+              height: getHeight(),
               transform: [
                 {
                   translateY: animTop.interpolate(
@@ -124,7 +129,7 @@ export default ({
                         g.size.window.height + 50,
                         g.size.window.height -
                           getHeight() +
-                          43
+                          80
                       ]
                     }
                   )
@@ -161,7 +166,9 @@ export default ({
                 {title}
               </Text>
             </View>
-            <View css="flex clearboth">{children}</View>
+            <View css="flex zi:5:">
+              {onReady ? children : null}
+            </View>
           </View>
         </Animated.View>
       </>,
@@ -171,13 +178,7 @@ export default ({
       }
     );
     context.update();
-  }, [
-    props,
-    title,
-    children,
-    isV,
-    animating.current
-  ]);
+  });
 
   return null;
 };

@@ -27,7 +27,9 @@ import {
 } from "react-native";
 import {
   useNavigation,
-  useUpdate
+  useUpdate,
+  useTimer,
+  useDbHook
 } from "../../hooks";
 import {
   useState,
@@ -55,51 +57,23 @@ import ColorPicker, {
   HueSlider
 } from "reanimated-color-picker";
 
-const BColorPicker = ({
-  onChange,
-  value
-}: any) => {
-  const state = useState({
-    showColor: false
-  });
-  return (
-    <View css="wi:90% he:20">
-      <TouchableOpacity
-        onPress={() =>
-          (state.showColor = !state.showColor)
-        }
-        style={{ backgroundColor: value }}
-        css="flex juc:center ali:center">
-        <Text
-          css="desc bold"
-          style={{ color: invertColor(value) }}
-          invertColor={true}>
-          {value}
-        </Text>
-      </TouchableOpacity>
-      <Modal
-        height="90"
-        visible={state.showColor}
-        onHide={() => (state.showColor = false)}>
-        <View css="flex juc:center ali:center">
-          <ColorPicker
-            style={{ width: "70%" }}
-            value={value}
-            onComplete={({ hex }) =>
-              onChange(hex)
-            }>
-            <Preview />
-            <Panel1 />
-            <HueSlider />
-          </ColorPicker>
-        </View>
-      </Modal>
-    </View>
-  );
-};
-
 const Controller = ({ state, ...props }) => {
-  g.hook("player.showController", "appSettings");
+  useDbHook(
+    "Chapters",
+    item => item.parent_Id === state.book.id,
+    () => g.player.currentChapterSettings,
+    "audioProgress"
+  );
+
+  g.hook(
+    "player.showController",
+    "appSettings",
+    "player.showPlayer",
+    "player.chapterArray"
+  );
+
+  const Timer = useTimer(100);
+  const audioProgressTimer = useTimer(100);
   const thisState = useState({
     cText: ""
   });
@@ -119,31 +93,81 @@ const Controller = ({ state, ...props }) => {
     isBold,
     backgroundColor,
     textAlign,
-    lockScreen
+    lockScreen,
+    voice,
+    pitch,
+    rate
   }: any) => {
-    if (fontSize != undefined)
-      g.appSettings.fontSize = fontSize;
-    if (isBold != undefined)
-      g.appSettings.isBold = isBold;
-    if (backgroundColor !== undefined)
-      g.appSettings.backgroundColor =
-        backgroundColor;
-    if (textAlign != undefined)
-      g.appSettings.textAlign = textAlign;
-    if (lockScreen != undefined) {
-      g.appSettings.lockScreen = lockScreen;
-      if (g.appSettings.lockScreen)
-        g.orientation("LANDSCAPE");
-      else g.orientation("Default");
-    }
-    if (fontName)
-      g.appSettings.fontName = fontName;
+    Timer(async () => {
+      if (fontSize != undefined)
+        g.appSettings.fontSize = fontSize;
+      if (isBold != undefined)
+        g.appSettings.isBold = isBold;
+      if (backgroundColor !== undefined)
+        g.appSettings.backgroundColor =
+          backgroundColor;
+      if (textAlign != undefined)
+        g.appSettings.textAlign = textAlign;
+      if (lockScreen != undefined) {
+        g.appSettings.lockScreen = lockScreen;
+        if (g.appSettings.lockScreen)
+          g.orientation("LANDSCAPE");
+        else g.orientation("Default");
+      }
+      if (rate != undefined)
+        g.appSettings.rate = rate;
+      if (pitch != undefined)
+        g.appSettings.pitch = pitch;
+      if (fontName)
+        g.appSettings.fontName = fontName;
+      if (voice) g.appSettings.voice = voice;
 
-    await g.db().save(g.appSettings);
+      await g.appSettings.saveChanges();
+    });
   };
 
   return (
     <>
+      <View
+        ifTrue={g.player.showPlayer}
+        style={{
+          top: g.player.showController ? 41 : 1
+        }}
+        css="band absolute he:40 juc:space-between ali:center row pal:10 par:10"
+        invertColor={true}>
+        <View css="wi:70% row clearheight ali:center">
+          <View
+            invertColor={false}
+            css="wi:40 he:30 juc:center ali:center">
+            <Text
+              css="bold fos:10 tea:center"
+              invertColor={false}>
+              {g.player.currentChapterSettings
+                .audioProgress + 1}
+              /{g.player.chapterArray.length}
+            </Text>
+          </View>
+          <Slider
+            value={
+              g.player.currentChapterSettings
+                .audioProgress
+            }
+            onValueChange={value => {
+              audioProgressTimer(async () => {
+                g.player.currentChapterSettings.audioProgress =
+                  value;
+                await g.player.currentChapterSettings.saveChanges();
+                if (g.player.playing())
+                  g.player.speak();
+              });
+            }}
+            minimumValue={0}
+            maximumValue={
+              g.player.chapterArray.length - 1
+            }
+          />
+        </View>
+      </View>
       <View
         ifTrue={g.player.showController}
         css="band bottom juc:space-between ali:center row pal:10 par:10"
@@ -156,13 +180,27 @@ const Controller = ({ state, ...props }) => {
         <Text
           invertColor={true}
           css="header bold fos:18 foso:italic">
-          {g.player.procent}
+          {g.player.procent()}
         </Text>
       </View>
       <Header
         ifTrue={g.player.showController}
         css="absolute to:0"
         buttons={[
+          {
+            text: (
+              <Icon
+                invertColor={true}
+                name="featured-play-list"
+                type="MaterialIcons"
+              />
+            ),
+            press: () => {
+              g.player.playing(false);
+              g.player.showPlayer =
+                !g.player.showPlayer;
+            }
+          },
           {
             text: (
               <ActionSheetButton
@@ -250,11 +288,16 @@ const Controller = ({ state, ...props }) => {
                     name="settings"
                   />
                 }>
-                <View css="clearboth flex juc:flex-start">
-                  <TabBar position="Top">
+                <View css="flex">
+                  <TabBar
+                    position="Top"
+                    scrollHeight={proc(
+                      80,
+                      g.size.window.height
+                    )}>
                     <View
                       title="Settings"
-                      css="clearboth">
+                      css="flex">
                       <View css="form">
                         <Text invertColor={true}>
                           Font:
@@ -347,17 +390,23 @@ const Controller = ({ state, ...props }) => {
                         <Text invertColor={true}>
                           Background:
                         </Text>
-                        <BColorPicker
+                        <ColorPicker
+                          style={{
+                            width: "70%"
+                          }}
                           value={
                             g.appSettings
                               .backgroundColor
                           }
-                          onChange={v => {
+                          onComplete={({ hex }) =>
                             editSettings({
-                              backgroundColor: v
-                            });
-                          }}
-                        />
+                              backgroundColor: hex
+                            })
+                          }>
+                          <Preview />
+                          <Panel1 />
+                          <HueSlider />
+                        </ColorPicker>
                       </View>
                       <View css="form">
                         <Text invertColor={true}>
@@ -420,7 +469,95 @@ const Controller = ({ state, ...props }) => {
                         />
                       </View>
                     </View>
-                    <View title="Voice"></View>
+                    <View title="Voice">
+                      <View css="form">
+                        <Text invertColor={true}>
+                          Voices:
+                        </Text>
+                        <DropdownList
+                          height="50"
+                          items={g.voices}
+                          render={item => {
+                            return (
+                              <Text
+                                css="bold desc"
+                                invertColor={
+                                  true
+                                }>
+                                {item.name}
+                              </Text>
+                            );
+                          }}
+                          onSelect={voice => {
+                            editSettings({
+                              voice: voice.name
+                            });
+                          }}
+                          selectedValue={
+                            g.appSettings.voice ??
+                            ""
+                          }
+                        />
+                      </View>
+                      <View css="form">
+                        <Text invertColor={true}>
+                          Pitch:
+                        </Text>
+                        <View css="wi:70% row clearheight ali:center">
+                          <View
+                            invertColor={false}
+                            css="wi:40 he:30 juc:center ali:center">
+                            <Text
+                              css="bold fos:10 tea:center"
+                              invertColor={false}>
+                              {g.appSettings.pitch.readAble()}
+                            </Text>
+                          </View>
+                          <Slider
+                            step={0.1}
+                            value={
+                              g.appSettings.pitch
+                            }
+                            onValueChange={pitch => {
+                              editSettings({
+                                pitch
+                              });
+                            }}
+                            minimumValue={0.9}
+                            maximumValue={3}
+                          />
+                        </View>
+                      </View>
+                      <View css="form">
+                        <Text invertColor={true}>
+                          Rate:
+                        </Text>
+                        <View css="wi:70% row clearheight ali:center">
+                          <View
+                            invertColor={false}
+                            css="wi:40 he:30 juc:center ali:center">
+                            <Text
+                              css="bold fos:10 tea:center"
+                              invertColor={false}>
+                              {g.appSettings.rate.readAble()}
+                            </Text>
+                          </View>
+                          <Slider
+                            step={0.1}
+                            value={
+                              g.appSettings.rate
+                            }
+                            onValueChange={rate => {
+                              editSettings({
+                                rate
+                              });
+                            }}
+                            minimumValue={0.9}
+                            maximumValue={3}
+                          />
+                        </View>
+                      </View>
+                    </View>
                   </TabBar>
                 </View>
               </ActionSheetButton>
@@ -436,17 +573,29 @@ const InternalWeb = ({
   state,
   ...props
 }: any) => {
-  g.hook(
-    "player.currentChapterSettings.content",
+  const updater = useUpdate();
+  useDbHook(
+    "Chapters",
+    item => item.parent_Id === state.book.id,
+    () => g.player.currentChapterSettings,
+    "audioProgress"
+  );
+  g.subscribe(
+    () => {
+      updater();
+    },
+    "player.html",
+    "player.showPlayer",
     "appSettings"
   );
 
   return (
     <>
       <Web
+        scrollDisabled={g.player.showPlayer}
         fontName={g.appSettings.fontName}
         css={`
-          * {
+          *:not(context):not(context *) {
             font-family: "${g.appSettings
               .fontName}";
             background-color: ${g.appSettings
@@ -457,12 +606,15 @@ const InternalWeb = ({
           }
           body > .novel {
             width: 95%;
-            height: 100%;
-            overflow-x: hidden;
+            min-height: 50%;
+            top: ${g.player.showPlayer
+              ? "45px"
+              : "0px"};
+            position: relative;
+            overflow: hidden;
             text-align-vertical: top;
-            padding-bottom: ${g.player
-              .paddingBottom}px;
-            padding-top: ${g.player.paddingTop}px;
+            padding-bottom: ${g.player.paddingBottom()}px;
+            padding-top: ${g.player.paddingTop()}px;
             font-size: ${g.appSettings
               .fontSize}px;
             line-height: ${g.appSettings
@@ -483,9 +635,13 @@ const InternalWeb = ({
           alert(item.selection);
         }}
         content={{
-          content: `<div class="novel">
-      ${g.player.currentChapterSettings.content}
-      </div>`,
+          content: `<div id="novel" class="novel">
+          ${
+            g.player.showPlayer
+              ? g.player.currentPlaying()
+              : g.player.html
+          }
+          </div>`,
           scroll:
             g.player.currentChapterSettings
               .scrollProgress
@@ -510,15 +666,13 @@ const InternalWeb = ({
             }
           ]
         }}
-        bottomReched={() => g.player.next}
-        topReched={() => g.player.prev}
+        bottomReched={() => g.player.next()}
+        topReched={() => g.player.prev()}
         onScroll={async (y: number) => {
           g.player.currentChapterSettings.scrollProgress =
             y;
-            console.log(y)
-         await g.db().save(
-            g.player.currentChapterSettings
-          );
+          //console.log(y);
+          await g.player.currentChapterSettings.update("scrollProgress");
         }}
       />
     </>
@@ -572,6 +726,7 @@ export default (props: any) => {
             hide: () => loader.hide()
           }
         );
+        await g.player.jumpTo();
       } catch (e) {
         console.error(e);
       } finally {

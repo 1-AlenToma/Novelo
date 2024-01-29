@@ -8,6 +8,7 @@ import {
 import { newId } from "../Methods";
 import View from "./ThemeView";
 import Text from "./ThemeText";
+import {useUpdate} from "../hooks"
 
 const ElementsContext = createContext({});
 const AppContainer = ({
@@ -19,6 +20,7 @@ const AppContainer = ({
   const data = {
     items: new Map(),
     update: () => {},
+    newKey: () => {},
     find: (id: string) => {
       return data.items.get(id);
     },
@@ -61,13 +63,17 @@ const AppContainer = ({
 };
 
 const AppChildContainer = () => {
-  const [_, setUpdater] = useState(0);
+  const updater = useUpdate();
   const [items] = useState(
     new Map<string, Item>()
   );
+  const [kk, setK] = useState("12");
   const context = useContext(ElementsContext);
   context.update = () => {
-    setUpdater(x => (x > 1000 ? 0 : x) + 1);
+    updater();
+  };
+  context.newKey = () => {
+    setK(newId());
   };
   useEffect(() => {
     context.setIsReady(true);
@@ -85,7 +91,7 @@ const AppChildContainer = () => {
           style={{ zIndex: 9999 + i }}
           ifTrue={x.x.props.visible}
           css="bac:transparent bottom clearboth"
-          key={x.k}>
+          key={x.k + kk}>
           {x.x.elem}
         </View>
       ))}
