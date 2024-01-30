@@ -22,6 +22,7 @@ import { useNavigation } from "../../hooks";
 import { useState } from "../../native";
 import g from "../../GlobalContext";
 import Header from "../../pages/Header";
+import { Book } from "../../db";
 
 export default ({ ...props }: any) => {
   const [{ url, parserName }, options, navop] =
@@ -31,7 +32,8 @@ export default ({ ...props }: any) => {
     novel: {},
     viewChapters: false,
     cText: "",
-    infoLoading: false
+    infoLoading: false,
+    book: {}
   });
   let fetchData = async () => {
     loader.show();
@@ -56,7 +58,17 @@ export default ({ ...props }: any) => {
         let item = await g.parser
           .find(parserName)
           .novelInfo(novel);
-        if (item) state.novel = item;
+        if (item) {
+          state.novel = item;
+          state.book = await g
+            .db()
+            .querySelector<Book>("Books")
+            .Where.Column(x => x.url)
+            .EqualTo(url)
+            .AND.Column(x => x.parserName)
+            .EqualTo(parserName)
+            .firstOrDefault();
+        }
       }
     } catch (e) {
       console.error(e);
@@ -358,11 +370,14 @@ export default ({ ...props }: any) => {
         <TouchableOpacity
           css="mar:5 button pa:5 wi:65%"
           invertColor={true}
-          onPress={()=>{
-            options.nav("ReadChapter").add({
-              url: state.novel.url,
-              parserName:state.novel.parserName
-            }).push();
+          onPress={() => {
+            options
+              .nav("ReadChapter")
+              .add({
+                url: state.novel.url,
+                parserName: state.novel.parserName
+              })
+              .push();
           }}>
           <Text
             invertColor={true}
@@ -372,14 +387,46 @@ export default ({ ...props }: any) => {
         </TouchableOpacity>
         <TouchableOpacity
           css="button"
-          invertColor={true}>
+          invertColor={true}
+          onPress={async () => {
+            loader.show();
+            let book =
+              state.book ||
+              (await g
+                .db()
+                .querySelector<Book>("Books")
+                .Where.Column(x => x.url)
+                .EqualTo(url)
+                .AND.Column(x => x.parserName)
+                .EqualTo(parserName)
+                .findOrSave(
+                  Book.n()
+                    .Url(state.novel.url)
+                    .Name(state.novel.name)
+                    .ParserName(parserName)
+                ));
+            await book
+              .Favorit(!book.favorit)
+              .saveChanges();
+            state.book = book;
+            loader.hide();
+          }}>
           <View css="blur" />
           <Icon
             type="Fontisto"
             name="favorite"
-            invertColor={true}
+            invertColor={
+              state.book?.favorit
+                ? undefined
+                : true
+            }
             css="bold"
             size={45}
+            style={{color:
+              state.book?.favorit
+                ? "red"
+                : undefined
+            }}
           />
         </TouchableOpacity>
       </View>

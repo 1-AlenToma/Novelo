@@ -5,7 +5,10 @@ import {
 } from "./ParserItems";
 import { Chapter, Book } from "../db";
 import { joinKeys } from "../Methods";
-
+type ViewState =
+  | "Default"
+  | "Folded"
+  | "Unfolded";
 class Player {
   book: Book;
   novel: DetailInfo;
@@ -18,6 +21,9 @@ class Player {
   html: string = "";
   _playing: boolean = false;
   showPlayer: boolean = false;
+  viewState: ViewState = "Default";
+  hooked: boolean = true;
+  scrollProcent: any = 0;
   constructor(
     novel: DetailInfo,
     book: Book,
@@ -69,7 +75,7 @@ class Player {
     if (this.showPlayer) return 2;
     return this.currentChapterIndex <
       this.novel.chapters.length
-      ? 150
+      ? 250
       : 10;
   }
 
@@ -103,16 +109,14 @@ class Player {
         );
       // alert(this.currentChapterSettings.scrollProgress);
     } else {
-    let  chSettings = Chapter.n()
+      let chSettings = Chapter.n()
         .Url(this.currentChapter.url)
         .Name(this.currentChapter.name)
-        .ScrollProgress(this.currentChapterIndex > 0
-      ? 100
-      : 10)
+        .ScrollProgress(
+          this.currentChapterIndex > 0 ? 100 : 10
+        )
         .Parent_Id(this.book.id);
-        await g
-            .db()
-            .save<Chapter>(chSettings);
+      await g.db().save<Chapter>(chSettings);
       this.currentChapterSettings = await g
         .db()
         .asQueryable<Chapter>(chSettings);
@@ -166,7 +170,35 @@ class Player {
     return txt;
   }
 
+  async playPrev() {
+    if (
+      this.currentChapterSettings.audioProgress -
+        1 >=
+      0
+    ) {
+      this.currentChapterSettings.audioProgress--;
+      await this.currentChapterSettings.saveChanges();
+      if (this.playing()) this.speak();
+    }
+  }
+
+  async playNext() {
+    if (
+      this.currentChapterSettings.audioProgress +
+        1 >=
+      this.chapterArray.length
+    ) {
+      this.next();
+      return;
+    } else {
+      this.currentChapterSettings.audioProgress++;
+      await this.currentChapterSettings.saveChanges();
+      if (this.playing()) this.speak();
+    }
+  }
+
   speak() {
+    this.stop();
     let text =
       this.currentPlaying()?.cleanText() ?? "";
     g.speech.speak(text, {
@@ -175,20 +207,7 @@ class Player {
       rate: g.appSettings.rate,
       voice: g.appSettings.voice,
       onDone: async () => {
-        if (this.playing()) {
-          if (
-            this.currentChapterSettings
-              .audioProgress >=
-            this.chapterArray.length
-          ) {
-            this.next;
-            return;
-          } else {
-            this.currentChapterSettings
-              .audioProgress++;
-            this.speak();
-          }
-        }
+        if (this.playing()) this.playNext();
       }
     });
   }

@@ -52,13 +52,13 @@ declare global {
 }
 
 Number.prototype.readAble = function () {
-  let nr = new Number(this).toFixed(2);
-  let nrs = nr.toString().split(".");
-
-  if (nrs.length <= 1)
-    return new Number(this).toString();
-  if (/[1-9]/g.test(nrs[1])) return nr.toString();
-  return new Number(this).toString();
+  let nr = this.toString();
+  let nrs = nr.split(".");
+  console.log(nr, "nrs", nrs);
+  if (nrs.length <= 1) return nr;
+  if (/[1-9]/g.test(nrs[1]))
+    return `${nrs[0]}.${nrs[1].substring(0, 2)}`;
+  return nr;
 };
 
 Number.prototype.sureValue = function (

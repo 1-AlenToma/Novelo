@@ -10,6 +10,7 @@ import { useTimer } from "../hooks";
 import {
   arrayBuffer,
   newId,
+  invertColor,
   sleep
 } from "../Methods";
 import { ScrollView } from "react-native";
@@ -17,6 +18,88 @@ import { Asset, useAssets } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import { Player, DetailInfo } from "../../native";
 import g from "../GlobalContext";
+import View from "./ThemeView";
+import Svg, {
+  Circle,
+  Rect,
+  Text
+} from "react-native-svg";
+
+const Scroller = ({ ...props }: any) => {
+  g.hook(
+    "player.scrollProcent",
+    "appSettings",
+    "player.showPlayer"
+  );
+  const { size, strokeWidth, text, css } = props;
+  const radius = (size - strokeWidth) / 2;
+  const circum = radius * 2 * Math.PI;
+  let svgProgress = 100 - g.player.scrollProcent;
+  if (svgProgress < 0) svgProgress = 0;
+  if (svgProgress > 100) svgProgress = 100;
+  const textColor = invertColor(
+    g.appSettings.backgroundColor
+  );
+  const textSize = 10;
+  return (
+    <View
+      css={css}
+      ifTrue={!g.player.showPlayer}>
+      <Svg
+        width={size}
+        height={size}>
+        {/* Background Circle */}
+        <Circle
+          stroke={
+            props.bgColor
+              ? props.bgColor
+              : "#f2f2f2"
+          }
+          fill="none"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          {...{ strokeWidth }}
+        />
+
+        {/* Progress Circle */}
+        <Circle
+          stroke={
+            props.pgColor
+              ? props.pgColor
+              : "#3b5998"
+          }
+          fill="none"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeDasharray={`${circum} ${circum}`}
+          strokeDashoffset={
+            radius *
+            Math.PI *
+            2 *
+            (svgProgress / 100)
+          }
+          strokeLinecap="round"
+          transform={`rotate(-90, ${size / 2}, ${
+            size / 2
+          })`}
+          {...{ strokeWidth }}
+        />
+
+        {/* Text */}
+        <Text
+          fontSize={textSize}
+          x={size / 2}
+          y={size / 2 + (textSize / 2 - 1)}
+          textAnchor="middle"
+          fill={textColor}>
+          {g.player.scrollProcent.toFixed(0)}
+        </Text>
+      </Svg>
+    </View>
+  );
+};
 
 export default ({
   click,
@@ -42,8 +125,8 @@ export default ({
   ) => {
     if (webView.current === undefined) return;
     let item = { type, data };
-    if(type== "content")
-      item.data = {...data}
+    if (type == "content")
+      item.data = { ...data };
     webView.current.injectJavaScript(`
     window.loadData(${JSON.stringify(item)});
     true;
@@ -60,36 +143,21 @@ export default ({
         require("../assets/gfont.ttf")
       );
       await asset.downloadAsync();
-      let iconsFont =
-        await FileSystem.readAsStringAsync(
-          asset.localUri,
-          {
-            encoding: "base64"
-          }
-        );
-      asset = Asset.fromModule(
-        Fonts[fontName]
-      );
+      let fontUri = asset.localUri;
+      asset = Asset.fromModule(Fonts[fontName]);
       await asset.downloadAsync();
 
-      let font =
-        await FileSystem.readAsStringAsync(
-          asset.localUri,
-          {
-            encoding: "base64"
-          }
-        );
       let css = `
       @font-face {
       font-family: 'Material Symbols Outlined';
       font-style: normal;
       font-weight: 400;
-      src: url(data:font/truetype;charset=utf-8;base64,${iconsFont}) format('woff2');
+      src: url("${fontUri}") format('woff2');
       }
       
       @font-face {
       font-family: '${fontName}';
-      src: url(data:font/truetype;charset=utf-8;base64,${font}) format('truetype')
+      src: url("${asset.localUri}") format('truetype')
       }
 
 .material-symbols-outlined {
@@ -114,30 +182,24 @@ export default ({
       console.error(e);
     }
   };
-
+  let getJs = (type, data) => {
+    let item = { type, data };
+    if (type == "content")
+      item.data = { menuItems: data };
+    return `window.loadData(${JSON.stringify(
+      item
+    )});`;
+  };
   let injectData = async () => {
     try {
-      while(!webView.current)
-        await sleep(100)
-    let getJs=(type, data)=>{
-      let item = {type,data}
-      if(type == "content")
-      item.data = {menuItems:data};
-      return `window.loadData(${JSON.stringify(item)});`
-    } 
-    let font =await loadFonts();
-      let js =`
-      ${getJs("style", css)}
+      while (!webView.current) await sleep(100);
+
+      let font = await loadFonts();
+      let js = `
       ${getJs("font", font)}
-       ${getJs("content", menuItems)}
       true;
       `;
       webView.current.injectJavaScript(js);
-      //postMessage("content", {menuItems});
-     // await sleep(100)
-     // postMessage("style", css);
-      //await sleep(100)
-     //await loadFonts();
     } catch (e) {
       console.error(e);
     }
@@ -176,33 +238,51 @@ export default ({
   };
   loading.current = true;
   return (
-    <WebView
-      ref={r => {
-        if (r) {
-          webView.current = r;
-          //r.clearCache(true);
-          //injectData();
-        }
-      }}
-      nestedScrollEnabled={true}
-      scrollEnabled={false}
-      source={{
-        html: `
+    <>
+      <Scroller
+        css="absolute ri:10 bo:10 zi:99"
+        size={30}
+        strokeWidth={4}
+      />
+      <WebView
+        ref={r => {
+          if (r) {
+            webView.current = r;
+            //r.clearCache(true);
+            //injectData();
+          }
+        }}
+        nestedScrollEnabled={true}
+        scrollEnabled={false}
+        source={{
+          html: `
         <html>
         <head>
         <meta name="viewport" content="width=device-width,  initial-scale=1" />
         </head>
         <body>
-        ${content?.content.replace(/\<\/( )?br>|\<br( )?(\/)?>/gim, '')}
+        ${content?.content.replace(
+          /\<\/( )?br>|\<br( )?(\/)?>/gim,
+          ""
+        )}
         <script>
-          if(${scrollDisabled ? "1==0" : "1 == 1"})
-              window.scroll(0, ${content.scroll});
+          if(${
+            scrollDisabled ? "1==0" : "1 == 1"
+          }){
+           window.scroll(0, ${content.scroll});
+          }
           function sleep(ms){
             return new Promise((r)=> setTimeout(r,ms))
           }
           async function psg(){
-          while(window.postmsg === undefined || !document.getElementById("novel"))
-             await sleep(100);
+          while(window.postmsg === undefined || !document.getElementById("novel") || !window.ctx)
+             await sleep(200);
+            window.binder();
+            ${getJs("style", css)}
+            while(window.ctm == undefined){
+              ${getJs("content", menuItems)}
+              await sleep(100)
+            }
             window.postmsg("data",true);
           }
           psg();
@@ -210,51 +290,63 @@ export default ({
         </body>
         </html>
         `,
-        basUrl: ""
-      }}
-      onScroll={syntheticEvent => {
-        if (scrollDisabled) return;
-        if (loading.current) {
-          timer(() => (loading.current = false));
-          return;
-        }
-        const {
-          contentOffset,
-          layoutMeasurement,
-          contentSize
-        } = syntheticEvent.nativeEvent;
+          basUrl: ""
+        }}
+        onScroll={syntheticEvent => {
+          const {
+            contentOffset,
+            layoutMeasurement,
+            contentSize
+          } = syntheticEvent.nativeEvent;
 
-        const offset = Math.round(
-          contentOffset.y +
-            layoutMeasurement.height
-        );
-        const contentHeight = Math.round(
-          contentSize.height
-        );
-        //console.warn("scroll", offset);
-        timer(() => {
-          if (offset == contentHeight) {
-            bottomReched?.();
-          } else if (contentOffset.y <= 10) {
-            topReched?.();
-          } else onScroll?.(contentOffset.y);
-        });
-      }}
-      contentMode="mobile"
-      scalesPageToFit={true}
-      originWhitelist={["*"]}
-      scrollEnabled={true}
-      containerStyle={[
-        { ...g.size.screen, zIndex: 99, flex: 0 },
-        style
-      ]}
-      javaScriptEnabled={true}
-      onMessage={onMessage}
-      injectedJavaScriptBeforeContentLoaded={`
-      ${script}
-      binder({});
-      true;
-      `}
-    />
+          const offset = Math.round(
+            contentOffset.y +
+              layoutMeasurement.height
+          );
+          const contentHeight = Math.round(
+            contentSize.height
+          );
+          g.player.scrollProcent =
+            (100 * offset) /
+            (contentHeight -
+              g.player.paddingTop());
+
+          if (scrollDisabled) return;
+          if (loading.current) {
+            timer(
+              () => (loading.current = false)
+            );
+            return;
+          }
+          timer(() => {
+            if (offset == contentHeight) {
+              bottomReched?.();
+            } else if (contentOffset.y <= 10) {
+              topReched?.();
+            } else onScroll?.(contentOffset.y);
+          });
+        }}
+        contentMode="mobile"
+        scalesPageToFit={true}
+        originWhitelist={["*"]}
+        scrollEnabled={true}
+        containerStyle={[
+          {
+            ...g.size.screen,
+            zIndex: 70,
+            flex: 0
+          },
+          style
+        ]}
+        allowFileAccess={true}
+        allowFileAccessFromFileURLs={true}
+        allowUniversalAccessFromFileURLs={true}
+        javaScriptEnabled={true}
+        onMessage={onMessage}
+        injectedJavaScriptBeforeContentLoaded={
+          script
+        }
+      />
+    </>
   );
 };

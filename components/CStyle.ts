@@ -69,8 +69,7 @@ export default NestedStyleSheet.create({
   },
   Slider: "clearboth",
   band: "clearwidth absolute he:50 zi:100 di:flex",
-  form: "clearwidth row jus:space-between ali:center mab:5",
-  "form.Text":
-    "fos:13 bold tea:left par:10 wi:30%",
+  form: "clearwidth row di:flex jus:space-between ali:center mab:5",
+  "form.Text": "fos:13 bold tea:left par:10 wi:100",
   "form.chackBox": "ali:center mar:10"
 });

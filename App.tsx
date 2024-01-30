@@ -17,13 +17,13 @@ import {
   ActionSheet,
   TouchableOpacity,
   Text,
-  Modal
+  Modal,
+  PlayerView
 } from "./components";
 import GlobalData from "./GlobalContext";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
-
 
 export default function App() {
   GlobalData.hook(
@@ -102,8 +102,10 @@ export default function App() {
   if (loader.loading) return loader.elem;
   return (
     <AppContainer>
+     
       <NavigationContainer>
         <AppStack />
+          <PlayerView />
       </NavigationContainer>
       <StatusBar
         style={
@@ -112,6 +114,7 @@ export default function App() {
             : "light"
         }
       />
+     
     </AppContainer>
   );
 }

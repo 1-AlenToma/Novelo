@@ -19,6 +19,7 @@ import Web from "./Web";
 import Slider from "./SliderView";
 import Modal from "./Modal";
 import DropdownList from "./DropdownList";
+import PlayerView from "./PlayerView";
 
 import {
   AppContainer,
@@ -48,5 +49,6 @@ export {
   Web,
   Slider,
   Modal,
-  DropdownList
+  DropdownList,
+  PlayerView
 };

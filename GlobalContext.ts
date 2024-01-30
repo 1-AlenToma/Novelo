@@ -2,7 +2,7 @@ import GlobalState from "react-global-state-management";
 import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
 import { AppSettings } from "./db";
-import { Player } from "./native";
+import { Player, BGService } from "./native";
 import {
   Dimensions,
   Keyboard,
@@ -27,6 +27,7 @@ const data = GlobalState(
     appSettings: AppSettings.n(),
     voices: undefined,
     speech: Speech,
+    nav:undefined,
     orientation: (
       value: "Default" | "LANDSCAPE"
     ) => {
@@ -115,18 +116,19 @@ const data = GlobalState(
               data.size = { ...e };
             }
           );
-
+        //await BGService.start();
         return [
           hideSubscription,
           showSubscription,
-          windowEvent
+          windowEvent,
+         // {remove:()=> BGService.stop()}
         ];
       } catch (e) {
         console.error(e);
       }
     }
   },
-  undefined,
+  ["nav"],
   false
 );
 export default data;

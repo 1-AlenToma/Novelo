@@ -3,6 +3,8 @@ import Html from "./Html";
 import useState from "./StateManager";
 import FileHandler from "./FileHandler";
 import Player from "./Player";
+import BGService from "./BackgroundService";
+
 import {
   LightInfo,
   ChapterInfo,
@@ -26,5 +28,6 @@ export {
   useState,
   NovelInfo,
   FileHandler,
-  Player
+  Player,
+  BGService
 };

@@ -14,24 +14,38 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.alentoma.Novelo"
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",
-      "permissions":["android.permission.INTERNET"],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.WAKE_LOCK"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.alentoma.Novelo"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [[
+    "plugins": [
+      ["./backgroundPlugin.js"],
+      [
         "expo-screen-orientation",
         {
           "initialOrientation": "DEFAULT"
         }
-      ]]
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a31d9c33-fb94-4252-b9e7-a744705a994e"
+      }
+    }
   }
 }

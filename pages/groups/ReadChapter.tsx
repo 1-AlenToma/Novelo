@@ -69,7 +69,8 @@ const Controller = ({ state, ...props }) => {
     "player.showController",
     "appSettings",
     "player.showPlayer",
-    "player.chapterArray"
+    "player.chapterArray",
+    "player._playing"
   );
 
   const Timer = useTimer(100);
@@ -129,59 +130,41 @@ const Controller = ({ state, ...props }) => {
   return (
     <>
       <View
-        ifTrue={g.player.showPlayer}
-        style={{
-          top: g.player.showController ? 41 : 1
-        }}
-        css="band absolute he:40 juc:space-between ali:center row pal:10 par:10"
+        ifTrue={g.player.showController}
+        css="band he:150 bottom juc:center ali:center pal:10 par:10"
         invertColor={true}>
-        <View css="wi:70% row clearheight ali:center">
-          <View
-            invertColor={false}
-            css="wi:40 he:30 juc:center ali:center">
-            <Text
-              css="bold fos:10 tea:center"
-              invertColor={false}>
-              {g.player.currentChapterSettings
-                .audioProgress + 1}
-              /{g.player.chapterArray.length}
-            </Text>
-          </View>
+        <Text
+          invertColor={true}
+          css="desc bold foso:italic">
+          {g.player.procent()}
+        </Text>
+        <View>
           <Slider
-            value={
-              g.player.currentChapterSettings
-                .audioProgress
-            }
-            onValueChange={value => {
-              audioProgressTimer(async () => {
-                g.player.currentChapterSettings.audioProgress =
-                  value;
-                await g.player.currentChapterSettings.saveChanges();
-                if (g.player.playing())
-                  g.player.speak();
-              });
+            invertColor={true}
+            buttons={true}
+            value={g.player.currentChapterIndex}
+            onValueChange={index => {
+              g.player.jumpTo(index);
             }}
             minimumValue={0}
             maximumValue={
-              g.player.chapterArray.length - 1
+              g.player.novel.chapters.length - 1
             }
           />
         </View>
-      </View>
-      <View
-        ifTrue={g.player.showController}
-        css="band bottom juc:space-between ali:center row pal:10 par:10"
-        invertColor={true}>
-        <Text
-          invertColor={true}
-          css="header bold fos:18 foso:italic">
-          {g.player.currentChapterSettings?.name}
-        </Text>
-        <Text
-          invertColor={true}
-          css="header bold fos:18 foso:italic">
-          {g.player.procent()}
-        </Text>
+        <View css="clearwidth ali:center juc:center">
+          <Text
+            invertColor={true}
+            css="header bold fos:18 foso:italic">
+            {state.book.name}
+          </Text>
+          <Text css="desc color:red">
+            {
+              g.player.currentChapterSettings
+                ?.name
+            }
+          </Text>
+        </View>
       </View>
       <Header
         ifTrue={g.player.showController}
@@ -303,7 +286,7 @@ const Controller = ({ state, ...props }) => {
                           Font:
                         </Text>
                         <DropdownList
-                          height="50"
+                          height="80"
                           items={Object.keys(
                             Fonts
                           )}
@@ -335,6 +318,8 @@ const Controller = ({ state, ...props }) => {
                           FontSize:
                         </Text>
                         <Slider
+                          invertColor={true}
+                          buttons={true}
                           value={
                             g.appSettings.fontSize
                           }
@@ -475,7 +460,7 @@ const Controller = ({ state, ...props }) => {
                           Voices:
                         </Text>
                         <DropdownList
-                          height="50"
+                          height="80"
                           items={g.voices}
                           render={item => {
                             return (
@@ -514,6 +499,8 @@ const Controller = ({ state, ...props }) => {
                             </Text>
                           </View>
                           <Slider
+                            invertColor={true}
+                            buttons={true}
                             step={0.1}
                             value={
                               g.appSettings.pitch
@@ -543,6 +530,8 @@ const Controller = ({ state, ...props }) => {
                             </Text>
                           </View>
                           <Slider
+                            invertColor={true}
+                            buttons={true}
                             step={0.1}
                             value={
                               g.appSettings.rate
@@ -672,7 +661,9 @@ const InternalWeb = ({
           g.player.currentChapterSettings.scrollProgress =
             y;
           //console.log(y);
-          await g.player.currentChapterSettings.update("scrollProgress");
+          await g.player.currentChapterSettings.update(
+            "scrollProgress"
+          );
         }}
       />
     </>
@@ -695,38 +686,53 @@ export default (props: any) => {
     (async () => {
       try {
         loader.show();
-        state.novel =
-          await state.parser.detail(url);
-        let book = await g
-          .db()
-          .querySelector<Book>("Books")
-          .LoadChildren<Chapter>(
-            "Chapters",
-            "parent_Id",
-            "id",
-            "chapterSettings",
-            true
-          )
-          .Where.Column(x => x.url)
-          .EqualTo(url)
-          .AND.Column(x => x.parserName)
-          .EqualTo(parserName)
-          .findOrSave(
-            Book.n()
-              .Url(state.novel.url)
-              .Name(state.novel.name)
-              .ParserName(parserName)
+        if (
+          !g.player.novel ||
+          g.player.novel.url !== url
+        ) {
+          state.novel =
+            await state.parser.detail(url);
+          let book = await g
+            .db()
+            .querySelector<Book>("Books")
+            .LoadChildren<Chapter>(
+              "Chapters",
+              "parent_Id",
+              "id",
+              "chapterSettings",
+              true
+            )
+            .Where.Column(x => x.url)
+            .EqualTo(url)
+            .AND.Column(x => x.parserName)
+            .EqualTo(parserName)
+            .findOrSave(
+              Book.n()
+                .Url(state.novel.url)
+                .Name(state.novel.name)
+                .ParserName(parserName)
+            );
+          state.book = book;
+          g.player = new Player(
+            state.novel,
+            state.book,
+            {
+              show: () => loader.show(),
+              hide: () => loader.hide()
+            }
           );
-        state.book = book;
-        g.player = new Player(
-          state.novel,
-          state.book,
-          {
+          await g.player.jumpTo();
+        } else {
+          state.novel = g.player.novel;
+          state.book = g.player.book;
+          g.player.loader = {
             show: () => loader.show(),
             hide: () => loader.hide()
-          }
-        );
-        await g.player.jumpTo();
+          };
+          g.player.hooked= true;
+          g.player.viewState = "Default";
+          loader.hide();
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -735,6 +741,8 @@ export default (props: any) => {
     })();
     return () => {
       g.isFullScreen = false;
+       g.player.hooked= false;
+      g.player.viewState = "Folded";
     };
   }, []);
 
