@@ -24,6 +24,7 @@ export default ({ ...props }) => {
 
         <Favorit
           {...props}
+          disableScrolling={true}
           icon={{
             name: "favorite",
             type: "MaterialIcons"

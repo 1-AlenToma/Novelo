@@ -2,7 +2,12 @@ import GlobalState from "react-global-state-management";
 import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
 import { AppSettings } from "./db";
-import { Player, BGService } from "./native";
+import {
+  Player,
+  BGService,
+  FileHandler,
+  HttpHandler
+} from "./native";
 import {
   Dimensions,
   Keyboard,
@@ -16,18 +21,22 @@ LogBox.ignoreLogs([
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
 const globalDb = new dbContext();
+const globalHttp = new HttpHandler();
 type ThemeMode = "light" | "dark";
 const parsers = ParserWrapper.getAllParsers();
 let currentParser = parsers[0];
 const data = GlobalState(
   {
     player: {} as Player,
+    http:()=> globalHttp,
     KeyboardState: false,
     isFullScreen: false,
     appSettings: AppSettings.n(),
     voices: undefined,
+    cache: new FileHandler("tempFiles", "Cache"),
+    files: new FileHandler("noveloFiles", "File"),
     speech: Speech,
-    nav:undefined,
+    nav: undefined,
     orientation: (
       value: "Default" | "LANDSCAPE"
     ) => {
@@ -120,8 +129,8 @@ const data = GlobalState(
         return [
           hideSubscription,
           showSubscription,
-          windowEvent,
-         // {remove:()=> BGService.stop()}
+          windowEvent
+          // {remove:()=> BGService.stop()}
         ];
       } catch (e) {
         console.error(e);

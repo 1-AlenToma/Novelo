@@ -23,8 +23,7 @@ const getFetch = async (
 ) => {
   validateSize();
   let key = createKey({ url, options });
-  if (tempData.has(key))
-    return tempData.get(key);
+  if (tempData.has(key)) return tempData.get(key);
   let data = await fetch(url, options);
   let text = await data.text();
   let item = new HttpTemp(text, key);
@@ -110,7 +109,7 @@ class HttpHandler {
         baseurl || url
       );
     } catch (e) {
-      console.error("httget",e);
+      console.error("httget", e);
       return new HttpValue("<div></div>", url);
     }
   }
@@ -162,6 +161,26 @@ class HttpHandler {
       console.error(e);
       return null;
     }
+  }
+
+  async imageUrlToBase64(url: string) {
+    const response = await fetch(url,{
+      ...this.header
+      });
+    const blob = await response.blob();
+    return new Promise((onSuccess, onError) => {
+      try {
+        const reader = new FileReader();
+        reader.onload = function () {
+          onSuccess(
+            `data:image/jpg;base64,${this.result}`
+          );
+        };
+        reader.readAsDataURL(blob);
+      } catch (e) {
+        onError(e);
+      }
+    });
   }
 }
 export default HttpHandler;

@@ -39,13 +39,12 @@ import {
 import g from "../../GlobalContext";
 import Header from "../../pages/Header";
 import { Book, Chapter } from "../../db";
-import WebView from "react-native-webview";
-import script from "../../assets/readerjs";
 import {
   arrayBuffer,
   newId,
   proc,
-  invertColor
+  invertColor,
+  sleep
 } from "../../Methods";
 import { Asset, useAssets } from "expo-asset";
 import * as FileSystem from "expo-file-system";
@@ -675,6 +674,7 @@ export default (props: any) => {
     useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
+  const files = g.files.useFile("json");
   const state = useState({
     novel: {} as DetailInfo,
     parser: g.parser.find(parserName),
@@ -686,12 +686,16 @@ export default (props: any) => {
     (async () => {
       try {
         loader.show();
+        while (files.loading) await sleep(100);
+        if (state.novel.url) return;
         if (
           !g.player.novel ||
           g.player.novel.url !== url
         ) {
           state.novel =
-            await state.parser.detail(url);
+            parserName == "epub"
+              ? files.find(x => x.url === url)
+              : await state.parser.detail(url);
           let book = await g
             .db()
             .querySelector<Book>("Books")
@@ -710,7 +714,16 @@ export default (props: any) => {
               Book.n()
                 .Url(state.novel.url)
                 .Name(state.novel.name)
-                .ParserName(parserName)
+                .ParserName(
+                   parserName
+                )
+                .ImageBase64(
+                  await g
+                    .http()
+                    .imageUrlToBase64(
+                      state.novel.image
+                    )
+                )
             );
           state.book = book;
           g.player = new Player(
@@ -729,7 +742,7 @@ export default (props: any) => {
             show: () => loader.show(),
             hide: () => loader.hide()
           };
-          g.player.hooked= true;
+          g.player.hooked = true;
           g.player.viewState = "Default";
           loader.hide();
         }
@@ -741,7 +754,7 @@ export default (props: any) => {
     })();
     return () => {
       g.isFullScreen = false;
-       g.player.hooked= false;
+      g.player.hooked = false;
       g.player.viewState = "Folded";
     };
   }, []);

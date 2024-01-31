@@ -223,7 +223,7 @@ const TabBar = ({
             css="flex"
             key={i}>
             {x.props.head}
-            {!disableScrolling ? (
+            {!disableScrolling  && !x.props.disableScrolling? (
               <ScrollView
                 style={{
                   width: size?.width,

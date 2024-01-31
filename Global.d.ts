@@ -33,6 +33,7 @@ declare global {
     cleanHtml(): string;
     cleanText(): string;
     htmlArray(): string[];
+    html(): any;
     splitSearch(searchFor: string): boolean;
     imageFetchBuilder(
       selector: string,
@@ -129,15 +130,15 @@ Array.prototype.distinct = function (
 Array.prototype.niceJson = function (
   ...keyToRemove: string[]
 ) {
-  let items = [];
+  function replacer(key, value) {
+    if (keyToRemove.find(x => x == key))
+      return undefined;
+    return value;
+  }
   if (!keyToRemove.has())
     return JSON.stringify(this, undefined, 4);
-  for (let item of this) {
-    let t = { ...item };
-    keyToRemove.forEach(x => delete t[x]);
-    items.push(t);
-  }
-  return JSON.stringify(items, undefined, 4);
+
+  return JSON.stringify(this, replacer, 4);
 };
 
 Array.prototype.mapAsync = async function (
@@ -179,6 +180,12 @@ String.prototype.splitSearch = function (
 String.prototype.cleanHtml = function () {
   let str = new String(this).toString();
   let html = cheerio.load(str).text();
+  return html;
+};
+
+String.prototype.html = function () {
+  let str = new String(this).toString();
+  let html = cheerio.load(str);
   return html;
 };
 

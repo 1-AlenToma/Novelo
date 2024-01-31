@@ -404,6 +404,13 @@ export default ({ ...props }: any) => {
                     .Url(state.novel.url)
                     .Name(state.novel.name)
                     .ParserName(parserName)
+                    .ImageBase64(
+                     await g
+                        .http()
+                        .imageUrlToBase64(
+                          state.novel.image
+                        )
+                    )
                 ));
             await book
               .Favorit(!book.favorit)
@@ -422,8 +429,8 @@ export default ({ ...props }: any) => {
             }
             css="bold"
             size={45}
-            style={{color:
-              state.book?.favorit
+            style={{
+              color: state.book?.favorit
                 ? "red"
                 : undefined
             }}

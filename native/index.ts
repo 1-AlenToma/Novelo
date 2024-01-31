@@ -4,6 +4,7 @@ import useState from "./StateManager";
 import FileHandler from "./FileHandler";
 import Player from "./Player";
 import BGService from "./BackgroundService";
+import ZipBook from "./ZipBook";
 
 import {
   LightInfo,
@@ -29,5 +30,6 @@ export {
   NovelInfo,
   FileHandler,
   Player,
-  BGService
+  BGService,
+  ZipBook
 };

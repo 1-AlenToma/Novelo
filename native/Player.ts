@@ -56,7 +56,7 @@ class Player {
       let parser = g.parser.find(
         this.book.parserName
       );
-      let str = await parser.chapter(url);
+      let str =this.novel.epub ? this.currentChapter.content : await parser.chapter(url);
       this.chapterArray = str.htmlArray();
       this.html =
         this.currentChapterSettings.content = str;

@@ -12,10 +12,11 @@ class Book extends IBaseModule<TableNames> {
   id?: number;
   url: string = "";
   name: string = "";
-  parserName: string="";
+  parserName: string = "";
   inlineStyle: string = "";
   selectedChapterIndex: number = 0;
   favorit: boolean = false;
+  imageBase64: string = "";
   chapterSettings: IQueryResultItem<
     Chapter,
     TableNames
@@ -31,10 +32,10 @@ class Book extends IBaseModule<TableNames> {
       .primary.autoIncrement.number.column("name")
       .column("url")
       .encrypt("novelo.enc")
+      .column("imageBase64")
       .column("inlineStyle")
       .column("favorit")
-      .boolean
-      .column("parserName")
+      .boolean.column("parserName")
       .column("selectedChapterIndex")
       .number.objectPrototype(Book.prototype);
   }

@@ -21,7 +21,9 @@ export default ({
         .fetchSelectorImage(url)
         .then(x => setSource(x))
         .catch(x => {});
-    } else setSource(url);
+    } else if(url?.has()){
+      setSource(url);
+    }
   };
   useEffect(() => {
     loadImage();
