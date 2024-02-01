@@ -10,15 +10,17 @@ type Fnc = (
   type: "Write" | "Delete",
   file: string
 ) => void;
+let events = {};
+
 export default class FileHandler {
   dir: string;
-  events: any;
+  handlerId: string = newId();
   constructor(dir: string, dirType: Dir) {
-    this.events = {
+    events[this.handlerId] = {
       values: () =>
-        Object.keys(this.events).map(
-          x => this.events[x]
-        )
+        Object.keys(events[this.handlerId])
+          .filter(x => x !== "values")
+          .map(x => events[this.handlerId][x])
     };
     this.dir =
       (!dirType || dirType == "Cache"
@@ -28,55 +30,50 @@ export default class FileHandler {
   }
 
   trigger(op: string, url: string) {
-    this.events.values().forEach(x => x(op, url));
+    events[this.handlerId]
+      .values()
+      .forEach(x => x(op, url));
   }
 
   useFile(
     globalType?: "json" | "utf8" | "base64"
   ) {
     const id = useRef(newId()).current;
-    const [files, setFiles] = useState([]);
+    const files = useRef([]);
     const [fileItems, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    this.events[id] = (op, url) => {
-      if (op === "Write") {
-        this.allFiles().then(fls =>
-          setFiles(fls)
-        );
-      } else {
-        setFiles([
-          ...files.filter(x => x !== url)
-        ]);
-      }
+    events[this.handlerId][id] = async (
+      op,
+      url
+    ) => {
+      await setLoading(true);
+      files.current = await this.allFiles();
+      await loadItems();
     };
+
     useEffect(() => {
-      (async () => {
-        setLoading(true);
-        let fs = await this.allFiles();
-        if (fs.length <= 0) setLoading(false);
-        setFiles(fs);
-      })();
+      events[this.handlerId][id]();
       return () => {
-        delete this.events[id];
+        if (this.events[this.handlerId][id]) {
+          delete this.events[this.handlerId][id];
+        }
       };
     }, []);
 
-    useEffect(() => {
-      setLoading(true);
-      (async () => {
-        let ims = [];
-        for (let file of files) {
-          let item = await loadContent(
-            file,
-            globalType
-          );
-          ims.push(item);
-        }
+    const loadItems = async () => {
+      await setLoading(true);
+      let ims = [];
+      for (let file of files.current) {
+        let item = await loadContent(
+          file,
+          globalType
+        );
+        ims.push(item);
+      }
 
-        setItems(ims);
-        setLoading(false);
-      })();
-    }, [files]);
+      await setItems(ims);
+      await setLoading(false);
+    };
 
     loadContent = async (
       file: string,
@@ -86,12 +83,22 @@ export default class FileHandler {
         file,
         type && type != "json" ? type : "utf8"
       );
-      if (type === "json")
-        return JSON.parse(item);
+      if (type === "json") {
+        let tm = JSON.parse(item);
+        tm.deleteFile = async () => {
+          await this.delete(file);
+        };
+        return tm;
+      }
       return item;
     };
 
-    return { fileItems,loading, files, loadContent };
+    return {
+      fileItems,
+      loading,
+      files: files.current,
+      loadContent
+    };
   }
 
   getName(file: string) {

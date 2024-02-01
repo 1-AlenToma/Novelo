@@ -38,7 +38,6 @@ export default ({ ...props }: any) => {
     json: "",
     infoNovel: {}
   });
-  const { fileItems } = g.files.useFile("json");
   const [books, dataIsLoading] = g.db().useQuery(
     "Books",
     g
@@ -53,6 +52,8 @@ export default ({ ...props }: any) => {
       )
       .Where.Column(x => x.favorit)
       .EqualTo(true)
+      .AND.Column(x => x.parserName)
+      .NotEqualTo("epub")
   );
 
   useEffect(() => {
@@ -69,85 +70,20 @@ export default ({ ...props }: any) => {
               ] = `(${b.chapterSettings.length}/${novel.chapters.length})`;
               updater();
             }
-          } else {
-            let novel = fileItems.find(
-              x => x.url == b.url
-            );
-            if (novel) {
-              state.infoNovel[
-                b.url
-              ] = `(${b.chapterSettings.length}/${novel.chapters.length})`;
-              updater();
-            }
           }
           await sleep(500);
         }
       }
     })();
-  }, [books, fileItems]);
-
-  const loadEpub = async () => {
-    try {
-      loader.show();
-      let { assets } =
-        await DocumentPicker.getDocumentAsync({
-          copyToCacheDirectory: true,
-          type: "application/epub+zip"
-        });
-      let uri = assets?.firstOrDefault("uri");
-      let name = assets?.firstOrDefault("name");
-      let bk = await ZipBook.load(uri, name);
-      let book = Book.n()
-        .Name(bk.name)
-        .Url(bk.url)
-        .Favorit(true)
-        .InlineStyle(
-          bk.files
-            .filter(x => x.type === "CSS")
-            .map(x => x.content)
-            .join("\n")
-        )
-        .ImageBase64(
-          bk.files.find(x => x.type === "Image")
-            ?.content ?? ""
-        )
-        .ParserName("epub");
-      await g.files.write(
-        bk.url + ".json",
-        JSON.stringify(bk)
-      );
-      await g.db().save(book);
-    } catch (e) {
-      console.error(e);
-    }
-    loader.hide();
-  };
+  }, [books]);
 
   return (
     <View css="flex mih:100">
-      <TextInput
-        invertColor={false}
-        css="wi:90% pa:5 bor:2"
-        value={state.json}
-        multiline={true}
-      />
       {loader.elem}
-      <View
-        invertColor={true}
-        css="band overflow bor:5 clearwidth par:5 he:40 ali:flex-end absolute to:0 juc:center di:flex">
-        <TouchableOpacity onPress={loadEpub}>
-          <Icon
-            invertColor={true}
-            size={35}
-            name="file-zip"
-            type="Octicons"
-          />
-        </TouchableOpacity>
-      </View>
       <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
         <TextInput
           onChangeText={x => (state.text = x)}
-          invertColor={false}
+          invertColor={true}
           css="wi:90% pa:5 bor:2"
           defaultValue={state.text}
           placeholder="Search..."

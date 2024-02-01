@@ -32,7 +32,6 @@ class Player {
     this.book = book;
     this.novel = novel;
     this.loader = loader;
-    //this.jumpTo(book.selectedChapterIndex);
   }
 
   procent() {
@@ -56,7 +55,9 @@ class Player {
       let parser = g.parser.find(
         this.book.parserName
       );
-      let str =this.novel.epub ? this.currentChapter.content : await parser.chapter(url);
+      let str = this.novel.epub
+        ? this.currentChapter.content
+        : await parser.chapter(url);
       this.chapterArray = str.htmlArray();
       this.html =
         this.currentChapterSettings.content = str;
@@ -70,6 +71,21 @@ class Player {
       this.loader?.hide();
     }
   }
+
+  getImage = (...href: string[]) => {
+    let imgs = [];
+    if (this.novel.files && href.length > 0) {
+      for (let h of href) {
+        let img = this.novel.files.find(
+          x => x.fileName.indexOf(h) !== -1 && x.type==="Image"
+        );
+        if (img)
+          imgs.push({ h, cn: img.content });
+      }
+    }
+
+    return imgs;
+  };
 
   paddingBottom() {
     if (this.showPlayer) return 2;

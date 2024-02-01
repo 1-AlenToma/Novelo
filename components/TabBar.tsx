@@ -33,7 +33,8 @@ const TabBar = ({
   disableScrolling,
   change,
   rootView,
-  scrollHeight
+  scrollHeight,
+  fontSize
 }: {
   children: TabChild[];
   style?: any;
@@ -166,6 +167,7 @@ const TabBar = ({
               invertColor={true}
               style={[
                 styles.menuText,
+                {fontSize},
                 i == (0).sureValue(index)
                   ? GlobalData.theme.settings
                   : undefined
@@ -223,7 +225,8 @@ const TabBar = ({
             css="flex"
             key={i}>
             {x.props.head}
-            {!disableScrolling  && !x.props.disableScrolling? (
+            {!disableScrolling &&
+            !x.props.disableScrolling ? (
               <ScrollView
                 style={{
                   width: size?.width,

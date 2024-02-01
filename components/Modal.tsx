@@ -33,30 +33,30 @@ export default ({
   visible: boolean;
   onHide?: () => void;
 }) => {
-  let context = useContext(ElementsContext);
-  const [started, setStarted] = useState(false);
-  const [isV, setIsV] = useState(false);
-  const [animTop, setAnimTop] = useState(
-    new Animated.Value(
-      -proc(
-        parseFloat(
-          (height || "0").replace(/%/g, "")
-        ),
-        g.size.window.height
-      )
-    )
-  );
-  const animating = useRef(false);
-  let id = useRef(newId());
-
   let getHeight = () => {
+    if (
+      typeof height === "number" &&
+      height > 100
+    )
+      return height;
     return proc(
       parseFloat(
-        (height || "0").replace(/%/g, "")
+        (height?.toString() ?? "0").replace(
+          /%/g,
+          ""
+        )
       ),
       g.size.window.height
     );
   };
+  let context = useContext(ElementsContext);
+  const [started, setStarted] = useState(false);
+  const [isV, setIsV] = useState(false);
+  const [animTop, setAnimTop] = useState(
+    new Animated.Value(-getHeight())
+  );
+  const animating = useRef(false);
+  let id = useRef(newId());
 
   let toggle = async (show: boolean) => {
     while (animating.current || !animTop) return;

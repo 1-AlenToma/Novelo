@@ -119,22 +119,20 @@ export default ({
   const timer = useTimer(200);
   const webView = useRef();
 
-  const postMessage = (
+  const postMessage = async (
     type: string,
-    data: any
+    data: any,
+    method?: string
   ) => {
-    if (webView.current === undefined) return;
+    while (webView.current === undefined)
+      await sleep(100);
     let item = { type, data };
-    if (type == "content")
-      item.data = { ...data };
     webView.current.injectJavaScript(`
-    window.loadData(${JSON.stringify(item)});
-    true;
-    `);
-    return;
-    webView.current.postMessage(
-      JSON.stringify(item)
-    );
+        ${
+          !method ? "window.loadData" : method
+        }(${JSON.stringify(item)});
+        true;
+     `);
   };
 
   const loadFonts = async () => {
@@ -207,7 +205,6 @@ export default ({
 
   const onMessage = ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
-    //console.log(data);
     switch (data.type) {
       case "scrollValue":
         alert(data.data);
@@ -233,6 +230,13 @@ export default ({
         break;
       case "error":
         console.error(data);
+        break;
+      case "Image":
+        postMessage(
+          "images",
+          g.player.getImage(...data.data),
+          "window.loadImages"
+        );
         break;
     }
   };
@@ -266,6 +270,18 @@ export default ({
           ""
         )}
         <script>
+          window.loadImages=(imgs)=>{
+            imgs= imgs.data;
+            let images = [...document.querySelectorAll("img")];
+            for(let img of images){
+              let src = img.getAttribute("src");
+              let m = imgs.find(x=> x.h==src)
+              if (m)
+               img.setAttribute("src", m.cn);
+            }
+          }
+          let images = document.querySelectorAll("img");
+          let hrefs = [...images].map(x=> x.getAttribute("src"))
           if(${
             scrollDisabled ? "1==0" : "1 == 1"
           }){
@@ -284,6 +300,8 @@ export default ({
               await sleep(100)
             }
             window.postmsg("data",true);
+            if(hrefs.length >0)
+              window.postmsg("Image",hrefs);
           }
           psg();
         </script>

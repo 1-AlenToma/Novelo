@@ -8,9 +8,10 @@ import {
 import { newId } from "../Methods";
 import View from "./ThemeView";
 import Text from "./ThemeText";
-import {useUpdate} from "../hooks"
+import { useUpdate } from "../hooks";
 
 const ElementsContext = createContext({});
+let zindex = 1;
 const AppContainer = ({
   children
 }: {
@@ -28,18 +29,24 @@ const AppContainer = ({
     remove: (id: string) => {
       data.items.delete(id);
     },
+    zIndex: () => zindex++,
     updateProps: (
       elem: any,
       id: string,
-      props: any
+      props: any,
+      zIndex?: number
     ) => {
-      data.items.set(id, { props, elem });
-      // if (item) item.component.props = props;
+      data.items.set(id, {
+        props,
+        elem
+      });
     },
     setIsReady: setIsReady,
     push: (elem: any, id: string, props: any) => {
-      //alert(id);
-      data.items.set(id, { elem, props });
+      data.items.set(id, {
+        elem,
+        props
+      });
     }
   };
 
@@ -53,7 +60,7 @@ const AppContainer = ({
   return (
     <ElementsContext.Provider value={data}>
       <>
-        <View css="zi:1 flex">
+        <View css="zi:1 flex" onStartShouldSetResponderCapture={() => false}>
           {isReady ? children : null}
         </View>
         <AppChildContainer />
@@ -72,6 +79,7 @@ const AppChildContainer = () => {
   context.update = () => {
     updater();
   };
+
   context.newKey = () => {
     setK(newId());
   };
@@ -86,9 +94,11 @@ const AppChildContainer = () => {
 
   return (
     <>
-      {rItem.map((x, i) => (
+      {rItem.reverse().map((x, i) => (
         <View
-          style={{ zIndex: 9999 + i }}
+          style={{
+            zIndex: 200 + x.x.zIndex || i
+          }}
           ifTrue={x.x.props.visible}
           css="bac:transparent bottom clearboth"
           key={x.k + kk}>

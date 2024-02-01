@@ -19,6 +19,10 @@ declare global {
     niceJson: (
       ...keyToRemove: (keyof T)[]
     ) => string;
+    skip: (
+      index: number,
+      handler: Function
+    ) => string;
   }
   interface String {
     join(...relative: String[]): String;
@@ -55,7 +59,6 @@ declare global {
 Number.prototype.readAble = function () {
   let nr = this.toString();
   let nrs = nr.split(".");
-  console.log(nr, "nrs", nrs);
   if (nrs.length <= 1) return nr;
   if (/[1-9]/g.test(nrs[1]))
     return `${nrs[0]}.${nrs[1].substring(0, 2)}`;
@@ -68,6 +71,15 @@ Number.prototype.sureValue = function (
   if (a === undefined || a === null || isNaN(a))
     return this;
   return a;
+};
+
+Array.prototype.skip = function (
+  index: number,
+  handler?: Function
+) {
+  if (!handler)
+    return this.filter((x, i) => i > index);
+   return this.filter((x, i) => !handler(x,i) || i > index);
 };
 
 Array.prototype.lastOrDefault = function (

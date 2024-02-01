@@ -1,9 +1,10 @@
 import * as Icons from "@expo/vector-icons";
 import {
   removeProps,
-  parseThemeStyle
+  parseThemeStyle,
+  StyledView
 } from "../Methods";
-
+let styledItems = {};
 export default ({
   name,
   type,
@@ -13,7 +14,12 @@ export default ({
   invertColor,
   ...props
 }: any) => {
-  let ICO = Icons[type];
+  if (type && !styledItems[type])
+    styledItems[type] = StyledView(
+      Icons[type],
+      "Icon"
+    );
+  let ICO = styledItems[type];
   let st = parseThemeStyle(
     style,
     css,
@@ -25,6 +31,7 @@ export default ({
       style={removeProps(st, "backgroundColor")}
       color={props.color}
       size={parseInt((24).sureValue(size))}
+      css={css}
       name={name}
     />
   );

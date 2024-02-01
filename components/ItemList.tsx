@@ -11,6 +11,7 @@ export default ({
   itemCss,
   vMode,
   onPress,
+  onLongPress,
   onEndReached,
   scrollIndex,
   nested
@@ -34,6 +35,7 @@ export default ({
     return (
       <TouchableOpacity
         css={itemCss}
+        onLongPress={()=> onLongPress?.(item)}
         onPress={() => onPress?.(item)}>
         <VR {...d} />
       </TouchableOpacity>

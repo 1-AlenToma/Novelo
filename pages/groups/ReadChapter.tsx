@@ -46,8 +46,6 @@ import {
   invertColor,
   sleep
 } from "../../Methods";
-import { Asset, useAssets } from "expo-asset";
-import * as FileSystem from "expo-file-system";
 import ColorPicker, {
   Panel1,
   Swatches,
@@ -594,7 +592,9 @@ const InternalWeb = ({
           }
           body > .novel {
             width: 95%;
-            min-height: 50%;
+            min-height: ${!g.player.showPlayer
+              ? "100%"
+              : "50%"};
             top: ${g.player.showPlayer
               ? "45px"
               : "0px"};
@@ -681,80 +681,90 @@ export default (props: any) => {
     book: {} as Book
   });
 
-  useEffect(() => {
-    g.isFullScreen = true;
-    (async () => {
-      try {
-        loader.show();
-        while (files.loading) await sleep(100);
-        if (state.novel.url) return;
-        if (
-          !g.player.novel ||
-          g.player.novel.url !== url
-        ) {
-          state.novel =
-            parserName == "epub"
-              ? files.find(x => x.url === url)
-              : await state.parser.detail(url);
-          let book = await g
-            .db()
-            .querySelector<Book>("Books")
-            .LoadChildren<Chapter>(
-              "Chapters",
-              "parent_Id",
-              "id",
-              "chapterSettings",
-              true
-            )
-            .Where.Column(x => x.url)
-            .EqualTo(url)
-            .AND.Column(x => x.parserName)
-            .EqualTo(parserName)
-            .findOrSave(
-              Book.n()
-                .Url(state.novel.url)
-                .Name(state.novel.name)
-                .ParserName(
-                   parserName
-                )
-                .ImageBase64(
-                  await g
-                    .http()
-                    .imageUrlToBase64(
-                      state.novel.image
-                    )
-                )
-            );
-          state.book = book;
-          g.player = new Player(
-            state.novel,
-            state.book,
-            {
-              show: () => loader.show(),
-              hide: () => loader.hide()
-            }
+  const loadData = async () => {
+    try {
+      loader.show();
+      if (state.novel.url) {
+        loader.hide();
+        return;
+      }
+      if (
+        !g.player.novel ||
+        g.player.novel.url !== url
+      ) {
+        state.novel =
+          parserName == "epub"
+            ? files.fileItems.find(
+                x => x.url === url
+              )
+            : await state.parser.detail(url);
+        let book = await g
+          .db()
+          .querySelector<Book>("Books")
+          .LoadChildren<Chapter>(
+            "Chapters",
+            "parent_Id",
+            "id",
+            "chapterSettings",
+            true
+          )
+          .Where.Column(x => x.url)
+          .EqualTo(url)
+          .AND.Column(x => x.parserName)
+          .EqualTo(parserName)
+          .findOrSave(
+            Book.n()
+              .Url(state.novel.url)
+              .Name(state.novel.name)
+              .ParserName(parserName)
+              .ImageBase64(
+                await g
+                  .http()
+                  .imageUrlToBase64(
+                    state.novel.image
+                  )
+              )
           );
-          await g.player.jumpTo();
-        } else {
-          state.novel = g.player.novel;
-          state.book = g.player.book;
-          g.player.loader = {
+        state.book = book;
+        g.player = new Player(
+          state.novel,
+          state.book,
+          {
             show: () => loader.show(),
             hide: () => loader.hide()
-          };
-          g.player.hooked = true;
-          g.player.viewState = "Default";
-          loader.hide();
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        // loader.hide();
+          }
+        );
+        await g.player.jumpTo();
+      } else {
+        state.novel = g.player.novel;
+        state.book = g.player.book;
+        g.player.loader = {
+          show: () => loader.show(),
+          hide: () => loader.hide()
+        };
+        g.player.hooked = true;
+        g.player.viewState = "Default";
+        loader.hide();
       }
-    })();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      // loader.hide();
+    }
+  };
+
+  if (parserName == "epub")
+    useEffect(() => {
+      if (!files.loading) loadData();
+    }, [files.loading]);
+
+  useEffect(() => {
+    g.isFullScreen = true;
+    if (parserName != "epub") loadData();
     return () => {
       g.isFullScreen = false;
       g.player.hooked = false;
+      if(g.player.showPlayer && g.player.playing())
       g.player.viewState = "Folded";
     };
   }, []);

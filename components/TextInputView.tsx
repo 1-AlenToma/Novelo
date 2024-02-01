@@ -17,12 +17,15 @@ export default React.forwardRef(
       css,
       invertColor
     );
-    
+
     return (
       <Input
         ref={ref}
         disableFullscreenUI={true}
         inputMode="search"
+        placeholderTextColor={st.firstOrDefault(
+          "color"
+        )}
         {...props}
         style={st}
       />

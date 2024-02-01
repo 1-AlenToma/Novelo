@@ -2,11 +2,14 @@ import Text from "./ThemeText";
 import View from "./ThemeView";
 import Icon from "./Icons";
 import Slider from "./SliderView";
+import AnimatedView from "./AnimatedView";
 import TouchableOpacity from "./TouchableOpacityView";
 import { useEffect, useRef } from "react";
 import {
   ScrollView,
-  Linking
+  Linking,
+  PanResponder,
+  Animated
 } from "react-native";
 import {
   useUpdate,
@@ -30,6 +33,10 @@ export default ({ ...props }: any) => {
     "player._playing",
     "player.viewState"
   );
+  let animation = useRef(
+    new Animated.ValueXY()
+  ).current;
+  let pan = useRef();
   useDbHook(
     "Chapters",
     item => item.parent_Id === g.player.book?.id,
@@ -37,31 +44,68 @@ export default ({ ...props }: any) => {
     "audioProgress"
   );
   const audioProgressTimer = useTimer(100);
-  if (!g.player || !g.player.book) return null;
 
+  if (!g.player || !g.player.book) return null;
+  const touchThreshold = 20;
+  if (!pan.current) {
+    pan.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (
+        e,
+        gestureState
+      ) => {
+        const { dx, dy } = gestureState;
+
+        return (
+          Math.abs(dx) > touchThreshold ||
+          Math.abs(dy) > touchThreshold
+        );
+      },
+      onShouldBlockNativeResponder: () => false,
+      onPanResponderGrant: () => {
+        animation.setOffset({
+          x: animation.x._value,
+          y: animation.y._value
+        });
+      },
+      onPanResponderMove: Animated.event(
+        [
+          null,
+          { dx: animation.x, dy: animation.y }
+        ],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: (e, gesture) => {
+        animation.flattenOffset();
+      } //Step 4
+    });
+  }
   return (
     <>
-      <View
+      <AnimatedView
         ifTrue={g.player.showPlayer}
         style={[
-          g.player.hooked
-            ? {
-                top: g.player.showController
-                  ? 41
-                  : 1
-              }
-            : {}
+          {
+            top: 41,
+            transform: [
+              { translateY: animation.y }
+            ]
+          }
         ]}
-        css={`band absolute overflow he:40 juc:center ali:center row pal:10 par:10 ${
+        css={`band zi:500 bac:black absolute overflow he:40 juc:center ali:center row pal:10 par:10 ${
           g.player.viewState == "Folded"
-            ? "wi:40 ri:2 mat:30 bor:4 bo:45"
+            ? "wi:40 bor:4 ri:2"
             : !g.player.hooked
-            ? "bor:4 bo:45"
+            ? "bor:4"
             : ""
         }`}
+        {...pan.current.panHandlers}
         invertColor={true}>
         <View css="row jus:center ali:center di:flex">
           <TouchableOpacity
+            onStartShouldSetResponderCapture={() =>
+              false
+            }
             css="wi:30"
             onPress={() => {
               g.player.viewState =
@@ -81,7 +125,8 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              g.nav.nav("ReadChapter")
+              g.nav
+                .nav("ReadChapter")
                 .add({
                   url: g.player.novel.url,
                   parserName:
@@ -184,7 +229,7 @@ export default ({ ...props }: any) => {
             />
           </TouchableOpacity>
         </View>
-      </View>
+      </AnimatedView>
     </>
   );
 };

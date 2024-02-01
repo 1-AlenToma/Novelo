@@ -18,7 +18,8 @@ import {
   TouchableOpacity,
   Text,
   Modal,
-  PlayerView
+  PlayerView,
+  AlertView
 } from "./components";
 import GlobalData from "./GlobalContext";
 import * as NavigationBar from "expo-navigation-bar";
@@ -102,10 +103,9 @@ export default function App() {
   if (loader.loading) return loader.elem;
   return (
     <AppContainer>
-     
       <NavigationContainer>
         <AppStack />
-          <PlayerView />
+        <PlayerView />
       </NavigationContainer>
       <StatusBar
         style={
@@ -114,7 +114,7 @@ export default function App() {
             : "light"
         }
       />
-     
+      <AlertView />
     </AppContainer>
   );
 }

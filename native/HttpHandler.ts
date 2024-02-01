@@ -164,23 +164,32 @@ class HttpHandler {
   }
 
   async imageUrlToBase64(url: string) {
-    const response = await fetch(url,{
-      ...this.header
+    try {
+      if (!url || url.has("data:image"))
+        return url;
+      console.log("getting image", url);
+      const response = await fetch(url, {
+        ...this.header
       });
-    const blob = await response.blob();
-    return new Promise((onSuccess, onError) => {
-      try {
-        const reader = new FileReader();
-        reader.onload = function () {
-          onSuccess(
-            `data:image/jpg;base64,${this.result}`
-          );
-        };
-        reader.readAsDataURL(blob);
-      } catch (e) {
-        onError(e);
-      }
-    });
+      const blob = await response.blob();
+      return new Promise((onSuccess, onError) => {
+        try {
+          const reader = new FileReader();
+          reader.onload = function () {
+            onSuccess(
+              `data:image/jpg;base64,${this.result}`
+            );
+          };
+          reader.readAsDataURL(blob);
+        } catch (e) {
+          console.error(e);
+          onSuccess(url);
+        }
+      });
+    } catch (e) {
+      console.error(e);
+      return url;
+    }
   }
 }
 export default HttpHandler;

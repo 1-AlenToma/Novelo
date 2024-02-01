@@ -27,7 +27,7 @@ export default ({
   return (
     <Btn
       {...props}
-      style={st}>
+      style={st} css={css}>
       {children}
     </Btn>
   );

@@ -60,7 +60,7 @@ let StyledWrapper = React.forwardRef(
     {
       View,
       styleFile,
-      name,
+      StyledXName,
       style,
       css,
       ...props
@@ -92,12 +92,12 @@ let StyledWrapper = React.forwardRef(
       pk = ec.parentKey ? ec.parentKey() : "";
       if (pk.length > 0 && !pk.endsWith("."))
         pk += ".";
-      pk += name;
-      cpyCss.add(name, pk);
+      pk += StyledXName;
+      cpyCss.add(StyledXName, pk);
       if (ec.parentClassNames) {
         cpyCss.add(
           ec.parentClassNames(
-            name,
+            StyledXName,
             cpyCss.toString()
           )
         );
@@ -116,25 +116,26 @@ let StyledWrapper = React.forwardRef(
     let cValue = {
       parentKey: () => parsedData.pk,
       parentClassNames: (
-        name: string,
+        StyledXName: string,
         pk: string
       ) => {
         let ss = new CSS(css).add(pk);
         if (!css) return "";
         let c = new CSS();
         for (let s of ss.classes) {
-          let m = ` ${s}.${name}`;
+          let m = ` ${s}.${StyledXName}`;
           c.add(m);
         }
         return c.toString();
       }
     };
+
     return (
       <CSSContext.Provider value={cValue}>
         <View
           {...props}
           ref={ref}
-          name={parsedData.pk}
+          StyledXName={parsedData.pk}
           style={[
             ...toArray(parsedData.style),
             ...toArray(style)
@@ -157,7 +158,7 @@ const Styleable = function <T>(
   let fn = React.forwardRef((props, ref) => {
     let pr = {
       View,
-      name: identifier,
+      StyledXName: identifier,
       styleFile
     };
     return (

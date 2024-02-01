@@ -20,6 +20,8 @@ import Slider from "./SliderView";
 import Modal from "./Modal";
 import DropdownList from "./DropdownList";
 import PlayerView from "./PlayerView";
+import AlertView from "./AlertView";
+import AnimatedView from ".AnimatedView"
 
 import {
   AppContainer,
@@ -50,5 +52,6 @@ export {
   Slider,
   Modal,
   DropdownList,
-  PlayerView
+  PlayerView,
+  AlertView
 };

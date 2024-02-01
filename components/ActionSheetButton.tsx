@@ -6,6 +6,7 @@ import Text from "./ThemeText";
 export default ({
   btn,
   css,
+  onPress,
   ...props
 }: {
   css?: string;
@@ -13,14 +14,20 @@ export default ({
 }) => {
   const [visible, setVisible] = useState(false);
 
+  let tprops = {
+    onPress: () => setVisible(true)
+  };
+  if (onPress) {
+     tprops.onPress = onPress
+    tprops.onLongPress = () => setVisible(true);
+  }
   return (
     <>
-      <TouchableOpacity
-        onPress={() => setVisible(true)}>
+      <TouchableOpacity {...tprops}>
         {typeof btn === "string" ? (
           <Text css={css}>{btn}</Text>
         ) : (
-           btn 
+          btn
         )}
       </TouchableOpacity>
       <ActionSheet

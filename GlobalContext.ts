@@ -16,7 +16,8 @@ import {
 LogBox.ignoreLogs([
   "require cycles",
   "Require cycle",
-  "new NativeEventEmitter"
+  "new NativeEventEmitter",
+  "Internal React error"
 ]);
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
@@ -27,8 +28,30 @@ const parsers = ParserWrapper.getAllParsers();
 let currentParser = parsers[0];
 const data = GlobalState(
   {
+    selection: {
+      downloadSelectedItem: undefined
+    },
+    alertMessage: {
+      msg: undefined,
+      title: "Action",
+      confirm: (answer: boolean) => {}
+    },
+    alert: (msg: string, title?: string) => {
+      return {
+        show: () => {
+          data.alertMessage.msg = msg;
+          data.alertMessage.title = title;
+          data.alertMessage.confirm = undefined;
+        },
+        confirm: (func: Function) => {
+          data.alertMessage.msg = msg;
+          data.alertMessage.title = title;
+          data.alertMessage.confirm = func;
+        }
+      };
+    },
     player: {} as Player,
-    http:()=> globalHttp,
+    http: () => globalHttp,
     KeyboardState: false,
     isFullScreen: false,
     appSettings: AppSettings.n(),
@@ -76,6 +99,7 @@ const data = GlobalState(
     init: async () => {
       try {
         //await globalDb.database.dropTables();
+
         const loadVoices = (counter?: number) => {
           setTimeout(
             async () => {
@@ -137,7 +161,7 @@ const data = GlobalState(
       }
     }
   },
-  ["nav"],
+  ["nav", "events"],
   false
 );
 export default data;

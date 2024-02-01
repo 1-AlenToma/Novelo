@@ -4,6 +4,7 @@ import * as FileSystem from "expo-file-system";
 const JSZip = require("jszip");
 class ZipFile {
   name: string;
+  fileName:string;
   content: string;
   url: string = newId();
   type: "Image" | "CSS" | "HTML";
@@ -14,52 +15,69 @@ export default class ZipBook {
   name: string = "";
   url: string = newId();
   epub: boolean = true;
-  static async load(uri: string, name: string) {
+  static async load(uri: string, xname: string) {
+    function isImage(url: string) {
+      return (
+        url.match(/\.(jpeg|jpg|gif|png)$/) !==
+        null
+      );
+    }
+    let cleanNames = (n: string) => {
+      n = n.split("\\").reverse()[0];
+      if (/\..*$/.test(n))
+        n = n
+          .split(".")
+          .reverse()
+          .skip(0)
+          .reverse()
+          .join(".");
+      return n;
+    };
     let book = new ZipBook();
-    book.name = name;
+    book.name = cleanNames(xname);
     try {
-      function isImage(url: string) {
-        return (
-          url.match(/\.(jpeg|jpg|gif|png)$/) !=
-          null
-        );
-      }
       let getContent = async (file: any) => {
         try {
           let cn = "";
           let type = "";
-          let name = file.name.replace(
-            /.*\//g,
-            ""
-          );
-          if (isImage(name)) {
+          let cleanName = cleanNames(file.name);
+         // console.log(file.name, name);
+          let name = cleanName;
+          if (isImage(file.name)) {
             type = "Image";
             cn = `data:image/jpg;base64,${await file.async(
               "base64"
             )}`;
           } else if (
-            name.endsWith(".ncx") ||
-            name.indexOf("-toc.") !== -1
+            file.name.endsWith(".ncx") ||
+            file.name.indexOf("-toc.") !== -1
           ) {
             return undefined;
-          } else if (name.endsWith(".css")) {
+          } else if (file.name.endsWith(".css")) {
             type = "CSS";
             cn = await file.async("text");
           } else if (
-            name.endsWith(".html") ||
-            name.endsWith(".xhtml")
+            file.name.endsWith(".html") ||
+            file.name.endsWith(".xhtml")
           ) {
             type = "HTML";
-
-            cn = await file.async("text");
+            cn = (await file.async("text"))
+              .html()("body")
+              ?.html();
             let title = cn.html()("title");
-            if (title) name = title.text();
+            if (
+              title &&
+              title.text().has() &&
+              !/\..*$/.test(title.text())
+            )
+              name = cleanNames(title.text());
           }
 
           let f = new ZipFile();
           f.name = name;
           f.type = type;
           f.content = cn;
+          f.fileName = file.name;
           return f;
         } catch (e) {
           console.error(e);
@@ -92,13 +110,9 @@ export default class ZipBook {
         let k = keys.find(
           x => x.indexOf(href) !== -1
         );
-        if(!k) continue;
+        if (!k) continue;
+        //console.log(href, k);
         let file = content.file(k);
-        /*console.log(
-            [file_content].niceJson(
-              "compressedContent"
-            )
-          );*/
         if (!file) continue;
         let file_content = await getContent(file);
 

@@ -34,32 +34,32 @@ export default ({
   visible: boolean;
   onHide?: () => void;
 }) => {
-  g.hook("size");
+  let getHeight = () => {
+    if (
+      typeof height === "number" &&
+      height > 100
+    )
+      return height;
+    return proc(
+      parseFloat(
+        (height?.toString() ?? "0").replace(
+          /%/g,
+          ""
+        )
+      ),
+      g.size.window.height
+    );
+  };
+  g.hook("size", "selection");
   let context = useContext(ElementsContext);
   const [started, setStarted] = useState(false);
   const [isV, setIsV] = useState(false);
   const [onReady, setOnReady] = useState(!ready);
   const [animTop, setAnimTop] = useState(
-    new Animated.Value(
-      -proc(
-        parseFloat(
-          (height || "0").replace(/%/g, "")
-        ),
-        g.size.window.height
-      )
-    )
+    new Animated.Value(-getHeight())
   );
   const animating = useRef(false);
   let id = useRef(newId());
-
-  let getHeight = () => {
-    return proc(
-      parseFloat(
-        (height || "0").replace(/%/g, "")
-      ),
-      g.size.window.height
-    );
-  };
 
   let toggle = async (show: boolean) => {
     while (animating.current || !animTop) return;
@@ -73,7 +73,9 @@ export default ({
       useNativeDriver: true
     }).start(() => {
       animating.current = false;
-      setIsV(visible);
+      if (typeof visible !== "function")
+        setIsV(visible);
+      else setIsV(visible());
       context.update();
       if (show) setOnReady(true);
 
@@ -89,11 +91,16 @@ export default ({
     "size",
     "theme.themeMode"
   );
-
-  useEffect(() => {
-    if (!isV) setIsV(visible);
-    toggle(visible);
-  }, [visible]);
+  if (typeof visible === "function")
+    g.subscribe(() => {
+      if (!isV) setIsV(visible());
+      toggle(visible());
+    }, "selection");
+  if (typeof visible !== "function")
+    useEffect(() => {
+      if (!isV) setIsV(visible);
+      toggle(visible);
+    }, [visible]);
 
   useEffect(() => {
     setStarted(true);
@@ -178,7 +185,16 @@ export default ({
       }
     );
     context.update();
-  });
+  }, [
+    title,
+    height,
+    children,
+    visible,
+    onHide,
+    speed,
+    ready,
+    props
+  ]);
 
   return null;
 };
