@@ -54,4 +54,17 @@ export default class DbContext {
       !__DEV__
     );
   }
+
+  async deleteBook(id: number) {
+    await this.database
+      .querySelector<Chapter>("Chapters")
+      .Where.Column(x => x.parent_Id)
+      .EqualTo(id)
+      .delete();
+    await this.database
+      .querySelector<Book>("Books").Where
+      .Column(x => x.id)
+      .EqualTo(id)
+      .delete();
+  }
 }

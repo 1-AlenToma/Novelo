@@ -6,6 +6,7 @@ import Player from "./Player";
 import BGService from "./BackgroundService";
 import ZipBook from "./ZipBook";
 import EpubBuilder from "./EpubBuilder";
+import DownloadManager from "./DownloadManager";
 
 import {
   LightInfo,
@@ -33,5 +34,6 @@ export {
   Player,
   BGService,
   ZipBook,
-  EpubBuilder
+  EpubBuilder,
+  DownloadManager
 };

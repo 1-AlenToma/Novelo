@@ -2,6 +2,7 @@ import GlobalState from "react-global-state-management";
 import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
 import { AppSettings } from "./db";
+import { DownloadManager } from "./native";
 import {
   Player,
   BGService,
@@ -26,6 +27,7 @@ const globalHttp = new HttpHandler();
 type ThemeMode = "light" | "dark";
 const parsers = ParserWrapper.getAllParsers();
 let currentParser = parsers[0];
+let downloadManager = new DownloadManager();
 const data = GlobalState(
   {
     selection: {
@@ -52,6 +54,7 @@ const data = GlobalState(
     },
     player: {} as Player,
     http: () => globalHttp,
+    downloadManager: ()=> downloadManager,
     KeyboardState: false,
     isFullScreen: false,
     appSettings: AppSettings.n(),
@@ -91,6 +94,7 @@ const data = GlobalState(
         };
       }
     },
+    dbContext: () => globalDb,
     db: () => globalDb.database,
     size: {
       window: Dimensions.get("window"),

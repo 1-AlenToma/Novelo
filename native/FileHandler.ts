@@ -149,12 +149,14 @@ export default class FileHandler {
     await this.checkDir();
     let fileUri = this.getName(file);
     console.log("reading", fileUri);
-    return await FileSystem.readAsStringAsync(
-      fileUri,
-      {
-        encoding: type || "utf8"
-      }
-    );
+    if (await this.exists(file)) {
+      return await FileSystem.readAsStringAsync(
+        fileUri,
+        {
+          encoding: type || "utf8"
+        }
+      );
+    } else return undefined;
   }
 
   async deleteDir() {

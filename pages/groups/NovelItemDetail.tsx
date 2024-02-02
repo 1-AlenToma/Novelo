@@ -357,7 +357,17 @@ export default ({ ...props }: any) => {
         ifTrue={state.novel.url?.has() ?? false}>
         <TouchableOpacity
           css="button mar:5"
-          invertColor={true}>
+          invertColor={true}
+          onPress={async () => {
+            g.downloadManager().download(
+              state.novel.url,
+              state.novel.parserName
+            );
+            g.alert(
+              "novel is downloading",
+              "attantion"
+            ).show();
+          }}>
           <View css="blur" />
           <Icon
             type="Feather"
@@ -405,7 +415,7 @@ export default ({ ...props }: any) => {
                     .Name(state.novel.name)
                     .ParserName(parserName)
                     .ImageBase64(
-                     await g
+                      await g
                         .http()
                         .imageUrlToBase64(
                           state.novel.image

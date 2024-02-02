@@ -163,29 +163,39 @@ class HttpHandler {
     }
   }
 
-  async imageUrlToBase64(url: string) {
+  imageUrlToBase64(url: string) {
     try {
-      if (!url || url.has("data:image"))
+      console.log(
+        "getting image for",
+        url?.substring(0, 150)
+      );
+      if (!url || url.has("data:image")) {
+        console.info("url is a base64 or empty");
         return url;
-      console.log("getting image", url);
-      const response = await fetch(url, {
-        ...this.header
-      });
-      const blob = await response.blob();
-      return new Promise((onSuccess, onError) => {
-        try {
-          const reader = new FileReader();
-          reader.onload = function () {
-            onSuccess(
-              `data:image/jpg;base64,${this.result}`
-            );
-          };
-          reader.readAsDataURL(blob);
-        } catch (e) {
-          console.error(e);
-          onSuccess(url);
+      }
+      return new Promise(
+        async (onSuccess, onError) => {
+          try {
+            const response = await fetch(url, {
+              ...this.header()
+            });
+            const blob = await response.blob();
+            const reader = new FileReader();
+            reader.onload = function () {
+              onSuccess(
+                `data:image/jpg;base64,${reader.result.safeSplit(
+                  ",",
+                  1
+                )}`
+              );
+            };
+            reader.readAsDataURL(blob);
+          } catch (e) {
+            console.error(e);
+            onSuccess(url);
+          }
         }
-      });
+      );
     } catch (e) {
       console.error(e);
       return url;

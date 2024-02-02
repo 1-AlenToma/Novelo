@@ -9,7 +9,8 @@ import {
   NovelGroup,
   CheckBox,
   TextInput,
-  ActionSheet
+  ActionSheet,
+  ProgressBar
 } from "../components";
 import { useEffect, useRef, memo } from "react";
 import g from "../GlobalContext";
@@ -30,52 +31,97 @@ import {
 } from "../native";
 import { sleep } from "../Methods";
 
+const ItemRender = ({ item, state }: any) => {
+  const urls = g.downloadManager().useDownload();
+  return (
+    <View
+      invertColor={true}
+      css="clearboth pal:5 par:5 he:60 row di:flex juc:flex-start">
+      <Image
+        url={item.imageBase64}
+        css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
+      />
+      <Text
+        css="bold header pa:5 maw:80% overflow"
+        invertColor={true}>
+        {item.name}
+      </Text>
+      <Text css="desc co:red absolute bo:5 right:10">
+        {state.infoNovel[item.url] || "loading"}
+      </Text>
+      <Text css="clearwidth desc co:red bottom bo:5 le:60">
+        (Epub)
+      </Text>
+      {urls.find(x => x.url == item.url) ? (
+        <ProgressBar
+          procent={
+            urls.find(x => x.url == item.url).p
+          }
+        />
+      ) : null}
+    </View>
+  );
+};
+
 export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
   const updater = useUpdate();
-  const loader = useLoader();
+  const loader = useLoader(true);
   const state = useState({
     text: "",
     infoNovel: {},
     selectedItem: undefined
   });
   const { fileItems } = g.files.useFile("json");
-  const [books, dataIsLoading] = g.db().useQuery(
-    "Books",
-    g
-      .db()
-      .querySelector<Book>("Books")
-      .LoadChildren<Chapter>(
-        "Chapters",
-        "parent_Id",
-        "id",
-        "chapterSettings",
-        true
+  const [books, dataIsLoading, reload] = g
+    .db()
+    .useQuery(
+      "Books",
+      g
+        .db()
+        .querySelector<Book>("Books")
+        .LoadChildren<Chapter>(
+          "Chapters",
+          "parent_Id",
+          "id",
+          "chapterSettings",
+          true
+        )
+        .Where.Column(x => x.url)
+        .IN(fileItems.map(x => x.url))
+    );
+
+  useEffect(() => {
+    if (
+      fileItems.find(
+        x => !books.find(a => a.url == x.url)
       )
-      .Where.Column(x => x.parserName)
-      .EqualTo("epub")
-  );
+    )
+      reload();
+  }, [fileItems]);
 
   useEffect(() => {
     (async () => {
+      loader.show();
       for (let b of books) {
-        if (!state.infoNovel[b.url]) {
-          let novel = fileItems.find(
-            x => x.url == b.url
-          );
-          if (novel) {
-            state.infoNovel[
-              b.url
-            ] = `(${b.chapterSettings.length}/${novel.chapters.length})`;
-            updater();
-          }
-
-          await sleep(500);
+        let novel = fileItems.find(
+          x => x.url == b.url
+        );
+        if (novel) {
+          state.infoNovel[b.url] = `(${
+            b.selectedChapterIndex + 1
+          }/${
+            novel.chapters.filter(
+              x => x.content && x.content.has()
+            ).length
+          })`;
+          updater();
         }
       }
+      loader.hide();
     })();
-  }, [books, fileItems]);
+  }, [books]);
 
   const loadEpub = async () => {
     try {
@@ -91,7 +137,7 @@ export default ({ ...props }: any) => {
       let book = Book.n()
         .Name(bk.name)
         .Url(bk.url)
-        .Favorit(true)
+        .Favorit(false)
         .InlineStyle(
           bk.files
             .filter(x => x.type === "CSS")
@@ -107,7 +153,7 @@ export default ({ ...props }: any) => {
         bk.url,
         JSON.stringify(bk)
       );
-      console.log([bk].niceJson("content"));
+      //console.log([bk].niceJson("content"));
       await g.db().save(book);
     } catch (e) {
       console.error(e);
@@ -195,24 +241,6 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
           <TouchableOpacity
             css="listButton"
-            onPress={async () => {
-              await downloadEpub(
-                g.selection.downloadSelectedItem
-              );
-              g.selection.downloadSelectedItem =
-                undefined;
-            }}>
-            <Icon
-              invertColor={true}
-              name="download"
-              type="FontAwesome6"
-            />
-            <Text invertColor={true}>
-              Download
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            css="listButton"
             onPress={() => {
               g.alert(
                 `You will be deleting this novel.\nAre you sure?`,
@@ -230,7 +258,22 @@ export default ({ ...props }: any) => {
                     );
 
                     if (file) {
-                      await g.selection.downloadSelectedItem.delete();
+                      if (
+                        g.selection
+                          .downloadSelectedItem
+                          .parserName == "epub" ||
+                        !g.selection
+                          .downloadSelectedItem
+                          .favorit
+                      ) {
+                        await g
+                          .dbContext()
+                          .deleteBook(
+                            g.selection
+                              .downloadSelectedItem
+                              .id
+                          );
+                      }
                       await file.deleteFile();
                     }
                   } catch (e) {
@@ -286,26 +329,10 @@ export default ({ ...props }: any) => {
           x.name.has(state.text)
         )}
         container={({ item }) => (
-          <View
-            invertColor={true}
-            css="clearboth pal:5 par:5 he:60 row di:flex juc:flex-start">
-            <Image
-              url={item.imageBase64}
-              css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
-            />
-            <Text
-              css="bold header pa:5 maw:80% overflow"
-              invertColor={true}>
-              {item.name}
-            </Text>
-            <Text css="desc co:red absolute bo:5 right:10">
-              {state.infoNovel[item.url] ||
-                "loading"}
-            </Text>
-            <Text css="clearwidth desc co:red bottom bo:5 le:60">
-              (Epub)
-            </Text>
-          </View>
+          <ItemRender
+            state={state}
+            item={item}
+          />
         )}
         itemCss="clearwidth mab:5 overflow bor:5"
         vMode={true}

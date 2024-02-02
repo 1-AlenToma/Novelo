@@ -8,7 +8,8 @@ import {
   Icon,
   NovelGroup,
   CheckBox,
-  TextInput
+  TextInput,
+  ActionSheet
 } from "../components";
 import { useEffect, useRef, memo } from "react";
 import g from "../GlobalContext";
@@ -38,6 +39,7 @@ export default ({ ...props }: any) => {
     json: "",
     infoNovel: {}
   });
+  const { fileItems } = g.files.useFile("json");
   const [books, dataIsLoading] = g.db().useQuery(
     "Books",
     g
@@ -52,27 +54,23 @@ export default ({ ...props }: any) => {
       )
       .Where.Column(x => x.favorit)
       .EqualTo(true)
-      .AND.Column(x => x.parserName)
-      .NotEqualTo("epub")
   );
 
   useEffect(() => {
     (async () => {
       for (let b of books) {
-        if (!state.infoNovel[b.url]) {
-          if (b.parserName !== "epub") {
-            let novel = await g.parser
-              .find(b.parserName)
-              .detail(b.url);
-            if (novel) {
-              state.infoNovel[
-                b.url
-              ] = `(${b.chapterSettings.length}/${novel.chapters.length})`;
-              updater();
-            }
+        if (b.parserName !== "epub") {
+          let novel = await g.parser
+            .find(b.parserName)
+            .detail(b.url);
+          if (novel) {
+            state.infoNovel[b.url] = `(${
+              b.selectedChapterIndex + 1
+            }/${novel.chapters.length})`;
+            updater();
           }
-          await sleep(500);
         }
+        await sleep(500);
       }
     })();
   }, [books]);
@@ -80,6 +78,115 @@ export default ({ ...props }: any) => {
   return (
     <View css="flex mih:100">
       {loader.elem}
+      <ActionSheet
+        title="Actions"
+        onHide={() =>
+          (g.selection.downloadSelectedItem =
+            undefined)
+        }
+        visible={() =>
+          g.selection.downloadSelectedItem !==
+          undefined
+        }
+        height={300}>
+        <View>
+          <TouchableOpacity
+            css="listButton"
+            onPress={() => {
+              options
+                .nav("NovelItemDetail")
+                .add({
+                  url: g.selection
+                    .downloadSelectedItem.url,
+                  parserName:
+                    g.selection
+                      .downloadSelectedItem
+                      .parserName
+                })
+                .push();
+              g.selection.downloadSelectedItem =
+                undefined;
+            }}>
+            <Icon
+              invertColor={true}
+              name="info-circle"
+              type="FontAwesome5"
+            />
+            <Text invertColor={true}>Info</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            css="listButton"
+            onPress={() => {
+              options
+                .nav("ReadChapter")
+                .add({
+                  url: g.selection
+                    .downloadSelectedItem.url,
+                  parserName:
+                    g.selection
+                      .downloadSelectedItem
+                      .parserName
+                })
+                .push();
+              g.selection.downloadSelectedItem =
+                undefined;
+            }}>
+            <Icon
+              invertColor={true}
+              name="book-reader"
+              type="FontAwesome5"
+            />
+            <Text invertColor={true}>Read</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            css="listButton"
+            onPress={() => {
+              g.alert(
+                `You will be deleting this novel.\nAre you sure?`,
+                "Please Confirm"
+              ).confirm(async answer => {
+                loader.show();
+                if (answer) {
+                  try {
+                    let file = fileItems.find(
+                      x =>
+                        x.url ==
+                        g.selection
+                          .downloadSelectedItem
+                          .url
+                    );
+
+                    if (file) {
+                      await g.selection.downloadSelectedItem
+                        .Favorit(false)
+                        .saveChanges();
+                    } else {
+                      await g
+                        .dbContext()
+                        .deleteBook(
+                          g.selection
+                            .downloadSelectedItem
+                            .id
+                        );
+                    }
+                  } catch (e) {
+                    console.error(e);
+                  }
+                  g.selection.downloadSelectedItem =
+                    undefined;
+                }
+                loader.hide();
+              });
+            }}>
+            <Icon
+              invertColor={true}
+              name="delete"
+              type="MaterialIcons"
+            />
+            <Text invertColor={true}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+      </ActionSheet>
       <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
         <TextInput
           onChangeText={x => (state.text = x)}
@@ -91,6 +198,9 @@ export default ({ ...props }: any) => {
       </View>
       <ItemList
         css="flex"
+        onPress={x =>
+          (g.selection.downloadSelectedItem = x)
+        }
         items={books?.filter(x =>
           x.name.has(state.text)
         )}
