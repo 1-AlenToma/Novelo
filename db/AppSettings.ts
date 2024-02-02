@@ -18,7 +18,7 @@ class AppSettings extends IBaseModule<TableNames> {
   backgroundColor: string = "#ffffff";
   isBold: boolean = false;
   lockScreen: boolean = false;
-  lastRead?: number = null;
+  currentNovel?: { url; parserName };
   constructor() {
     super("AppSettings");
   }
@@ -35,12 +35,11 @@ class AppSettings extends IBaseModule<TableNames> {
       .number.column("textAlign")
       .column("backgroundColor")
       .column("isBold")
-      .boolean
-      .column("fontName")
+      .boolean.column("fontName")
       .column("lockScreen")
-      .boolean.objectPrototype(
-        AppSettings.prototype
-      );
+      .boolean.column("currentNovel")
+      .nullable.json
+      .objectPrototype(AppSettings.prototype);
   }
 }
 public_m(AppSettings);

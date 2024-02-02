@@ -77,7 +77,9 @@ class Player {
     if (this.novel.files && href.length > 0) {
       for (let h of href) {
         let img = this.novel.files.find(
-          x => x.fileName.indexOf(h) !== -1 && x.type==="Image"
+          x =>
+            x.fileName.indexOf(h) !== -1 &&
+            x.type === "Image"
         );
         if (img)
           imgs.push({ h, cn: img.content });
@@ -105,6 +107,19 @@ class Player {
   async jumpTo(index?: number | string) {
     if (index === undefined)
       index = this.book.selectedChapterIndex;
+    if (
+      !g.appSettings.currentNovel ||
+      g.appSettings.currentNovel.url !=
+        this.book.url ||
+      g.appSettings.currentNovel.parserName !=
+        this.book.parserName
+    ) {
+      g.appSettings.currentNovel = {
+        url: this.book.url,
+        parserName: this.book.parserName
+      };
+      await g.appSettings.saveChanges()
+    }
     if (typeof index === "string")
       index = this.novel.chapters.findIndex(
         x => x.url === index

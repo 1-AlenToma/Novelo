@@ -43,11 +43,11 @@ export default ({
     );
   } else
     return (
-      <View css="clearboth overflow row flex ali:flex-start juc:flex-start">
+      <View css="clearboth di:flex overflow row flex ali:flex-start juc:flex-start">
         <Image
           resizeMethod="scale"
           url={item.image}
-          css="resizeMode:contain he:100% wi:150 bor:5"
+          css="resizeMode:stretch he:100% wi:150 bac:red bor:5"
         />
 
         <View css="flex clearboth pal:5">

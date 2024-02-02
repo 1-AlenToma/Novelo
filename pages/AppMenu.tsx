@@ -11,12 +11,7 @@ export default ({ ...props }) => {
       rootView={true}
       fontSize={9}>
       <Home
-        head={
-          <Header
-            {...props}
-            inputEnabled={true}
-          />
-        }
+        disableScrolling={true}
         {...props}
         icon={{
           name: "home",

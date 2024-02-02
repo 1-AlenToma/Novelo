@@ -4,7 +4,8 @@ import Constants from "expo-constants";
 import {
   removeProps,
   parseThemeStyle,
-  StyledView
+  StyledView,
+  ifSelector
 } from "../Methods";
 import g from "../GlobalContext";
 
@@ -20,7 +21,7 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if (ifTrue === false) return null;
+  if (ifSelector(ifTrue) === false) return null;
   if (rootView) g.hook("isFullScreen");
   const [state, setState] = useState(
     ready !== true

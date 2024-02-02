@@ -626,7 +626,7 @@ const InternalWeb = ({
           content: `<div id="novel" class="novel">
           ${
             g.player.showPlayer
-              ? g.player.currentPlaying()
+              ?`<p>${g.player.currentPlaying()?.cleanText()?? ""}</p>`
               : g.player.html
           }
           </div>`,

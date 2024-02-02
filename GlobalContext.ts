@@ -31,7 +31,8 @@ let downloadManager = new DownloadManager();
 const data = GlobalState(
   {
     selection: {
-      downloadSelectedItem: undefined
+      downloadSelectedItem: undefined,
+      favoritItem: undefined
     },
     alertMessage: {
       msg: undefined,
@@ -54,7 +55,7 @@ const data = GlobalState(
     },
     player: {} as Player,
     http: () => globalHttp,
-    downloadManager: ()=> downloadManager,
+    downloadManager: () => downloadManager,
     KeyboardState: false,
     isFullScreen: false,
     appSettings: AppSettings.n(),

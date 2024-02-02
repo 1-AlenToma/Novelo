@@ -162,6 +162,14 @@ function invertColor(hexcolor) {
   }
 }
 
+const ifSelector = (
+  value?: Funtion | boolean
+) => {
+  if (value && typeof value == "function")
+    return (value() ? true : false)
+  return value;
+};
+
 export {
   public_m,
   sleep,
@@ -173,5 +181,6 @@ export {
   StyledView,
   joinKeys,
   arrayBuffer,
-  invertColor
+  invertColor,
+  ifSelector
 };

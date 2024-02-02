@@ -15,6 +15,11 @@ export default class DownloadManager {
     }
   }
 
+  stop(url: string) {
+    this.items.delete(url);
+    return this;
+  }
+
   useDownload() {
     let [infos, setInfos] = useState([]);
     let id = useRef(newId()).current;
@@ -28,7 +33,7 @@ export default class DownloadManager {
 
     useEffect(() => {
       return () => delete this.events[id];
-    });
+    }, []);
 
     return infos;
   }
@@ -39,6 +44,7 @@ export default class DownloadManager {
     try {
       if (this.items.has(url)) return;
       this.items.set(url, 0.1);
+      this.change();
       let key = `${(url + parserName)
         .replace(
           /(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim,
@@ -73,7 +79,12 @@ export default class DownloadManager {
           ? JSON.parse(file)
           : { ...novel, chapters: [] };
       let index = savedItem.chapters.length;
-      for (let ch of novel.chapters.filter(x=> !savedItem.chapters.find(a=> a.url == x.url))) {
+      for (let ch of novel.chapters.filter(
+        x =>
+          !savedItem.chapters.find(
+            a => a.url == x.url
+          )
+      )) {
         try {
           index++;
           let cn = ch.content;
@@ -90,14 +101,17 @@ export default class DownloadManager {
           )
             savedItem.chapters.push(ch);
           if (
-            index % 10 === 0 ||
-            savedItem.chapters.length == 1
+            index % 50 === 0 ||
+            savedItem.chapters.length == 1 ||
+            !this.items.has(savedItem.url)
           ) {
             await g.files.write(
               key,
               JSON.stringify(savedItem)
             );
           }
+          if (!this.items.has(savedItem.url))
+            break;
           this.items.set(
             url,
             (100 * savedItem.chapters.length +
@@ -114,6 +128,7 @@ export default class DownloadManager {
     } catch (e) {
       console.error(e);
     }
+    this.change();
     this.items.delete(url);
   }
 }

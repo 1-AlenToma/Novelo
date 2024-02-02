@@ -2,7 +2,8 @@ import { TouchableOpacity } from "react-native";
 import {
   removeProps,
   parseThemeStyle,
-  StyledView
+  StyledView,
+  ifSelector
 } from "../Methods";
 
 const Btn = StyledView(
@@ -18,7 +19,7 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if (ifTrue === false) return null;
+  if (ifSelector(ifTrue) === false) return null;
   let st = parseThemeStyle(
     style,
     css,
@@ -27,7 +28,8 @@ export default ({
   return (
     <Btn
       {...props}
-      style={st} css={css}>
+      style={st}
+      css={css}>
       {children}
     </Btn>
   );

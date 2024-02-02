@@ -21,7 +21,7 @@ import Modal from "./Modal";
 import DropdownList from "./DropdownList";
 import PlayerView from "./PlayerView";
 import AlertView from "./AlertView";
-import AnimatedView from ".AnimatedView";
+import AnimatedView from "./AnimatedView";
 import ProgressBar from "./ProgressBar";
 
 import {
@@ -55,5 +55,6 @@ export {
   DropdownList,
   PlayerView,
   AlertView,
-  ProgressBar
+  ProgressBar,
+  AnimatedView
 };

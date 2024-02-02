@@ -29,14 +29,20 @@ export default class FileHandler {
     if (!this.dir.endsWith("/")) this.dir += "/";
   }
 
-  trigger(op: string, url: string) {
+  trigger(
+    op: string,
+    fileName: string,
+    fullName: string
+  ) {
     events[this.handlerId]
       .values()
-      .forEach(x => x(op, url));
+      .forEach(x => x(op, fileName, fullName));
   }
 
   useFile(
-    globalType?: "json" | "utf8" | "base64"
+    globalType?: "json" | "utf8" | "base64",
+    validator?: (x: any) => boolean,
+    updateState?: "New"
   ) {
     const id = useRef(newId()).current;
     const files = useRef([]);
@@ -44,8 +50,16 @@ export default class FileHandler {
     const [loading, setLoading] = useState(true);
     events[this.handlerId][id] = async (
       op,
-      url
+      fileName,
+      fullName
     ) => {
+      if (
+        updateState === "New" &&
+        files.current.find(
+          x => x === fileName || x == fullName
+        )
+      )
+        return;
       await setLoading(true);
       files.current = await this.allFiles();
       await loadItems();
@@ -68,6 +82,12 @@ export default class FileHandler {
           file,
           globalType
         );
+        if (validator) {
+          if (validator(item)) {
+            ims.push(item);
+            break;
+          }
+        }else
         ims.push(item);
       }
 
@@ -124,7 +144,7 @@ export default class FileHandler {
     await this.checkDir();
     let fileUri = this.getName(file);
     await FileSystem.deleteAsync(fileUri);
-    this.trigger("Delete", fileUri);
+    this.trigger("Delete", file, fileUri);
   }
 
   async write(file: string, content: string) {
@@ -134,7 +154,7 @@ export default class FileHandler {
       fileUri,
       content
     );
-    this.trigger("Write", fileUri);
+    this.trigger("Write", file, fileUri);
   }
 
   async allFiles() {

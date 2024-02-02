@@ -4,7 +4,11 @@ import Icon from "./Icons";
 import Slider from "./SliderView";
 import AnimatedView from "./AnimatedView";
 import TouchableOpacity from "./TouchableOpacityView";
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import {
   ScrollView,
   Linking,
@@ -17,11 +21,7 @@ import {
   useDbHook
 } from "../hooks";
 import { useNavigation } from "@react-navigation/native";
-import {
-  useState,
-  Player,
-  DetailInfo
-} from "../native";
+import { Player, DetailInfo } from "../native";
 import g from "../GlobalContext";
 
 export default ({ ...props }: any) => {
@@ -33,9 +33,11 @@ export default ({ ...props }: any) => {
     "player._playing",
     "player.viewState"
   );
-  let animation = useRef(
+  const [animation, setAnimation] = useState(
     new Animated.ValueXY()
-  ).current;
+  );
+
+  let moved = useRef(false);
   let pan = useRef();
   useDbHook(
     "Chapters",
@@ -43,19 +45,27 @@ export default ({ ...props }: any) => {
     () => g.player.currentChapterSettings,
     "audioProgress"
   );
-  const audioProgressTimer = useTimer(100);
 
+  g.subscribe(() => {
+    if (g.player.hooked && moved.current) {
+      animation.resetAnimation();
+      moved.current = false;
+    }
+  }, "player.hooked");
+  const audioProgressTimer = useTimer(100);
   if (!g.player || !g.player.book) return null;
+
   const touchThreshold = 20;
   if (!pan.current) {
     pan.current = PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => !g.player.hooked,
       onMoveShouldSetPanResponder: (
         e,
         gestureState
       ) => {
         const { dx, dy } = gestureState;
-
+        if(g.player.hooked)
+           return false;
         return (
           Math.abs(dx) > touchThreshold ||
           Math.abs(dy) > touchThreshold
@@ -77,18 +87,38 @@ export default ({ ...props }: any) => {
       ),
       onPanResponderRelease: (e, gesture) => {
         animation.flattenOffset();
+        moved.current = true;
       } //Step 4
     });
   }
+
   return (
     <>
       <AnimatedView
         ifTrue={g.player.showPlayer}
         style={[
           {
-            top: 41,
+            top:
+              g.player.hooked &&
+              g.player.showController &&
+              !moved.current
+                ? 41
+                : 1,
             transform: [
-              { translateY: animation.y }
+              {
+                translateY:
+                  animation.y.interpolate({
+                    inputRange: [
+                      0,
+                      g.size.window.height - 40
+                    ],
+                    outputRange: [
+                      g.player.hooked ?0:41,
+                      g.size.window.height - 40
+                    ],
+                    extrapolate: "clamp"
+                  })
+              }
             ]
           }
         ]}

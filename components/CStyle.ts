@@ -21,6 +21,10 @@ export default NestedStyleSheet.create({
     width: "100%"
   },
 
+  clearheight: {
+    height: "100%"
+  },
+
   relative: {
     position: "relative"
   },
@@ -56,7 +60,9 @@ export default NestedStyleSheet.create({
   },
 
   button:
-    "bor:2 boc:#ccc bow:1 mal:5 pa:5 he:100% mih:20 wi:60 juc:center ali:center",
+    "di:flex pa:2 row ali:center he:35 miw:55",
+
+  "button.Icon": "fos:30 bold co:red mar:5",
 
   "button.Text": "header bold",
 

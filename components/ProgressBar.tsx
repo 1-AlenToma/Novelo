@@ -19,8 +19,9 @@ import {
 
 export default ({ procent, children }: any) => {
   return (
-    <View css="flex clearboth to:0 le:0 absolute zi:30 juc:center overflow ali:center bow:0 boc:#000">
-      <View css="zi:2">
+    <View css="flex clearboth to:0 le:0 absolute zi:5 juc:center overflow ali:center bow:0 boc:#000">
+      <View css="clearboth blur zi:1 absolute" />
+      <View css="zi:3">
         {children || (
           <Text css="fos:18 bold co:red">
             {procent.readAble()}%
@@ -28,7 +29,7 @@ export default ({ procent, children }: any) => {
         )}
       </View>
       <View
-        css="bac:green zi:1 absolute to:0 le:0 clearboth op:0.8"
+        css="bac:green zi:2 absolute to:0 le:0 clearboth op:0.8"
         style={{
           width: `${procent}%`
         }}></View>

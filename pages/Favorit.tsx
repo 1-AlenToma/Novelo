@@ -81,11 +81,11 @@ export default ({ ...props }: any) => {
       <ActionSheet
         title="Actions"
         onHide={() =>
-          (g.selection.downloadSelectedItem =
+          (g.selection.favoritItem =
             undefined)
         }
         visible={() =>
-          g.selection.downloadSelectedItem !==
+          g.selection.favoritItem !==
           undefined
         }
         height={300}>
@@ -97,14 +97,14 @@ export default ({ ...props }: any) => {
                 .nav("NovelItemDetail")
                 .add({
                   url: g.selection
-                    .downloadSelectedItem.url,
+                    .favoritItem.url,
                   parserName:
                     g.selection
-                      .downloadSelectedItem
+                      .favoritItem
                       .parserName
                 })
                 .push();
-              g.selection.downloadSelectedItem =
+              g.selection.favoritItem =
                 undefined;
             }}>
             <Icon
@@ -121,14 +121,14 @@ export default ({ ...props }: any) => {
                 .nav("ReadChapter")
                 .add({
                   url: g.selection
-                    .downloadSelectedItem.url,
+                    .favoritItem.url,
                   parserName:
                     g.selection
-                      .downloadSelectedItem
+                      .favoritItem
                       .parserName
                 })
                 .push();
-              g.selection.downloadSelectedItem =
+              g.selection.favoritItem =
                 undefined;
             }}>
             <Icon
@@ -152,7 +152,7 @@ export default ({ ...props }: any) => {
                       x =>
                         x.url ==
                         g.selection
-                          .downloadSelectedItem
+                          .favoritItem
                           .url
                     );
 
@@ -165,14 +165,14 @@ export default ({ ...props }: any) => {
                         .dbContext()
                         .deleteBook(
                           g.selection
-                            .downloadSelectedItem
+                            .favoritItem
                             .id
                         );
                     }
                   } catch (e) {
                     console.error(e);
                   }
-                  g.selection.downloadSelectedItem =
+                  g.selection.favoritItem =
                     undefined;
                 }
                 loader.hide();
@@ -199,7 +199,7 @@ export default ({ ...props }: any) => {
       <ItemList
         css="flex"
         onPress={x =>
-          (g.selection.downloadSelectedItem = x)
+          (g.selection.favoritItem = x)
         }
         items={books?.filter(x =>
           x.name.has(state.text)

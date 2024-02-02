@@ -30,13 +30,48 @@ import {
   EpubBuilder
 } from "../native";
 import { sleep } from "../Methods";
-
+let lock = false;
 const ItemRender = ({ item, state }: any) => {
+  const { fileItems } = g.files.useFile(
+    "json",
+    x => item.url == x.url
+  );
+  const loader = useLoader(true);
   const urls = g.downloadManager().useDownload();
+  const itemState = useState({
+    info: undefined
+  });
+
+  useEffect(() => {
+    getInfo(item);
+  }, [fileItems]);
+
+  let getInfo = async (b: any) => {
+    while (lock) await sleep(100);
+    lock = true;
+    loader.show();
+    let novel = fileItems.find(
+      x => x.url == b.url
+    );
+    if (novel) {
+      itemState.info = `(${
+        b.selectedChapterIndex + 1
+      }/${
+        novel.chapters.filter(
+          x => x.content && x.content.has()
+        ).length
+      })`;
+      await sleep(400);
+    }
+    lock = false;
+    loader.hide();
+  };
+
   return (
     <View
       invertColor={true}
-      css="clearboth pal:5 par:5 he:60 row di:flex juc:flex-start">
+      css="clearboth pal:5 he:60 row di:flex juc:flex-start">
+      {loader.elem}
       <Image
         url={item.imageBase64}
         css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
@@ -46,19 +81,38 @@ const ItemRender = ({ item, state }: any) => {
         invertColor={true}>
         {item.name}
       </Text>
-      <Text css="desc co:red absolute bo:5 right:10">
-        {state.infoNovel[item.url] || "loading"}
+      <Text css="desc co:red absolute bo:5 right:10 zi:6">
+        {itemState.info || "loading"}
       </Text>
       <Text css="clearwidth desc co:red bottom bo:5 le:60">
-        (Epub)
+        {item.parserName != "epub"
+          ? ` (${item.parserName})`
+          : " (Epub)"}
       </Text>
-      {urls.find(x => x.url == item.url) ? (
+      <View
+        ifTrue={
+          urls.find(x => x.url == item.url)
+            ? true
+            : false
+        }
+        css="clearboth absolute row juc:flex-end ali:center">
+        <TouchableOpacity
+          css="button zi:6 miw:30"
+          onPress={() =>
+            g.downloadManager().stop(item.url)
+          }>
+          <Icon
+            invertColor={true}
+            name="controller-stop"
+            type="Entypo"
+          />
+        </TouchableOpacity>
         <ProgressBar
           procent={
-            urls.find(x => x.url == item.url).p
+            urls.find(x => x.url == item.url)?.p
           }
         />
-      ) : null}
+      </View>
     </View>
   );
 };
@@ -67,13 +121,16 @@ export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
   const updater = useUpdate();
-  const loader = useLoader(true);
+  const loader = useLoader();
   const state = useState({
     text: "",
-    infoNovel: {},
     selectedItem: undefined
   });
-  const { fileItems } = g.files.useFile("json");
+  const { fileItems } = g.files.useFile(
+    "json",
+    undefined,
+    "New"
+  );
   const [books, dataIsLoading, reload] = g
     .db()
     .useQuery(
@@ -93,35 +150,8 @@ export default ({ ...props }: any) => {
     );
 
   useEffect(() => {
-    if (
-      fileItems.find(
-        x => !books.find(a => a.url == x.url)
-      )
-    )
-      reload();
+    reload();
   }, [fileItems]);
-
-  useEffect(() => {
-    (async () => {
-      loader.show();
-      for (let b of books) {
-        let novel = fileItems.find(
-          x => x.url == b.url
-        );
-        if (novel) {
-          state.infoNovel[b.url] = `(${
-            b.selectedChapterIndex + 1
-          }/${
-            novel.chapters.filter(
-              x => x.content && x.content.has()
-            ).length
-          })`;
-          updater();
-        }
-      }
-      loader.hide();
-    })();
-  }, [books]);
 
   const loadEpub = async () => {
     try {
@@ -291,6 +321,35 @@ export default ({ ...props }: any) => {
               type="MaterialIcons"
             />
             <Text invertColor={true}>Delete</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            ifTrue={() =>
+              g.selection.downloadSelectedItem
+                ?.parserName !== "epub" &&
+              !g
+                .downloadManager()
+                .items.has(
+                  g.selection.downloadSelectedItem
+                    ?.url ?? ""
+                )
+            }
+            css="listButton"
+            onPress={() => {
+              g.downloadManager().download(
+                g.selection.downloadSelectedItem
+                  .url,
+                g.selection.downloadSelectedItem
+                  .parserName
+              );
+              g.selection.downloadSelectedItem =
+                undefined;
+            }}>
+            <Icon
+              invertColor={true}
+              name="update"
+              type="MaterialIcons"
+            />
+            <Text invertColor={true}>Update</Text>
           </TouchableOpacity>
         </View>
       </ActionSheet>

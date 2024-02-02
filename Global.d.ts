@@ -79,7 +79,9 @@ Array.prototype.skip = function (
 ) {
   if (!handler)
     return this.filter((x, i) => i > index);
-   return this.filter((x, i) => !handler(x,i) || i > index);
+  return this.filter(
+    (x, i) => !handler(x, i) || i > index
+  );
 };
 
 Array.prototype.lastOrDefault = function (
@@ -206,9 +208,20 @@ String.prototype.cleanText = function () {
   const doc = IDOMParser.parse(
     `<div>${str}</div>`
   );
-  return doc.documentElement
+  str = doc.documentElement
     .text()
     .replace(/\<\/( )?br>|\<br( )?(\/)?>/gim, "");
+  const clean = (char: string) => {
+    char.split("").forEach(c => {
+      let reg = new RegExp(`(\\${c})\\1+`, "gmi");
+      str = str.replace(reg, c);
+    });
+    return str;
+  };
+
+  return clean(
+    `@#$_&-+()/*"':;!?~|•√π÷×§∆£¢€¥^°=%©®™✓[]{}<>,.`
+  );
 };
 
 String.prototype.htmlArray = function () {

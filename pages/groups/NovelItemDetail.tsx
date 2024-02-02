@@ -356,7 +356,7 @@ export default ({ ...props }: any) => {
         css="box row bottom mih:50 juc:center ali:center clearwidth"
         ifTrue={state.novel.url?.has() ?? false}>
         <TouchableOpacity
-          css="button mar:5"
+          css="button mar:5 clearheight juc:center"
           invertColor={true}
           onPress={async () => {
             g.downloadManager().download(
@@ -373,12 +373,11 @@ export default ({ ...props }: any) => {
             type="Feather"
             name="download"
             invertColor={true}
-            css="bold"
-            size={45}
+            css="mar:0"
           />
         </TouchableOpacity>
         <TouchableOpacity
-          css="mar:5 button pa:5 wi:65%"
+          css="mar:5 button pa:5 wi:65% clearheight"
           invertColor={true}
           onPress={() => {
             options
@@ -391,12 +390,12 @@ export default ({ ...props }: any) => {
           }}>
           <Text
             invertColor={true}
-            css="bold fos:30">
+            css="fos:30">
             READ
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          css="button"
+          css="button clearheight juc:center mar:0"
           invertColor={true}
           onPress={async () => {
             loader.show();
@@ -437,8 +436,7 @@ export default ({ ...props }: any) => {
                 ? undefined
                 : true
             }
-            css="bold"
-            size={45}
+            css="mar:0"
             style={{
               color: state.book?.favorit
                 ? "red"
