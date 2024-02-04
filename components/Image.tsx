@@ -13,7 +13,7 @@ export default ({
   const [imgSize, setImgSize] = useState({});
   const [source, setSource] = useState(noImage);
   let loadImage = () => {
-    if (url && url.startsWith("[")) {
+    if (url && url.toString().startsWith("[")) {
       // image selector
       let g = require("../GlobalContext").default;
       g.parser
@@ -21,7 +21,7 @@ export default ({
         .fetchSelectorImage(url)
         .then(x => setSource(x))
         .catch(x => {});
-    } else if(url?.has()){
+    } else if (url && url.toString().has()) {
       setSource(url);
     }
   };
@@ -42,7 +42,7 @@ export default ({
 
   return (
     <Image
-      onError={()=> setSource(noImage)}
+      onError={() => setSource(noImage)}
       source={
         typeof source == "number"
           ? source

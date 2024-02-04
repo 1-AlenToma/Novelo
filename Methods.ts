@@ -1,5 +1,100 @@
 import uuid from "react-native-uuid";
 import { Styleable } from "./styles";
+import * as MediaLibrary from "expo-media-library";
+import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system";
+
+let settings = null;
+const getDirectoryPermissions = async => {
+  return new Promise(async (resolve, reject) => {
+    if (settings !== null) return settings;
+    try {
+      const initial =
+        FileSystem.StorageAccessFramework.getUriForDirectoryInRoot();
+
+      const permissions =
+        await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(
+          initial
+        );
+      settings = {
+        downloadsFolder: permissions.granted
+          ? permissions.directoryUri
+          : null
+      };
+      // Unfortunately, StorageAccessFramework has no way to read a previously specified folder without popping up a selector.
+      // Save the address to avoid asking for the download folder every time
+
+      return resolve(
+        permissions.granted
+          ? permissions.directoryUri
+          : null
+      );
+    } catch (e) {
+      console.log(
+        "Error in getDirectoryPermissions",
+        e
+      );
+      return resolve(null);
+    }
+  });
+};
+
+const writeFile = async (
+  text: string,
+  name: string,
+  string?: encoding
+) => {
+  let { status } =
+    await MediaLibrary.requestPermissionsAsync();
+  const androidSDK = Platform.constants.Version;
+  let downloadsFolder = null;
+  if (
+    Platform.OS === "android" &&
+    androidSDK >= 30
+  ) {
+    //Except for Android 11, using the media library works stably
+    downloadsFolder =
+      await getDirectoryPermissions();
+    //if (settings) downloadsFolder = settings;
+    //if (settings) downloadsFolder = settings + "/";
+    // console.log(settings);
+  }
+  if (
+    Platform.OS === "android" &&
+    downloadsFolder
+  ) {
+    // Creating files using SAF
+    // I think this code should be in the documentation as an example
+    const newFile =
+      await FileSystem.StorageAccessFramework.createFileAsync(
+        downloadsFolder,
+        name,
+        "text/plain"
+      );
+    await FileSystem.writeAsStringAsync(
+      newFile,
+      text,
+      {
+        encoding: FileSystem.EncodingType.UTF8
+      }
+    );
+  } else {
+    let fileUri =
+      FileSystem.documentDirectory.path(name);
+    await FileSystem.writeAsStringAsync(
+      fileUri,
+      text,
+      {
+        encoding: FileSystem.EncodingType.UTF8
+      }
+    );
+    // Creating files using MediaLibrary
+    const asset =
+      await MediaLibrary.createAssetAsync(
+        fileUri
+      );
+  }
+};
 
 const StyledView = function <T>(
   View: T,
@@ -87,22 +182,34 @@ const removeProps = (
     item = item.map(x => removeProps(x, ...keys));
   else {
     item = { ...item };
-    keys.forEach(k => {
-      if (item[k] !== undefined) delete item[k];
-    });
+    for (let k in item) {
+      if (keys.includes(k)) {
+        if (item[k]) delete item[k];
+        continue;
+      }
+      if (item[k] && typeof item[k] === "object") {
+        item[k] = removeProps(item[k], ...keys);
+      }
+    }
   }
 
   return item;
 };
 
-const joinKeys = (a: any, b: any) => {
+const joinKeys = (
+  a: any,
+  b: any,
+  ...ignoreKeys: string[]
+) => {
   let keys = Object.keys(a);
   for (let k in b) {
+    if (ignoreKeys.includes(k)) continue;
     if (
       keys.find(f => f === k) &&
       (k != "id" || b[k] != undefined)
-    )
+    ) {
       a[k] = b[k];
+    }
   }
   return a;
 };
@@ -166,7 +273,7 @@ const ifSelector = (
   value?: Funtion | boolean
 ) => {
   if (value && typeof value == "function")
-    return (value() ? true : false)
+    return value() ? true : false;
   return value;
 };
 
@@ -182,5 +289,6 @@ export {
   joinKeys,
   arrayBuffer,
   invertColor,
-  ifSelector
+  ifSelector,
+  writeFile
 };

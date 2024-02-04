@@ -19,7 +19,8 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if (ifSelector(ifTrue) === false) return null;
+  if (ifSelector(ifTrue) == false)
+    return null;
   let st = parseThemeStyle(
     style,
     css,

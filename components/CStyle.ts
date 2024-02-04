@@ -87,5 +87,6 @@ export default NestedStyleSheet.create({
   form: "clearwidth row di:flex jus:space-between ali:center mab:5",
   "form.Text":
     "fos:13 bold tea:left par:10 wi:100",
+  "formlist.Text": "wi:90%",
   "form.chackBox": "ali:center mar:10"
 });

@@ -9,20 +9,23 @@ export default ({
   css,
   ...props
 }) => {
+  let ico = (
+    <Icon
+      type="MaterialIcons"
+      name={
+        checked
+          ? "radio-button-checked"
+          : "radio-button-unchecked"
+      }
+      size={20}
+      {...props}
+    />
+  );
   return (
-    <View css={`row clearwidth ${css??""}`}>
-      <TouchableOpacity onPress={onChange}>
-        <Icon
-          type="MaterialIcons"
-          name={
-            checked
-              ? "radio-button-checked"
-              : "radio-button-unchecked"
-          }
-          size={20}
-          {...props}
-        />
-      </TouchableOpacity>
+    <View css={`row clearwidth ${css ?? ""}`}>
+    {onChange ?(<TouchableOpacity onPress={onChange}>
+        {ico}
+      </TouchableOpacity>): ico}
 
       <Text
         ifTrue={text != undefined}

@@ -26,6 +26,7 @@ declare global {
   }
   interface String {
     join(...relative: String[]): String;
+    path(...relative: string[]): String;
     empty(): String;
     query(item: any): String;
     trimEnd(...items): String;
@@ -85,13 +86,13 @@ Array.prototype.skip = function (
 };
 
 Array.prototype.lastOrDefault = function (
-  key: string
+  key?: string
 ) {
   let item =
     this.length > 0
       ? this[this.length - 1]
       : undefined;
-  return item ? item[key] : undefined;
+  return item && key ? item[key] : item;
 };
 
 Array.prototype.clear = function () {
@@ -266,7 +267,7 @@ String.prototype.safeSplit = function (
   index: number
 ) {
   let ar = new String(this).toString().split(c);
-  if (index === -1) return ar[ar.length - 1];
+  if (index === -1) return ar.lastOrDefault();
   return ar[index] || "";
 };
 let styleShortKeys = [];
@@ -334,6 +335,22 @@ String.prototype.query = function (item: any) {
   return url;
 };
 
+String.prototype.path = function (
+  ...relative: string[]
+) {
+  let url = new String(this).toString().trim();
+  relative
+    .filter(x => x && x.has())
+    .forEach(x => {
+      if (url.endsWith("/"))
+        url = url.substring(0, url.length - 1);
+      if (x.startsWith("/")) x = x.substring(1);
+      url = `${url}/${x}`;
+    });
+  if (!url.endsWith("/")) url += "/";
+  return url;
+};
+
 String.prototype.join = function (
   this: string,
   ...relative: String[]
@@ -352,7 +369,7 @@ String.prototype.join = function (
       ) {
         if (x.startsWith("/")) x = x.substring(1);
         if (url.endsWith("/"))
-          url = url.substring(1, url.length - 1);
+          url = url.substring(0, url.length - 1);
 
         url = `${url}/${x}`;
       } else url = x;

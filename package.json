@@ -42,7 +42,8 @@
     "react-native-uuid": "^2.0.1",
     "react-native-webview": "13.6.4",
     "reanimated-color-picker": "^2.4.2",
-    "util": "^0.12.5"
+    "util": "^0.12.5",
+    "expo-media-library": "~15.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

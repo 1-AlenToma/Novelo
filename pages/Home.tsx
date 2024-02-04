@@ -24,10 +24,11 @@ import {
   ScrollView,
   Animated
 } from "react-native";
-const HEADER_EXPANDED_HEIGHT = 150;
+const HEADER_EXPANDED_HEIGHT = 190;
 const HEADER_COLLAPSED_HEIGHT = 60;
 const CurrentItem = ({
   style,
+  children,
   ...props
 }: any) => {
   const [_, options, navop] =
@@ -51,14 +52,16 @@ const CurrentItem = ({
     reload();
   }, "appSettings.currentNovel");
 
-  let book = books?.firstOrDefault();
-  if (book == undefined || book == null)
-    return null;
+  let book = books?.firstOrDefault() ?? {};
   return (
     <AnimatedView
       style={style}
       invertColor={true}>
+      {children}
       <TouchableOpacity
+        ifTrue={
+          books?.firstOrDefault() ? true : false
+        }
         css="flex pa:5 row"
         onPress={() => {
           options
@@ -114,11 +117,6 @@ export default ({ ...props }: any) => {
   });
   return (
     <View css="flex ali:flex-start juc:flex-start">
-      <Header
-        {...props}
-        inputEnabled={true}
-      />
-
       <ScrollView
         onScroll={Animated.event(
           [
@@ -134,8 +132,12 @@ export default ({ ...props }: any) => {
         )}>
         <CurrentItem
           style={{ height }}
-          {...props}
-        />
+          {...props}>
+          <Header
+            {...props}
+            inputEnabled={true}
+          />
+        </CurrentItem>
         {groups.map((x, i) => (
           <NovelGroup
             {...props}

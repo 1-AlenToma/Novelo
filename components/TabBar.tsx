@@ -45,27 +45,31 @@ const TabBar = ({
   rootView?: boolean;
 }) => {
   //GlobalData.hook("theme.settings");
-  const update = useUpdate(() => animateLeft());
   const [size, setSize] = useState(undefined);
   const [rItems, setrItems] = useState(
     children.map(x => {})
   );
-  const [animLeft, setAnimLeft] = useState(
+  const animLeft = useRef(
     new Animated.Value(0)
-  );
+  ).current;
   const [index, setIndex] = useState(
     (0).sureValue(selectedIndex)
   );
   const isAnimating = useRef(false);
-
-  useEffect(() => {
-    if (!rItems[index] && children[index]) {
-      rItems[index] = {
-        child: childPrep(children[index])
+  let loadChildren = (i: number) => {
+    if (!rItems[i] && children[i]) {
+      rItems[i] = {
+        child: childPrep(children[i])
       };
     }
-    update();
-  }, [size, index]);
+
+    setIndex(i);
+    animateLeft(i);
+  };
+
+  useEffect(() => {
+    loadChildren(index);
+  }, [size]);
 
   useEffect(
     () => {
@@ -75,28 +79,30 @@ const TabBar = ({
         }
       });
 
-      update();
+      loadChildren(index);
     },
     children.map(x => x)
   );
 
   useEffect(() => {
-    setIndex(selectedIndex);
+    loadChildren(selectedIndex);
   }, [selectedIndex]);
 
   useEffect(() => {
     if (index !== undefined) change?.(index);
   }, [index]);
 
-  const animateLeft = async () => {
+  const animateLeft = async (index: number) => {
     while (isAnimating.current) await sleep(100);
     if (!size || isAnimating.current) return;
     isAnimating.current = true;
     Animated.timing(animLeft, {
       toValue: index,
-      duration: 400,
+      duration: 300,
       useNativeDriver: true
-    }).start(() => (isAnimating.current = false));
+    }).start(() => {
+      isAnimating.current = false;
+    });
   };
 
   const getWidth = (index: number) => {
@@ -150,7 +156,7 @@ const TabBar = ({
               : undefined
           ]}
           key={i + "txt"}
-          onPress={() => setIndex(i)}>
+          onPress={() => loadChildren(i)}>
           {getIcon(
             x.props.icon,
             i == (0).sureValue(index) ? 15 : 18,
@@ -167,7 +173,7 @@ const TabBar = ({
               invertColor={true}
               style={[
                 styles.menuText,
-                {fontSize},
+                { fontSize },
                 i == (0).sureValue(index)
                   ? GlobalData.theme.settings
                   : undefined

@@ -1,8 +1,13 @@
 import { FlatList } from "react-native";
-import { useRef } from "react";
+import {
+  useRef,
+  useEffect,
+  useCallback
+} from "react";
 import { FlashList } from "@shopify/flash-list";
 import TouchableOpacity from "./TouchableOpacityView";
 import View from "./ThemeView";
+import { useUpdate } from "../hooks";
 
 export default ({
   items,
@@ -14,7 +19,8 @@ export default ({
   onLongPress,
   onEndReached,
   scrollIndex,
-  nested
+  nested,
+  updater
 }: {
   items: any[];
   container: Funtion;
@@ -25,23 +31,26 @@ export default ({
   onEndReached?: () => void;
   scrollIndex?: number;
   nested?: boolean;
+  updater?: any[];
 }) => {
   const onEndReachedCalledDuringMomentum =
     useRef(true);
-  const render = item => {
+  const render = useCallback(item => {
     let d = { item, vMode };
     if (props) d = { ...d, ...props };
     let VR = container;
     return (
       <TouchableOpacity
         css={itemCss}
-        onLongPress={()=> onLongPress?.(item)}
+        onLongPress={() => onLongPress?.(item)}
         onPress={() => onPress?.(item)}>
         <VR {...d} />
       </TouchableOpacity>
     );
-  };
+  });
+
   if (!items || !items.has()) return null;
+
   return (
     <FlashList
       contentContainerStyle={{
@@ -57,6 +66,7 @@ export default ({
         onEndReachedCalledDuringMomentum.current =
           false;
       }}
+      extraData={updater}
       onEndReached={() => {
         if (
           !onEndReachedCalledDuringMomentum.current

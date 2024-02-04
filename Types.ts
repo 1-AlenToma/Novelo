@@ -3,6 +3,16 @@ export type DataCache = {
   data: any;
 };
 
+export type DownloadOptions={
+  all:boolean,
+  appSettings:boolean,
+  epubs:boolean,
+  items:{
+    url:string,
+    parserName: string
+  }[]
+}
+
 export type Button = {
   text: Element | Function;
   press: Function;

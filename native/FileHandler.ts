@@ -22,11 +22,12 @@ export default class FileHandler {
           .filter(x => x !== "values")
           .map(x => events[this.handlerId][x])
     };
-    this.dir =
-      (!dirType || dirType == "Cache"
+    this.dir = (
+      !dirType || dirType == "Cache"
         ? FileSystem.cacheDirectory
-        : FileSystem.documentDirectory) + dir;
-    if (!this.dir.endsWith("/")) this.dir += "/";
+        : FileSystem.documentDirectory
+    ).path(dir);
+    
   }
 
   trigger(
@@ -87,8 +88,7 @@ export default class FileHandler {
             ims.push(item);
             break;
           }
-        }else
-        ims.push(item);
+        } else ims.push(item);
       }
 
       await setItems(ims);
