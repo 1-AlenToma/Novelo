@@ -25,7 +25,7 @@ import {
   sleep
 } from "../Methods";
 let encKey = "novelo.enc";
-let encKeys = ["url", "content", "parserName", "image"];
+let encKeys = ["url", "parserName", "image"];
 export default class DbContext {
   databaseName: string = "Novelo";
   database: IDatabase<TableNames>;
@@ -71,9 +71,14 @@ export default class DbContext {
       Array.isArray(item) &&
       typeof item == "object"
     ) {
-      item.forEach(x => {
-        this.encryptItem(x);
-      });
+      if (
+        item.length > 0 &&
+        typeof item.firstOrDefault() === "object"
+      ) {
+        item.forEach(x => {
+          this.encryptItem(x);
+        });
+      }
     } else {
       for (let k in item) {
         let value = item[k];
@@ -83,8 +88,12 @@ export default class DbContext {
           typeof value === "string" &&
           !value.startsWith("#")
         ) {
+          console.log(k);
           item[k] = encrypt(value, encKey);
-        } else if (typeof value == "object") {
+        } else if (
+          value &&
+          typeof value == "object"
+        ) {
           this.encryptItem(value);
         }
       }
@@ -104,6 +113,7 @@ export default class DbContext {
       });
     } else {
       for (let k in item) {
+        console.info(k);
         let value = item[k];
         if (
           value &&
@@ -111,7 +121,10 @@ export default class DbContext {
           value.startsWith("#")
         ) {
           item[k] = decrypt(value, encKey);
-        } else if (typeof value == "object") {
+        } else if (
+          value &&
+          typeof value == "object"
+        ) {
           this.decryptItem(value);
         }
       }
@@ -175,6 +188,7 @@ export default class DbContext {
           let novel = JSON.parse(
             await g.files.read(file)
           );
+          novel.fileName = file;
           let book = await this.database
             .querySelector<Book>("Books")
             .LoadChildren<Chapter>(
@@ -194,7 +208,12 @@ export default class DbContext {
           }
         }
       }
-      item = removeProps(item, "id", "parent_Id");
+      item = removeProps(
+        item,
+        "id",
+        "parent_Id",
+        "tableName"
+      );
       this.encryptItem(item);
       await writeFile(
         JSON.stringify(item),
@@ -202,6 +221,7 @@ export default class DbContext {
       );
     } catch (e) {
       console.error(e);
+      return e.message;
     }
   };
 
@@ -209,24 +229,33 @@ export default class DbContext {
     uri: string,
     onChange: () => (p: number) => void
   ) => {
+    let total = 0;
+    let index = 0;
+    const calc = (finished?: boolean) => {
+      index++;
+      let p = (100 * index + 1) / total;
+      if (finished) p = 100;
+      onChange?.(p);
+    };
     try {
+      await this.database.disableWatchers();
+      await this.database.disableHooks();
+      await this.database.beginTransaction();
       const g =
         require("../GlobalContext").default;
       let file = await g.files.read(uri);
       let item = file?.has()
         ? JSON.parse(file)
         : undefined;
-      let total = 0;
-      let index = 0;
-      const calc = (finished?: boolean) => {
-        index++;
-        let p = (100 * index + 1) / total;
-        if (finished) p = 100;
-        onChange?.(p);
-      };
+
       if (item) {
         let total =
-          item.books.length + item.epubs.length;
+          item.books.length +
+          item.epubs.length +
+          1;
+        calc();
+        await sleep(30);
+        this.decryptItem(item);
         if (item.appSettings) {
           joinKeys(
             g.appSettings,
@@ -266,9 +295,10 @@ export default class DbContext {
           }
 
           book.tableName = "Books";
-          await book.save(book);
+          await this.database.save(book);
           for (let ch of book.chapterSettings) {
             ch.tableName = "Chapters";
+            ch.parent_Id = book.id;
             await this.database.save(ch);
           }
           calc();
@@ -277,17 +307,22 @@ export default class DbContext {
 
         for (let epub of item.epubs) {
           await g.files.write(
-            epub.url,
+            epub.fileName,
             JSON.stringify(epub)
           );
           calc();
           if (index % 5 === 0) await sleep(10);
         }
       }
+
+      await this.database.commitTransaction();
     } catch (e) {
+      await this.database.rollbackTransaction();
       console.error(e);
-      throw e;
+      return e.message;
     } finally {
+      await this.database.enableHooks();
+      await this.database.enableWatchers();
       calc(true);
     }
   };

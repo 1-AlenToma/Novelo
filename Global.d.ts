@@ -113,7 +113,7 @@ Array.prototype.has = function (item?: any) {
 };
 
 Array.prototype.firstOrDefault = function (
-  key: string
+  key?: string
 ) {
   let item = undefined;
   let items = this.filter(

@@ -14,6 +14,7 @@ export default class ZipBook {
   chapters: ZipFile = [];
   name: string = "";
   url: string = newId();
+  fileName?: string; // used only in dbContext
   epub: boolean = true;
   static async load(uri: string, xname: string) {
     function isImage(url: string) {

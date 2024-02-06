@@ -73,6 +73,10 @@ export default NestedStyleSheet.create({
 
   "listButton.Text": "header bold",
 
+  settingButton: "listButton pa:5 wi:100%",
+
+  "settingButton.Icon": "fos:25 mar:5",
+
   box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5",
 
   selected: {

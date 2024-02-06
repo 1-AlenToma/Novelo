@@ -12,8 +12,11 @@ import {
   useLoader
 } from "../components/";
 import g from "../GlobalContext";
-
+import { Book, Chapter } from "..db";
+import { Platform } from "react-native";
 import { useState } from "../native";
+import { getDirectoryPermissions } from "../Methods";
+import * as DocumentPicker from "expo-document-picker";
 
 export default (props: any) => {
   let loader = useLoader();
@@ -49,6 +52,61 @@ export default (props: any) => {
     });
     loader.hide();
     g.alert("File Downloded").show();
+  };
+
+  const cleanData = () => {
+    g.alert(
+      "Are you sure?",
+      "Please Confirm"
+    ).confirm(async () => {
+      try {
+        loader.show();
+
+        let _books = g
+          .db()
+          .querySelector<Book>("Books")
+          .Where.Column(x => x.favorit)
+          .EqualTo(false)
+          .AND.Column(x => x.parserName)
+          .NotEqualTo("epub");
+        let ids = (await _books.toList()).map(
+          x => x.id
+        );
+        if (ids.length > 0)
+          await g
+            .db()
+            .querySelector<Chapter>("Chapters")
+            .Where.Column(x => x.parent_Id)
+            .IN(ids)
+            .delete();
+        await _books.delete();
+        let cacheFiles = await g.cache.allFiles();
+        for (let f of cacheFiles) {
+          await g.cache.delete(f);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      loader.hide();
+    });
+  };
+
+  const uploadBackup = async () => {
+    const { assets } =
+      await DocumentPicker.getDocumentAsync({
+        copyToCacheDirectory: true,
+        type: "application/json"
+      });
+    loader.show();
+    let uri = assets?.firstOrDefault("uri");
+    let msg = await g
+      .dbContext()
+      .uploadData(uri, p => {
+        state.procent = p;
+      });
+    loader.hide();
+    if (msg) g.alert(msg);
   };
 
   return (
@@ -174,23 +232,57 @@ export default (props: any) => {
       </View>
       <View
         invertColor={true}
-        css="mih:200 ali:center bor:5 overflow">
-        <Image
-          url={require("../assets/icon.png")}
-          css="resizeMode:contain mat:2.5 clearwidth wi:50 he:50 bor:2"
-        />
+        css="mih:99% ali:center bor:5 overflow">
+        <View css="he:30% juc:center ali:center">
+          <Image
+            url={require("../assets/icon.png")}
+            css="resizeMode:contain mat:2.5 clearwidth wi:50 he:50 bor:2"
+          />
+        </View>
         <TouchableOpacity
-          css="listButton pa:5 clearwidth"
+          css="settingButton"
           onPress={() =>
             (state.downloadShow = true)
           }>
           <Icon
             invertColor={true}
-            type="FontAwesome"
-            name="download"
+            type="MaterialCommunityIcons"
+            name="database-import"
           />
           <Text invertColor={true}>
             Download Backup
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          css="settingButton"
+          onPress={uploadBackup}>
+          <Icon
+            invertColor={true}
+            type="MaterialCommunityIcons"
+            name="database-export"
+          />
+          <Text invertColor={true}>
+            Upload Backup
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          css="settingButton"
+          onPress={cleanData}>
+          <Icon
+            invertColor={true}
+            type="MaterialIcons"
+            name="cleaning-services"
+          />
+          <Text
+            css="he:30"
+            invertColor={true}>
+            Clean files
+            {"\n"}
+            <Text css="co:red desc">
+              Remove all none favorits novels from
+              cache and db
+            </Text>
           </Text>
         </TouchableOpacity>
       </View>

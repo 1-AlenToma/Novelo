@@ -60,7 +60,7 @@ const data = GlobalState(
     isFullScreen: false,
     appSettings: AppSettings.n(),
     voices: undefined,
-    cache: new FileHandler("tempFiles", "Cache"),
+    cache: new FileHandler("Memo", "Cache"),
     files: new FileHandler("noveloFiles", "File"),
     speech: Speech,
     nav: undefined,

@@ -4,39 +4,32 @@ import * as MediaLibrary from "expo-media-library";
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 
-let settings = null;
-const getDirectoryPermissions = async => {
-  return new Promise(async (resolve, reject) => {
-    if (settings !== null) return settings;
-    try {
-      const initial =
-        FileSystem.StorageAccessFramework.getUriForDirectoryInRoot();
+let downloadsFolder = null;
+const getDirectoryPermissions = async () => {
+  if (downloadsFolder !== null)
+    return downloadsFolder;
+  try {
+    const initial =
+      FileSystem.StorageAccessFramework.getUriForDirectoryInRoot();
 
-      const permissions =
-        await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(
-          initial
-        );
-      settings = {
-        downloadsFolder: permissions.granted
-          ? permissions.directoryUri
-          : null
-      };
-      // Unfortunately, StorageAccessFramework has no way to read a previously specified folder without popping up a selector.
-      // Save the address to avoid asking for the download folder every time
+    const permissions =
+      await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(
+        initial
+      );
+    downloadsFolder = permissions.granted
+      ? permissions.directoryUri
+      : null;
 
-      return resolve(
-        permissions.granted
-          ? permissions.directoryUri
-          : null
-      );
-    } catch (e) {
-      console.log(
-        "Error in getDirectoryPermissions",
-        e
-      );
-      return resolve(null);
-    }
-  });
+    // Unfortunately, StorageAccessFramework has no way to read a previously specified folder without popping up a selector.
+    // Save the address to avoid asking for the download folder every time
+  } catch (e) {
+    console.log(
+      "Error in getDirectoryPermissions",
+      e
+    );
+  }
+
+  return downloadsFolder;
 };
 
 const writeFile = async (
@@ -47,10 +40,11 @@ const writeFile = async (
   let { status } =
     await MediaLibrary.requestPermissionsAsync();
   const androidSDK = Platform.constants.Version;
-  let downloadsFolder = null;
+
   if (
     Platform.OS === "android" &&
-    androidSDK >= 30
+    androidSDK == 30 &&
+    !downloadsFolder
   ) {
     //Except for Android 11, using the media library works stably
     downloadsFolder =
@@ -69,7 +63,7 @@ const writeFile = async (
       await FileSystem.StorageAccessFramework.createFileAsync(
         downloadsFolder,
         name,
-        "text/plain"
+       name.endsWith("json") ?"application/json": "text/x-json"
       );
     await FileSystem.writeAsStringAsync(
       newFile,
@@ -187,7 +181,10 @@ const removeProps = (
         if (item[k]) delete item[k];
         continue;
       }
-      if (item[k] && typeof item[k] === "object") {
+      if (
+        item[k] &&
+        typeof item[k] === "object"
+      ) {
         item[k] = removeProps(item[k], ...keys);
       }
     }
@@ -290,5 +287,6 @@ export {
   arrayBuffer,
   invertColor,
   ifSelector,
-  writeFile
+  writeFile,
+  getDirectoryPermissions
 };

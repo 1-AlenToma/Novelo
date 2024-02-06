@@ -15,7 +15,7 @@ let events = {};
 export default class FileHandler {
   dir: string;
   handlerId: string = newId();
-  constructor(dir: string, dirType: Dir) {
+  constructor(dir: string, dirType?: Dir) {
     events[this.handlerId] = {
       values: () =>
         Object.keys(events[this.handlerId])
@@ -27,7 +27,6 @@ export default class FileHandler {
         ? FileSystem.cacheDirectory
         : FileSystem.documentDirectory
     ).path(dir);
-    
   }
 
   trigger(
@@ -79,16 +78,20 @@ export default class FileHandler {
       await setLoading(true);
       let ims = [];
       for (let file of files.current) {
-        let item = await loadContent(
-          file,
-          globalType
-        );
-        if (validator) {
-          if (validator(item)) {
-            ims.push(item);
-            break;
-          }
-        } else ims.push(item);
+        try {
+          let item = await loadContent(
+            file,
+            globalType
+          );
+          if (validator) {
+            if (validator(item)) {
+              ims.push(item);
+              break;
+            }
+          } else ims.push(item);
+        } catch (e) {
+          console.log(e)
+        }
       }
 
       await setItems(ims);
@@ -123,6 +126,13 @@ export default class FileHandler {
 
   getName(file: string) {
     // its full path
+    let types = [".json", ".html", ".epub"];
+    if (
+      file &&
+      file.has() &&
+      !types.find(x => file.has(x))
+    )
+      file += ".json";
     if (file.startsWith("file")) return file;
     file = this.dir + file;
     if (file.startsWith("/"))
@@ -150,6 +160,12 @@ export default class FileHandler {
   async write(file: string, content: string) {
     await this.checkDir();
     let fileUri = this.getName(file);
+    console.log(
+      "writing",
+      fileUri,
+      "filename",
+      file
+    );
     await FileSystem.writeAsStringAsync(
       fileUri,
       content
