@@ -5,7 +5,6 @@
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-      <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
     </array>
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
@@ -50,9 +49,12 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to save photos</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your photos</string>
     <key>UIBackgroundModes</key>
     <array>
-      <string>processing</string>
       <string>processing</string>
     </array>
     <key>UILaunchStoryboardName</key>

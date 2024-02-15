@@ -3,6 +3,9 @@ import { cssTranslator } from "./styles";
 import IDOMParser from "advanced-html-parser";
 const cheerio = require("react-native-cheerio");
 declare global {
+  interface Date {
+    getMinDiff: (date: Date) => number;
+  }
   interface Array<T> {
     mapAsync(
       fn: (item: T, index: number) => Promise<T[]>
@@ -56,6 +59,17 @@ declare global {
     readAble: () => any;
   }
 }
+
+Date.prototype.getMinDiff = function (
+  date: Date
+) {
+  var today = new Date();
+  var diffMs = this - today;
+  var diffMins = Math.round(
+    ((diffMs % 86400000) % 3600000) / 60000
+  );
+  return diffMins
+};
 
 Number.prototype.readAble = function () {
   let nr = this.toString();

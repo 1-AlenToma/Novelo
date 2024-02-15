@@ -154,12 +154,13 @@ const data = GlobalState(
               data.size = { ...e };
             }
           );
-        //await BGService.start();
+
+        await BGService.start();
         return [
           hideSubscription,
           showSubscription,
-          windowEvent
-          // {remove:()=> BGService.stop()}
+          windowEvent,
+          { remove: () => BGService.stop() }
         ];
       } catch (e) {
         console.error(e);

@@ -53,15 +53,14 @@ const CurrentItem = ({
   }, "appSettings.currentNovel");
 
   let book = books?.firstOrDefault() ?? {};
+  if(!books?.firstOrDefault())
+    return null
   return (
     <AnimatedView
       style={style}
       invertColor={true}>
       {children}
       <TouchableOpacity
-        ifTrue={
-          books?.firstOrDefault() ? true : false
-        }
         css="flex pa:5 row"
         onPress={() => {
           options

@@ -284,6 +284,7 @@ const Controller = ({ state, ...props }) => {
                         </Text>
                         <DropdownList
                           height="80"
+                          toTop={true}
                           items={Object.keys(
                             Fonts
                           )}
@@ -458,6 +459,7 @@ const Controller = ({ state, ...props }) => {
                         </Text>
                         <DropdownList
                           height="80"
+                          toTop={true}
                           items={g.voices}
                           render={item => {
                             return (
@@ -626,7 +628,11 @@ const InternalWeb = ({
           content: `<div id="novel" class="novel">
           ${
             g.player.showPlayer
-              ?`<p>${g.player.currentPlaying()?.cleanText()?? ""}</p>`
+              ? `<p>${
+                  g.player
+                    .currentPlaying()
+                    ?.cleanText() ?? ""
+                }</p>`
               : g.player.html
           }
           </div>`,
@@ -764,8 +770,11 @@ export default (props: any) => {
     return () => {
       g.isFullScreen = false;
       g.player.hooked = false;
-      if(g.player.showPlayer && g.player.playing())
-      g.player.viewState = "Folded";
+      if (
+        g.player.showPlayer &&
+        g.player.playing()
+      )
+        g.player.viewState = "Folded";
     };
   }, []);
 

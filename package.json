@@ -43,7 +43,8 @@
     "react-native-webview": "13.6.4",
     "reanimated-color-picker": "^2.4.2",
     "util": "^0.12.5",
-    "expo-media-library": "~15.9.1"
+    "expo-media-library": "~15.9.1",
+    "expo-dev-client": "~3.3.8"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -24,6 +24,7 @@ export default ({
   visible,
   onHide,
   speed,
+  toTop,
   ...props
 }: {
   speed?: number;
@@ -32,6 +33,7 @@ export default ({
   height: string;
   visible: boolean;
   onHide?: () => void;
+  toTop?: boolean;
 }) => {
   let getHeight = () => {
     if (
@@ -168,7 +170,8 @@ export default ({
       </>,
       id.current,
       {
-        visible: isV
+        visible: isV,
+        toTop
       }
     );
     context.update();

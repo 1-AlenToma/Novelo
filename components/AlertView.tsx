@@ -16,6 +16,7 @@ export default () => {
 
   return (
     <Modal
+      toTop={true}
       height={200}
       visible={message.msg != undefined}
       onHide={() => confirm(false)}>
@@ -42,7 +43,9 @@ export default () => {
           onPress={() => confirm(true)}>
           <Text invertColor={true}>YES</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => confirm(false)} css="button">
+        <TouchableOpacity
+          onPress={() => confirm(false)}
+          css="button">
           <Text invertColor={true}>NO</Text>
         </TouchableOpacity>
       </View>

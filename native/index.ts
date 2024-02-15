@@ -7,6 +7,7 @@ import BGService from "./BackgroundService";
 import ZipBook from "./ZipBook";
 import EpubBuilder from "./EpubBuilder";
 import DownloadManager from "./DownloadManager";
+import EventEmitter from "./EventEmitter";
 
 import {
   LightInfo,
@@ -35,5 +36,6 @@ export {
   BGService,
   ZipBook,
   EpubBuilder,
-  DownloadManager
+  DownloadManager,
+  EventEmitter
 };

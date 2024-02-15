@@ -60,7 +60,11 @@ const AppContainer = ({
   return (
     <ElementsContext.Provider value={data}>
       <>
-        <View css="zi:1 flex" onStartShouldSetResponderCapture={() => false}>
+        <View
+          css="zi:1 flex"
+          onStartShouldSetResponderCapture={() =>
+            false
+          }>
           {isReady ? children : null}
         </View>
         <AppChildContainer />
@@ -87,17 +91,24 @@ const AppChildContainer = () => {
     context.setIsReady(true);
   }, []);
   context.items = items;
-  const rItem = [];
+  let rItem = [];
   items.forEach((x, k) => {
     rItem.push({ x, k });
   });
 
+  rItem = rItem.sort((a, b) => {
+    let av = a.x.props.toTop ?? false;
+    let bv = b.x.props.toTop ?? false;
+    return av === bv ? 0 : av ? 1 : -1;
+  });
   return (
     <>
-      {rItem.reverse().map((x, i) => (
+      {rItem.map((x, i) => (
         <View
           style={{
-            zIndex: 200 + x.x.zIndex || i
+            zIndex:
+              200 +
+              (x.x.props.toTop == true ? 10 : 0)
           }}
           ifTrue={x.x.props.visible}
           css="bac:transparent bottom clearboth"
