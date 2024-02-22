@@ -18,16 +18,17 @@ const AppContainer = ({
   children: any;
 }) => {
   const [isReady, setIsReady] = useState(false);
+  const [items] = useState(new Map());
   const data = {
-    items: new Map(),
+    items,
     update: () => {},
     newKey: () => {},
     find: (id: string) => {
       return data.items.get(id);
     },
-    has: (id: string) => data.items.has(id),
+    has: (id: string) => items.has(id),
     remove: (id: string) => {
-      data.items.delete(id);
+      items.delete(id);
     },
     zIndex: () => zindex++,
     updateProps: (
@@ -36,23 +37,25 @@ const AppContainer = ({
       props: any,
       zIndex?: number
     ) => {
-      data.items.set(id, {
+      items.set(id, {
         props,
         elem
       });
+      data.update();
     },
     setIsReady: setIsReady,
     push: (elem: any, id: string, props: any) => {
-      data.items.set(id, {
+      items.set(id, {
         elem,
         props
       });
+      data.update();
     }
   };
 
   useEffect(() => {
     return () => {
-      data.items.clear();
+      items.clear();
       data.update();
     };
   }, []);
@@ -75,9 +78,7 @@ const AppContainer = ({
 
 const AppChildContainer = () => {
   const updater = useUpdate();
-  const [items] = useState(
-    new Map<string, Item>()
-  );
+
   const [kk, setK] = useState("12");
   const context = useContext(ElementsContext);
   context.update = () => {
@@ -90,7 +91,7 @@ const AppChildContainer = () => {
   useEffect(() => {
     context.setIsReady(true);
   }, []);
-  context.items = items;
+  let items = context.items;
   let rItem = [];
   items.forEach((x, k) => {
     rItem.push({ x, k });

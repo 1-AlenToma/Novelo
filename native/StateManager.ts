@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { newId } from "../Methods";
 class StateManager<T> {
   constructor(
@@ -6,12 +6,6 @@ class StateManager<T> {
     ...ignoreKeys: (keyof T)[]
   ) {
     const [d, setD] = useState(item);
-    const [up, setUp] = useState();
-    let timer = undefined;
-    let change = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => setUp(newId()), 1);
-    };
     let keys = Object.keys(d);
     for (let key of keys) {
       Object.defineProperty(this, key, {
@@ -26,7 +20,8 @@ class StateManager<T> {
             ignoreKeys.find(x => x == key)
           )
             return;
-          change();
+          setD({ ...d });
+          //change();
         }
       });
     }

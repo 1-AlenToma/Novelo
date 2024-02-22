@@ -104,7 +104,7 @@ export default function App() {
   return (
     <AppContainer>
       <NavigationContainer>
-        <AppStack />
+          <AppStack />
         <PlayerView />
       </NavigationContainer>
       <StatusBar

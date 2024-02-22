@@ -21,10 +21,13 @@ import {
 } from "../../components/";
 import Fonts from "../../assets/Fonts";
 import { useEffect, useRef } from "react";
+import translate from "translate-google-api";
+import { LANGUAGE_TABLE } from "react-native-translator/dist/utils/languageCodeConverter";
 import {
   ScrollView,
   Linking
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import {
   useNavigation,
   useUpdate,
@@ -64,7 +67,6 @@ const Controller = ({ state, ...props }) => {
 
   g.hook(
     "player.showController",
-    "appSettings",
     "player.showPlayer",
     "player.chapterArray",
     "player._playing"
@@ -85,7 +87,7 @@ const Controller = ({ state, ...props }) => {
     };
   }, []);
 
-  const editSettings = async ({
+  const editSettings = ({
     fontSize,
     fontName,
     isBold,
@@ -99,8 +101,9 @@ const Controller = ({ state, ...props }) => {
     Timer(async () => {
       if (fontSize != undefined)
         g.appSettings.fontSize = fontSize;
-      if (isBold != undefined)
+      if (isBold != undefined) {
         g.appSettings.isBold = isBold;
+      }
       if (backgroundColor !== undefined)
         g.appSettings.backgroundColor =
           backgroundColor;
@@ -258,7 +261,7 @@ const Controller = ({ state, ...props }) => {
             )
           },
           {
-            text: (
+            text: () => (
               <ActionSheetButton
                 height="90"
                 btn={
@@ -573,8 +576,7 @@ const InternalWeb = ({
       updater();
     },
     "player.html",
-    "player.showPlayer",
-    "appSettings"
+    "player.showPlayer"
   );
 
   return (
@@ -586,6 +588,10 @@ const InternalWeb = ({
           *:not(context):not(context *) {
             font-family: "${g.appSettings
               .fontName}";
+          }
+          *:not(context):not(context *):not(
+              .custom
+            ) {
             background-color: ${g.appSettings
               .backgroundColor};
             color: ${invertColor(
@@ -622,10 +628,32 @@ const InternalWeb = ({
         }}
         onMenu={(item: any) => {
           // handle later
-          alert(item.selection);
+          if (item.item.text == "Translate")
+            state.textToTranslate =
+              item.selection;
+          else if (item.item.text === "Copy") {
+            Clipboard.setStringAsync(
+              item.selection
+            );
+          } else if (
+            item.item.text === "Define"
+          ) {
+            let uri = `https://www.google.com/search?q=define%3A${item.selection.replace(
+              / /g,
+              "+"
+            )}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
+            Linking.openURL(uri);
+          } else {
+            state.textEdit = {
+              edit: item.selection,
+              color: undefined,
+              editWith: ""
+            };
+          }
         }}
         content={{
-          content: `<div id="novel" class="novel">
+          content: `
+          <div id="novel" class="novel">
           ${
             g.player.showPlayer
               ? `<p>${
@@ -645,16 +673,24 @@ const InternalWeb = ({
             {
               cols: [
                 {
-                  text: "copy",
+                  text: "Copy",
                   icon: "content_copy"
                 },
                 {
-                  text: "translate",
+                  text: "Translate",
                   icon: "translate"
                 },
                 {
-                  text: "define",
+                  text: "Define",
                   icon: "search"
+                }
+              ]
+            },
+            {
+              cols: [
+                {
+                  text: "Edit",
+                  icon: "edit_note"
                 }
               ]
             }
@@ -684,8 +720,40 @@ export default (props: any) => {
   const state = useState({
     novel: {} as DetailInfo,
     parser: g.parser.find(parserName),
-    book: {} as Book
+    book: {} as Book,
+    textToTranslate: undefined,
+    translationLanguage: "English",
+    translationResult: "",
+    textEdit: undefined
   });
+
+  useDbHook(
+    "AppSettings",
+    item => true,
+    () => g.appSettings,
+    "*"
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (!state.textToTranslate) return;
+      let tr =
+        LANGUAGE_TABLE[state.translationLanguage]
+          .google;
+
+      const result = await translate(
+        state.textToTranslate,
+        {
+          tld: "en",
+          to: tr
+        }
+      );
+      state.translationResult = result;
+    })();
+  }, [
+    state.textToTranslate,
+    state.translationLanguage
+  ]);
 
   const loadData = async () => {
     try {
@@ -732,6 +800,8 @@ export default (props: any) => {
               )
           );
         state.book = book;
+        book.textReplacements =
+          book.textReplacements ?? [];
         g.player = new Player(
           state.novel,
           state.book,
@@ -787,6 +857,120 @@ export default (props: any) => {
   return (
     <>
       {loader.elem}
+      <Modal
+        visible={state.textEdit != undefined}
+        onHide={() =>
+          (state.textEdit = undefined)
+        }
+        height="90">
+        <View css="flex mat:20">
+          <View css="form he:100">
+            <Text invertColor={true}>
+              TextToEdit:
+            </Text>
+            <TextInput
+              onChangeText={x =>
+                (state.textEdit.edit = x)
+              }
+              invertColor={false}
+              css="pa:5 bor:2 flg:1"
+              multiline={true}
+              defaultValue={state.textEdit?.edit}
+            />
+          </View>
+          <View css="form he:100">
+            <Text invertColor={true}>
+              EditWith:
+            </Text>
+            <TextInput
+              onChangeText={x =>
+                (state.textEdit.editWith = x)
+              }
+              invertColor={false}
+              css="pa:5 bor:2 flg:1"
+              multiline={true}
+              defaultValue={
+                state.textEdit?.editWith
+              }
+            />
+          </View>
+          <View css="form">
+            <Text invertColor={true}>
+              Background:
+            </Text>
+            <ColorPicker
+              style={{
+                width: "70%"
+              }}
+              value={state.textEdit?.bgColor}
+              onComplete={({ hex }) =>
+                (state.textEdit.bgColor = hex)
+              }>
+              <Preview />
+              <Panel1 />
+              <HueSlider />
+            </ColorPicker>
+          </View>
+          <TouchableOpacity
+            onPress={async () => {
+              g.player.book.textReplacements.push(
+                state.textEdit
+              );
+              await g.player.book.saveChanges();
+              await g.player.clean();
+              state.textEdit = undefined;
+            }}
+            css="button clearwidth bow:1 boc:#ccc bor:5 juc:center">
+            <Text invertColor={true}>Save</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      <Modal
+        visible={
+          state.textToTranslate != undefined
+        }
+        onHide={() =>
+          (state.textToTranslate = undefined)
+        }
+        height={300}>
+        <View css="flex mat:20">
+          <View css="form">
+            <Text invertColor={true}>
+              TranslateTo:
+            </Text>
+            <DropdownList
+              height="80"
+              toTop={true}
+              items={Object.keys(LANGUAGE_TABLE)}
+              render={item => {
+                return (
+                  <Text
+                    css="bold desc"
+                    invertColor={true}>
+                    {item}
+                  </Text>
+                );
+              }}
+              onSelect={language => {
+                state.translationLanguage =
+                  language;
+              }}
+              selectedValue={
+                state.translationLanguage
+              }
+            />
+          </View>
+          <View css="form he:80%">
+            <TextInput
+              invertColor={false}
+              css="clearboth pa:5 bor:2"
+              multiline={true}
+              readOnly={true}
+              value={state.translationResult}
+            />
+          </View>
+        </View>
+      </Modal>
       <Controller
         state={state}
         {...props}

@@ -17,6 +17,11 @@ class Book extends IBaseModule<TableNames> {
   selectedChapterIndex: number = 0;
   favorit: boolean = false;
   imageBase64: string = "";
+  textReplacements?: {
+    edit: string;
+    editWith: string;
+    bgColor?: string;
+  }[] = [];
   chapterSettings: IQueryResultItem<
     Chapter,
     TableNames
@@ -35,7 +40,9 @@ class Book extends IBaseModule<TableNames> {
       .column("imageBase64")
       .column("inlineStyle")
       .column("favorit")
-      .boolean.column("parserName")
+      .boolean
+      .column("textReplacements").nullable.json
+      .column("parserName")
       .column("selectedChapterIndex")
       .number.objectPrototype(Book.prototype);
   }

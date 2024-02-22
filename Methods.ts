@@ -63,7 +63,9 @@ const writeFile = async (
       await FileSystem.StorageAccessFramework.createFileAsync(
         downloadsFolder,
         name,
-       name.endsWith("json") ?"application/json": "text/x-json"
+        name.endsWith("json")
+          ? "application/json"
+          : "text/x-json"
       );
     await FileSystem.writeAsStringAsync(
       newFile,
@@ -235,6 +237,8 @@ const arrayBuffer = (arr: any[]) => {
 
 function invertColor(hexcolor) {
   try {
+    if (!hexcolor || hexcolor.length < 2)
+      return hexcode;
     // If a leading # is provided, remove it
     if (hexcolor.slice(0, 1) === "#") {
       hexcolor = hexcolor.slice(1);

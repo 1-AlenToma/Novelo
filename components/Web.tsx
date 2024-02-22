@@ -25,6 +25,25 @@ import Svg, {
   Text
 } from "react-native-svg";
 
+const jsScript = `
+if (document.readyState === "loading") {
+document.addEventListener("DOMContentLoaded", (event) => {
+  try{
+${script}
+}catch(e){
+  alert(e)
+}
+});
+}else {
+  try{
+${script}
+}catch(e){
+  alert(e)
+}
+}
+true;
+`;
+
 const Scroller = ({ ...props }: any) => {
   g.hook(
     "player.scrollProcent",
@@ -241,6 +260,7 @@ export default ({
     }
   };
   loading.current = true;
+  
   return (
     <>
       <Scroller
@@ -258,6 +278,7 @@ export default ({
         }}
         nestedScrollEnabled={true}
         scrollEnabled={false}
+        cacheEnabled={false}
         source={{
           html: `
         <html>
@@ -270,6 +291,7 @@ export default ({
           ""
         )}
         <script>
+        try{
           window.loadImages=(imgs)=>{
             imgs= imgs.data;
             let images = [...document.querySelectorAll("img")];
@@ -282,16 +304,12 @@ export default ({
           }
           let images = document.querySelectorAll("img");
           let hrefs = [...images].map(x=> x.getAttribute("src"))
-          if(${
-            scrollDisabled ? "1==0" : "1 == 1"
-          }){
-           window.scroll(0, ${content.scroll});
-          }
+          
           function sleep(ms){
             return new Promise((r)=> setTimeout(r,ms))
           }
           async function psg(){
-          while(window.postmsg === undefined || !document.getElementById("novel") || !window.ctx)
+          while(window.postmsg === undefined || !window.ctx)
              await sleep(200);
             window.binder();
             ${getJs("style", css)}
@@ -302,8 +320,17 @@ export default ({
             window.postmsg("data",true);
             if(hrefs.length >0)
               window.postmsg("Image",hrefs);
+            if(${
+              scrollDisabled ? "1==0" : "1 == 1"
+            }){
+           window.scroll(0, ${content.scroll});
           }
+          }
+          
           psg();
+        }catch(e){
+          alert(e)
+        }
         </script>
         </body>
         </html>
@@ -362,7 +389,7 @@ export default ({
         javaScriptEnabled={true}
         onMessage={onMessage}
         injectedJavaScriptBeforeContentLoaded={
-          script
+          jsScript
         }
       />
     </>

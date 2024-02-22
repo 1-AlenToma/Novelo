@@ -187,18 +187,7 @@ export default ({
         toTop
       }
     );
-    context.update();
-  }, [
-    title,
-    height,
-    children,
-    visible,
-    onHide,
-    speed,
-    ready,
-    toTop,
-    props
-  ]);
+  });
 
   return null;
 };

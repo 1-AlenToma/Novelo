@@ -9,7 +9,10 @@ import {
 import { useState } from "../native";
 import gdata from "../GlobalContext";
 import { proc } from "../Methods";
-import { useNavigation } from "../hooks";
+import {
+  useNavigation,
+  useUpdate
+} from "../hooks";
 import { Button } from "../types";
 import { useEffect, useRef } from "react";
 
@@ -36,6 +39,7 @@ export default ({
 }) => {
   const [params, navOption] =
     useNavigation(props);
+  const updater = useUpdate();
   gdata.hook(
     "theme.invertSettings",
     "KeyboardState",
@@ -59,6 +63,15 @@ export default ({
       input.current?.clear();
     }
   }, [value]);
+
+  if (buttons && buttons.length > 0)
+    useEffect(() => {
+      updater();
+    }, [...buttons]);
+
+  gdata.subscribe(() => {
+    updater();
+  }, "appSettings");
 
   gdata.subscribe(() => {
     if (

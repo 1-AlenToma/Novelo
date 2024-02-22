@@ -28,6 +28,7 @@ declare global {
     ) => string;
   }
   interface String {
+    escapeRegExp(): String;
     join(...relative: String[]): String;
     path(...relative: string[]): String;
     empty(): String;
@@ -60,6 +61,14 @@ declare global {
   }
 }
 
+String.prototype.escapeRegExp = function () {
+  let str = new String(this).toString();
+  return str.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+};
+
 Date.prototype.getMinDiff = function (
   date: Date
 ) {
@@ -68,7 +77,7 @@ Date.prototype.getMinDiff = function (
   var diffMins = Math.round(
     ((diffMs % 86400000) % 3600000) / 60000
   );
-  return diffMins
+  return diffMins;
 };
 
 Number.prototype.readAble = function () {

@@ -4,7 +4,11 @@ import {
   ChapterInfo
 } from "./ParserItems";
 import { Chapter, Book } from "../db";
-import { joinKeys } from "../Methods";
+import {
+  joinKeys,
+  invertColor,
+  sleep
+} from "../Methods";
 type ViewState =
   | "Default"
   | "Folded"
@@ -40,6 +44,34 @@ class Player {
     }`;
   }
 
+  async clean(html?: string) {
+    let txt = html ?? this.html;
+    try {
+      if (!html) this.loader?.show();
+
+      for (let t of this.book.textReplacements) {
+        let rg = new RegExp(
+          t.edit.escapeRegExp(),
+          "gim"
+        );
+        let spn = `<span class="custom" style="background-color:${
+          t.bgColor
+        }; color:${invertColor(t.bgColor)}">${
+          t.editWith
+        }</span>`;
+        txt = txt.replace(rg, spn);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+    }
+    this.chapterArray = txt.htmlArray();
+    this.html = txt;
+    if (!html) await sleep(400);
+    if (!html) this.loader?.hide();
+    return txt;
+  }
+
   async getChapterContent(url: string) {
     try {
       this.loader?.show();
@@ -47,10 +79,9 @@ class Player {
         this.currentChapterSettings?.content?.has() ??
         false
       ) {
-        this.chapterArray =
-          this.currentChapterSettings.content.htmlArray();
-        return (this.html =
-          this.currentChapterSettings.content);
+        return await this.clean(
+          this.currentChapterSettings.content
+        );
       }
       let parser = g.parser.find(
         this.book.parserName
@@ -58,12 +89,11 @@ class Player {
       let str = this.novel.epub
         ? this.currentChapter.content
         : await parser.chapter(url);
-      this.chapterArray = str.htmlArray();
-      this.html =
-        this.currentChapterSettings.content = str;
 
-      //console.warn(this.chapterArray[0]);
-      return str;
+      return await this.clean(
+        (this.currentChapterSettings.content =
+          str)
+      );
     } catch (e) {
       console.error(e);
       return "could not connect";
@@ -118,7 +148,7 @@ class Player {
         url: this.book.url,
         parserName: this.book.parserName
       };
-      await g.appSettings.saveChanges()
+      await g.appSettings.saveChanges();
     }
     if (typeof index === "string")
       index = this.novel.chapters.findIndex(
