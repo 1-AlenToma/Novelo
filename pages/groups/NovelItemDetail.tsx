@@ -203,6 +203,16 @@ export default ({ ...props }: any) => {
                     {state.novel.genre?.map(
                       (x, i) => (
                         <TouchableOpacity
+                          onPress={() => {
+                            options
+                              .nav("Search")
+                              .add({
+                                genre:
+                                  x,
+                                parserName
+                              })
+                              .push();
+                          }}
                           css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8"
                           key={i}>
                           <Text
@@ -326,6 +336,15 @@ export default ({ ...props }: any) => {
                 Recommendations
               </Text>
               <ItemList
+                onPress={item => {
+                  options
+                    .nav("Search")
+                    .add({
+                      searchTxt: item.name,
+                      parserName
+                    })
+                    .push();
+                }}
                 itemCss="boc:#ccc bow:1 he:220 wi:170 pa:4 mal:5 bor:5 overflow"
                 container={({ item }) => (
                   <View css="clearboth bor:5 overflow">

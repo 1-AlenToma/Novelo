@@ -69,6 +69,7 @@ const Controller = ({ state, ...props }) => {
     "player.showController",
     "player.showPlayer",
     "player.chapterArray",
+    "player.currentChapter",
     "player._playing"
   );
 
@@ -188,7 +189,7 @@ const Controller = ({ state, ...props }) => {
             text: (
               <ActionSheetButton
                 title="Chapters"
-                height="80"
+                height="95"
                 btn={
                   <Icon
                     invertColor={true}
@@ -199,7 +200,7 @@ const Controller = ({ state, ...props }) => {
                 <View
                   style={{
                     height: proc(
-                      80,
+                      95,
                       g.size.window.height
                     )
                   }}
@@ -222,6 +223,12 @@ const Controller = ({ state, ...props }) => {
                     onPress={item => {
                       g.player.jumpTo(item.url);
                     }}
+                    selectedIndex={state.novel.chapters?.findIndex(
+                      x =>
+                        x.url ==
+                        g.player.currentChapter
+                          .url
+                    )}
                     items={state.novel.chapters?.filter(
                       x =>
                         thisState.cText == "" ||
@@ -231,26 +238,55 @@ const Controller = ({ state, ...props }) => {
                             thisState.cText.toLowerCase()
                           ) !== -1
                     )}
-                    container={({ item }) => (
-                      <View css="flex row juc:space-between ali:center">
+                    container={({
+                      item,
+                      index
+                    }) => (
+                      <View
+                        css={`flex he:20 row juc:space-between ali:center pal:5 bor:2 ${
+                          g.player.currentChapter
+                            .url == item.url
+                            ? "selectedRow"
+                            : ""
+                        }`}>
                         <Text
                           css="bold desc"
                           invertColor={true}>
                           {item.name}
                         </Text>
-                        <Icon
-                          invertColor={true}
-                          color={
-                            state.book.chapterSettings.find(
-                              x =>
-                                x.url == item.url
-                            )?.isFinished
-                              ? "green"
-                              : undefined
-                          }
-                          type="AntDesign"
-                          name="checkcircle"
-                        />
+                        <View css="row">
+                          <Icon
+                            invertColor={true}
+                            color={
+                              state.book.chapterSettings.find(
+                                x =>
+                                  x.url ==
+                                  item.url
+                              )?.scrollProgress >=
+                              200
+                                ? "green"
+                                : undefined
+                            }
+                            size={16}
+                            type="MaterialIcons"
+                            name="preview"
+                          />
+                          <Icon
+                            invertColor={true}
+                            color={
+                              state.book.chapterSettings.find(
+                                x =>
+                                  x.url ==
+                                  item.url
+                              )?.isFinished
+                                ? "green"
+                                : undefined
+                            }
+                            size={16}
+                            type="AntDesign"
+                            name="checkcircle"
+                          />
+                        </View>
                       </View>
                     )}
                     itemCss="pa:5 clearwidth bobw:1 boc:gray"
@@ -263,7 +299,7 @@ const Controller = ({ state, ...props }) => {
           {
             text: () => (
               <ActionSheetButton
-                height="90"
+                height="99%"
                 btn={
                   <Icon
                     invertColor={true}
@@ -273,9 +309,10 @@ const Controller = ({ state, ...props }) => {
                 }>
                 <View css="flex">
                   <TabBar
+                    scrollableHeader={true}
                     position="Top"
                     scrollHeight={proc(
-                      80,
+                      95,
                       g.size.window.height
                     )}>
                     <View
@@ -549,6 +586,70 @@ const Controller = ({ state, ...props }) => {
                         </View>
                       </View>
                     </View>
+                    <View title="Text Replacements">
+                      <View
+                        style={{
+                          height: proc(
+                            95,
+                            g.size.window.height
+                          )
+                        }}
+                        css="clearboth juc:flex-start mih:100%">
+                        <ItemList
+                          css="flex"
+                          items={
+                            g.player.book
+                              .textReplacements
+                          }
+                          container={({
+                            item
+                          }) => (
+                            <View
+                              style={{
+                                backgroundColor:
+                                  item.bgColor
+                              }}
+                              css="flex row juc:space-between ali:center pal:10 bor:2">
+                              <Text
+                                css="bold desc"
+                                invertColor={
+                                  true
+                                }>
+                                {item.edit}
+                              </Text>
+                              <Text
+                                css="bold desc"
+                                invertColor={
+                                  true
+                                }>
+                                {item.editWith}
+                              </Text>
+                              <TouchableOpacity
+                                onPress={async () => {
+                                  g.player.book.textReplacements =
+                                    g.player.book.textReplacements.filter(
+                                      x =>
+                                        x != item
+                                    );
+
+                                  await g.player.book.saveChanges();
+                                  await g.player.clean();
+                                }}
+                                css="button">
+                                <Text
+                                  invertColor={
+                                    true
+                                  }>
+                                  Delete
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
+                          )}
+                          itemCss="pa:5 clearwidth bobw:1 boc:gray"
+                          vMode={true}
+                        />
+                      </View>
+                    </View>
                   </TabBar>
                 </View>
               </ActionSheetButton>
@@ -696,7 +797,7 @@ const InternalWeb = ({
             }
           ]
         }}
-        bottomReched={() => g.player.next()}
+        bottomReched={() => g.player.next(true)}
         topReched={() => g.player.prev()}
         onScroll={async (y: number) => {
           g.player.currentChapterSettings.scrollProgress =

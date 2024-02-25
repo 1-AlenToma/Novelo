@@ -4,11 +4,11 @@
     "slug": "Novelo",
     "version": "1.0.0",
     "orientation": "default",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/ic_launcher_round.png",
     "scheme": "novels",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/sp.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -25,13 +25,13 @@
         "android.permission.WAKE_LOCK"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/ic_launcher_foreground.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.alentoma.Novelo"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/ic_launcher.png"
     },
     "plugins": [
       ["./backgroundPlugin.js"],

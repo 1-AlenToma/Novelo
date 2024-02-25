@@ -38,7 +38,7 @@ class ParserDetail {
   genre: Value[] = [];
   status: Value[] = [];
   group: Value[] = [];
-  searchCombination: SearchCombination[]=[];
+  searchCombination: SearchCombination[] = [];
   searchEnabled: boolean = true;
 }
 
@@ -48,6 +48,7 @@ class SearchDetail {
   genre: Value[] = [];
   status: Value[] = [];
   group: Value[] = [];
+  genreMultiSelection: boolean = false;
   constructor(txt?: string) {
     this.text = txt ?? "";
   }

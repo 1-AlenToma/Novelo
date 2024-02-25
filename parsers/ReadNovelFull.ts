@@ -18,6 +18,7 @@ export default class ReadNovelFull extends Parser {
       "/img/favicon.ico"
     );
     this.settings.searchEnabled = true;
+    this.settings.genreMultiSelection = false;
     this.settings.searchCombination = [
       "Genre",
       "Status"

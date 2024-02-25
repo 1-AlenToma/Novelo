@@ -28,7 +28,7 @@ export default ({
   return (
     <ICO
       {...props}
-      style={removeProps(st, "backgroundColor")}
+      style={removeProps(st, "backgroundColor", props.color? "color": "")}
       color={props.color}
       size={parseInt((24).sureValue(size))}
       css={css}

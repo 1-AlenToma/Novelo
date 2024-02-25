@@ -30,6 +30,7 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="novels"/>
         <data android:scheme="com.alentoma.Novelo"/>
+        <data android:scheme="exp+novelo"/>
       </intent-filter>
     </activity>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>

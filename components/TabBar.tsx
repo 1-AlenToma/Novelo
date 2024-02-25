@@ -34,7 +34,8 @@ const TabBar = ({
   change,
   rootView,
   scrollHeight,
-  fontSize
+  fontSize,
+  scrollableHeader
 }: {
   children: TabChild[];
   style?: any;
@@ -43,6 +44,7 @@ const TabBar = ({
   disableScrolling: boolean;
   change?: (index) => void;
   rootView?: boolean;
+  scrollableHeader?: boolean;
 }) => {
   //GlobalData.hook("theme.settings");
   const [size, setSize] = useState(undefined);
@@ -141,12 +143,24 @@ const TabBar = ({
       );
   };
 
+  let MContainer = View;
+  let prop = {
+    style: [
+      styles.menu,
+      GlobalData.theme.invertSettings()
+    ]
+  };
+  if (scrollableHeader) {
+    MContainer = ScrollView;
+    prop = {
+      contentContainerStyle: prop.style,
+      style: { height: 40 },
+      horizontal:true
+    };
+  }
+
   let menu = (
-    <View
-      style={[
-        styles.menu,
-        GlobalData.theme.invertSettings()
-      ]}>
+    <MContainer {...prop}>
       {children.map((x, i) => (
         <TouchableOpacity
           style={[
@@ -183,8 +197,9 @@ const TabBar = ({
           ) : null}
         </TouchableOpacity>
       ))}
-    </View>
+    </MContainer>
   );
+
   return (
     <View
       rootView={rootView}
@@ -279,7 +294,7 @@ const styles = StyleSheet.create({
   },
   menu: {
     position: "relative",
-    width: "100%",
+    minWidth: "100%",
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",

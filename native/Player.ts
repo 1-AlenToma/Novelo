@@ -45,9 +45,12 @@ class Player {
   }
 
   async clean(html?: string) {
-    let txt = html ?? this.html;
+    let txt =
+      html ??
+      this.currentChapterSettings.content ??
+      this.html;
     try {
-      if (!html) this.loader?.show();
+      // if (!html) this.loader?.show();
 
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(
@@ -67,8 +70,8 @@ class Player {
     }
     this.chapterArray = txt.htmlArray();
     this.html = txt;
-    if (!html) await sleep(400);
-    if (!html) this.loader?.hide();
+    //if (!html) await sleep(400);
+    // if (!html) this.loader?.hide();
     return txt;
   }
 
@@ -205,9 +208,14 @@ class Player {
     );
   }
 
-  next() {
+  async next(finished?: boolean) {
     if (this.hasNext())
-      this.jumpTo(this.currentChapterIndex + 1);
+      if (finished) {
+        this.currentChapterSettings.isFinished =
+          finished;
+        await this.currentChapterSettings.saveChanges();
+      }
+    this.jumpTo(this.currentChapterIndex + 1);
   }
 
   prev() {

@@ -1,4 +1,5 @@
 import Html from "./Html";
+import g from "../GlobalContext";
 const tempData = new Map<string, HttpTemp>();
 
 const createKey = (...args) => {
@@ -23,12 +24,23 @@ const getFetch = async (
 ) => {
   validateSize();
   let key = createKey({ url, options });
-  if (tempData.has(key)) return tempData.get(key);
-  let data = await fetch(url, options);
-  let text = await data.text();
-  let item = new HttpTemp(text, key);
-  tempData.set(key, item);
-  return item;
+  try {
+    if (tempData.has(key))
+      return tempData.get(key);
+    let data = await fetch(url, {
+      ...options,
+      timeout: 16000
+    });
+    let text = await data.text();
+    let item = new HttpTemp(text, key);
+    tempData.set(key, item);
+    return item;
+  } catch (e) {
+    if (e.message && e.message.has("network"))
+      g.alert(e.message, "Error").show();
+    tempData.delete(key);
+    throw e;
+  }
 };
 
 class HttpTemp {

@@ -20,7 +20,8 @@ export default ({
   onEndReached,
   scrollIndex,
   nested,
-  updater
+  updater,
+  selectedIndex
 }: {
   items: any[];
   container: Funtion;
@@ -32,11 +33,13 @@ export default ({
   scrollIndex?: number;
   nested?: boolean;
   updater?: any[];
+  selectedIndex?: number;
 }) => {
   const onEndReachedCalledDuringMomentum =
     useRef(true);
-  const render = useCallback(item => {
-    let d = { item, vMode };
+  const ref = useRef();
+  const render = useCallback((item, index) => {
+    let d = { item, vMode, index };
     if (props) d = { ...d, ...props };
     let VR = container;
     return (
@@ -49,10 +52,32 @@ export default ({
     );
   });
 
+  const scrollTo = () => {
+    if (
+      selectedIndex !== undefined &&
+      ref.current
+    ) {
+      ref.current.scrollToIndex({
+        index: selectedIndex,
+        animated: false
+      });
+    }
+  };
+
+  useEffect(() => {
+    scrollTo();
+  }, [selectedIndex]);
+
   if (!items || !items.has()) return null;
 
   return (
     <FlashList
+      ref={c => {
+        ref.current = c;
+      }}
+      onContentSizeChange={() => {
+        scrollTo();
+      }}
       contentContainerStyle={{
         padding: 1
       }}
@@ -66,7 +91,7 @@ export default ({
         onEndReachedCalledDuringMomentum.current =
           false;
       }}
-      extraData={updater}
+      extraData={[...(updater ?? []), selectedIndex]}
       onEndReached={() => {
         if (
           !onEndReachedCalledDuringMomentum.current
@@ -77,7 +102,7 @@ export default ({
         }
       }}
       renderItem={({ item, index }) =>
-        render(item)
+        render(item, index)
       }
       keyExtractor={(item, index) =>
         index.toString()

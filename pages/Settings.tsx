@@ -235,8 +235,9 @@ export default (props: any) => {
         css="mih:99% ali:center bor:5 overflow">
         <View css="he:30% juc:center ali:center">
           <Image
-            url={require("../assets/icon.png")}
-            css="resizeMode:contain mat:2.5 clearwidth wi:50 he:50 bor:2"
+            resizeMode="contain"
+            url={require("../assets/ic_launcher_round.png")}
+            css="mat:2.5 clearwidth bor:2 miw:100 mih:100"
           />
         </View>
         <TouchableOpacity

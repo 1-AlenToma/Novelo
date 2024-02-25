@@ -78,7 +78,7 @@ export default NestedStyleSheet.create({
   "settingButton.Icon": "fos:25 mar:5",
 
   box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5",
-
+  selectedRow:"bac:#5a1c1f",
   selected: {
     opacity: 0.8,
     color: "gray"

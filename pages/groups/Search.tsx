@@ -15,6 +15,7 @@ import {
   ActionSheetButton
 } from "../../components/";
 import { useEffect, useRef } from "react";
+import { newId } from "../../Methods";
 import {
   ScrollView,
   Linking
@@ -35,15 +36,17 @@ const ActionItem = ({
   selection,
   state
 }) => {
-  let items = state.parser.settings[keyName];
+  let items = {
+    items: state.parser.settings[keyName]
+  };
 
   return (
     <View
-      ifTrue={items?.has() ?? false}
+      ifTrue={items.items?.has() ?? false}
       invertColor={true}
       css="mih:50 pa:10 pat:15">
       <ActionSheetButton
-        height="30%"
+        height="50%"
         title="Status"
         btn={
           <Text
@@ -58,7 +61,7 @@ const ActionItem = ({
         }>
         <ScrollView horizontal={false}>
           <View css="wi:100%">
-            {items?.map((x, i) => (
+            {items.items?.map((x, i) => (
               <TouchableOpacity
                 css={`bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8`}
                 key={i}
@@ -89,21 +92,36 @@ const ActionItem = ({
 
 export default ({ ...props }: any) => {
   const update = useUpdate();
+
   const [
-    { searchTxt, parserName },
+    { searchTxt, parserName, genre },
     option,
     navop
   ] = useNavigation(props);
+  const parser = parserName?.has()
+    ? g.parser.find(parserName)
+    : g.parser.current();
   const loader = useLoader(
     searchTxt?.has() ?? false
   );
   const state = useState({
     items: [],
-    text: SearchDetail.n(searchTxt || "").Page(0),
+    text: SearchDetail.n(searchTxt || "")
+      .Page(0)
+      .Genre(
+        genre &&
+          parser.settings.genre.find(x =>
+            x.text.has(genre)
+          )
+          ? [
+              parser.settings.genre.find(x =>
+                x.text.has(genre)
+              )
+            ]
+          : []
+      ),
     currentPage: 0,
-    parser: parserName?.has()
-      ? g.parser.find(parserName)
-      : g.parser.current()
+    parser: parser
   });
 
   const fetchData = async (page?: number) => {
@@ -133,7 +151,11 @@ export default ({ ...props }: any) => {
   };
 
   useEffect(() => {
-    if (state.text.text.has()) fetchData();
+    if (
+      state.text.text.has() ||
+      state.text.genre.has()
+    )
+      fetchData();
   }, []);
 
   const selection = async ({
@@ -143,11 +165,11 @@ export default ({ ...props }: any) => {
   }: any) => {
     let co =
       state.parser.settings.searchCombination;
-    if (!co.has("Group"))
+    if (!co.has("Group") && !group)
       state.text.group.clear();
-    if (!co.has("Status"))
+    if (!co.has("Status") && !status)
       state.text.status.clear();
-    if (!co.has("Genre"))
+    if (!co.has("Genre") && !genre)
       state.text.genre.clear();
 
     if (group && !co.has("Group")) {
@@ -165,9 +187,51 @@ export default ({ ...props }: any) => {
       state.text.status.clear();
     }
 
-    if (status) state.text.status.push(status);
-    if (genre) state.text.genre.push(genre);
-    if (group) state.text.group.push(group);
+    if (status) {
+      if (
+        !state.text.status.find(
+          f => f.text == status.text
+        )
+      ) {
+        state.text.status.push(status);
+      } else {
+        state.text.status =
+          state.text.status.filter(
+            f => f.text != status.text
+          );
+      }
+    }
+    if (genre) {
+      if (
+        !state.text.genre.find(
+          f => f.text == genre.text
+        )
+      ) {
+        if(!parser.settings.genreMultiSelection)
+            state.text.genre.clear()
+        state.text.genre.push(genre);
+      } else {
+        state.text.genre =
+          state.text.genre.filter(
+            f => f.text != genre.text
+          );
+      }
+    }
+    if (group) {
+      if (
+        !state.text.group.find(
+          f => f.text == group.text
+        )
+      ) {
+        state.text.group.push(group);
+      } else {
+        state.text.group =
+          state.text.group.filter(
+            f => f.text != group.text
+          );
+      }
+    }
+
     fetchData(1);
   };
 
