@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef
 } from "react";
+import HttpHandler from "./HttpHandler";
 
 export default class DownloadManager {
   events: any = {};
@@ -53,8 +54,11 @@ export default class DownloadManager {
         .toLowerCase()}.json`;
       const g =
         require("../GlobalContext").default;
+      const ParserWrapper = require("../parsers/ParserWrapper").default;
       let file = await g.files.read(key);
-      let parser = g.parser.find(parserName);
+      let parser =
+        ParserWrapper.getAllParsers(parserName);
+      parser.http = new HttpHandler(true); // to ignore alert
       let novel = await parser.detail(url);
       let book = await g
         .db()
@@ -79,6 +83,7 @@ export default class DownloadManager {
           ? JSON.parse(file)
           : { ...novel, chapters: [] };
       let index = savedItem.chapters.length;
+      let tries = 0;
       for (let ch of novel.chapters.filter(
         x =>
           !savedItem.chapters.find(
@@ -92,7 +97,12 @@ export default class DownloadManager {
             cn = await parser.chapter(ch.url);
           }
 
-          if (!cn || !cn.has()) continue;
+          if (!cn || !cn.has()) {
+            tries++;
+            if (tries >= 5) break;
+            continue;
+          }
+          tries = 0; // reset it as it is not a network issue
           ch.content = cn;
           if (
             !savedItem.chapters.find(
@@ -111,7 +121,7 @@ export default class DownloadManager {
             );
           }
           if (!this.items.has(savedItem.url))
-            break;
+            break; // stop btn pressed
           this.items.set(
             url,
             (100 * savedItem.chapters.length +

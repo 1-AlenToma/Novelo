@@ -1,4 +1,3 @@
-const cachedCss = new Map();
 import reactnativeStyles from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
 let styleKeys = Object.keys(reactnativeStyles);
 /*[
@@ -266,8 +265,6 @@ const css_translator = (
   propStyle: any
 ) => {
   if (!css || css.length <= 0) return {};
-  if (cachedCss.has(css))
-    return cachedCss.get(css);
   let shortk = buildShortCss();
   let CSS = {};
   if (styleFile)
@@ -292,7 +289,7 @@ const css_translator = (
         x => x[k.toLowerCase()] !== undefined
       );
       //if (k == "mab")
-       // console.log(k, value, short);
+      // console.log(k, value, short);
       if (short) {
         if (!propStyle || propStyle[short.key])
           cssItem[short.key] = value;
@@ -315,10 +312,7 @@ const css_translator = (
       continue;
     }
   }
-  cachedCss.set(css, cssItem);
-  /*console.error(
-    JSON.stringify({ css, cssItem, CSS }, null, 4)
-  );*/
+  
   return cssItem;
 };
 

@@ -44,6 +44,7 @@ declare global {
     htmlArray(): string[];
     html(): any;
     splitSearch(searchFor: string): boolean;
+    displayName(): string;
     imageFetchBuilder(
       selector: string,
       baseUrl: string,
@@ -60,6 +61,11 @@ declare global {
     readAble: () => any;
   }
 }
+
+String.prototype.displayName = function () {
+  let str = new String(this).toString();
+  return str[0].toUpperCase() + str.substring(1);
+};
 
 String.prototype.escapeRegExp = function () {
   let str = new String(this).toString();

@@ -20,7 +20,8 @@ const validateSize = () => {
 
 const getFetch = async (
   url: string,
-  options: any
+  options: any,
+  ignoreAlert: boolean
 ) => {
   validateSize();
   let key = createKey({ url, options });
@@ -36,7 +37,11 @@ const getFetch = async (
     tempData.set(key, item);
     return item;
   } catch (e) {
-    if (e.message && e.message.has("network"))
+    if (
+      e.message &&
+      e.message.has("network") &&
+      !ignoreAlert
+    )
       g.alert(e.message, "Error").show();
     tempData.delete(key);
     throw e;
@@ -85,6 +90,10 @@ class HttpValue {
   }
 }
 class HttpHandler {
+  ignoreAlert: boolean = false;
+  constructor(ignoreAlert?: boolean) {
+    this.ignoreAlert = ignoreAlert === true;
+  }
   header(options?: any) {
     return {
       headers: {
@@ -114,7 +123,8 @@ class HttpHandler {
       console.info("get_html", url);
       const data = await getFetch(
         url,
-        this.header()
+        this.header(),
+        this.ignoreAlert
       );
       return new HttpValue(
         await data.text(),
@@ -132,11 +142,15 @@ class HttpHandler {
       for (let k in item) {
         data.append(k, item[k]);
       }
-      let res = await getFetch(url, {
-        ...this.header(),
-        method: "POST",
-        body: data
-      });
+      let res = await getFetch(
+        url,
+        {
+          ...this.header(),
+          method: "POST",
+          body: data
+        },
+        this.ignoreAlert
+      );
       return new HttpValue(await res.text());
     } catch (e) {
       console.error(e);
@@ -166,7 +180,7 @@ class HttpHandler {
           "Content-Type":
             "application/x-www-form-urlencoded; charset=UTF-8"
         })
-      });
+      },this.ignoreAlert);
 
       return new HttpValue(await res.text());
     } catch (e) {

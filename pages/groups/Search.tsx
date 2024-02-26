@@ -47,7 +47,7 @@ const ActionItem = ({
       css="mih:50 pa:10 pat:15">
       <ActionSheetButton
         height="50%"
-        title="Status"
+        title={keyName.displayName()}
         btn={
           <Text
             invertColor={true}
@@ -207,8 +207,8 @@ export default ({ ...props }: any) => {
           f => f.text == genre.text
         )
       ) {
-        if(!parser.settings.genreMultiSelection)
-            state.text.genre.clear()
+        if (!parser.settings.genreMultiSelection)
+          state.text.genre.clear();
         state.text.genre.push(genre);
       } else {
         state.text.genre =

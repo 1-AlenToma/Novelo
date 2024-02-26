@@ -4,7 +4,8 @@ import {
   TouchableOpacity,
   SizeAnimator,
   TextInput,
-  Icon
+  Icon,
+  ActionSheetButton
 } from "../components";
 import { useState } from "../native";
 import gdata from "../GlobalContext";
@@ -149,7 +150,8 @@ export default ({
               navOption.nav("Search").push();
             }}
             invertColor={false}
-            css="flex maw:98% he:85% juc:center pal:5 bor:2">
+            style={{width:gdata.parser.all().length > 1 ? "90%": "98%"}}
+            css="flex absolute le:5 he:85% juc:center pal:5 bor:2">
             <Text css="bold">Search Novels</Text>
           </TouchableOpacity>
         ) : title && !title.empty() ? (
@@ -164,18 +166,59 @@ export default ({
         ) : null}
         <View
           css="row juc:center ali:center absolute ri:5"
-          ifTrue={buttons?.has() ?? false}>
-          {buttons?.map((x, i) => (
-            <TouchableOpacity
-              ifTrue={x.ifTrue}
-              onPress={x.press}
+          ifTrue={() =>
+            buttons?.has() ??
+            (false ||
+              (inputEnabled && !onInputChange))
+          }>
+          <>
+            {buttons?.map((x, i) => (
+              <TouchableOpacity
+                ifTrue={x.ifTrue}
+                onPress={x.press}
+                css="mal:10"
+                key={i}>
+                {typeof x.text == "function"
+                  ? x.text()
+                  : x.text}
+              </TouchableOpacity>
+            ))}
+            <ActionSheetButton
+              ifTrue={() =>
+                inputEnabled &&
+                !onInputChange &&
+                gdata.parser.all().length > 1
+              }
               css="mal:10"
-              key={i}>
-              {typeof x.text == "function"
-                ? x.text()
-                : x.text}
-            </TouchableOpacity>
-          ))}
+              height="60"
+              title="Choose Parser"
+              btn={
+                <Icon
+                  size={30}
+                  type="MaterialCommunityIcons"
+                  name="source-repository"
+                  invertColor={true}
+                />
+              }>
+              {gdata.parser.all().map((x, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() =>
+                    gdata.parser.set(x)
+                  }
+                  css={`listButton pal:5 ${
+                    x.name ===
+                    gdata.parser.current().name
+                      ? "selectedRow bor:5"
+                      : ""
+                  }`}>
+                  <Text invertColor={true}>
+                    {x.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ActionSheetButton>
+          </>
         </View>
       </View>
     </>

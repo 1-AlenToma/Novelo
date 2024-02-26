@@ -2,12 +2,13 @@ import GlobalState from "react-global-state-management";
 import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
 import { AppSettings } from "./db";
-import { DownloadManager } from "./native";
+import { newId } from "./Methods";
 import {
   Player,
   BGService,
   FileHandler,
-  HttpHandler
+  HttpHandler,
+  DownloadManager
 } from "./native";
 import {
   Dimensions,
@@ -79,8 +80,13 @@ const data = GlobalState(
       current: () => currentParser,
       find: (name: string) =>
         parsers.find(x => x.name == name),
+      set: (p: any) => {
+        currentParser = p;
+        data.updater = newId();
+      },
       all: () => parsers
     },
+    updater: newId(),
     theme: {
       settings: {},
       invertSettings: () => {},

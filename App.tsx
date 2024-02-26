@@ -30,7 +30,7 @@ export default function App() {
   GlobalData.hook(
     "size",
     "theme.settings",
-    "isFullScreen"
+    "isFullScreen", "updater"
   );
 
   GlobalData.subscribe((item, props) => {

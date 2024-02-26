@@ -256,7 +256,8 @@ export default ({ ...props }: any) => {
                   parserName:
                     g.selection
                       .downloadSelectedItem
-                      .parserName
+                      .parserName,
+                  epub:true
                 })
                 .push();
               g.selection.downloadSelectedItem =

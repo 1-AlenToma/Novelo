@@ -17,10 +17,13 @@ export default class ParserWrapper extends Parser {
     this.novelUpdate = new NovelUpdate();
   }
 
-  static getAllParsers() {
-    return [ReadNovelFull].map(
+  static getAllParsers(parserName?: string) {
+    let prs = [ReadNovelFull].map(
       x => new ParserWrapper(new x())
     );
+    if(parserName)
+       return prs.find(x=> x.name === parserName)
+    return prs;
   }
 
   @Memo({

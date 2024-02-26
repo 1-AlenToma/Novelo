@@ -813,7 +813,7 @@ const InternalWeb = ({
 };
 
 export default (props: any) => {
-  const [{ url, parserName }, nav] =
+  const [{ url, parserName, epub }, nav] =
     useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
@@ -865,10 +865,11 @@ export default (props: any) => {
       }
       if (
         !g.player.novel ||
-        g.player.novel.url !== url
+        g.player.novel.url !== url ||
+        g.player.isEpup != (epub === true)
       ) {
         state.novel =
-          parserName == "epub"
+          parserName == "epub" || epub
             ? files.fileItems.find(
                 x => x.url === url
               )
@@ -909,7 +910,8 @@ export default (props: any) => {
           {
             show: () => loader.show(),
             hide: () => loader.hide()
-          }
+          },
+          epub === true
         );
         await g.player.jumpTo();
       } else {
@@ -930,14 +932,14 @@ export default (props: any) => {
     }
   };
 
-  if (parserName == "epub")
+  if (parserName == "epub" || epub)
     useEffect(() => {
       if (!files.loading) loadData();
     }, [files.loading]);
 
   useEffect(() => {
     g.isFullScreen = true;
-    if (parserName != "epub") loadData();
+    if (parserName != "epub" && !epub) loadData();
     return () => {
       g.isFullScreen = false;
       g.player.hooked = false;

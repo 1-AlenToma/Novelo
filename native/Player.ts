@@ -28,14 +28,17 @@ class Player {
   viewState: ViewState = "Default";
   hooked: boolean = true;
   scrollProcent: any = 0;
+  isEpup:boolean;
   constructor(
     novel: DetailInfo,
     book: Book,
-    loader: any
+    loader: any,
+    isEpup
   ) {
     this.book = book;
     this.novel = novel;
     this.loader = loader;
+    this.isEpup = isEpup;
   }
 
   procent() {
@@ -78,8 +81,9 @@ class Player {
   async getChapterContent(url: string) {
     try {
       this.loader?.show();
+      if (!this.currentChapterSettings) return;
       if (
-        this.currentChapterSettings?.content?.has() ??
+        this.currentChapterSettings.content?.has() ??
         false
       ) {
         return await this.clean(
@@ -89,9 +93,12 @@ class Player {
       let parser = g.parser.find(
         this.book.parserName
       );
-      let str = this.novel.epub
-        ? this.currentChapter.content
-        : await parser.chapter(url);
+
+      let str =
+        this.novel.epub ||
+        this.currentChapter.content
+          ? this.currentChapter.content
+          : await parser.chapter(url);
 
       return await this.clean(
         (this.currentChapterSettings.content =
@@ -210,7 +217,10 @@ class Player {
 
   async next(finished?: boolean) {
     if (this.hasNext())
-      if (finished) {
+      if (
+        finished &&
+        this.currentChapterSettings
+      ) {
         this.currentChapterSettings.isFinished =
           finished;
         await this.currentChapterSettings.saveChanges();
