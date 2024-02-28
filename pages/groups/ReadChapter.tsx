@@ -56,6 +56,16 @@ import ColorPicker, {
   OpacitySlider,
   HueSlider
 } from "reanimated-color-picker";
+const lang = {};
+
+for (let l in LANGUAGE_TABLE) {
+  let item = LANGUAGE_TABLE[l].google;
+  if (item) {
+    lang[item.toLowerCase()] = l;
+    lang[item.safeSplit("-", -1).toLowerCase()] =
+      l;
+  }
+}
 
 const Controller = ({ state, ...props }) => {
   useDbHook(
@@ -258,7 +268,7 @@ const Controller = ({ state, ...props }) => {
                           <Icon
                             invertColor={true}
                             color={
-                              state.book.chapterSettings.find(
+                              g.player.book.chapterSettings.find(
                                 x =>
                                   x.url ==
                                   item.url
@@ -274,7 +284,7 @@ const Controller = ({ state, ...props }) => {
                           <Icon
                             invertColor={true}
                             color={
-                              state.book.chapterSettings.find(
+                              g.player.book.chapterSettings.find(
                                 x =>
                                   x.url ==
                                   item.url
@@ -325,18 +335,41 @@ const Controller = ({ state, ...props }) => {
                         <DropdownList
                           height="80"
                           toTop={true}
+                          selectedIndex={Object.keys(
+                            Fonts
+                          ).findIndex(
+                            x =>
+                              x ==
+                              g.appSettings
+                                .fontName
+                          )}
+                          updater={[
+                            g.appSettings.fontName
+                          ]}
+                          hooks={[
+                            "appSettings.fontName"
+                          ]}
                           items={Object.keys(
                             Fonts
                           )}
                           render={item => {
                             return (
-                              <Text
-                                css="bold desc"
-                                invertColor={
-                                  true
-                                }>
-                                {item}
-                              </Text>
+                              <View
+                                css={`
+                                  ${item ==
+                                  g.appSettings
+                                    .fontName
+                                    ? "selectedRow"
+                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
+                                `}>
+                                <Text
+                                  css={`bold desc`}
+                                  invertColor={
+                                    true
+                                  }>
+                                  {item}
+                                </Text>
+                              </View>
                             );
                           }}
                           onSelect={fontName => {
@@ -498,18 +531,71 @@ const Controller = ({ state, ...props }) => {
                           Voices:
                         </Text>
                         <DropdownList
+                          disableInput={true}
                           height="80"
                           toTop={true}
+                          updater={[
+                            g.player.testVoice
+                          ]}
+                          hooks={[
+                            "player.testVoice"
+                          ]}
                           items={g.voices}
+                          selectedIndex={g.voices.findIndex(
+                            x =>
+                              x.name ==
+                              g.appSettings.voice
+                          )}
                           render={item => {
                             return (
-                              <Text
-                                css="bold desc"
-                                invertColor={
-                                  true
-                                }>
-                                {item.name}
-                              </Text>
+                              <View
+                                css={`
+                                  ${item.name ==
+                                  g.appSettings
+                                    .voice
+                                    ? "selectedRow"
+                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between
+                                `}>
+                                <Text
+                                  css={`bold desc`}
+                                  invertColor={
+                                    true
+                                  }>
+                                  {lang[
+                                    item.language.toLowerCase()
+                                  ] ||
+                                    lang[
+                                      item.language
+                                        .safeSplit(
+                                          "-",
+                                          0
+                                        )
+                                        .toLowerCase()
+                                    ] ||
+                                    item.language}
+                                </Text>
+                                <TouchableOpacity
+                                  onPress={() =>
+                                    g.player.testPlaying(
+                                      item.name
+                                    )
+                                  }>
+                                  <Icon
+                                    name={
+                                      g.player
+                                        .testVoice ==
+                                      item.name
+                                        ? "stop-circle"
+                                        : "play-circle"
+                                    }
+                                    type="Ionicons"
+                                    size={35}
+                                    invertColor={
+                                      true
+                                    }
+                                  />
+                                </TouchableOpacity>
+                              </View>
                             );
                           }}
                           onSelect={voice => {
@@ -609,7 +695,7 @@ const Controller = ({ state, ...props }) => {
                                 backgroundColor:
                                   item.bgColor
                               }}
-                              css="flex row juc:space-between ali:center pal:10 bor:2">
+                              css="flex di:flex row juc:space-between ali:center pal:10 bor:2">
                               <Text
                                 css="bold desc"
                                 invertColor={
@@ -699,6 +785,14 @@ const InternalWeb = ({
               g.appSettings.backgroundColor
             )};
           }
+          .comments {
+            text-decoration: underline;
+            display: inline-block;
+            position: relative;
+          }
+          context > div > a {
+            width: 100%;
+          }
           body > .novel {
             width: 95%;
             min-height: ${!g.player.showPlayer
@@ -727,6 +821,12 @@ const InternalWeb = ({
           g.player.showController =
             !g.player.showController;
         }}
+        onComments={index => {
+          state.comment =
+            g.player.book.textReplacements[
+              index
+            ].comments;
+        }}
         onMenu={(item: any) => {
           // handle later
           if (item.item.text == "Translate")
@@ -747,8 +847,9 @@ const InternalWeb = ({
           } else {
             state.textEdit = {
               edit: item.selection,
-              color: undefined,
-              editWith: ""
+              bgColor: undefined,
+              comments: undefined,
+              editWith: item.selection
             };
           }
         }}
@@ -825,7 +926,8 @@ export default (props: any) => {
     textToTranslate: undefined,
     translationLanguage: "English",
     translationResult: "",
-    textEdit: undefined
+    textEdit: undefined,
+    comment: undefined
   });
 
   useDbHook(
@@ -901,9 +1003,11 @@ export default (props: any) => {
                   )
               )
           );
+
+        if (!book.textReplacements)
+          book.textReplacements = [];
         state.book = book;
-        book.textReplacements =
-          book.textReplacements ?? [];
+
         g.player = new Player(
           state.novel,
           state.book,
@@ -961,13 +1065,30 @@ export default (props: any) => {
     <>
       {loader.elem}
       <Modal
+        visible={state.comment != undefined}
+        onHide={() => (state.comment = undefined)}
+        height={200}>
+        <View css="flex mat:20">
+          <TextInput
+            onChangeText={x =>
+              (state.comment = x)
+            }
+            readOnly={true}
+            invertColor={false}
+            css="pa:5 bor:2 flg:1 clearboth"
+            multiline={true}
+            defaultValue={state.comment}
+          />
+        </View>
+      </Modal>
+      <Modal
         visible={state.textEdit != undefined}
         onHide={() =>
           (state.textEdit = undefined)
         }
         height="90">
         <View css="flex mat:20">
-          <View css="form he:100">
+          <View css="formRow he:100">
             <Text invertColor={true}>
               TextToEdit:
             </Text>
@@ -981,7 +1102,7 @@ export default (props: any) => {
               defaultValue={state.textEdit?.edit}
             />
           </View>
-          <View css="form he:100">
+          <View css="formRow he:100">
             <Text invertColor={true}>
               EditWith:
             </Text>
@@ -997,7 +1118,23 @@ export default (props: any) => {
               }
             />
           </View>
-          <View css="form">
+          <View css="formRow he:100">
+            <Text invertColor={true}>
+              Comments:
+            </Text>
+            <TextInput
+              onChangeText={x =>
+                (state.textEdit.comments = x)
+              }
+              invertColor={false}
+              css="pa:5 bor:2 flg:1"
+              multiline={true}
+              defaultValue={
+                state.textEdit?.comments
+              }
+            />
+          </View>
+          <View css="formRow">
             <Text invertColor={true}>
               Background:
             </Text>

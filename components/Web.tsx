@@ -124,6 +124,7 @@ export default ({
   click,
   onScroll,
   onMenu,
+  onComments,
   menuItems,
   content,
   css,
@@ -250,6 +251,9 @@ export default ({
       case "error":
         console.error(data);
         break;
+      case "Comments":
+        onComments?.(data.data);
+        break;
       case "Image":
         postMessage(
           "images",
@@ -260,7 +264,7 @@ export default ({
     }
   };
   loading.current = true;
-  
+
   return (
     <>
       <Scroller

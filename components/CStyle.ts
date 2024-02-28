@@ -78,7 +78,7 @@ export default NestedStyleSheet.create({
   "settingButton.Icon": "fos:25 mar:5",
 
   box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5",
-  selectedRow:"bac:#5a1c1f",
+  selectedRow: "bac:#5a1c1f",
   selected: {
     opacity: 0.8,
     color: "gray"
@@ -92,5 +92,11 @@ export default NestedStyleSheet.create({
   "form.Text":
     "fos:13 bold tea:left par:10 wi:100",
   "formlist.Text": "wi:90%",
-  "form.chackBox": "ali:center mar:10"
+  "form.chackBox": "ali:center mar:10",
+
+  formRow:
+    "clearwidth mab:5",
+  "formRow.Text":
+    "fos:13 bold tea:left par:10 wi:100",
+  "formRow.chackBox": "ali:center mar:10"
 });

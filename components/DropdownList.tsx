@@ -15,6 +15,10 @@ export default ({
   type,
   render,
   textKey,
+  selectedIndex,
+  updater,
+  hooks,
+  disableInput,
   ...props
 }: any) => {
   let [visible, setVisible] = useState(false);
@@ -55,7 +59,9 @@ export default ({
         {...props}
         visible={visible}
         onHide={() => setVisible(false)}>
-        <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
+        <View
+          css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10"
+          ifTrue={disableInput === true? false: disableInput}>
           <TextInput
             onChangeText={setTxt}
             invertColor={false}
@@ -65,10 +71,13 @@ export default ({
           />
         </View>
         <ItemList
+          hooks={hooks}
+          updater={updater}
+          selectedIndex={selectedIndex}
           css="flex"
-          onPress={item=>{
+          onPress={item => {
             onSelect(item);
-            setVisible(false)
+            setVisible(false);
           }}
           items={items?.filter(
             x =>

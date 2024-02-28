@@ -7,7 +7,7 @@ import {
 import { FlashList } from "@shopify/flash-list";
 import TouchableOpacity from "./TouchableOpacityView";
 import View from "./ThemeView";
-import { useUpdate } from "../hooks";
+import { useUpdate, useTimer } from "../hooks";
 
 export default ({
   items,
@@ -21,6 +21,7 @@ export default ({
   scrollIndex,
   nested,
   updater,
+  hooks,
   selectedIndex
 }: {
   items: any[];
@@ -33,11 +34,16 @@ export default ({
   scrollIndex?: number;
   nested?: boolean;
   updater?: any[];
+  hooks?: any[];
   selectedIndex?: number;
 }) => {
+  const g = require("../GlobalContext").default;
+  if (hooks) g.hook(...hooks);
+  
   const onEndReachedCalledDuringMomentum =
     useRef(true);
   const ref = useRef();
+  const selected = useRef();
   const render = useCallback((item, index) => {
     let d = { item, vMode, index };
     if (props) d = { ...d, ...props };
@@ -55,7 +61,8 @@ export default ({
   const scrollTo = () => {
     if (
       selectedIndex !== undefined &&
-      ref.current
+      ref.current &&
+      !selected.current
     ) {
       ref.current.scrollToIndex({
         index: selectedIndex,
@@ -65,6 +72,7 @@ export default ({
   };
 
   useEffect(() => {
+    selected.current = false;
     scrollTo();
   }, [selectedIndex]);
 
@@ -81,6 +89,9 @@ export default ({
       contentContainerStyle={{
         padding: 1
       }}
+      onScrollBeginDrag={() => {
+        selected.current = true;
+      }}
       nestedScrollEnabled={nested}
       initialScrollIndex={scrollIndex}
       horizontal={vMode !== true}
@@ -91,7 +102,10 @@ export default ({
         onEndReachedCalledDuringMomentum.current =
           false;
       }}
-      extraData={[...(updater ?? []), selectedIndex]}
+      extraData={[
+        ...(updater ?? []),
+        selectedIndex
+      ]}
       onEndReached={() => {
         if (
           !onEndReachedCalledDuringMomentum.current

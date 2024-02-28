@@ -21,6 +21,7 @@ class Book extends IBaseModule<TableNames> {
     edit: string;
     editWith: string;
     bgColor?: string;
+    comments?: string;
   }[] = [];
   chapterSettings: IQueryResultItem<
     Chapter,

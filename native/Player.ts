@@ -28,7 +28,8 @@ class Player {
   viewState: ViewState = "Default";
   hooked: boolean = true;
   scrollProcent: any = 0;
-  isEpup:boolean;
+  isEpup: boolean;
+  testVoice: string = "";
   constructor(
     novel: DetailInfo,
     book: Book,
@@ -60,7 +61,15 @@ class Player {
           t.edit.escapeRegExp(),
           "gim"
         );
-        let spn = `<span class="custom" style="background-color:${
+        let className = t.comments?.has()
+          ? "comments"
+          : "";
+        let click = className.has()
+          ? `window.postmsg('Comments', ${this.book.textReplacements.findIndex(
+              x => x == t
+            )})`
+          : "";
+        let spn = `<span onclick="${click}" class="custom ${className}" style="background-color:${
           t.bgColor
         }; color:${invertColor(t.bgColor)}">${
           t.editWith
@@ -73,8 +82,6 @@ class Player {
     }
     this.chapterArray = txt.htmlArray();
     this.html = txt;
-    //if (!html) await sleep(400);
-    // if (!html) this.loader?.hide();
     return txt;
   }
 
@@ -241,6 +248,15 @@ class Player {
     return this._playing;
   }
 
+  testPlaying(voice?: string) {
+    if (voice == undefined) return this.testVoice;
+    if (this.testVoice === voice) this.stop();
+    else if (voice) this.testPlay(voice);
+    this.testVoice =
+      this.testVoice === voice ? "" : voice;
+    return this.testVoice;
+  }
+
   currentPlaying() {
     let txt =
       this.chapterArray[
@@ -289,6 +305,21 @@ class Player {
         if (this.playing()) this.playNext();
       }
     });
+  }
+
+  async testPlay(voice: string) {
+    g.speech.speak(
+      `There are a number of ways to identify a hearing loss.`,
+      {
+        language: undefined,
+        pitch: g.appSettings.pitch,
+        rate: g.appSettings.rate,
+        voice: voice,
+        onDone: async () => {
+          this.testVoice = "";
+        }
+      }
+    );
   }
 
   stop() {
