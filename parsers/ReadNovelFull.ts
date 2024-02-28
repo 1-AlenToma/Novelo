@@ -168,7 +168,22 @@ export default class ReadNovelFull extends Parser {
         body.find('span[itemprop="ratingValue"]')
           .text
       )
+
       .ParserName(this.name);
+    item.commentScript.Url(
+      url + "#tab-comment-title"
+    ).Script(`
+      let scLoad = async function () {
+        let st =document.createElement("style")
+         st.appendChild(document.createTextNode("body>*:not(#novel-comment), #disqus_recommendations{ display:none !important;visibility: hidden;opacity:0;}"))
+        document.head.appendChild(st);
+        while(!document.getElementById("novel-comment"))
+         await window.sleep(100);
+         let panel = document.getElementById("novel-comment");
+         document.body.appendChild(panel);
+      }
+      scLoad();
+      `);
     let cHhtml = (
       await this.http.get_html(
         this.url

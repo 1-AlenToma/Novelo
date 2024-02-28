@@ -19,7 +19,8 @@ import {
   sleep,
   newId,
   removeProps,
-  proc
+  proc,
+  ifSelector
 } from "../Methods";
 import GlobalData from "../GlobalContext";
 import { useUpdate } from "../hooks";
@@ -155,50 +156,53 @@ const TabBar = ({
     prop = {
       contentContainerStyle: prop.style,
       style: { height: 40 },
-      horizontal:true
+      horizontal: true
     };
   }
-
-  let menu = (
-    <MContainer {...prop}>
-      {children.map((x, i) => (
-        <TouchableOpacity
-          style={[
-            styles.menuBtn,
-            i == (0).sureValue(index)
-              ? GlobalData.theme.settings
-              : undefined
-          ]}
-          key={i + "txt"}
-          onPress={() => loadChildren(i)}>
-          {getIcon(
-            x.props.icon,
-            i == (0).sureValue(index) ? 15 : 18,
-            [
-              styles.menuText,
-              GlobalData.theme.invertSettings(),
+  let menuItems = children.filter(
+    x => ifSelector(x.props.ifTrue) !== false
+  );
+  let menu =
+    menuItems.length > 1 ? (
+      <MContainer {...prop}>
+        {menuItems.map((x, i) => (
+          <TouchableOpacity
+            style={[
+              styles.menuBtn,
               i == (0).sureValue(index)
                 ? GlobalData.theme.settings
                 : undefined
-            ]
-          )}
-          {!(x.props.title || "").empty() ? (
-            <Text
-              invertColor={true}
-              style={[
+            ]}
+            key={i + "txt"}
+            onPress={() => loadChildren(i)}>
+            {getIcon(
+              x.props.icon,
+              i == (0).sureValue(index) ? 15 : 18,
+              [
                 styles.menuText,
-                { fontSize },
+                GlobalData.theme.invertSettings(),
                 i == (0).sureValue(index)
                   ? GlobalData.theme.settings
                   : undefined
-              ]}>
-              {x.props.title}
-            </Text>
-          ) : null}
-        </TouchableOpacity>
-      ))}
-    </MContainer>
-  );
+              ]
+            )}
+            {!(x.props.title || "").empty() ? (
+              <Text
+                invertColor={true}
+                style={[
+                  styles.menuText,
+                  { fontSize },
+                  i == (0).sureValue(index)
+                    ? GlobalData.theme.settings
+                    : undefined
+                ]}>
+                {x.props.title}
+              </Text>
+            ) : null}
+          </TouchableOpacity>
+        ))}
+      </MContainer>
+    ) : null;
 
   return (
     <View
@@ -235,7 +239,7 @@ const TabBar = ({
               }
             ],
             height: (0).sureValue(
-              size?.height - styles.menu.height
+              size?.height -( menu ?styles.menu.height:0)
             ),
             width:
               (size?.width ?? 0) * children.length

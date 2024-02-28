@@ -29,8 +29,7 @@ const getFetch = async (
     if (tempData.has(key))
       return tempData.get(key);
     let data = await fetch(url, {
-      ...options,
-      timeout: 16000
+      ...options
     });
     let text = await data.text();
     let item = new HttpTemp(text, key);

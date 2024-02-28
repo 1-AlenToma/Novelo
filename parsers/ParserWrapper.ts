@@ -7,9 +7,11 @@ import {
 import ReadNovelFull from "./ReadNovelFull";
 import NovelUpdate from "./infos/NovelUpdates";
 import Memo from "../attr/Memo";
+import { sleep } from "../Methods";
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
+  infoEnabled: boolean = false;
   constructor(parser: Parser) {
     super(parser.url, parser.name, parser.icon);
     this.parser = parser;
@@ -21,8 +23,8 @@ export default class ParserWrapper extends Parser {
     let prs = [ReadNovelFull].map(
       x => new ParserWrapper(new x())
     );
-    if(parserName)
-       return prs.find(x=> x.name === parserName)
+    if (parserName)
+      return prs.find(x => x.name === parserName);
     return prs;
   }
 
