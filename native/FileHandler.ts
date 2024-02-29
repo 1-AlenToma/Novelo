@@ -10,17 +10,16 @@ type Fnc = (
   type: "Write" | "Delete",
   file: string
 ) => void;
-let events = {};
 
 export default class FileHandler {
   dir: string;
-  handlerId: string = newId();
+  events: any = {};
   constructor(dir: string, dirType?: Dir) {
-    events[this.handlerId] = {
+    this.events = {
       values: () =>
-        Object.keys(events[this.handlerId])
+        Object.keys(this.events)
           .filter(x => x !== "values")
-          .map(x => events[this.handlerId][x])
+          .map(x => this.events[x])
     };
     this.dir = (
       !dirType || dirType == "Cache"
@@ -34,7 +33,7 @@ export default class FileHandler {
     fileName: string,
     fullName: string
   ) {
-    events[this.handlerId]
+    this.events
       .values()
       .forEach(x => x(op, fileName, fullName));
   }
@@ -48,7 +47,7 @@ export default class FileHandler {
     const files = useRef([]);
     const [fileItems, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    events[this.handlerId][id] = async (
+    this.events[id] = async (
       op,
       fileName,
       fullName
@@ -66,10 +65,10 @@ export default class FileHandler {
     };
 
     useEffect(() => {
-      events[this.handlerId][id]();
+      this.events[id]();
       return () => {
-        if (this.events[this.handlerId][id]) {
-          delete this.events[this.handlerId][id];
+        if (this.events[id]) {
+          delete this.events[id];
         }
       };
     }, []);
@@ -77,12 +76,14 @@ export default class FileHandler {
     const loadItems = async () => {
       await setLoading(true);
       let ims = [];
+      await setItems([]);
       for (let file of files.current) {
         try {
           let item = await loadContent(
             file,
             globalType
           );
+          if (!item) continue;
           if (validator) {
             if (validator(item)) {
               ims.push(item);
@@ -90,7 +91,7 @@ export default class FileHandler {
             }
           } else ims.push(item);
         } catch (e) {
-          console.log(e)
+          console.error(e);
         }
       }
 
@@ -106,12 +107,17 @@ export default class FileHandler {
         file,
         type && type != "json" ? type : "utf8"
       );
+      if (!item) return item;
       if (type === "json") {
-        let tm = JSON.parse(item);
-        tm.deleteFile = async () => {
-          await this.delete(file);
-        };
-        return tm;
+        try {
+          let tm = JSON.parse(item);
+          tm.deleteFile = async () => {
+            await this.delete(file);
+          };
+          return tm;
+        } catch (e) {
+          console.warn(e, file, item);
+        }
       }
       return item;
     };

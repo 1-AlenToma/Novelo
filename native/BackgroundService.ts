@@ -15,7 +15,7 @@ const veryIntensiveTask =
   async taskDataArguments => {
     // Example of an infinite loop task
     const { delay } = taskDataArguments;
-    let g = require("../GlobalContext");
+    let g = require("../GlobalContext").default
     let tasks = [];
     let getDate = (days: number) => {
       date = new Date();
@@ -26,7 +26,7 @@ const veryIntensiveTask =
       new EventEmitter(10, async () => {
         this.extra =
           !this.extra || this.extra.length <= 0
-            ? await g.cache.allFiles()
+            ? await g.cache().allFiles()
             : this.extra;
         let i = 10;
         while (i > 0 && this.extra.length > 0) {
@@ -35,7 +35,7 @@ const veryIntensiveTask =
           let date = getDate(30);
           let data = JSON.parse(await f.read(f));
           if (data.date > date) {
-            await g.cache.delete(f);
+            await g.cache().delete(f);
             let book = await g
               .db()
               .querySelector<Book>("Books")

@@ -39,7 +39,7 @@ export default ({ ...props }: any) => {
     json: "",
     infoNovel: {}
   });
-  const { fileItems } = g.files.useFile("json");
+  const { fileItems } = g.files().useFile("json");
   const [books, dataIsLoading] = g.db().useQuery(
     "Books",
     g
@@ -81,12 +81,10 @@ export default ({ ...props }: any) => {
       <ActionSheet
         title="Actions"
         onHide={() =>
-          (g.selection.favoritItem =
-            undefined)
+          (g.selection.favoritItem = undefined)
         }
         visible={() =>
-          g.selection.favoritItem !==
-          undefined
+          g.selection.favoritItem !== undefined
         }
         height={300}>
         <View>
@@ -96,16 +94,14 @@ export default ({ ...props }: any) => {
               options
                 .nav("NovelItemDetail")
                 .add({
-                  url: g.selection
-                    .favoritItem.url,
+                  url: g.selection.favoritItem
+                    .url,
                   parserName:
-                    g.selection
-                      .favoritItem
+                    g.selection.favoritItem
                       .parserName
                 })
                 .push();
-              g.selection.favoritItem =
-                undefined;
+              g.selection.favoritItem = undefined;
             }}>
             <Icon
               invertColor={true}
@@ -120,16 +116,14 @@ export default ({ ...props }: any) => {
               options
                 .nav("ReadChapter")
                 .add({
-                  url: g.selection
-                    .favoritItem.url,
+                  url: g.selection.favoritItem
+                    .url,
                   parserName:
-                    g.selection
-                      .favoritItem
+                    g.selection.favoritItem
                       .parserName
                 })
                 .push();
-              g.selection.favoritItem =
-                undefined;
+              g.selection.favoritItem = undefined;
             }}>
             <Icon
               invertColor={true}
@@ -151,21 +145,19 @@ export default ({ ...props }: any) => {
                     let file = fileItems.find(
                       x =>
                         x.url ==
-                        g.selection
-                          .favoritItem
+                        g.selection.favoritItem
                           .url
                     );
 
                     if (file) {
-                      await g.selection.downloadSelectedItem
+                      await g.selection.favoritItem
                         .Favorit(false)
                         .saveChanges();
                     } else {
                       await g
                         .dbContext()
                         .deleteBook(
-                          g.selection
-                            .favoritItem
+                          g.selection.favoritItem
                             .id
                         );
                     }

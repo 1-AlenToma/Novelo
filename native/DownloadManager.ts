@@ -52,10 +52,10 @@ export default class DownloadManager {
           ""
         )
         .toLowerCase()}.json`;
-      const g =
-        require("../GlobalContext").default;
-      const ParserWrapper = require("../parsers/ParserWrapper").default;
-      let file = await g.files.read(key);
+      const g = require("../GlobalContext").default;
+      const ParserWrapper =
+        require("../parsers/ParserWrapper").default;
+      let file = await g.files().read(key);
       let parser =
         ParserWrapper.getAllParsers(parserName);
       parser.http = new HttpHandler(true); // to ignore alert
@@ -115,7 +115,7 @@ export default class DownloadManager {
             savedItem.chapters.length == 1 ||
             !this.items.has(savedItem.url)
           ) {
-            await g.files.write(
+            await g.files().write(
               key,
               JSON.stringify(savedItem)
             );
@@ -129,7 +129,8 @@ export default class DownloadManager {
               novel.chapters.length
           );
           this.change();
-          await sleep(1000);
+          // so that it gets not to heavy on the website
+          await sleep(5000);
         } catch (e) {
           console.error(e);
           break;

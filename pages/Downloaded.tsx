@@ -32,10 +32,9 @@ import {
 import { sleep } from "../Methods";
 let lock = false;
 const ItemRender = ({ item, state }: any) => {
-  const { fileItems } = g.files.useFile(
-    "json",
-    x => item.url == x.url
-  );
+  const { fileItems } = g
+    .files()
+    .useFile("json", x => item.url == x.url);
   const loader = useLoader(true);
   const urls = g.downloadManager().useDownload();
   const itemState = useState({
@@ -126,11 +125,9 @@ export default ({ ...props }: any) => {
     text: "",
     selectedItem: undefined
   });
-  const { fileItems } = g.files.useFile(
-    "json",
-    undefined,
-    "New"
-  );
+  const { fileItems } = g
+    .files()
+    .useFile("json", undefined, "New");
   const [books, dataIsLoading, reload] = g
     .db()
     .useQuery(
@@ -179,10 +176,9 @@ export default ({ ...props }: any) => {
             ?.content ?? ""
         )
         .ParserName("epub");
-      await g.files.write(
-        bk.url,
-        JSON.stringify(bk)
-      );
+      await g
+        .files()
+        .write(bk.url, JSON.stringify(bk));
       //console.log([bk].niceJson("content"));
       await g.db().save(book);
     } catch (e) {
@@ -227,7 +223,7 @@ export default ({ ...props }: any) => {
     });
 
     let items = await builder.constructEpub();
-    console.log([items].niceJson("content"));
+    //console.log([items].niceJson("content"));
   };
 
   return (
@@ -257,7 +253,7 @@ export default ({ ...props }: any) => {
                     g.selection
                       .downloadSelectedItem
                       .parserName,
-                  epub:true
+                  epub: true
                 })
                 .push();
               g.selection.downloadSelectedItem =

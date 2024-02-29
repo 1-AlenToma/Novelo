@@ -27,8 +27,15 @@ const globalDb = new dbContext();
 const globalHttp = new HttpHandler();
 type ThemeMode = "light" | "dark";
 const parsers = ParserWrapper.getAllParsers();
-let currentParser = parsers[0];
-let downloadManager = new DownloadManager();
+const currentParser = parsers[0];
+const downloadManager = new DownloadManager(
+  () => data
+);
+const cache = new FileHandler("Memo", "Cache");
+const files = new FileHandler(
+  "noveloFiles",
+  "File"
+);
 const data = GlobalState(
   {
     selection: {
@@ -61,8 +68,8 @@ const data = GlobalState(
     isFullScreen: false,
     appSettings: AppSettings.n(),
     voices: undefined,
-    cache: new FileHandler("Memo", "Cache"),
-    files: new FileHandler("noveloFiles", "File"),
+    cache: ()=>cache,
+    files: () => files,
     speech: Speech,
     nav: undefined,
     orientation: (
@@ -173,7 +180,7 @@ const data = GlobalState(
       }
     }
   },
-  ["nav", "events"],
+  ["nav"],
   false
 );
 export default data;

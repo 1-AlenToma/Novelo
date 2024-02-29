@@ -183,10 +183,10 @@ export default class DbContext {
           .toList();
       }
       if (options.epubs) {
-        let files = await g.files.allFiles();
+        let files = await g.files().allFiles();
         for (let file of files) {
           let novel = JSON.parse(
-            await g.files.read(file)
+            await g.files().read(file)
           );
           novel.fileName = file;
           let book = await this.database
@@ -243,7 +243,7 @@ export default class DbContext {
       await this.database.beginTransaction();
       const g =
         require("../GlobalContext").default;
-      let file = await g.files.read(uri);
+      let file = await g.files().read(uri);
       let item = file?.has()
         ? JSON.parse(file)
         : undefined;
@@ -306,7 +306,7 @@ export default class DbContext {
         }
 
         for (let epub of item.epubs) {
-          await g.files.write(
+          await g.files().write(
             epub.fileName,
             JSON.stringify(epub)
           );

@@ -80,9 +80,9 @@ export default (props: any) => {
             .IN(ids)
             .delete();
         await _books.delete();
-        let cacheFiles = await g.cache.allFiles();
+        let cacheFiles = await g.cache().allFiles();
         for (let f of cacheFiles) {
-          await g.cache.delete(f);
+          await g.cache().delete(f);
         }
       } catch (e) {
         console.error(e);
