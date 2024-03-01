@@ -55,7 +55,10 @@ class Player {
       this.html;
     try {
       // if (!html) this.loader?.show();
-
+      txt = txt.replace(
+        /(background\-color|background|font\-family|color|font\-size|line\-height|text\-align|font\-weight)( ?: ?).*?(\;)/gi,
+        ""
+      );
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(
           t.edit.escapeRegExp(),
@@ -80,6 +83,7 @@ class Player {
       console.error(e);
     } finally {
     }
+
     this.chapterArray = txt.htmlArray();
     this.html = txt;
     return txt;

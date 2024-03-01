@@ -262,7 +262,7 @@ const Controller = ({ state, ...props }) => {
                         <Text
                           css="bold desc"
                           invertColor={true}>
-                          {item.name}
+                          {item.name.safeSplit("/", -1)}
                         </Text>
                         <View css="row">
                           <Icon
@@ -775,6 +775,9 @@ const InternalWeb = ({
           *:not(context):not(context *) {
             font-family: "${g.appSettings
               .fontName}";
+          }
+          parameter {
+            display: none;
           }
           *:not(context):not(context *):not(
               .custom

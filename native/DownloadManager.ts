@@ -52,7 +52,8 @@ export default class DownloadManager {
           ""
         )
         .toLowerCase()}.json`;
-      const g = require("../GlobalContext").default;
+      const g =
+        require("../GlobalContext").default;
       const ParserWrapper =
         require("../parsers/ParserWrapper").default;
       let file = await g.files().read(key);
@@ -115,10 +116,12 @@ export default class DownloadManager {
             savedItem.chapters.length == 1 ||
             !this.items.has(savedItem.url)
           ) {
-            await g.files().write(
-              key,
-              JSON.stringify(savedItem)
-            );
+            await g
+              .files()
+              .write(
+                key,
+                JSON.stringify(savedItem)
+              );
           }
           if (!this.items.has(savedItem.url))
             break; // stop btn pressed
@@ -139,7 +142,8 @@ export default class DownloadManager {
     } catch (e) {
       console.error(e);
     }
-    this.change();
+    
     this.items.delete(url);
+    this.change();
   }
 }

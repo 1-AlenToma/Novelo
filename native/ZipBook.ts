@@ -4,7 +4,7 @@ import * as FileSystem from "expo-file-system";
 const JSZip = require("jszip");
 class ZipFile {
   name: string;
-  fileName:string;
+  fileName: string;
   content: string;
   url: string = newId();
   type: "Image" | "CSS" | "HTML";
@@ -16,7 +16,11 @@ export default class ZipBook {
   url: string = newId();
   fileName?: string; // used only in dbContext
   epub: boolean = true;
-  static async load(uri: string, xname: string) {
+  static async load(
+    uri: string,
+    xname: string,
+    onChange: Function
+  ) {
     function isImage(url: string) {
       return (
         url.match(/\.(jpeg|jpg|gif|png)$/) !==
@@ -42,7 +46,6 @@ export default class ZipBook {
           let cn = "";
           let type = "";
           let cleanName = cleanNames(file.name);
-         // console.log(file.name, name);
           let name = cleanName;
           if (isImage(file.name)) {
             type = "Image";
@@ -98,6 +101,7 @@ export default class ZipBook {
       let opf = keys.find(x =>
         x.endsWith(".opf")
       );
+      
       let $ = (
         await content.file(opf).async("text")
       ).html();
@@ -105,22 +109,43 @@ export default class ZipBook {
       $("manifest")
         .find("item")
         .each((i, x) => items.push(x));
+      let total = items.length;
+      let count = 0;
+      const calc = async () => {
+        count++;
+        onChange?.((100 * count) / total);
+        if (count == 1 || count % 50 == 0)
+          await sleep(10);
+      };
+
       for (let item of items) {
         item = $(item);
         let href = item.attr("href");
         let k = keys.find(
           x => x.indexOf(href) !== -1
         );
-        if (!k) continue;
+
+        if (!k) {
+          await calc();
+          continue;
+        }
         //console.log(href, k);
         let file = content.file(k);
-        if (!file) continue;
+        if (!file) {
+          await calc();
+          continue;
+        }
+
         let file_content = await getContent(file);
 
-        if (!file_content) continue;
+        if (!file_content) {
+          await calc();
+          continue;
+        }
         book.files.push(file_content);
         if (file_content.type === "HTML")
           book.chapters.push(file_content);
+        await calc();
       }
       //  console.log([book].niceJson("content"));
       return book;

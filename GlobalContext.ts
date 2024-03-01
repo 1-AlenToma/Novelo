@@ -1,8 +1,9 @@
-import GlobalState from "react-global-state-management";
+//import GlobalState from "react-global-state-management";
 import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
 import { AppSettings } from "./db";
 import { newId } from "./Methods";
+import { GlobalState } from "./GlobalState";
 import {
   Player,
   BGService,
@@ -68,7 +69,7 @@ const data = GlobalState(
     isFullScreen: false,
     appSettings: AppSettings.n(),
     voices: undefined,
-    cache: ()=>cache,
+    cache: () => cache,
     files: () => files,
     speech: Speech,
     nav: undefined,
@@ -180,7 +181,6 @@ const data = GlobalState(
       }
     }
   },
-  ["nav"],
-  false
+  "nav"
 );
 export default data;

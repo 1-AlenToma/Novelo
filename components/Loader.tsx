@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { ActivityIndicator } from "react-native";
 import View from "./ThemeView";
+import ProgressBar from "./ProgressBar";
 
-export default initValue => {
+export default (initValue, progressValue) => {
   const [loading, setLoading] =
     useState(initValue);
   const [size, setSize] = useState({
@@ -34,6 +35,7 @@ export default initValue => {
           top: size.height / 2 - 25
         }}
       />
+      <ProgressBar ifTrue={()=> progressValue>0} procent={progressValue} />
     </View>
   );
   return { show, hide, elem, loading };

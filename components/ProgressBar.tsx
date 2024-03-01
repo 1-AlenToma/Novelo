@@ -16,8 +16,17 @@ import {
   useTimer,
   useDbHook
 } from "../hooks";
+import {
+  ifSelector
+} from "../Methods";
 
-export default ({ procent, children }: any) => {
+export default ({
+  procent,
+  children,
+  ifTrue
+}: any) => {
+  if(ifSelector(ifTrue) === false)
+     return null;
   return (
     <View css="flex clearboth to:0 le:0 absolute zi:5 juc:center overflow ali:center bow:0 boc:#000">
       <View css="clearboth blur zi:1 absolute" />
