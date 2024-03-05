@@ -122,13 +122,9 @@ export default ({ ...props }: any) => {
   const updater = useUpdate();
   const state = useState({
     text: "",
-    selectedItem: undefined,
-    epubProgress: 0
+    selectedItem: undefined
   });
-  const loader = useLoader(
-    undefined,
-    state.epubProgress
-  );
+  const loader = useLoader();
   const { fileItems } = g
     .files()
     .useFile("json", undefined, "New");
@@ -164,10 +160,8 @@ export default ({ ...props }: any) => {
         });
       let uri = assets?.firstOrDefault("uri");
       let name = assets?.firstOrDefault("name");
-      let bk = await ZipBook.load(
-        uri,
-        name,
-        p => (state.epubProgress = p)
+      let bk = await ZipBook.load(uri, name, p =>
+        loader.show(p)
       );
       let book = Book.n()
         .Name(bk.name)
@@ -189,9 +183,9 @@ export default ({ ...props }: any) => {
         .write(bk.url, JSON.stringify(bk));
       await g.db().save(book);
     } catch (e) {
+      g.alert(e.message).show();
       console.error(e);
     }
-    state.epubProgress = 0;
     loader.hide();
   };
 

@@ -17,6 +17,7 @@ export default ({
   css,
   ifTrue,
   buttons,
+  disableTimer,
   ...props
 }: any) => {
   const timer = useRef();
@@ -27,13 +28,22 @@ export default ({
     invertColor
   );
   const change = (v: any) => {
+    if (disableTimer) {
+      props.onValueChange?.(v);
+      return;
+    }
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       props.onValueChange?.(v);
     }, 100);
   };
   return (
-    <View css={`${buttons ? "wi:90%" : "clearwidth"} mah:40 row di:flex ali:center jus:center`}>
+    <View
+      css={`
+        ${buttons
+          ? "wi:90%"
+          : "clearwidth"} mah:40 row di:flex ali:center jus:center
+      `}>
       {buttons ? (
         <TouchableOpacity
           css="flex maw:24 mal:10"
@@ -42,8 +52,11 @@ export default ({
             if (
               props.value - step >=
               props.minimumValue
-            )
-              change(props.value - step);
+            ) {
+              let v = props.value - step;
+              props.onValueChange?.(v) ??
+                props.onSlidingComplete?.(v);
+            }
           }}>
           <Icon
             invertColor={invertColor}
@@ -73,8 +86,11 @@ export default ({
             if (
               props.value + step <=
               props.maximumValue
-            )
-              change(props.value + step);
+            ){
+              let v = props.value + step;
+            props.onValueChange?.(v) ??
+              props.onSlidingComplete?.(v);
+            }
           }}>
           <Icon
             invertColor={invertColor}

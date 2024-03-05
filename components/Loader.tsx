@@ -3,9 +3,11 @@ import { ActivityIndicator } from "react-native";
 import View from "./ThemeView";
 import ProgressBar from "./ProgressBar";
 
-export default (initValue, progressValue) => {
+export default initValue => {
   const [loading, setLoading] =
     useState(initValue);
+  const [progressValue, setProgressValue] =
+    useState();
   const [size, setSize] = useState({
     x: 0,
     y: 0,
@@ -13,11 +15,15 @@ export default (initValue, progressValue) => {
     width: 0
   });
 
-  const show = () => {
+  const show = (progress?: number) => {
+    setProgressValue(progress);
     setLoading(true);
   };
 
-  const hide = () => setLoading(false);
+  const hide = () => {
+    setLoading(false);
+    setProgressValue(undefined)
+  }
 
   let elem = !loading ? null : (
     <View
@@ -35,7 +41,10 @@ export default (initValue, progressValue) => {
           top: size.height / 2 - 25
         }}
       />
-      <ProgressBar ifTrue={()=> progressValue>0} procent={progressValue} />
+      <ProgressBar
+        ifTrue={() => progressValue > 0}
+        procent={progressValue}
+      />
     </View>
   );
   return { show, hide, elem, loading };

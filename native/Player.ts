@@ -42,8 +42,8 @@ class Player {
     this.isEpup = isEpup;
   }
 
-  procent() {
-    return `${this.currentChapterIndex + 1}/${
+  procent(tempValue?: number) {
+    return `${tempValue ?? this.currentChapterIndex + 1}/${
       this.novel.chapters.length
     }`;
   }

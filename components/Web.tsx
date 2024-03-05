@@ -276,8 +276,6 @@ export default ({
         ref={r => {
           if (r) {
             webView.current = r;
-            //r.clearCache(true);
-            //injectData();
           }
         }}
         nestedScrollEnabled={true}
@@ -324,6 +322,7 @@ export default ({
             window.postmsg("data",true);
             if(hrefs.length >0)
               window.postmsg("Image",hrefs);
+            document.getElementById("novel").style.visibility="visible";
             if(${
               scrollDisabled ? "1==0" : "1 == 1"
             }){

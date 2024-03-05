@@ -86,7 +86,8 @@ const Controller = ({ state, ...props }) => {
   const Timer = useTimer(100);
   const audioProgressTimer = useTimer(100);
   const thisState = useState({
-    cText: ""
+    cText: "",
+    chapterSliderValue: undefined
   });
 
   useEffect(() => {
@@ -142,20 +143,30 @@ const Controller = ({ state, ...props }) => {
     <>
       <View
         ifTrue={g.player.showController}
-        css="band he:150 bottom juc:center ali:center pal:10 par:10"
+        css="band he:110 bottom juc:center ali:center pal:10 par:10"
         invertColor={true}>
         <Text
           invertColor={true}
           css="desc bold foso:italic">
-          {g.player.procent()}
+          {g.player.procent(
+            thisState.chapterSliderValue
+          )}
         </Text>
         <View>
           <Slider
             invertColor={true}
             buttons={true}
+            disableTimer={true}
             value={g.player.currentChapterIndex}
-            onValueChange={index => {
-              g.player.jumpTo(index);
+            onValueChange={v => {
+              thisState.chapterSliderValue = v;
+            }}
+            onSlidingComplete={index => {
+              Timer(() => {
+                g.player.jumpTo(index);
+                thisState.chapterSliderValue =
+                  undefined;
+              });
             }}
             minimumValue={0}
             maximumValue={
@@ -262,7 +273,10 @@ const Controller = ({ state, ...props }) => {
                         <Text
                           css="bold desc"
                           invertColor={true}>
-                          {item.name.safeSplit("/", -1)}
+                          {item.name.safeSplit(
+                            "/",
+                            -1
+                          )}
                         </Text>
                         <View css="row">
                           <Icon
@@ -394,7 +408,7 @@ const Controller = ({ state, ...props }) => {
                           value={
                             g.appSettings.fontSize
                           }
-                          onValueChange={fontSize => {
+                          onSlidingComplete={fontSize => {
                             editSettings({
                               fontSize
                             });
@@ -630,7 +644,7 @@ const Controller = ({ state, ...props }) => {
                             value={
                               g.appSettings.pitch
                             }
-                            onValueChange={pitch => {
+                            onSlidingComplete={pitch => {
                               editSettings({
                                 pitch
                               });
@@ -661,7 +675,7 @@ const Controller = ({ state, ...props }) => {
                             value={
                               g.appSettings.rate
                             }
-                            onValueChange={rate => {
+                            onSlidingComplete={rate => {
                               editSettings({
                                 rate
                               });
@@ -858,7 +872,7 @@ const InternalWeb = ({
         }}
         content={{
           content: `
-          <div id="novel" class="novel">
+          <div id="novel" style="visibility:hidden" class="novel">
           ${
             g.player.showPlayer
               ? `<p>${
