@@ -60,7 +60,6 @@ const ItemRender = ({ item, state }: any) => {
           x => x.content && x.content.has()
         ).length
       })`;
-      await sleep(400);
     }
     lock = false;
     loader.hide();
@@ -158,6 +157,7 @@ export default ({ ...props }: any) => {
           copyToCacheDirectory: true,
           type: "application/epub+zip"
         });
+      if (!assets || assets.length <= 0) return;
       let uri = assets?.firstOrDefault("uri");
       let name = assets?.firstOrDefault("name");
       let bk = await ZipBook.load(uri, name, p =>
@@ -185,8 +185,10 @@ export default ({ ...props }: any) => {
     } catch (e) {
       g.alert(e.message).show();
       console.error(e);
+    }finally{
+      loader.hide();
     }
-    loader.hide();
+    
   };
 
   const downloadEpub = async (book: any) => {
@@ -225,7 +227,6 @@ export default ({ ...props }: any) => {
     });
 
     let items = await builder.constructEpub();
-    //console.log([items].niceJson("content"));
   };
 
   return (

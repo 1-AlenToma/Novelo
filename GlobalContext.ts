@@ -16,6 +16,7 @@ import {
   Keyboard,
   LogBox
 } from "react-native";
+
 LogBox.ignoreLogs([
   "require cycles",
   "Require cycle",

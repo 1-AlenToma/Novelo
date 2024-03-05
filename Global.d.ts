@@ -301,9 +301,9 @@ String.prototype.safeSplit = function (
 };
 let styleShortKeys = [];
 
-String.prototype.css = function () {
+String.prototype.css = function (id?:string) {
   let styleText = String(this).toString();
-  return cssTranslator(styleText, CStyle);
+  return cssTranslator(styleText, CStyle, undefined, id);
 };
 
 String.prototype.imageUrlSize = function (

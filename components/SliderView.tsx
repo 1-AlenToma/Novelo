@@ -2,7 +2,8 @@ import SliderRange from "@react-native-community/slider";
 import {
   removeProps,
   parseThemeStyle,
-  StyledView
+  StyledView,
+  newId
 } from "../Methods";
 import { useRef } from "react";
 import Icon from "./Icons";

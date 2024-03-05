@@ -935,7 +935,7 @@ export default (props: any) => {
     useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
-  const files = g.files().useFile("json");
+  const files = g.files().useFile("json", undefined, "New");
   const state = useState({
     novel: {} as DetailInfo,
     parser: g.parser.find(parserName),

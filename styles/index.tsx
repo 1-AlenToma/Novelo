@@ -3,6 +3,7 @@ import NestedStyleSheet from "./NestedStyleSheet";
 import * as allowedKeys from "./ValidViewStylesAttributes";
 import * as React from "react";
 import * as reactNative from "react-native";
+import { newId } from "../Methods";
 let toArray = (item: any) => {
   if (!item) return [];
   if (Array.isArray(item)) return item;
@@ -55,6 +56,7 @@ class CSS {
   }
 }
 let CSSContext = React.createContext({});
+
 let StyledWrapper = React.forwardRef(
   (
     {
@@ -68,6 +70,7 @@ let StyledWrapper = React.forwardRef(
     ref
   ) => {
     let ec = React.useContext(CSSContext);
+    let id = React.useRef(newId()).current;
     let [_, setUpdater] = React.useState(0);
     let parsedData = React.useRef({
       style: undefined,
@@ -106,7 +109,8 @@ let StyledWrapper = React.forwardRef(
       let tCss = cssTranslator(
         cpyCss.toString(),
         styleFile,
-        validKeyStyle
+        validKeyStyle,
+        id
       );
       if (tCss) sArray.push(tCss);
       parsedData.style = sArray;

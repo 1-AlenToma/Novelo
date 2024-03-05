@@ -3,6 +3,7 @@ import { Styleable } from "./styles";
 import * as MediaLibrary from "expo-media-library";
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
+import { useRef } from "react";
 
 let downloadsFolder = null;
 const getDirectoryPermissions = async () => {
@@ -149,6 +150,7 @@ const parseThemeStyle = (
   css: any,
   invertColor: any
 ) => {
+  const id = useRef(newId()).current;
   let globalData =
     require("./GlobalContext").default;
   let themeSettings = {
@@ -164,7 +166,7 @@ const parseThemeStyle = (
       ? [...style]
       : [style || {}];
   st = [themeSettings, ...st];
-  if (css) st.push(css.css());
+  if (css) st.push(css.css(id));
   return st;
 };
 
