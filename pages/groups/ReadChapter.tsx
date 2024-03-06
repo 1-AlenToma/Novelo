@@ -108,7 +108,8 @@ const Controller = ({ state, ...props }) => {
     lockScreen,
     voice,
     pitch,
-    rate
+    rate,
+    margin
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined)
@@ -134,7 +135,8 @@ const Controller = ({ state, ...props }) => {
       if (fontName)
         g.appSettings.fontName = fontName;
       if (voice) g.appSettings.voice = voice;
-
+      if (margin != undefined)
+        g.appSettings.margin = margin;
       await g.appSettings.saveChanges();
     });
   };
@@ -152,8 +154,9 @@ const Controller = ({ state, ...props }) => {
             thisState.chapterSliderValue
           )}
         </Text>
-        <View>
+        <View css="clearwidth juc:center ali:center">
           <Slider
+            css="maw:90%"
             invertColor={true}
             buttons={true}
             disableTimer={true}
@@ -174,13 +177,16 @@ const Controller = ({ state, ...props }) => {
             }
           />
         </View>
-        <View css="clearwidth ali:center juc:center">
+        <View css="clearwidth ali:center juc:center ">
           <Text
+            numberOfLines={1}
             invertColor={true}
             css="header bold fos:18 foso:italic">
             {state.book.name}
           </Text>
-          <Text css="desc color:red">
+          <Text
+            numberOfLines={1}
+            css="desc color:red">
             {
               g.player.currentChapterSettings
                 ?.name
@@ -403,6 +409,7 @@ const Controller = ({ state, ...props }) => {
                           FontSize:
                         </Text>
                         <Slider
+                          renderValue={true}
                           invertColor={true}
                           buttons={true}
                           value={
@@ -414,6 +421,26 @@ const Controller = ({ state, ...props }) => {
                             });
                           }}
                           minimumValue={15}
+                          maximumValue={40}
+                        />
+                      </View>
+                      <View css="form">
+                        <Text invertColor={true}>
+                          Padding:
+                        </Text>
+                        <Slider
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          value={
+                            g.appSettings.margin
+                          }
+                          onSlidingComplete={margin => {
+                            editSettings({
+                              margin
+                            });
+                          }}
+                          minimumValue={5}
                           maximumValue={40}
                         />
                       </View>
@@ -627,63 +654,44 @@ const Controller = ({ state, ...props }) => {
                         <Text invertColor={true}>
                           Pitch:
                         </Text>
-                        <View css="wi:70% row clearheight ali:center">
-                          <View
-                            invertColor={false}
-                            css="wi:40 he:30 juc:center ali:center">
-                            <Text
-                              css="bold fos:10 tea:center"
-                              invertColor={false}>
-                              {g.appSettings.pitch.readAble()}
-                            </Text>
-                          </View>
-                          <Slider
-                            invertColor={true}
-                            buttons={true}
-                            step={0.1}
-                            value={
-                              g.appSettings.pitch
-                            }
-                            onSlidingComplete={pitch => {
-                              editSettings({
-                                pitch
-                              });
-                            }}
-                            minimumValue={0.9}
-                            maximumValue={3}
-                          />
-                        </View>
+
+                        <Slider
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          step={0.1}
+                          value={
+                            g.appSettings.pitch
+                          }
+                          onSlidingComplete={pitch => {
+                            editSettings({
+                              pitch
+                            });
+                          }}
+                          minimumValue={0.9}
+                          maximumValue={3}
+                        />
                       </View>
                       <View css="form">
                         <Text invertColor={true}>
                           Rate:
                         </Text>
-                        <View css="wi:70% row clearheight ali:center">
-                          <View
-                            invertColor={false}
-                            css="wi:40 he:30 juc:center ali:center">
-                            <Text
-                              css="bold fos:10 tea:center"
-                              invertColor={false}>
-                              {g.appSettings.rate.readAble()}
-                            </Text>
-                          </View>
-                          <Slider
-                            invertColor={true}
-                            buttons={true}
-                            step={0.1}
-                            value={
-                              g.appSettings.rate
-                            }
-                            onSlidingComplete={rate => {
-                              editSettings({
-                                rate
-                              });
-                            }}
-                            minimumValue={0.9}
-                            maximumValue={3}
-                          />
-                        </View>
+                        <Slider
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          step={0.1}
+                          value={
+                            g.appSettings.rate
+                          }
+                          onSlidingComplete={rate => {
+                            editSettings({
+                              rate
+                            });
+                          }}
+                          minimumValue={0.9}
+                          maximumValue={3}
+                        />
                       </View>
                     </View>
                     <View title="Text Replacements">
@@ -789,6 +797,7 @@ const InternalWeb = ({
           *:not(context):not(context *) {
             font-family: "${g.appSettings
               .fontName}";
+            font-size-adjust: 1;
           }
           parameter {
             display: none;
@@ -810,8 +819,11 @@ const InternalWeb = ({
           context > div > a {
             width: 100%;
           }
+          body img{
+            max-width:98%;
+          }
           body > .novel {
-            width: 95%;
+            max-width: 95%;
             min-height: ${!g.player.showPlayer
               ? "100%"
               : "50%"};
@@ -823,6 +835,12 @@ const InternalWeb = ({
             text-align-vertical: top;
             padding-bottom: ${g.player.paddingBottom()}px;
             padding-top: ${g.player.paddingTop()}px;
+            margin-left: ${(5).sureValue(
+              g.appSettings.margin
+            )}px;
+            margin-right: ${(5).sureValue(
+              g.appSettings.margin
+            )}px;
             font-size: ${g.appSettings
               .fontSize}px;
             line-height: ${g.appSettings
@@ -917,13 +935,11 @@ const InternalWeb = ({
         }}
         bottomReched={() => g.player.next(true)}
         topReched={() => g.player.prev()}
-        onScroll={async (y: number) => {
+        onScroll={(y: number) => {
           g.player.currentChapterSettings.scrollProgress =
             y;
           //console.log(y);
-          await g.player.currentChapterSettings.update(
-            "scrollProgress"
-          );
+           g.player.currentChapterSettings.saveChanges();
         }}
       />
     </>
@@ -935,7 +951,9 @@ export default (props: any) => {
     useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
-  const files = g.files().useFile("json", undefined, "New");
+  const files = g
+    .files()
+    .useFile("json", undefined, "New");
   const state = useState({
     novel: {} as DetailInfo,
     parser: g.parser.find(parserName),

@@ -113,7 +113,10 @@ const Scroller = ({ ...props }: any) => {
           y={size / 2 + (textSize / 2 - 1)}
           textAnchor="middle"
           fill={textColor}>
-          {g.player.scrollProcent.toFixed(0)}
+          {(g.player.scrollProcent > 100
+            ? 100
+            : g.player.scrollProcent
+          ).toFixed(0)}
         </Text>
       </Svg>
     </View>
@@ -194,7 +197,12 @@ export default ({
   -webkit-font-smoothing: antialiased;
 }`;
       return css;
-      postMessage("font", css);
+      await postMessage("font", css);
+      if (!scrollDisabled)
+        await postMessage(
+          "scrollTop",
+          content.scroll
+        );
     } catch (e) {
       return "";
       console.error(e);
@@ -211,7 +219,6 @@ export default ({
   let injectData = async () => {
     try {
       while (!webView.current) await sleep(100);
-
       let font = await loadFonts();
       let js = `
       ${getJs("font", font)}
@@ -254,6 +261,9 @@ export default ({
       case "Comments":
         onComments?.(data.data);
         break;
+      case "enable":
+        loading.current = false;
+        break;
       case "Image":
         postMessage(
           "images",
@@ -283,6 +293,7 @@ export default ({
         cacheEnabled={false}
         source={{
           html: `
+        <!DOCTYPE html>
         <html>
         <head>
         <meta name="viewport" content="width=device-width,  initial-scale=1" />
@@ -294,6 +305,15 @@ export default ({
         )}
         <script>
         try{
+          const scrollPage = ()=>{
+            if(${
+              scrollDisabled ? "1==0" : "1 == 1"
+            }){
+               window.scroll(0, ${content.scroll});
+             }
+             window.postmsg("enable",true);
+          }
+          
           window.loadImages=(imgs)=>{
             imgs= imgs.data;
             let images = [...document.querySelectorAll("img")];
@@ -303,6 +323,7 @@ export default ({
               if (m)
                img.setAttribute("src", m.cn);
             }
+            scrollPage();
           }
           let images = document.querySelectorAll("img");
           let hrefs = [...images].map(x=> x.getAttribute("src"))
@@ -319,15 +340,14 @@ export default ({
               ${getJs("content", menuItems)}
               await sleep(100)
             }
-            window.postmsg("data",true);
+            window.events["font"]=()=>{
+                 scrollPage();
+            }
             if(hrefs.length >0)
               window.postmsg("Image",hrefs);
+           
             document.getElementById("novel").style.visibility="visible";
-            if(${
-              scrollDisabled ? "1==0" : "1 == 1"
-            }){
-           window.scroll(0, ${content.scroll});
-          }
+            window.postmsg("data",true);
           }
           
           psg();
@@ -354,18 +374,19 @@ export default ({
           const contentHeight = Math.round(
             contentSize.height
           );
+
+          if (scrollDisabled) return;
+          if (loading.current) {
+            /* timer(
+              () => (loading.current = false)
+            );*/
+            return;
+          }
+
           g.player.scrollProcent =
             (100 * offset) /
             (contentHeight -
               g.player.paddingTop());
-
-          if (scrollDisabled) return;
-          if (loading.current) {
-            timer(
-              () => (loading.current = false)
-            );
-            return;
-          }
           timer(() => {
             if (offset == contentHeight) {
               bottomReched?.();

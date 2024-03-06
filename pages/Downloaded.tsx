@@ -185,10 +185,9 @@ export default ({ ...props }: any) => {
     } catch (e) {
       g.alert(e.message).show();
       console.error(e);
-    }finally{
+    } finally {
       loader.hide();
     }
-    
   };
 
   const downloadEpub = async (book: any) => {
@@ -244,6 +243,33 @@ export default ({ ...props }: any) => {
         }
         height={300}>
         <View>
+          <TouchableOpacity
+            css="listButton"
+            ifTrue={()=> g.selection
+                      .downloadSelectedItem
+                      .parserName != "epub" }
+            onPress={() => {
+              options
+                .nav("NovelItemDetail")
+                .add({
+                  url: g.selection
+                    .downloadSelectedItem.url,
+                  parserName:
+                    g.selection
+                      .downloadSelectedItem
+                      .parserName
+                })
+                .push();
+              g.selection.downloadSelectedItem =
+                undefined;
+            }}>
+            <Icon
+              invertColor={true}
+              name="info-circle"
+              type="FontAwesome5"
+            />
+            <Text invertColor={true}>Info</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             css="listButton"
             onPress={() => {

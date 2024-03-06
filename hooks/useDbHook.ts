@@ -10,6 +10,7 @@ export default (
 ) => {
   const updater = useUpdate();
   let currentValues = useRef({}).current;
+  const on = useRef();
   let setValues = (item: any) => {
     if(!item)
      return;
@@ -18,6 +19,8 @@ export default (
         return;
       currentValues[k] = item[k];
     }
+    if(on.current)
+       on.current()
   };
 
   let hasChange = (item: any) => {
@@ -31,6 +34,7 @@ export default (
       }
     }
   };
+  
   useEffect(() => {
     setValues(currentItem());
     var watcher = g.db().watch<any>(tbName);
@@ -45,5 +49,5 @@ export default (
     return () => watcher.removeWatch();
   }, []);
 
-  return null;
+  return (fn:any)=> on.current=fn;
 };

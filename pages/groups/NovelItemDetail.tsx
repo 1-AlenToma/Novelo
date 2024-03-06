@@ -137,6 +137,7 @@ export default ({ ...props }: any) => {
                   />
                   <View css="flex pa:5">
                     <Text
+                      selectable={true}
                       css="header flex flg:1 bold fos:18"
                       invertColor={true}>
                       {state.novel.name}
@@ -283,6 +284,7 @@ export default ({ ...props }: any) => {
                   <FText
                     css="bold lih:20 pab:10"
                     invertColor={true}
+                    selectable={true}
                     text={state.novel.decription?.cleanHtml()}
                   />
                   <View css="botw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center">

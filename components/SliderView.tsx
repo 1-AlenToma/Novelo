@@ -5,10 +5,15 @@ import {
   StyledView,
   newId
 } from "../Methods";
-import { useRef } from "react";
+import {
+  useRef,
+  useState,
+  useEffect
+} from "react";
 import Icon from "./Icons";
 import TouchableOpacity from "./TouchableOpacityView";
 import View from "./ThemeView";
+import Text from "./ThemeText";
 const Slider = StyledView(SliderRange, "Slider");
 
 export default ({
@@ -19,16 +24,24 @@ export default ({
   ifTrue,
   buttons,
   disableTimer,
+  renderValue,
   ...props
 }: any) => {
   const timer = useRef();
+  const [value, setValue] = useState(props.value);
   if (ifTrue === false) return null;
   let st = parseThemeStyle(
     style,
     undefined,
     invertColor
   );
+
+  useEffect(() => {
+    setValue(props.value);
+  }, [props.value]);
+
   const change = (v: any) => {
+    setValue(v);
     if (disableTimer) {
       props.onValueChange?.(v);
       return;
@@ -68,7 +81,18 @@ export default ({
         </TouchableOpacity>
       ) : null}
       <View
-        css={`flex ${buttons ? "maw:60%" : ""}`}>
+        css="bac:#fff wi:35 he:20 pal:5 par:5 juc:center ali:center"
+        ifTrue={() => renderValue == true}>
+        <Text
+          invertColor={false}
+          css="bold fos:10 tea:center">
+          {value.readAble()}
+        </Text>
+      </View>
+      <View
+        css={`flex ${
+          buttons ? "maw:50%" : ""
+        } ${css ?? ""}`}>
         <Slider
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
@@ -87,10 +111,10 @@ export default ({
             if (
               props.value + step <=
               props.maximumValue
-            ){
+            ) {
               let v = props.value + step;
-            props.onValueChange?.(v) ??
-              props.onSlidingComplete?.(v);
+              props.onValueChange?.(v) ??
+                props.onSlidingComplete?.(v);
             }
           }}>
           <Icon

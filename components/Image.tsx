@@ -31,6 +31,7 @@ export default ({
     //https://www.novelupdates.com/?s=Reincarnation+Of+The+Strongest+Sword+God&post_type=seriesplans
   }, []);
   useEffect(() => {
+    setSource(noImage)
     loadImage();
   }, [url]);
   // if (!source || source.empty()) return null; // for now
