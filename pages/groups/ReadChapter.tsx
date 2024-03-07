@@ -19,6 +19,7 @@ import {
   Modal,
   DropdownList
 } from "../../components/";
+import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
 import { useEffect, useRef } from "react";
 import translate from "translate-google-api";
@@ -819,8 +820,8 @@ const InternalWeb = ({
           context > div > a {
             width: 100%;
           }
-          body img{
-            max-width:98%;
+          body img {
+            max-width: 98%;
           }
           body > .novel {
             max-width: 95%;
@@ -874,11 +875,10 @@ const InternalWeb = ({
           } else if (
             item.item.text === "Define"
           ) {
-            let uri = `https://www.google.com/search?q=define%3A${item.selection.replace(
+            state.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
               / /g,
               "+"
             )}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
-            Linking.openURL(uri);
           } else {
             state.textEdit = {
               edit: item.selection,
@@ -939,7 +939,7 @@ const InternalWeb = ({
           g.player.currentChapterSettings.scrollProgress =
             y;
           //console.log(y);
-           g.player.currentChapterSettings.saveChanges();
+          g.player.currentChapterSettings.saveChanges();
         }}
       />
     </>
@@ -962,7 +962,8 @@ export default (props: any) => {
     translationLanguage: "English",
     translationResult: "",
     textEdit: undefined,
-    comment: undefined
+    comment: undefined,
+    define: undefined
   });
 
   useDbHook(
@@ -971,27 +972,6 @@ export default (props: any) => {
     () => g.appSettings,
     "*"
   );
-
-  useEffect(() => {
-    (async () => {
-      if (!state.textToTranslate) return;
-      let tr =
-        LANGUAGE_TABLE[state.translationLanguage]
-          .google;
-
-      const result = await translate(
-        state.textToTranslate,
-        {
-          tld: "en",
-          to: tr
-        }
-      );
-      state.translationResult = result;
-    })();
-  }, [
-    state.textToTranslate,
-    state.translationLanguage
-  ]);
 
   const loadData = async () => {
     try {
@@ -1122,83 +1102,87 @@ export default (props: any) => {
           (state.textEdit = undefined)
         }
         height="90">
-        <View css="flex mat:20">
-          <View css="formRow he:100">
-            <Text invertColor={true}>
-              TextToEdit:
-            </Text>
-            <TextInput
-              onChangeText={x =>
-                (state.textEdit.edit = x)
-              }
-              invertColor={false}
-              css="pa:5 bor:2 flg:1"
-              multiline={true}
-              defaultValue={state.textEdit?.edit}
-            />
-          </View>
-          <View css="formRow he:100">
-            <Text invertColor={true}>
-              EditWith:
-            </Text>
-            <TextInput
-              onChangeText={x =>
-                (state.textEdit.editWith = x)
-              }
-              invertColor={false}
-              css="pa:5 bor:2 flg:1"
-              multiline={true}
-              defaultValue={
-                state.textEdit?.editWith
-              }
-            />
-          </View>
-          <View css="formRow he:100">
-            <Text invertColor={true}>
-              Comments:
-            </Text>
-            <TextInput
-              onChangeText={x =>
-                (state.textEdit.comments = x)
-              }
-              invertColor={false}
-              css="pa:5 bor:2 flg:1"
-              multiline={true}
-              defaultValue={
-                state.textEdit?.comments
-              }
-            />
-          </View>
-          <View css="formRow">
-            <Text invertColor={true}>
-              Background:
-            </Text>
-            <ColorPicker
-              style={{
-                width: "70%"
+        <ScrollView>
+          <View css="flex mat:20">
+            <View css="formRow he:100">
+              <Text invertColor={true}>
+                TextToEdit:
+              </Text>
+              <TextInput
+                onChangeText={x =>
+                  (state.textEdit.edit = x)
+                }
+                invertColor={false}
+                css="pa:5 bor:2 flg:1"
+                multiline={true}
+                defaultValue={
+                  state.textEdit?.edit
+                }
+              />
+            </View>
+            <View css="formRow he:100">
+              <Text invertColor={true}>
+                EditWith:
+              </Text>
+              <TextInput
+                onChangeText={x =>
+                  (state.textEdit.editWith = x)
+                }
+                invertColor={false}
+                css="pa:5 bor:2 flg:1"
+                multiline={true}
+                defaultValue={
+                  state.textEdit?.editWith
+                }
+              />
+            </View>
+            <View css="formRow he:100">
+              <Text invertColor={true}>
+                Comments:
+              </Text>
+              <TextInput
+                onChangeText={x =>
+                  (state.textEdit.comments = x)
+                }
+                invertColor={false}
+                css="pa:5 bor:2 flg:1"
+                multiline={true}
+                defaultValue={
+                  state.textEdit?.comments
+                }
+              />
+            </View>
+            <View css="formRow">
+              <Text invertColor={true}>
+                Background:
+              </Text>
+              <ColorPicker
+                style={{
+                  width: "70%"
+                }}
+                value={state.textEdit?.bgColor}
+                onComplete={({ hex }) =>
+                  (state.textEdit.bgColor = hex)
+                }>
+                <Preview />
+                <Panel1 />
+                <HueSlider />
+              </ColorPicker>
+            </View>
+            <TouchableOpacity
+              onPress={async () => {
+                g.player.book.textReplacements.push(
+                  state.textEdit
+                );
+                await g.player.book.saveChanges();
+                await g.player.clean();
+                state.textEdit = undefined;
               }}
-              value={state.textEdit?.bgColor}
-              onComplete={({ hex }) =>
-                (state.textEdit.bgColor = hex)
-              }>
-              <Preview />
-              <Panel1 />
-              <HueSlider />
-            </ColorPicker>
+              css="button clearwidth bow:1 boc:#ccc bor:5 juc:center">
+              <Text invertColor={true}>Save</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={async () => {
-              g.player.book.textReplacements.push(
-                state.textEdit
-              );
-              await g.player.book.saveChanges();
-              await g.player.clean();
-              state.textEdit = undefined;
-            }}
-            css="button clearwidth bow:1 boc:#ccc bor:5 juc:center">
-            <Text invertColor={true}>Save</Text>
-          </TouchableOpacity>
-        </View>
+        </ScrollView>
       </Modal>
       <Modal
         visible={
@@ -1207,7 +1191,7 @@ export default (props: any) => {
         onHide={() =>
           (state.textToTranslate = undefined)
         }
-        height={300}>
+        height="100">
         <View css="flex mat:20">
           <View css="form">
             <Text invertColor={true}>
@@ -1235,13 +1219,79 @@ export default (props: any) => {
               }
             />
           </View>
-          <View css="form he:80%">
-            <TextInput
-              invertColor={false}
-              css="clearboth pa:5 bor:2"
-              multiline={true}
-              readOnly={true}
-              value={state.translationResult}
+          <View css="form flex">
+            <WebView
+              injectedJavaScript={`
+               let items =[... document.querySelectorAll("header, .header, .translate-button-container, .languages-container, .links-container")]
+               items.forEach(x=> x.remove())
+               //alert(items.length)
+              `}
+              nestedScrollEnabled={true}
+              cacheEnabled={true}
+              source={{
+                uri: `https://translate.google.com/m?hl=en&sl=en&tl=${
+                  LANGUAGE_TABLE[
+                    state.translationLanguage
+                  ].google
+                }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
+                  state.textToTranslate
+                )}`
+              }}
+              contentMode="mobile"
+              scalesPageToFit={true}
+              originWhitelist={["*"]}
+              scrollEnabled={true}
+              userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+              setSupportMultipleWindows={false}
+              style={[
+                {
+                  flexGrow: 1,
+                  zIndex: 70,
+                  flex: 1
+                }
+              ]}
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={
+                true
+              }
+              javaScriptEnabled={true}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={state.define != undefined}
+        onHide={() => (state.define = undefined)}
+        height="100">
+        <View css="flex mat:20">
+          <View css="form flex">
+            <WebView
+              nestedScrollEnabled={true}
+              cacheEnabled={true}
+              source={{
+                uri: state.define
+              }}
+              contentMode="mobile"
+              scalesPageToFit={true}
+              originWhitelist={["*"]}
+              scrollEnabled={true}
+              userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+              setSupportMultipleWindows={false}
+              style={[
+                {
+                  flexGrow: 1,
+                  zIndex: 70,
+                  flex: 1
+                }
+              ]}
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={
+                true
+              }
+              javaScriptEnabled={true}
             />
           </View>
         </View>

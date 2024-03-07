@@ -305,12 +305,15 @@ export default ({
         )}
         <script>
         try{
-          const scrollPage = ()=>{
+          window.scrollPage = (alertdata)=>{
             if(${
               scrollDisabled ? "1==0" : "1 == 1"
             }){
-               window.scroll(0, ${content.scroll});
+               window.scroll(0, ${
+                 content.scroll
+               });
              }
+             if(alertdata!== false)
              window.postmsg("enable",true);
           }
           
@@ -323,7 +326,7 @@ export default ({
               if (m)
                img.setAttribute("src", m.cn);
             }
-            scrollPage();
+            window.scrollPage();
           }
           let images = document.querySelectorAll("img");
           let hrefs = [...images].map(x=> x.getAttribute("src"))
@@ -341,13 +344,14 @@ export default ({
               await sleep(100)
             }
             window.events["font"]=()=>{
-                 scrollPage();
+                 window.scrollPage();
             }
             if(hrefs.length >0)
               window.postmsg("Image",hrefs);
            
             document.getElementById("novel").style.visibility="visible";
             window.postmsg("data",true);
+            window.scrollPage();
           }
           
           psg();
@@ -374,19 +378,18 @@ export default ({
           const contentHeight = Math.round(
             contentSize.height
           );
-
-          if (scrollDisabled) return;
-          if (loading.current) {
-            /* timer(
-              () => (loading.current = false)
-            );*/
-            return;
-          }
-
           g.player.scrollProcent =
             (100 * offset) /
             (contentHeight -
               g.player.paddingTop());
+          if (scrollDisabled) return;
+          if (loading.current) {
+             timer(
+              () => (loading.current = false)
+            );
+            return;
+          }
+
           timer(() => {
             if (offset == contentHeight) {
               bottomReched?.();

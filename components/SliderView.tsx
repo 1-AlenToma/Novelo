@@ -86,13 +86,13 @@ export default ({
         <Text
           invertColor={false}
           css="bold fos:10 tea:center">
-          {value.readAble()}
+          {(0).sureValue(value).readAble()}
         </Text>
       </View>
       <View
-        css={`flex ${
-          buttons ? "maw:50%" : ""
-        } ${css ?? ""}`}>
+        css={`flex ${buttons ? "maw:50%" : ""} ${
+          css ?? ""
+        }`}>
         <Slider
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
