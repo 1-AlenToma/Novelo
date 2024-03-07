@@ -81,7 +81,8 @@ const Controller = ({ state, ...props }) => {
     "player.showPlayer",
     "player.chapterArray",
     "player.currentChapter",
-    "player._playing"
+    "player._playing",
+    "size"
   );
 
   const Timer = useTimer(100);
@@ -110,7 +111,8 @@ const Controller = ({ state, ...props }) => {
     voice,
     pitch,
     rate,
-    margin
+    margin,
+    navigationType
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined)
@@ -138,6 +140,10 @@ const Controller = ({ state, ...props }) => {
       if (voice) g.appSettings.voice = voice;
       if (margin != undefined)
         g.appSettings.margin = margin;
+      if (navigationType != undefined)
+        g.appSettings.navigationType =
+          navigationType;
+
       await g.appSettings.saveChanges();
     });
   };
@@ -349,6 +355,61 @@ const Controller = ({ state, ...props }) => {
                     <View
                       title="Settings"
                       css="flex">
+                      <View css="form">
+                        <Text invertColor={true}>
+                          NavigationMethod:
+                        </Text>
+                        <DropdownList
+                          height="80"
+                          toTop={true}
+                          selectedIndex={
+                            g.appSettings
+                              .navigationType
+                          }
+                          updater={[
+                            g.appSettings
+                              .navigationType
+                          ]}
+                          hooks={[
+                            "appSettings.navigationType"
+                          ]}
+                          items={[
+                            "Scroll",
+                            "Snap"
+                          ]}
+                          render={item => {
+                            return (
+                              <View
+                                css={`
+                                  ${item ==
+                                  g.appSettings
+                                    .navigationType
+                                    ? "selectedRow"
+                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
+                                `}>
+                                <Text
+                                  css={`bold desc`}
+                                  invertColor={
+                                    true
+                                  }>
+                                  {item}
+                                </Text>
+                              </View>
+                            );
+                          }}
+                          onSelect={navigationType => {
+                            editSettings({
+                              navigationType
+                            });
+                          }}
+                          selectedValue={
+                            g.appSettings
+                              .navigationType ||
+                            "Snap"
+                          }
+                        />
+                      </View>
+
                       <View css="form">
                         <Text invertColor={true}>
                           Font:
@@ -792,6 +853,9 @@ const InternalWeb = ({
   return (
     <>
       <Web
+        navigationType={
+          g.appSettings.navigationType
+        }
         scrollDisabled={g.player.showPlayer}
         fontName={g.appSettings.fontName}
         css={`
@@ -803,9 +867,19 @@ const InternalWeb = ({
           parameter {
             display: none;
           }
+          blur p {
+            color: ${g.appSettings
+              .backgroundColor};
+            background-color: ${invertColor(
+              g.appSettings.backgroundColor
+            )};
+            padding: 5px;
+            border-radius:10px;
+            overflow:hidden;
+          }
           *:not(context):not(context *):not(
               .custom
-            ) {
+            ):not(blur):not(blur *) {
             background-color: ${g.appSettings
               .backgroundColor};
             color: ${invertColor(
@@ -823,7 +897,7 @@ const InternalWeb = ({
           body img {
             max-width: 98%;
           }
-          body > .novel {
+          body .novel {
             max-width: 95%;
             min-height: ${!g.player.showPlayer
               ? "100%"

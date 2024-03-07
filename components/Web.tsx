@@ -135,7 +135,8 @@ export default ({
   fontName,
   bottomReched,
   topReched,
-  scrollDisabled
+  scrollDisabled,
+  navigationType
 }: any) => {
   g.hook("size");
   const loading = useRef(true);
@@ -238,9 +239,11 @@ export default ({
         onScroll?.(data.data);
         break;
       case "bottomReched":
+      case "Next":
         bottomReched?.();
         break;
       case "topReched":
+      case "Prev":
         topReched?.();
         break;
       case "click":
@@ -337,6 +340,7 @@ export default ({
           async function psg(){
           while(window.postmsg === undefined || !window.ctx)
              await sleep(200);
+            
             window.binder();
             ${getJs("style", css)}
             while(window.ctm == undefined){
@@ -350,6 +354,23 @@ export default ({
               window.postmsg("Image",hrefs);
            
             document.getElementById("novel").style.visibility="visible";
+            if("${
+              navigationType || "Snap"
+            }" === "Snap"){
+             new window.slider({
+             id: "novel",
+             hasNext: ${g.player
+               .hasNext()
+               .toString()
+               .toLowerCase()},
+             hasPrev: ${g.player
+               .hasPrev()
+               .toString()
+               .toLowerCase()},
+             prevText: "Previous Chapter",
+             nextText: "Next Chapter"
+             });
+            }
             window.postmsg("data",true);
             window.scrollPage();
           }
@@ -384,7 +405,7 @@ export default ({
               g.player.paddingTop());
           if (scrollDisabled) return;
           if (loading.current) {
-             timer(
+            timer(
               () => (loading.current = false)
             );
             return;
@@ -392,9 +413,11 @@ export default ({
 
           timer(() => {
             if (offset == contentHeight) {
-              bottomReched?.();
+              if (navigationType == "Scroll")
+                bottomReched?.();
             } else if (contentOffset.y <= 10) {
-              topReched?.();
+              if (navigationType == "Scroll")
+                topReched?.();
             } else onScroll?.(contentOffset.y);
           });
         }}

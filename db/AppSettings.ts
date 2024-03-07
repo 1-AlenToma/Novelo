@@ -20,6 +20,7 @@ class AppSettings extends IBaseModule<TableNames> {
   lockScreen: boolean = false;
   margin?: number = 5;
   currentNovel?: { url; parserName } ={};
+  navigationType?: "Scroll" | "Snap" = "Snap";
   constructor() {
     super("AppSettings");
   }
@@ -40,7 +41,8 @@ class AppSettings extends IBaseModule<TableNames> {
       .boolean.column("fontName")
       .column("lockScreen")
       .boolean.column("currentNovel")
-      .nullable.json.objectPrototype(
+      .nullable.json
+      .column("navigationType").nullable.objectPrototype(
         AppSettings.prototype
       );
   }

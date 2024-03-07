@@ -142,14 +142,11 @@ class Player {
 
   paddingBottom() {
     if (this.showPlayer) return 2;
-    return this.currentChapterIndex <
-      this.novel.chapters.length
-      ? 250
-      : 10;
+    return 250;
   }
 
   paddingTop() {
-    if (this.showPlayer) return 2;
+    if (this.showPlayer || g.appSettings.navigationType !=="Scroll") return 2;
     return this.currentChapterIndex > 0
       ? 100
       : 10;
