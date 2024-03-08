@@ -112,7 +112,9 @@ const Controller = ({ state, ...props }) => {
     pitch,
     rate,
     margin,
-    navigationType
+    navigationType,
+    use3D,
+    fontStyle
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined)
@@ -143,6 +145,10 @@ const Controller = ({ state, ...props }) => {
       if (navigationType != undefined)
         g.appSettings.navigationType =
           navigationType;
+      if (use3D != undefined)
+        g.appSettings.use3D = use3D;
+      if (fontStyle != undefined)
+        g.appSettings.fontStyle = fontStyle;
 
       await g.appSettings.saveChanges();
     });
@@ -360,7 +366,7 @@ const Controller = ({ state, ...props }) => {
                           NavigationMethod:
                         </Text>
                         <DropdownList
-                          height="80"
+                          height={200}
                           toTop={true}
                           selectedIndex={
                             g.appSettings
@@ -486,6 +492,64 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={40}
                         />
                       </View>
+
+                      <View css="form">
+                        <Text invertColor={true}>
+                          FontStyle:
+                        </Text>
+                        <DropdownList
+                          height={200}
+                          toTop={true}
+                          selectedIndex={
+                            g.appSettings
+                              .fontStyle
+                          }
+                          updater={[
+                            g.appSettings
+                              .fontStyle
+                          ]}
+                          hooks={[
+                            "appSettings.fontStyle"
+                          ]}
+                          items={[
+                            "normal",
+                            "italic",
+                            "oblique"
+                          ]}
+                          render={item => {
+                            return (
+                              <View
+                                css={`
+                                  ${item ==
+                                  (g.appSettings
+                                    .fontStyle ??
+                                    "normal")
+                                    ? "selectedRow"
+                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
+                                `}>
+                                <Text
+                                  css={`bold desc`}
+                                  invertColor={
+                                    true
+                                  }>
+                                  {item.displayName()}
+                                </Text>
+                              </View>
+                            );
+                          }}
+                          onSelect={fontStyle => {
+                            editSettings({
+                              fontStyle
+                            });
+                          }}
+                          selectedValue={(
+                            g.appSettings
+                              .fontStyle ||
+                            "normal"
+                          ).displayName()}
+                        />
+                      </View>
+
                       <View css="form">
                         <Text invertColor={true}>
                           Padding:
@@ -521,6 +585,25 @@ const Controller = ({ state, ...props }) => {
                               isBold:
                                 !g.appSettings
                                   .isBold
+                            });
+                          }}
+                        />
+                      </View>
+                      <View css="form">
+                        <Text invertColor={true}>
+                          3D Font:
+                        </Text>
+                        <CheckBox
+                          css="pal:1"
+                          invertColor={true}
+                          checked={
+                            g.appSettings.use3D
+                          }
+                          onChange={() => {
+                            editSettings({
+                              use3D:
+                                !g.appSettings
+                                  .use3D
                             });
                           }}
                         />
@@ -634,7 +717,6 @@ const Controller = ({ state, ...props }) => {
                           Voices:
                         </Text>
                         <DropdownList
-                          disableInput={true}
                           height="80"
                           toTop={true}
                           updater={[
@@ -644,6 +726,25 @@ const Controller = ({ state, ...props }) => {
                             "player.testVoice"
                           ]}
                           items={g.voices}
+                          onSearch={(
+                            item,
+                            txt
+                          ) => {
+                            let l =
+                              lang[
+                                item.language.toLowerCase()
+                              ] ||
+                              lang[
+                                item.language
+                                  .safeSplit(
+                                    "-",
+                                    0
+                                  )
+                                  .toLowerCase()
+                              ] ||
+                              item.language;
+                              return l.has(txt)
+                          }}
                           selectedIndex={g.voices.findIndex(
                             x =>
                               x.name ==
@@ -849,6 +950,12 @@ const InternalWeb = ({
     "player.html",
     "player.showPlayer"
   );
+  let color = g.appSettings.backgroundColor;
+
+  let inverted = invertColor(color);
+  let shadow = inverted.has("white")
+    ? "#4e4d4d"
+    : "#919191";
 
   return (
     <>
@@ -863,28 +970,29 @@ const InternalWeb = ({
             font-family: "${g.appSettings
               .fontName}";
             font-size-adjust: 1;
+            font-style: ${g.appSettings
+              .fontStyle ?? "normal"};
+            ${g.appSettings.use3D
+              ? `
+            text-shadow: 1px 2px 1px ${shadow};
+            `
+              : ""}
           }
           parameter {
             display: none;
           }
           blur p {
-            color: ${g.appSettings
-              .backgroundColor};
-            background-color: ${invertColor(
-              g.appSettings.backgroundColor
-            )};
+            color: ${color};
+            background-color: ${inverted};
             padding: 5px;
-            border-radius:10px;
-            overflow:hidden;
+            border-radius: 10px;
+            overflow: hidden;
           }
           *:not(context):not(context *):not(
               .custom
             ):not(blur):not(blur *) {
-            background-color: ${g.appSettings
-              .backgroundColor};
-            color: ${invertColor(
-              g.appSettings.backgroundColor
-            )};
+            background-color: ${color};
+            color: ${inverted};
           }
           .comments {
             text-decoration: underline;

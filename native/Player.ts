@@ -250,6 +250,7 @@ class Player {
 
   testPlaying(voice?: string) {
     if (voice == undefined) return this.testVoice;
+    this.stop();
     if (this.testVoice === voice) this.stop();
     else if (voice) this.testPlay(voice);
     this.testVoice =

@@ -90,7 +90,7 @@ export default ({
         </Text>
       </View>
       <View
-        css={`flex ${buttons ? "maw:50%" : ""} ${
+        css={`flex ${buttons ? "maw:48%" : ""} ${
           css ?? ""
         }`}>
         <Slider

@@ -19,6 +19,7 @@ export default ({
   updater,
   hooks,
   disableInput,
+  onSearch,
   ...props
 }: any) => {
   let [visible, setVisible] = useState(false);
@@ -61,7 +62,13 @@ export default ({
         onHide={() => setVisible(false)}>
         <View
           css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10"
-          ifTrue={disableInput === true? false: disableInput}>
+          ifTrue={
+            disableInput === true ||
+            items === undefined ||
+            items.length < 10
+              ? false
+              : disableInput
+          }>
           <TextInput
             onChangeText={setTxt}
             invertColor={false}
@@ -82,9 +89,7 @@ export default ({
           items={items?.filter(
             x =>
               txt == "" ||
-              (search(x) || "")
-                .toLowerCase()
-                .indexOf(txt.toLowerCase()) !== -1
+              (search(x) || "").has(txt) || onSearch?.(x,txt)
           )}
           container={({ item }) => render(item)}
           itemCss="pa:5 clearwidth bobw:1 boc:gray"

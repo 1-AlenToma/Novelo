@@ -90,7 +90,7 @@ export default NestedStyleSheet.create({
   band: "clearwidth absolute he:50 zi:100 di:flex",
   form: "clearwidth row di:flex jus:space-between ali:center mab:5",
   "form.Text":
-    "fos:13 bold tea:left par:10 wi:100",
+    "fos:13 bold tea:left par:10 wi:130",
   "formlist.Text": "wi:90%",
   "form.chackBox": "ali:center mar:10",
 

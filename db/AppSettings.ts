@@ -19,8 +19,10 @@ class AppSettings extends IBaseModule<TableNames> {
   isBold: boolean = false;
   lockScreen: boolean = false;
   margin?: number = 5;
-  currentNovel?: { url; parserName } ={};
+  currentNovel?: { url; parserName } = {};
   navigationType?: "Scroll" | "Snap" = "Snap";
+  use3D?: boolean = false;
+  fontStyle?: string = "normal";
   constructor() {
     super("AppSettings");
   }
@@ -34,15 +36,17 @@ class AppSettings extends IBaseModule<TableNames> {
       .decimal.column("pitch")
       .decimal.column("voice")
       .column("fontSize")
-      .number.column("margin").nullable
-      .number.column("textAlign")
+      .number.column("margin")
+      .nullable.number.column("textAlign")
       .column("backgroundColor")
       .column("isBold")
       .boolean.column("fontName")
       .column("lockScreen")
       .boolean.column("currentNovel")
-      .nullable.json
-      .column("navigationType").nullable.objectPrototype(
+      .nullable.json.column("navigationType")
+      .nullable.column("use3D")
+      .nullable.boolean
+      .column("fontStyle").nullable.objectPrototype(
         AppSettings.prototype
       );
   }
