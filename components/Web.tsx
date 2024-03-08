@@ -19,6 +19,7 @@ import * as FileSystem from "expo-file-system";
 import { Player, DetailInfo } from "../../native";
 import g from "../GlobalContext";
 import View from "./ThemeView";
+import TextView from "./ThemeText";
 import Svg, {
   Circle,
   Rect,
@@ -43,6 +44,46 @@ ${script}
 }
 true;
 `;
+
+const Clock = () => {
+  const Timer = useTimer(1000);
+  const [time, setTime] = useState("");
+  function startTime() {
+    const today = new Date();
+    let h = today.getHours();
+    let m = today.getMinutes();
+    let s = today.getSeconds();
+    m = checkTime(m);
+    s = checkTime(s);
+    setTime(h + ":" + m + ":" + s);
+    Timer(() => startTime());
+  }
+
+  function checkTime(i) {
+    if (i < 10) {
+      i = "0" + i;
+    } // add zero in front of numbers < 10
+    return i;
+  }
+
+  useEffect(() => {
+    startTime();
+  }, []);
+
+  return (
+    <View>
+      <TextView
+        style={{
+          color: invertColor(
+            g.appSettings.backgroundColor
+          )
+        }}
+        css="bold fos:10">
+        {time}
+      </TextView>
+    </View>
+  );
+};
 
 const Scroller = ({ ...props }: any) => {
   g.hook(
@@ -280,11 +321,14 @@ export default ({
 
   return (
     <>
-      <Scroller
-        css="absolute ri:10 bo:10 zi:99"
-        size={30}
-        strokeWidth={4}
-      />
+      <View css="absolute ri:10 bo:10 zi:99 juc:space-between ali:center">
+        <Scroller
+          css="mal:5"
+          size={30}
+          strokeWidth={4}
+        />
+        <Clock />
+      </View>
       <WebView
         ref={r => {
           if (r) {

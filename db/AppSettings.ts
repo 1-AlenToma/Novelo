@@ -19,7 +19,7 @@ class AppSettings extends IBaseModule<TableNames> {
   isBold: boolean = false;
   lockScreen: boolean = false;
   margin?: number = 5;
-  currentNovel?: { url; parserName } = {};
+  currentNovel?: { url:string; parserName:string, isEpub?:boolean } = {};
   navigationType?: "Scroll" | "Snap" = "Snap";
   use3D?: boolean = false;
   fontStyle?: string = "normal";

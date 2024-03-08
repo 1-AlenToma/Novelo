@@ -43,9 +43,9 @@ class Player {
   }
 
   procent(tempValue?: number) {
-    return `${tempValue ?? this.currentChapterIndex + 1}/${
-      this.novel.chapters.length
-    }`;
+    return `${
+      tempValue ?? this.currentChapterIndex + 1
+    }/${this.novel.chapters.length}`;
   }
 
   async clean(html?: string) {
@@ -146,7 +146,11 @@ class Player {
   }
 
   paddingTop() {
-    if (this.showPlayer || g.appSettings.navigationType !=="Scroll") return 2;
+    if (
+      this.showPlayer ||
+      g.appSettings.navigationType !== "Scroll"
+    )
+      return 2;
     return this.currentChapterIndex > 0
       ? 100
       : 10;
@@ -160,11 +164,12 @@ class Player {
       g.appSettings.currentNovel.url !=
         this.book.url ||
       g.appSettings.currentNovel.parserName !=
-        this.book.parserName
+        this.book.parserName || g.appSettings.currentNovel.isEpub != this.isEpub
     ) {
       g.appSettings.currentNovel = {
         url: this.book.url,
-        parserName: this.book.parserName
+        parserName: this.book.parserName,
+        isEpub: this.isEpup || this.book.parserName === "epub"
       };
       await g.appSettings.saveChanges();
     }
@@ -191,7 +196,11 @@ class Player {
         .Url(this.currentChapter.url)
         .Name(this.currentChapter.name)
         .ScrollProgress(
-          this.currentChapterIndex > 0 ? 100 : 10
+          this.currentChapterIndex > 0 &&
+            g.appSettings.navigationType ===
+              "Scroll"
+            ? 100
+            : 10
         )
         .Parent_Id(this.book.id);
       await g.db().save<Chapter>(chSettings);

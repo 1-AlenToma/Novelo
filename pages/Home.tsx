@@ -19,7 +19,10 @@ import {
 } from "react";
 import g from "../GlobalContext";
 import Header from "./Header";
-import { useNavigation, useDbHook } from "../hooks";
+import {
+  useNavigation,
+  useDbHook
+} from "../hooks";
 import { Book } from "../db";
 import {
   ScrollView,
@@ -43,10 +46,14 @@ const CurrentItem = ({
         .db()
         .querySelector<Book>("Books")
         .Where.Column(x => x.url)
-        .EqualTo(g.appSettings.currentNovel?.url ?? "hhhh")
+        .EqualTo(
+          g.appSettings.currentNovel?.url ??
+            "hhhh"
+        )
         .AND.Column(x => x.parserName)
         .EqualTo(
-          g.appSettings.currentNovel?.parserName ??"gggg"
+          g.appSettings.currentNovel
+            ?.parserName ?? "gggg"
         )
     );
   useDbHook(
@@ -54,7 +61,7 @@ const CurrentItem = ({
     item => true,
     () => g.appSettings,
     "currentNovel"
-  )(()=>reload());
+  )(() => reload());
 
   let book = books?.firstOrDefault() ?? {};
   if (!books?.firstOrDefault()) return null;
@@ -96,7 +103,10 @@ const CurrentItem = ({
                 .add({
                   url: book.url,
                   parserName: book.parserName,
-                  epub: book.parserName == "epub"
+                  epub:
+                    book.parserName == "epub" ||
+                    g.appSettings.currentNovel
+                      ?.isEpub
                 })
                 .push();
               setVisible(false);
@@ -106,13 +116,45 @@ const CurrentItem = ({
               name="book-reader"
               type="FontAwesome5"
             />
-            <Text invertColor={true}>Read</Text>
+            <Text invertColor={true}>
+              Read
+              {g.appSettings.currentNovel
+                ?.isEpub &&
+              book.parserName != "epub"
+                ? ` (Epub)`
+                : ""}
+            </Text>
           </TouchableOpacity>
-          
-         <TouchableOpacity
+          <TouchableOpacity
+            ifTrue={() =>
+              g.appSettings.currentNovel
+                ?.isEpub &&
+              book.parserName != "epub"
+            }
             css="listButton"
             onPress={() => {
-              g.appSettings.currentNovel= {};
+              options
+                .nav("ReadChapter")
+                .add({
+                  url: book.url,
+                  parserName: book.parserName
+                })
+                .push();
+              setVisible(false);
+            }}>
+            <Icon
+              invertColor={true}
+              name="book-reader"
+              type="FontAwesome5"
+            />
+            <Text invertColor={true}>
+              Read (Online)
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            css="listButton"
+            onPress={() => {
+              g.appSettings.currentNovel = {};
               g.appSettings.saveChanges();
               setVisible(false);
             }}>
@@ -138,7 +180,10 @@ const CurrentItem = ({
               .add({
                 url: book.url,
                 parserName: book.parserName,
-                epub: book.parserName == "epub"
+                epub:
+                  book.parserName == "epub" ||
+                  g.appSettings.currentNovel
+                    ?.isEpub
               })
               .push();
           }}>
@@ -159,6 +204,11 @@ const CurrentItem = ({
               invertColor={true}
               css="desc bold co:red bottom le:35%">
               READING NOW
+              {g.appSettings.currentNovel
+                ?.isEpub &&
+              book.parserName != "epub"
+                ? ` (Epub)`
+                : ""}
             </Text>
           </View>
         </TouchableOpacity>

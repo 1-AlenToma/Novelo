@@ -175,7 +175,7 @@ export default ({
                 {title}
               </Text>
             </View>
-            <View css="flex zi:5:">
+            <View css="flex zi:5 maw:99%">
               {onReady ? children : null}
             </View>
           </View>

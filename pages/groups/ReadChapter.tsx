@@ -169,7 +169,6 @@ const Controller = ({ state, ...props }) => {
         </Text>
         <View css="clearwidth juc:center ali:center">
           <Slider
-            css="maw:90%"
             invertColor={true}
             buttons={true}
             disableTimer={true}
@@ -477,6 +476,7 @@ const Controller = ({ state, ...props }) => {
                           FontSize:
                         </Text>
                         <Slider
+                          css="flex"
                           renderValue={true}
                           invertColor={true}
                           buttons={true}
@@ -555,6 +555,7 @@ const Controller = ({ state, ...props }) => {
                           Padding:
                         </Text>
                         <Slider
+                          css="flex"
                           renderValue={true}
                           invertColor={true}
                           buttons={true}
@@ -743,7 +744,7 @@ const Controller = ({ state, ...props }) => {
                                   .toLowerCase()
                               ] ||
                               item.language;
-                              return l.has(txt)
+                            return l.has(txt);
                           }}
                           selectedIndex={g.voices.findIndex(
                             x =>
@@ -819,6 +820,7 @@ const Controller = ({ state, ...props }) => {
                         </Text>
 
                         <Slider
+                          css="flex"
                           renderValue={true}
                           invertColor={true}
                           buttons={true}
@@ -840,6 +842,7 @@ const Controller = ({ state, ...props }) => {
                           Rate:
                         </Text>
                         <Slider
+                          css="flex"
                           renderValue={true}
                           invertColor={true}
                           buttons={true}

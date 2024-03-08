@@ -239,7 +239,8 @@ const TabBar = ({
               }
             ],
             height: (0).sureValue(
-              size?.height -( menu ?styles.menu.height:0)
+              size?.height -
+                (menu ? styles.menu.height : 0)
             ),
             width:
               (size?.width ?? 0) * children.length
@@ -260,7 +261,8 @@ const TabBar = ({
                 contentContainerStyle={{
                   flexGrow: 1,
                   padding: 5,
-                  width: size?.width
+                  width: size?.width,
+                  maxWidth: "100%"
                 }}>
                 {rItems[i]?.child ?? null}
               </ScrollView>

@@ -88,14 +88,13 @@ export default NestedStyleSheet.create({
   },
   Slider: "clearboth",
   band: "clearwidth absolute he:50 zi:100 di:flex",
-  form: "clearwidth row di:flex jus:space-between ali:center mab:5",
+  form: "clearwidth row di:flex juc:space-between ali:center mab:5",
   "form.Text":
     "fos:13 bold tea:left par:10 wi:130",
   "formlist.Text": "wi:90%",
   "form.chackBox": "ali:center mar:10",
 
-  formRow:
-    "clearwidth mab:5",
+  formRow: "clearwidth mab:5",
   "formRow.Text":
     "fos:13 bold tea:left par:10 wi:100",
   "formRow.chackBox": "ali:center mar:10"

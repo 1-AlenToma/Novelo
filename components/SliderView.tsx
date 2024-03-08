@@ -53,11 +53,7 @@ export default ({
   };
   return (
     <View
-      css={`
-        ${buttons
-          ? "wi:90%"
-          : "clearwidth"} mah:40 row di:flex ali:center jus:center
-      `}>
+      css={`clearwidth mah:40 row ali:center juc:space-between ${css}`}>
       {buttons ? (
         <TouchableOpacity
           css="flex maw:24 mal:10"
@@ -89,10 +85,7 @@ export default ({
           {(0).sureValue(value).readAble()}
         </Text>
       </View>
-      <View
-        css={`flex ${buttons ? "maw:48%" : ""} ${
-          css ?? ""
-        }`}>
+      <View css={`flex`}>
         <Slider
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
@@ -100,7 +93,6 @@ export default ({
           {...props}
           onValueChange={change}
           style={st}
-          css={css}
         />
       </View>
       {buttons ? (
