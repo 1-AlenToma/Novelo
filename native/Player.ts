@@ -186,7 +186,6 @@ class Player {
         this.book.chapterSettings.find(
           x => x.name === this.currentChapter.name
         );
-      // alert(this.currentChapterSettings.scrollProgress);
     } else {
       let chSettings = Chapter.n()
         .Url(this.currentChapter.url)
