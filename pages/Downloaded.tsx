@@ -10,7 +10,8 @@ import {
   CheckBox,
   TextInput,
   ActionSheet,
-  ProgressBar
+  ProgressBar,
+  Modal
 } from "../components";
 import { useEffect, useRef, memo } from "react";
 import g from "../GlobalContext";
@@ -30,7 +31,6 @@ import {
   EpubBuilder
 } from "../native";
 import { sleep } from "../Methods";
-let lock = false;
 const ItemRender = ({ item, state }: any) => {
   const { fileItems } = g
     .files()
@@ -46,8 +46,6 @@ const ItemRender = ({ item, state }: any) => {
   }, [fileItems]);
 
   let getInfo = async (b: any) => {
-    while (lock) await sleep(100);
-    lock = true;
     loader.show();
     let novel = fileItems.find(
       x => x.url == b.url
@@ -61,7 +59,6 @@ const ItemRender = ({ item, state }: any) => {
         ).length
       })`;
     }
-    lock = false;
     loader.hide();
   };
 
@@ -121,12 +118,13 @@ export default ({ ...props }: any) => {
   const updater = useUpdate();
   const state = useState({
     text: "",
-    selectedItem: undefined
+    selectedItem: undefined,
+    skipImages: false
   });
   const loader = useLoader();
   const { fileItems } = g
     .files()
-    .useFile("json", undefined, "New");
+    .useFile("json", undefined, "NewDelete");
   const [books, dataIsLoading, reload] = g
     .db()
     .useQuery(
@@ -158,11 +156,41 @@ export default ({ ...props }: any) => {
           type: "application/epub+zip"
         });
       if (!assets || assets.length <= 0) return;
+      await g.db().disableHooks();
+      await g.db().disableWatchers();
+      g.files().disable();
       let uri = assets?.firstOrDefault("uri");
       let name = assets?.firstOrDefault("name");
-      let bk = await ZipBook.load(uri, name, p =>
-        loader.show(p)
+      let bk = await ZipBook.load(
+        uri,
+        name,
+        p => {
+          loader.show(p);
+        },
+        state.skipImages
       );
+      let images = bk.files.filter(
+        x => x.type === "Image"
+      );
+      let total = images.length;
+      let count = 0;
+      const calc = async () => {
+        count++;
+        loader.show((100 * count) / total);
+      };
+      if (!state.skipImages) {
+        for (let file of images) {
+          await calc();
+          file.content = await g
+            .imageCache()
+            .write(file.url, file.content);
+        }
+
+        let chImage =
+          ZipBook.createImageChapter(images);
+        if (chImage)
+          bk.chapters = [chImage, ...bk.chapters];
+      }
       let book = Book.n()
         .Name(bk.name)
         .Url(bk.url)
@@ -186,6 +214,9 @@ export default ({ ...props }: any) => {
       g.alert(e.message).show();
       console.error(e);
     } finally {
+      g.db().enableWatchers();
+      g.db().enableHooks();
+      g.files().enable();
       loader.hide();
     }
   };
@@ -245,9 +276,10 @@ export default ({ ...props }: any) => {
         <View>
           <TouchableOpacity
             css="listButton"
-            ifTrue={()=> g.selection
-                      .downloadSelectedItem
-                      .parserName != "epub" }
+            ifTrue={() =>
+              g.selection.downloadSelectedItem
+                ?.parserName != "epub"
+            }
             onPress={() => {
               options
                 .nav("NovelItemDetail")
@@ -387,7 +419,16 @@ export default ({ ...props }: any) => {
           css="header absolute le:5">
           Downloaded and Added Epubs
         </Text>
-        <TouchableOpacity onPress={loadEpub}>
+        <TouchableOpacity
+          onPress={() => {
+            g.alert(
+              `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
+              "Please Confirm"
+            ).confirm(answer => {
+              state.skipImages = answer;
+              loadEpub();
+            });
+          }}>
           <Icon
             invertColor={true}
             size={35}

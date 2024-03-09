@@ -57,7 +57,10 @@ declare global {
   }
 
   interface Number {
-    sureValue: (a: number) => number;
+    sureValue: (
+      a: number,
+      isInt?: boolean
+    ) => number;
     readAble: () => any;
   }
 }
@@ -96,11 +99,16 @@ Number.prototype.readAble = function () {
 };
 
 Number.prototype.sureValue = function (
-  a: number
+  a: number,
+  isInt?: boolean
 ) {
   if (a === undefined || a === null || isNaN(a))
-    return this;
-  return a;
+    return isInt
+      ? parseInt(this.toString())
+      : this;
+  return isInt
+      ? parseInt(a.toString())
+      : a;
 };
 
 Array.prototype.skip = function (
@@ -301,9 +309,14 @@ String.prototype.safeSplit = function (
 };
 let styleShortKeys = [];
 
-String.prototype.css = function (id?:string) {
+String.prototype.css = function (id?: string) {
   let styleText = String(this).toString();
-  return cssTranslator(styleText, CStyle, undefined, id);
+  return cssTranslator(
+    styleText,
+    CStyle,
+    undefined,
+    id
+  );
 };
 
 String.prototype.imageUrlSize = function (

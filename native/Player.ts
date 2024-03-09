@@ -51,14 +51,10 @@ class Player {
   async clean(html?: string) {
     let txt =
       html ??
-      this.currentChapterSettings.content ??
+      this.currentChapter.content ??
       this.html;
     try {
-      // if (!html) this.loader?.show();
-      txt = txt.replace(
-        /(background\-color|background|font\-family|color|font\-size|line\-height|text\-align|font\-weight)( ?: ?).*?(\;)/gi,
-        ""
-      );
+      //txt = g.dbContext().decode(txt);
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(
           t.edit.escapeRegExp(),
@@ -93,12 +89,9 @@ class Player {
     try {
       this.loader?.show();
       if (!this.currentChapterSettings) return;
-      if (
-        this.currentChapterSettings.content?.has() ??
-        false
-      ) {
+      if (this.currentChapter.content?.has()) {
         return await this.clean(
-          this.currentChapterSettings.content
+          this.currentChapter.content
         );
       }
       let parser = g.parser.find(
@@ -112,8 +105,7 @@ class Player {
           : await parser.chapter(url);
 
       return await this.clean(
-        (this.currentChapterSettings.content =
-          str)
+        (this.currentChapter.content = str)
       );
     } catch (e) {
       console.error(e);
@@ -123,7 +115,7 @@ class Player {
     }
   }
 
-  getImage = (...href: string[]) => {
+  getImage = async (...href: string[]) => {
     let imgs = [];
     if (this.novel.files && href.length > 0) {
       for (let h of href) {
@@ -132,8 +124,14 @@ class Player {
             x.fileName.indexOf(h) !== -1 &&
             x.type === "Image"
         );
-        if (img)
-          imgs.push({ h, cn: img.content });
+        if (img) {
+          let imageData = img.content.startsWith(
+            "file"
+          )
+            ? await g.imageCache().read(img.content)
+            : img.content;
+          imgs.push({ h, cn: imageData });
+        }
       }
     }
 
@@ -164,12 +162,16 @@ class Player {
       g.appSettings.currentNovel.url !=
         this.book.url ||
       g.appSettings.currentNovel.parserName !=
-        this.book.parserName || g.appSettings.currentNovel.isEpub != this.isEpub
+        this.book.parserName ||
+      g.appSettings.currentNovel.isEpub !=
+        this.isEpub
     ) {
       g.appSettings.currentNovel = {
         url: this.book.url,
         parserName: this.book.parserName,
-        isEpub: this.isEpup || this.book.parserName === "epub"
+        isEpub:
+          this.isEpup ||
+          this.book.parserName === "epub"
       };
       await g.appSettings.saveChanges();
     }

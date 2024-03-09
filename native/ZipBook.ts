@@ -16,10 +16,31 @@ export default class ZipBook {
   url: string = newId();
   fileName?: string; // used only in dbContext
   epub: boolean = true;
+  isChapter: boolean = false;
+  playOrder: number = 0;
+
+  static createImageChapter(images: ZipFile[]) {
+    if (images.length == 0) return undefined;
+    let ch = new ZipFile();
+    ch.type = "HTML";
+    ch.fileName = "ImagesInto.html";
+    ch.name = "Images Intro";
+    ch.content = `
+    <div>
+    <h1>Images Intro</h1>
+    ${images
+      .map(x => `<img src="${x.fileName}" />`)
+      .join("\n")}
+    </div>
+    `;
+
+    return ch;
+  }
   static async load(
     uri: string,
     xname: string,
-    onChange: Function
+    onChange: Function,
+    skipImages?: boolean
   ) {
     function isImage(url: string) {
       return (
@@ -39,52 +60,81 @@ export default class ZipBook {
       return n;
     };
     let book = new ZipBook();
+    let g = require("../GlobalContext").default;
     book.name = cleanNames(xname);
     try {
-      let getContent = async (file: any) => {
+      let getContent = async (
+        file: any,
+        navMap: []
+      ) => {
         try {
           let cn = "";
           let type = "";
           let cleanName = cleanNames(file.name);
           let name = cleanName;
-          if (isImage(file.name)) {
+          let fileName = file.name.toString();
+          let ext = fileName
+            .safeSplit(".", -1)
+            .toString();
+
+          let chapter = navMap.find(
+            x =>
+              fileName.indexOf(x.name) != -1 ||
+              x.name.indexOf(fileName) != -1
+          );
+
+          if (isImage(fileName)) {
+            if(skipImages)
+               return undefined;
             type = "Image";
             cn = `data:image/jpg;base64,${await file.async(
               "base64"
             )}`;
           } else if (
-            file.name.endsWith(".ncx") ||
-            file.name.indexOf("-toc.") !== -1
+            ext == "ncx" ||
+            fileName.has("-toc.")
           ) {
             return undefined;
-          } else if (file.name.endsWith(".css")) {
+          } else if (ext == "css") {
             type = "CSS";
             cn = await file.async("text");
           } else if (
-            file.name.endsWith(".html") ||
-            file.name.endsWith(".xhtml")
+            ext == "html" ||
+            ext == "xhtml"
           ) {
             type = "HTML";
-            cn = (await file.async("text"))
-              .html()("body")
-              ?.html();
-            let title = cn.html()("title");
+            let filecontent =
+              await file.async("text");
+            cn =
+              filecontent
+                .html()("body")
+                ?.html() ?? filecontent;
+            let title =
+              filecontent.html()("title");
             if (
               title &&
               title.text().has() &&
               !/\..*$/.test(title.text())
-            )
+            ) {
               name = cleanNames(title.text());
+            }
           }
 
-          let f = new ZipFile();
-          f.name = name;
-          f.type = type;
-          f.content = cn;
-          f.fileName = file.name;
-          return f;
+          let zipFile = new ZipFile();
+          zipFile.name = chapter?.text ?? name;
+          zipFile.type = type;
+          zipFile.content = cn;
+          zipFile.fileName = file.name;
+          zipFile.isChapter =
+            chapter != undefined;
+          zipFile.playOrder = parseInt(
+            chapter?.playOrder ??
+              book.chapters.length.toString()
+          );
+
+          return zipFile;
         } catch (e) {
-          console.error(e);
+          console.error(file.name, e);
         }
       };
       let base64 =
@@ -101,10 +151,37 @@ export default class ZipBook {
       let opf = keys.find(x =>
         x.endsWith(".opf")
       );
-      
+
+      let navMap = [];
+      const renderNavMap = async () => {
+        let ncxs = keys.filter(x =>
+          x.has(".ncx")
+        );
+        for (let item of ncxs) {
+          let $ = (
+            await content.file(item).async("text")
+          ).html();
+          $("navMap")
+            .find("navPoint")
+            .each((i, x) =>
+              navMap.push({
+                id: $(x).attr("id"),
+                text: $(x).find("text").text(),
+                playOrder:
+                  $(x).attr("playOrder") ??
+                  i.toString(),
+                name: $(x)
+                  .find("content")
+                  .attr("src")
+              })
+            );
+        }
+      };
+      await renderNavMap();
       let $ = (
         await content.file(opf).async("text")
       ).html();
+
       let items = [];
       $("manifest")
         .find("item")
@@ -129,25 +206,35 @@ export default class ZipBook {
           await calc();
           continue;
         }
-        //console.log(href, k);
+
         let file = content.file(k);
         if (!file) {
           await calc();
           continue;
         }
 
-        let file_content = await getContent(file);
+        let file_content = await getContent(
+          file,
+          navMap
+        );
 
         if (!file_content) {
           await calc();
           continue;
         }
         book.files.push(file_content);
-        if (file_content.type === "HTML")
+        if (
+          file_content.type === "HTML" &&
+          (file_content.isChapter ||
+            navMap.length == 0)
+        ) {
           book.chapters.push(file_content);
+        }
         await calc();
       }
-      //  console.log([book].niceJson("content"));
+      book.chapters = book.chapters.sort(
+        (a, b) => a.playOrder - b.playOrder
+      );
       return book;
     } catch (e) {
       console.error(e);

@@ -2,6 +2,7 @@ import HttpHandler from "./HttpHandler";
 import Html from "./Html";
 import useState from "./StateManager";
 import FileHandler from "./FileHandler";
+import ImageCache from "./ImageCache";
 import Player from "./Player";
 import BGService from "./BackgroundService";
 import ZipBook from "./ZipBook";
@@ -37,5 +38,6 @@ export {
   ZipBook,
   EpubBuilder,
   DownloadManager,
-  EventEmitter
+  EventEmitter,
+  ImageCache
 };

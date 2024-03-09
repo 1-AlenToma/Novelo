@@ -10,10 +10,11 @@ type Fnc = (
   type: "Write" | "Delete",
   file: string
 ) => void;
-
+const DownloadedFiles = new Map();
 export default class FileHandler {
   dir: string;
   events: any = {};
+  disabled: boolean = false;
   constructor(dir: string, dirType?: Dir) {
     this.events = {
       values: () =>
@@ -28,20 +29,38 @@ export default class FileHandler {
     ).path(dir);
   }
 
+  disable() {
+    this.disable = true;
+  }
+
+  enable() {
+    this.disable = false;
+    this.trigger("", "", "", true);
+  }
+
   trigger(
     op: string,
     fileName: string,
-    fullName: string
+    fullName: string,
+    fromDisabled?: boolean
   ) {
     this.events
       .values()
-      .forEach(x => x(op, fileName, fullName));
+      .forEach(
+        x =>
+          x?.(
+            op,
+            fileName,
+            fullName,
+            fromDisabled
+          )
+      );
   }
 
   useFile(
     globalType?: "json" | "utf8" | "base64",
     validator?: (x: any) => boolean,
-    updateState?: "New"
+    updateState?: "New" | "NewDelete"
   ) {
     const id = useRef(newId()).current;
     const files = useRef([]);
@@ -50,22 +69,31 @@ export default class FileHandler {
     this.events[id] = async (
       op,
       fileName,
-      fullName
+      fullName,
+      fromDisabled
     ) => {
-      if (
-        updateState === "New" &&
-        files.current.find(
-          x => x === fileName || x == fullName
-        )
-      )
+      if (this.disabled) {
         return;
+      }
+      if (!fromDisabled) {
+        if (
+          (updateState === "New" ||
+            (updateState == "NewDelete" &&
+              op != "Delete")) &&
+          files.current.find(
+            x => x === fileName || x == fullName
+          )
+        ) {
+          return;
+        }
+      }
       await setLoading(true);
       files.current = await this.allFiles();
       await loadItems();
     };
 
     useEffect(() => {
-      this.events[id]();
+      if (!this.disabled) this.events[id]();
       return () => {
         if (this.events[id]) {
           delete this.events[id];
@@ -103,6 +131,7 @@ export default class FileHandler {
       file: string,
       type?: "json" | "utf8" | "base64"
     ) => {
+      let g = require("../GlobalContext").default;
       let item = await this.read(
         file,
         type && type != "json" ? type : "utf8"
@@ -112,11 +141,14 @@ export default class FileHandler {
         try {
           let tm = JSON.parse(item);
           tm.deleteFile = async () => {
+            await g
+              .imageCache()
+              .clearImages(tm.files ?? []);
             await this.delete(file);
           };
           return tm;
         } catch (e) {
-          console.warn(e, file, item);
+          console.error(e, file);
         }
       }
       return item;
@@ -159,7 +191,9 @@ export default class FileHandler {
   async delete(file: string) {
     await this.checkDir();
     let fileUri = this.getName(file);
-    await FileSystem.deleteAsync(fileUri);
+    DownloadedFiles.delete(fileUri);
+    if (await this.exists(file))
+      await FileSystem.deleteAsync(fileUri);
     this.trigger("Delete", file, fileUri);
   }
 
@@ -172,10 +206,12 @@ export default class FileHandler {
       "filename",
       file
     );
+
     await FileSystem.writeAsStringAsync(
       fileUri,
       content
     );
+    DownloadedFiles.set(fileUri, content);
     this.trigger("Write", file, fileUri);
   }
 
@@ -191,13 +227,18 @@ export default class FileHandler {
     await this.checkDir();
     let fileUri = this.getName(file);
     console.log("reading", fileUri);
+    if (DownloadedFiles.has(fileUri))
+      return DownloadedFiles.get(fileUri);
     if (await this.exists(file)) {
-      return await FileSystem.readAsStringAsync(
-        fileUri,
-        {
-          encoding: type || "utf8"
-        }
-      );
+      let text =
+        await FileSystem.readAsStringAsync(
+          fileUri,
+          {
+            encoding: type || "utf8"
+          }
+        );
+      DownloadedFiles.set(fileUri, text);
+      return text;
     } else return undefined;
   }
 

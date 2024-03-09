@@ -114,7 +114,8 @@ const Controller = ({ state, ...props }) => {
     margin,
     navigationType,
     use3D,
-    fontStyle
+    fontStyle,
+    shadowLength
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined)
@@ -149,6 +150,8 @@ const Controller = ({ state, ...props }) => {
         g.appSettings.use3D = use3D;
       if (fontStyle != undefined)
         g.appSettings.fontStyle = fontStyle;
+      if (shadowLength != undefined)
+        g.appSettings.shadowLength = shadowLength;
 
       await g.appSettings.saveChanges();
     });
@@ -609,6 +612,33 @@ const Controller = ({ state, ...props }) => {
                           }}
                         />
                       </View>
+                      <View
+                        css="form"
+                        ifTrue={() =>
+                          g.appSettings.use3D ==
+                          true
+                        }>
+                        <Text invertColor={true}>
+                          Shadow Length:
+                        </Text>
+                        <Slider
+                          css="flex"
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          value={(1).sureValue(
+                            g.appSettings
+                              .shadowLength, true
+                          )}
+                          onSlidingComplete={shadowLength => {
+                            editSettings({
+                              shadowLength
+                            });
+                          }}
+                          minimumValue={1}
+                          maximumValue={3}
+                        />
+                      </View>
                       <View css="form">
                         <Text invertColor={true}>
                           LockScreen:
@@ -697,18 +727,19 @@ const Controller = ({ state, ...props }) => {
                           InlineStyle
                         </Text>
                         <TextInput
+                          isModole={true}
                           invertColor={false}
-                          css="wi:90% pa:5 bor:2 he:100%"
+                          css="wi:100% pa:5 bor:2 he:100%"
                           multiline={true}
                           defaultValue={
                             g.player.book
                               .inlineStyle
                           }
-                          onChangeText={t =>
-                            editSettings({
-                              inlineStyle: t
-                            })
-                          }
+                          onChangeText={t => {
+                            g.player.book.inlineStyle =
+                              t;
+                            g.player.book.saveChanges();
+                          }}
                         />
                       </View>
                     </View>
@@ -951,6 +982,7 @@ const InternalWeb = ({
       updater();
     },
     "player.html",
+    "player.book.inlineStyle",
     "player.showPlayer"
   );
   let color = g.appSettings.backgroundColor;
@@ -959,6 +991,10 @@ const InternalWeb = ({
   let shadow = inverted.has("white")
     ? "#4e4d4d"
     : "#919191";
+  let shadowLength = (1).sureValue(
+    g.appSettings.shadowLength,
+    true
+  );
 
   return (
     <>
@@ -968,6 +1004,7 @@ const InternalWeb = ({
         }
         scrollDisabled={g.player.showPlayer}
         fontName={g.appSettings.fontName}
+        inlineStyle={g.player.book.inlineStyle}
         css={`
           *:not(context):not(context *) {
             font-family: "${g.appSettings
@@ -977,7 +1014,7 @@ const InternalWeb = ({
               .fontStyle ?? "normal"};
             ${g.appSettings.use3D
               ? `
-            text-shadow: 1px 2px 1px ${shadow};
+            text-shadow: 1px ${shadowLength}px 1px ${shadow};
             `
               : ""}
           }

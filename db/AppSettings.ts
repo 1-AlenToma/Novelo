@@ -19,9 +19,14 @@ class AppSettings extends IBaseModule<TableNames> {
   isBold: boolean = false;
   lockScreen: boolean = false;
   margin?: number = 5;
-  currentNovel?: { url:string; parserName:string, isEpub?:boolean } = {};
+  currentNovel?: {
+    url: string;
+    parserName: string;
+    isEpub?: boolean;
+  } = {};
   navigationType?: "Scroll" | "Snap" = "Snap";
   use3D?: boolean = false;
+  shadowLength?: number = 1;
   fontStyle?: string = "normal";
   constructor() {
     super("AppSettings");
@@ -45,8 +50,10 @@ class AppSettings extends IBaseModule<TableNames> {
       .boolean.column("currentNovel")
       .nullable.json.column("navigationType")
       .nullable.column("use3D")
-      .nullable.boolean
-      .column("fontStyle").nullable.objectPrototype(
+      .nullable.boolean.column("fontStyle")
+      .nullable
+      .column("shadowLength")
+      .nullable.number.objectPrototype(
         AppSettings.prototype
       );
   }

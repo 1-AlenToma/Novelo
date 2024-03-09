@@ -25,12 +25,12 @@ export default () => {
           <Text
             ifTrue={message.title != undefined}
             invertColor={true}
-            css="header pab:10 bold fos:15">
+            css="header pab:10 bold fos:18">
             {message.title}
           </Text>
           <Text
             invertColor={true}
-            css="desc clearboth">
+            css="fos:15 clearboth">
             {message.msg}
           </Text>
         </View>

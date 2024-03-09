@@ -13,14 +13,18 @@ export default ({
   const [imgSize, setImgSize] = useState({});
   const [source, setSource] = useState(noImage);
   let loadImage = () => {
+    let g = require("../GlobalContext").default;
     if (url && url.toString().startsWith("[")) {
       // image selector
-      let g = require("../GlobalContext").default;
       g.parser
         .current()
         .fetchSelectorImage(url)
         .then(x => setSource(x))
         .catch(x => {});
+    } else if (url && url.toString().startsWith("file")) {
+      g.imageCache()
+        .read(url)
+        .then(x => setSource(x));
     } else if (url && url.toString().has()) {
       setSource(url);
     }
@@ -31,7 +35,7 @@ export default ({
     //https://www.novelupdates.com/?s=Reincarnation+Of+The+Strongest+Sword+God&post_type=seriesplans
   }, []);
   useEffect(() => {
-    setSource(noImage)
+    setSource(noImage);
     loadImage();
   }, [url]);
   // if (!source || source.empty()) return null; // for now

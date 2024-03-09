@@ -88,7 +88,6 @@ export default class DbContext {
           typeof value === "string" &&
           !value.startsWith("#")
         ) {
-          console.log(k);
           item[k] = encrypt(value, encKey);
         } else if (
           value &&
@@ -101,6 +100,26 @@ export default class DbContext {
 
     return item;
   };
+
+  encode(value: string) {
+    if (
+      value &&
+      typeof value === "string" &&
+      !value.startsWith("#")
+    )
+      return encrypt(value, encKey);
+    return value;
+  }
+
+  decode(value: string) {
+    if (
+      value&&
+      typeof value === "string" &&
+      value.startsWith("#")
+    )
+      return decrypt(value, encKey);
+    return value;
+  }
 
   decryptItem = (item: any) => {
     if (!item) return undefined;
@@ -306,10 +325,12 @@ export default class DbContext {
         }
 
         for (let epub of item.epubs) {
-          await g.files().write(
-            epub.fileName,
-            JSON.stringify(epub)
-          );
+          await g
+            .files()
+            .write(
+              epub.fileName,
+              JSON.stringify(epub)
+            );
           calc();
           if (index % 5 === 0) await sleep(10);
         }

@@ -172,6 +172,7 @@ export default ({
   menuItems,
   content,
   css,
+  inlineStyle,
   style,
   fontName,
   bottomReched,
@@ -254,9 +255,13 @@ export default ({
     let item = { type, data };
     if (type == "content")
       item.data = { menuItems: data };
-    return `window.loadData(${JSON.stringify(
-      item
-    )});`;
+    return `
+    try{
+    window.loadData(${JSON.stringify(item)});
+    }catch(e){
+      
+    }
+    `;
   };
   let injectData = async () => {
     try {
@@ -272,7 +277,7 @@ export default ({
     }
   };
 
-  const onMessage = ({ nativeEvent }) => {
+  const onMessage =async ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
     switch (data.type) {
       case "scrollValue":
@@ -311,14 +316,13 @@ export default ({
       case "Image":
         postMessage(
           "images",
-          g.player.getImage(...data.data),
+          await g.player.getImage(...data.data),
           "window.loadImages"
         );
         break;
     }
   };
   loading.current = true;
-
   return (
     <>
       <View css="absolute ri:10 bo:10 zi:99 juc:space-between ali:center">
@@ -344,12 +348,17 @@ export default ({
         <html>
         <head>
         <meta name="viewport" content="width=device-width,  initial-scale=1" />
+        <style>
+          br{
+            display:none;
+          }
+        </style>
+        <style>
+          ${inlineStyle}
+        </style>
         </head>
         <body>
-        ${content?.content.replace(
-          /\<\/( )?br>|\<br( )?(\/)?>/gim,
-          ""
-        )}
+        ${content?.content}
         <script>
         try{
           window.scrollPage = (alertdata)=>{
@@ -372,6 +381,7 @@ export default ({
               let m = imgs.find(x=> x.h==src)
               if (m)
                img.setAttribute("src", m.cn);
+              else img.remove();
             }
             window.scrollPage();
           }
@@ -387,10 +397,7 @@ export default ({
             
             window.binder();
             ${getJs("style", css)}
-            while(window.ctm == undefined){
-              ${getJs("content", menuItems)}
-              await sleep(100)
-            }
+             ${getJs("content", menuItems)}
             window.events["font"]=()=>{
                  window.scrollPage();
             }
@@ -398,6 +405,7 @@ export default ({
               window.postmsg("Image",hrefs);
            
             document.getElementById("novel").style.visibility="visible";
+            window.cleanStyle("novel");
             if("${
               navigationType || "Snap"
             }" === "Snap"){

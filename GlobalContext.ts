@@ -9,7 +9,8 @@ import {
   BGService,
   FileHandler,
   HttpHandler,
-  DownloadManager
+  DownloadManager,
+  ImageCache
 } from "./native";
 import {
   Dimensions,
@@ -34,10 +35,12 @@ const downloadManager = new DownloadManager(
   () => data
 );
 const cache = new FileHandler("Memo", "Cache");
+const imageCache = new ImageCache();
 const files = new FileHandler(
   "noveloFiles",
   "File"
 );
+
 const data = GlobalState(
   {
     selection: {
@@ -72,6 +75,7 @@ const data = GlobalState(
     voices: undefined,
     cache: () => cache,
     files: () => files,
+    imageCache: ()=> imageCache,
     speech: Speech,
     nav: undefined,
     orientation: (
