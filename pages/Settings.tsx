@@ -20,6 +20,9 @@ import * as DocumentPicker from "expo-document-picker";
 
 export default (props: any) => {
   let loader = useLoader();
+  const { fileItems, elem } = g
+    .files()
+    .useFile("json", undefined, "NewDelete");
   const [books, dataIsLoading] = g.db().useQuery(
     "Books",
     g
@@ -69,9 +72,13 @@ export default (props: any) => {
           .EqualTo(false)
           .AND.Column(x => x.parserName)
           .NotEqualTo("epub");
-        let ids = (await _books.toList()).map(
-          x => x.id
-        );
+        // skip deleting downloaded files
+        let ids = (await _books.toList())
+          .filter(
+            x =>
+              !fileItems.find(f => x.url == f.url)
+          )
+          .map(x => x.id);
         if (ids.length > 0)
           await g
             .db()
@@ -80,7 +87,9 @@ export default (props: any) => {
             .IN(ids)
             .delete();
         await _books.delete();
-        let cacheFiles = await g.cache().allFiles();
+        let cacheFiles = await g
+          .cache()
+          .allFiles();
         for (let f of cacheFiles) {
           await g.cache().delete(f);
         }
@@ -111,7 +120,7 @@ export default (props: any) => {
 
   return (
     <View css="flex">
-      {loader.elem}
+      {loader.elem ?? elem}
       <Modal
         height="60"
         onHide={() =>

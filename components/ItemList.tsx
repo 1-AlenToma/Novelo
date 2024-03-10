@@ -39,7 +39,8 @@ export default ({
 }) => {
   const g = require("../GlobalContext").default;
   if (hooks) g.hook(...hooks);
-  
+  const time = useTimer(100);
+
   const onEndReachedCalledDuringMomentum =
     useRef(true);
   const ref = useRef();
@@ -84,7 +85,7 @@ export default ({
         ref.current = c;
       }}
       onContentSizeChange={() => {
-        scrollTo();
+        time(() => scrollTo());
       }}
       contentContainerStyle={{
         padding: 1
@@ -97,6 +98,7 @@ export default ({
       horizontal={vMode !== true}
       data={items}
       estimatedItemSize={200}
+      initialNumToRender={Math.max(30, (0).sureValue())}
       onEndReachedThreshold={0.5}
       onMomentumScrollBegin={() => {
         onEndReachedCalledDuringMomentum.current =

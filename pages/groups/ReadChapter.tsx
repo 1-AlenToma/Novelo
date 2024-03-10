@@ -285,14 +285,14 @@ const Controller = ({ state, ...props }) => {
                       index
                     }) => (
                       <View
-                        css={`flex he:20 row juc:space-between ali:center pal:5 bor:2 ${
+                        css={`flex mih:20 row juc:space-between di:flex ali:center pal:5 bor:2 ${
                           g.player.currentChapter
                             .url == item.url
                             ? "selectedRow"
                             : ""
                         }`}>
                         <Text
-                          css="bold desc"
+                          css="bold desc maw:90%"
                           invertColor={true}>
                           {item.name.safeSplit(
                             "/",
@@ -628,7 +628,8 @@ const Controller = ({ state, ...props }) => {
                           buttons={true}
                           value={(1).sureValue(
                             g.appSettings
-                              .shadowLength, true
+                              .shadowLength,
+                            true
                           )}
                           onSlidingComplete={shadowLength => {
                             editSettings({

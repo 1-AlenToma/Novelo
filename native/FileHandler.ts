@@ -5,6 +5,7 @@ import {
   useRef
 } from "react";
 import { newId } from "../Methods";
+import {useLoader} from "../components";
 export type Dir = "Cache" | "File";
 type Fnc = (
   type: "Write" | "Delete",
@@ -65,7 +66,7 @@ export default class FileHandler {
     const id = useRef(newId()).current;
     const files = useRef([]);
     const [fileItems, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const loader = useLoader(true);
     this.events[id] = async (
       op,
       fileName,
@@ -87,7 +88,7 @@ export default class FileHandler {
           return;
         }
       }
-      await setLoading(true);
+      await loader.show();
       files.current = await this.allFiles();
       await loadItems();
     };
@@ -102,7 +103,7 @@ export default class FileHandler {
     }, []);
 
     const loadItems = async () => {
-      await setLoading(true);
+      await loader.show();
       let ims = [];
       await setItems([]);
       for (let file of files.current) {
@@ -124,7 +125,7 @@ export default class FileHandler {
       }
 
       await setItems(ims);
-      await setLoading(false);
+      await loader.hide();
     };
 
     loadContent = async (
@@ -156,9 +157,10 @@ export default class FileHandler {
 
     return {
       fileItems,
-      loading,
+      loading: loader.loading,
       files: files.current,
-      loadContent
+      loadContent,
+      elem: loader.elem
     };
   }
 

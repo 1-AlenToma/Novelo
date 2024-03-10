@@ -32,7 +32,7 @@ import {
 } from "../native";
 import { sleep } from "../Methods";
 const ItemRender = ({ item, state }: any) => {
-  const { fileItems } = g
+  const { fileItems, elem } = g
     .files()
     .useFile("json", x => item.url == x.url);
   const loader = useLoader(true);
@@ -66,7 +66,7 @@ const ItemRender = ({ item, state }: any) => {
     <View
       invertColor={true}
       css="clearboth pal:5 he:60 row di:flex juc:flex-start">
-      {loader.elem}
+      {loader.elem ?? elem}
       <Image
         url={item.imageBase64}
         css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
@@ -122,7 +122,7 @@ export default ({ ...props }: any) => {
     skipImages: false
   });
   const loader = useLoader();
-  const { fileItems } = g
+  const { fileItems, elem } = g
     .files()
     .useFile("json", undefined, "NewDelete");
   const [books, dataIsLoading, reload] = g
@@ -261,7 +261,7 @@ export default ({ ...props }: any) => {
 
   return (
     <View css="flex mih:100">
-      {loader.elem}
+      {loader.elem ?? elem}
       <ActionSheet
         title="Actions"
         onHide={() =>
