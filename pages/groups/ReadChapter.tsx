@@ -17,7 +17,8 @@ import {
   Slider,
   CheckBox,
   Modal,
-  DropdownList
+  DropdownList,
+  ColorPicker
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -50,13 +51,6 @@ import {
   invertColor,
   sleep
 } from "../../Methods";
-import ColorPicker, {
-  Panel1,
-  Swatches,
-  Preview,
-  OpacitySlider,
-  HueSlider
-} from "reanimated-color-picker";
 const lang = {};
 
 for (let l in LANGUAGE_TABLE) {
@@ -576,6 +570,26 @@ const Controller = ({ state, ...props }) => {
                       </View>
                       <View css="form">
                         <Text invertColor={true}>
+                          LockScreen:
+                        </Text>
+                        <CheckBox
+                          css="pal:1"
+                          invertColor={true}
+                          checked={
+                            g.appSettings
+                              .lockScreen
+                          }
+                          onChange={() => {
+                            editSettings({
+                              lockScreen:
+                                !g.appSettings
+                                  .lockScreen
+                            });
+                          }}
+                        />
+                      </View>
+                      <View css="form">
+                        <Text invertColor={true}>
                           IsBold:
                         </Text>
                         <CheckBox
@@ -640,34 +654,12 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={3}
                         />
                       </View>
-                      <View css="form">
-                        <Text invertColor={true}>
-                          LockScreen:
-                        </Text>
-                        <CheckBox
-                          css="pal:1"
-                          invertColor={true}
-                          checked={
-                            g.appSettings
-                              .lockScreen
-                          }
-                          onChange={() => {
-                            editSettings({
-                              lockScreen:
-                                !g.appSettings
-                                  .lockScreen
-                            });
-                          }}
-                        />
-                      </View>
+                      
                       <View css="form">
                         <Text invertColor={true}>
                           Background:
                         </Text>
                         <ColorPicker
-                          style={{
-                            width: "70%"
-                          }}
                           value={
                             g.appSettings
                               .backgroundColor
@@ -676,11 +668,8 @@ const Controller = ({ state, ...props }) => {
                             editSettings({
                               backgroundColor: hex
                             })
-                          }>
-                          <Preview />
-                          <Panel1 />
-                          <HueSlider />
-                        </ColorPicker>
+                          }
+                        />
                       </View>
                       <View css="form">
                         <Text invertColor={true}>
@@ -1032,8 +1021,11 @@ const InternalWeb = ({
           *:not(context):not(context *):not(
               .custom
             ):not(blur):not(blur *) {
-            background-color: ${color};
-            color: ${inverted};
+            background-color: transparent;
+            color: ${inverted} !important;
+          }
+          body {
+            background-color: ${color} !important;
           }
           .comments {
             text-decoration: underline;
@@ -1047,7 +1039,7 @@ const InternalWeb = ({
             max-width: 98%;
           }
           body .novel {
-            max-width: 95%;
+            max-width: 100%;
             min-height: ${!g.player.showPlayer
               ? "100%"
               : "50%"};
@@ -1059,10 +1051,10 @@ const InternalWeb = ({
             text-align-vertical: top;
             padding-bottom: ${g.player.paddingBottom()}px;
             padding-top: ${g.player.paddingTop()}px;
-            margin-left: ${(5).sureValue(
+            padding-left: ${(5).sureValue(
               g.appSettings.margin
             )}px;
-            margin-right: ${(5).sureValue(
+            padding-right: ${(5).sureValue(
               g.appSettings.margin
             )}px;
             font-size: ${g.appSettings
@@ -1380,17 +1372,17 @@ export default (props: any) => {
                 Background:
               </Text>
               <ColorPicker
-                style={{
-                  width: "70%"
-                }}
-                value={state.textEdit?.bgColor}
+                value={
+                  state.textEdit?.bgColor ??
+                  "#ffffff"
+                }
                 onComplete={({ hex }) =>
-                  (state.textEdit.bgColor = hex)
-                }>
-                <Preview />
-                <Panel1 />
-                <HueSlider />
-              </ColorPicker>
+                  (state.textEdit = {
+                    ...state.textEdit,
+                    bgColor: hex
+                  })
+                }
+              />
             </View>
             <TouchableOpacity
               onPress={async () => {

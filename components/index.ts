@@ -23,6 +23,7 @@ import PlayerView from "./PlayerView";
 import AlertView from "./AlertView";
 import AnimatedView from "./AnimatedView";
 import ProgressBar from "./ProgressBar";
+import ColorPicker from "./ColorPicker";
 
 import {
   AppContainer,
@@ -56,5 +57,6 @@ export {
   PlayerView,
   AlertView,
   ProgressBar,
-  AnimatedView
+  AnimatedView,
+  ColorPicker
 };
