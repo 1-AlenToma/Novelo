@@ -4,9 +4,7 @@ import {
   parseThemeStyle,
   StyledView
 } from "../Methods";
-
 const Txt = StyledView(Text, "Text");
-
 export default ({
   style,
   children,

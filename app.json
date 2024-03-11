@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alentoma.Novelo"
@@ -36,9 +34,7 @@
       "favicon": "./assets/ic_launcher.png"
     },
     "plugins": [
-      [
-        "./backgroundPlugin.js"
-      ],
+      ["./backgroundPlugin.js"],
       [
         "expo-updates",
         {
@@ -58,7 +54,8 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "eas": {

@@ -39,7 +39,15 @@ const ActionItem = ({
   let items = {
     items: state.parser.settings[keyName]
   };
-
+  let selected = {};
+  items.items?.map(
+    x =>
+      (selected[x.text] = state.text[
+        keyName
+      ].find(f => x.text == f.text)
+        ? "selected"
+        : "")
+  );
   return (
     <View
       ifTrue={items.items?.has() ?? false}
@@ -59,32 +67,30 @@ const ActionItem = ({
             Search by {keyName}
           </Text>
         }>
-        <ScrollView horizontal={false}>
-          <View css="wi:100%">
-            {items.items?.map((x, i) => (
-              <TouchableOpacity
-                css={`bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8`}
-                key={i}
-                onPress={() => {
-                  let item = {};
-                  item[keyName] = x;
-                  selection(item);
-                }}>
-                <Text
-                  css={`desc bold fos:15 ${
-                    state.text[keyName].find(
-                      f => x.text == f.text
-                    )
-                      ? "selected"
-                      : ""
-                  }`}
-                  invertColor={true}>
-                  {x.text}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        <View css="he:90%">
+          <ScrollView horizontal={false}>
+            <View css="wi:100%">
+              {items.items?.map((x, i) => (
+                <TouchableOpacity
+                  css={`bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8`}
+                  key={i}
+                  onPress={() => {
+                    let item = {};
+                    item[keyName] = x;
+                    selection(item);
+                  }}>
+                  <Text
+                    css={`desc bold fos:15 ${
+                      selected[x.text]
+                    }`}
+                    invertColor={true}>
+                    {x.text}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       </ActionSheetButton>
     </View>
   );

@@ -447,7 +447,13 @@ const Controller = ({ state, ...props }) => {
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
                                 `}>
                                 <Text
-                                  css={`bold desc`}
+                                  style={{
+                                    fontFamily:
+                                      item
+                                  }}
+                                  css={`
+                                      header
+                                  `}
                                   invertColor={
                                     true
                                   }>
@@ -588,25 +594,7 @@ const Controller = ({ state, ...props }) => {
                           }}
                         />
                       </View>
-                      <View css="form">
-                        <Text invertColor={true}>
-                          IsBold:
-                        </Text>
-                        <CheckBox
-                          css="pal:1"
-                          invertColor={true}
-                          checked={
-                            g.appSettings.isBold
-                          }
-                          onChange={() => {
-                            editSettings({
-                              isBold:
-                                !g.appSettings
-                                  .isBold
-                            });
-                          }}
-                        />
-                      </View>
+
                       <View css="form">
                         <Text invertColor={true}>
                           3D Font:
@@ -654,7 +642,7 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={3}
                         />
                       </View>
-                      
+
                       <View css="form">
                         <Text invertColor={true}>
                           Background:
@@ -1063,9 +1051,6 @@ const InternalWeb = ({
               .fontSize * 1.7}px;
             text-align: ${g.appSettings
               .textAlign};
-            font-weight: ${g.appSettings.isBold
-              ? "bold"
-              : "normal"};
           }
         `}
         click={() => {

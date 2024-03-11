@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { ActivityIndicator } from "react-native";
 import View from "./ThemeView";
+import Text from "./ThemeText";
 import ProgressBar from "./ProgressBar";
 
-export default initValue => {
-  const [loading, setLoading] =
-    useState(initValue);
+export default (
+  initValue?: boolean,
+  text?: string
+) => {
+  const [loading, setLoading] = useState(
+    initValue ?? false
+  );
   const [progressValue, setProgressValue] =
     useState();
   const [size, setSize] = useState({
@@ -22,8 +27,8 @@ export default initValue => {
 
   const hide = () => {
     setLoading(false);
-    setProgressValue(undefined)
-  }
+    setProgressValue(undefined);
+  };
 
   let elem = !loading ? null : (
     <View
@@ -45,6 +50,11 @@ export default initValue => {
         ifTrue={() => progressValue > 0}
         procent={progressValue}
       />
+      <Text
+        ifTrue={() => text != undefined}
+        css="bold co:#ffffff fos:18 zi:3">
+        {text}
+      </Text>
     </View>
   );
   return { show, hide, elem, loading };

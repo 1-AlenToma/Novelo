@@ -1,15 +1,18 @@
 import { NestedStyleSheet } from "../styles";
+const font = "SourceSans3-Bold";
 export default NestedStyleSheet.create({
   desc: {
-    fontSize: 10
+    fontSize: 10,
+    fontFamily: font
   },
 
   header: {
-    fontSize: 13
+    fontSize: 13,
+    fontFamily: font
   },
 
   bold: {
-    fontWeight: "bold"
+    fontFamily: font
   },
 
   clearboth: {

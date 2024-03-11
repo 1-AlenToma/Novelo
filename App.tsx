@@ -25,12 +25,15 @@ import GlobalData from "./GlobalContext";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
+import { useFonts } from "./hooks";
 
 export default function App() {
+  const fontLoader = useFonts();
   GlobalData.hook(
     "size",
     "theme.settings",
-    "isFullScreen", "updater"
+    "isFullScreen",
+    "updater"
   );
 
   GlobalData.subscribe((item, props) => {
@@ -80,6 +83,7 @@ export default function App() {
     setThemeStyle,
     "theme.themeMode"
   );
+
   useEffect(() => {
     setThemeStyle();
     let itemToRemove = [];
@@ -101,10 +105,11 @@ export default function App() {
   }, []);
 
   if (loader.loading) return loader.elem;
+if (fontLoader.loading) return fontLoader.elem;
   return (
     <AppContainer>
       <NavigationContainer>
-          <AppStack />
+        <AppStack />
         <PlayerView />
       </NavigationContainer>
       <StatusBar

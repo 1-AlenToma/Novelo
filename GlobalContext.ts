@@ -19,6 +19,7 @@ import {
 } from "react-native";
 
 LogBox.ignoreLogs([
+  "fontFamily",
   "require cycles",
   "Require cycle",
   "new NativeEventEmitter",

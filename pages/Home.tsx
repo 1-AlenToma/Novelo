@@ -194,7 +194,7 @@ const CurrentItem = ({
           <View css="flex">
             <Text
               invertColor={true}
-              css="header bold pa:4">
+              css="header pa:4">
               {book.name}
             </Text>
             <Text css="desc bold co:red pal:4">
