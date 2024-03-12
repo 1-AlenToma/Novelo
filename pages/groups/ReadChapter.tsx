@@ -707,7 +707,7 @@ const Controller = ({ state, ...props }) => {
                         <TextInput
                           isModole={true}
                           invertColor={false}
-                          css="wi:100% pa:5 bor:2 he:100%"
+                          css="textAlignVertical:top wi:100% pa:5 bor:2 he:100%"
                           multiline={true}
                           defaultValue={
                             g.player.book

@@ -4,7 +4,8 @@ import {
   Easing,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView
+  SafeAreaView,
+  PanResponder
 } from "react-native";
 
 import View from "./ThemeView";
@@ -47,13 +48,14 @@ const TabBar = ({
   rootView?: boolean;
   scrollableHeader?: boolean;
 }) => {
-  //GlobalData.hook("theme.settings");
   const [size, setSize] = useState(undefined);
+  const [panResponse, setPanResponse] =
+    useState();
   const [rItems, setrItems] = useState(
     children.map(x => {})
   );
   const animLeft = useRef(
-    new Animated.Value(0)
+    new Animated.ValueXY({ x: 0, y: 0 })
   ).current;
   const [index, setIndex] = useState(
     (0).sureValue(selectedIndex)
@@ -69,6 +71,8 @@ const TabBar = ({
     setIndex(i);
     animateLeft(i);
   };
+
+  
 
   useEffect(() => {
     loadChildren(index);
@@ -99,7 +103,7 @@ const TabBar = ({
     while (isAnimating.current) await sleep(100);
     if (!size || isAnimating.current) return;
     isAnimating.current = true;
-    Animated.timing(animLeft, {
+    Animated.timing(animLeft.x, {
       toValue: index,
       duration: 300,
       useNativeDriver: true
@@ -227,15 +231,18 @@ const TabBar = ({
           {
             transform: [
               {
-                translateX: animLeft.interpolate({
-                  inputRange: children.map(
-                    (x, i) => i
-                  ),
-                  outputRange: children.map(
-                    (x, i) =>
-                      i == 0 ? 0 : -getWidth(i)
-                  )
-                })
+                translateX:
+                  animLeft.x.interpolate({
+                    inputRange: children.map(
+                      (x, i) => i
+                    ),
+                    outputRange: children.map(
+                      (x, i) =>
+                        i == 0 ? 0 : -getWidth(i)
+                    ),
+                    extrapolateLeft: "identity",
+                    extrapolate: "clamp"
+                  })
               }
             ],
             height: (0).sureValue(

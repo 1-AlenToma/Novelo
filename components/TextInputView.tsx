@@ -43,11 +43,10 @@ export default React.forwardRef(
             <View css="flex mat:20">
               <TouchableOpacity
                 css="listButton bow:1 boc:#ccc juc:center ali:center mab:10"
-                onPress={() =>{
+                onPress={() => {
                   props.onChangeText(txt);
-                  setVisible(false)
-                }
-                }>
+                  setVisible(false);
+                }}>
                 <Text invertColor={true}>
                   Save
                 </Text>
