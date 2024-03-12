@@ -150,7 +150,12 @@ export default ({
               navOption.nav("Search").push();
             }}
             invertColor={false}
-            style={{width:gdata.parser.all().length > 1 ? "90%": "98%"}}
+            style={{
+              width:
+                gdata.parser.all().length > 1
+                  ? "90%"
+                  : "98%"
+            }}
             css="flex absolute le:5 he:85% juc:center pal:5 bor:2">
             <Text css="bold">Search Novels</Text>
           </TouchableOpacity>

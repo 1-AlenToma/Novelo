@@ -20,6 +20,7 @@ import { Player, DetailInfo } from "../../native";
 import g from "../GlobalContext";
 import View from "./ThemeView";
 import TextView from "./ThemeText";
+import BattariView from "./BattariView";
 import Svg, {
   Circle,
   Rect,
@@ -53,6 +54,7 @@ const Clock = () => {
     let h = today.getHours();
     let m = today.getMinutes();
     let s = today.getSeconds();
+    h=checkTime(h)
     m = checkTime(m);
     s = checkTime(s);
     setTime(h + ":" + m + ":" + s);
@@ -277,7 +279,7 @@ export default ({
     }
   };
 
-  const onMessage =async ({ nativeEvent }) => {
+  const onMessage = async ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
     switch (data.type) {
       case "scrollValue":
@@ -332,6 +334,7 @@ export default ({
           strokeWidth={4}
         />
         <Clock />
+        <BattariView color={g.appSettings.backgroundColor}/>
       </View>
       <WebView
         ref={r => {
