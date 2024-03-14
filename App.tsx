@@ -19,7 +19,8 @@ import {
   Text,
   Modal,
   PlayerView,
-  AlertView
+  AlertView,
+  CheckBox
 } from "./components";
 import GlobalData from "./GlobalContext";
 import * as NavigationBar from "expo-navigation-bar";
@@ -105,7 +106,7 @@ export default function App() {
   }, []);
 
   if (loader.loading) return loader.elem;
-if (fontLoader.loading) return fontLoader.elem;
+  if (fontLoader.loading) return fontLoader.elem;
   return (
     <AppContainer>
       <NavigationContainer>

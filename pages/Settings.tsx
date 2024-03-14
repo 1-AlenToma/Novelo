@@ -13,7 +13,10 @@ import {
 } from "../components/";
 import g from "../GlobalContext";
 import { Book, Chapter } from "..db";
-import { Platform } from "react-native";
+import {
+  Platform,
+  ScrollView
+} from "react-native";
 import { useState } from "../native";
 import { getDirectoryPermissions } from "../Methods";
 import * as DocumentPicker from "expo-document-picker";
@@ -122,19 +125,17 @@ export default (props: any) => {
     <View css="flex">
       {loader.elem ?? elem}
       <Modal
-        height="60"
+        height="90"
         onHide={() =>
           (state.downloadShow =
             !state.downloadShow)
         }
         visible={state.downloadShow}
         title="Backup options">
-        <View css="flex pat:10">
-          <View css="form formlist">
-            <Text invertColor={true}>
-              Include FontSettings
-            </Text>
+        <ScrollView>
+          <View css="flex pat:10">
             <CheckBox
+              text="Include FontSettings:"
               invertColor={true}
               checked={state.appSettings}
               onChange={() =>
@@ -142,66 +143,56 @@ export default (props: any) => {
                   !state.appSettings)
               }
             />
-          </View>
-          <View css="form formlist">
-            <Text invertColor={true}>
-              Include Epubs
-            </Text>
+
             <CheckBox
+              text="Include Epubs:"
               invertColor={true}
               checked={state.epubs}
               onChange={() =>
                 (state.epubs = !state.epubs)
               }
             />
-          </View>
 
-          <View css="mih:10 flex mat:20">
-            <View css="form formlist">
-              <Text invertColor={true}>
-                Include All novels
-              </Text>
+            <View css="mat:20 mih:100">
               <CheckBox
+                text="Include All novels:"
                 invertColor={true}
                 checked={state.all}
                 onChange={() =>
                   (state.all = !state.all)
                 }
               />
-            </View>
-            <ItemList
-              updater={[state.items, state.all]}
-              onPress={item => {
-                state.all = false;
-                if (
-                  state.items.find(
-                    x =>
-                      x.url === item.url &&
-                      x.parserName ==
-                        item.parserName
-                  )
-                ) {
-                  state.items = [
-                    ...state.items.filter(
+
+              <ItemList
+                updater={[state.items, state.all]}
+                onPress={item => {
+                  state.all = false;
+                  if (
+                    state.items.find(
                       x =>
-                        x.url !== item.url &&
-                        x.parserName !=
+                        x.url === item.url &&
+                        x.parserName ==
                           item.parserName
                     )
-                  ];
-                } else
-                  state.items = [
-                    ...state.items,
-                    item
-                  ];
-              }}
-              items={books}
-              container={({ item }) => (
-                <View css="form flex formlist">
-                  <Text invertColor={true}>
-                    {item.name}
-                  </Text>
+                  ) {
+                    state.items = [
+                      ...state.items.filter(
+                        x =>
+                          x.url !== item.url &&
+                          x.parserName !=
+                            item.parserName
+                      )
+                    ];
+                  } else
+                    state.items = [
+                      ...state.items,
+                      item
+                    ];
+                }}
+                items={books}
+                container={({ item }) => (
                   <CheckBox
+                    text={item.name + ":"}
                     invertColor={true}
                     checked={
                       state.all ||
@@ -213,24 +204,23 @@ export default (props: any) => {
                       )
                     }
                   />
-                </View>
-              )}
-              itemCss="listButton"
-              vMode={true}
-            />
-            <View css="clearwidth ali:center">
-              <TouchableOpacity
-                css="button"
-                onPress={download}>
-                <Text
-                  invertColor={true}
-                  css="fos:15 bold">
-                  DOWNLOAD
-                </Text>
-              </TouchableOpacity>
+                )}
+                vMode={true}
+              />
+              <View css="clearwidth ali:center">
+                <TouchableOpacity
+                  css="button"
+                  onPress={download}>
+                  <Text
+                    invertColor={true}
+                    css="fos:15 bold">
+                    DOWNLOAD
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </Modal>
       <View
         ifTrue={

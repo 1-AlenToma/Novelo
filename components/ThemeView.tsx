@@ -23,6 +23,7 @@ export default ({
 }: any) => {
   if (ifSelector(ifTrue) === false) return null;
   if (rootView) g.hook("isFullScreen");
+  if (ready) g.hook("size");
   const [state, setState] = useState(
     ready !== true
   );
@@ -32,7 +33,14 @@ export default ({
     undefined,
     invertColor
   );
-  st.push(size);
+  if (size && ready)
+    st = [
+      ...st,
+      {
+        minHeight: size?.height,
+        minWidth: size?.width
+      }
+    ];
   if (rootView && !g.isFullScreen) {
     st.push({
       marginTop: Constants.statusBarHeight

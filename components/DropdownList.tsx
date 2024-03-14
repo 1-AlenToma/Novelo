@@ -42,9 +42,13 @@ export default ({
             setVisible(true);
           }}>
           <Text
+            numberOfLines={1}
             invertColor={true}
-            css="bold fos:12 pal:10">
-            {selectedValue}
+            css="bold fos:12 pal:10 maw:80% overflow">
+            {selectedValue?.replace(
+              /\-|\_/g,
+              " "
+            )}
           </Text>
           <Icon
             invertColor={true}
@@ -89,7 +93,8 @@ export default ({
           items={items?.filter(
             x =>
               txt == "" ||
-              (search(x) || "").has(txt) || onSearch?.(x,txt)
+              (search(x) || "").has(txt) ||
+              onSearch?.(x, txt)
           )}
           container={({ item }) => render(item)}
           itemCss="pa:5 clearwidth bobw:1 boc:gray"

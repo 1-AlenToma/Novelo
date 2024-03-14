@@ -14,13 +14,27 @@ import Icon from "./Icons";
 import TouchableOpacity from "./TouchableOpacityView";
 import View from "./ThemeView";
 import Text from "./ThemeText";
-import { useBatteryLevel } from "expo-battery";
+import * as Battery from "expo-battery";
+import { useTimer, useUpdate } from "../hooks";
 
 export default ({ color }: any) => {
-  const batteryLevel = useBatteryLevel();
+  const [batteryLevel, setBatteryLevel] =
+    useState(0);
+  const timer = useTimer(5000);
+  const setLvl = async () => {
+    const lvl =
+      await Battery.getBatteryLevelAsync();
+    if (lvl !== null && lvl !== undefined) {
+      setBatteryLevel(lvl);
+      timer(() => {
+        setLvl();
+      });
+    }
+  };
+  useEffect(() => {
+    setLvl();
+  }, []);
   let level = batteryLevel * 100;
-  
-  
   return (
     <View css="wi:30 overflow juc:center ali:center">
       <View

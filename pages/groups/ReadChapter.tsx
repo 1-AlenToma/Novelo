@@ -18,7 +18,8 @@ import {
   CheckBox,
   Modal,
   DropdownList,
-  ColorPicker
+  ColorPicker,
+  Form
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -357,10 +358,9 @@ const Controller = ({ state, ...props }) => {
                     <View
                       title="Settings"
                       css="flex">
-                      <View css="form">
-                        <Text invertColor={true}>
-                          NavigationMethod:
-                        </Text>
+                      <Form
+                        css="form"
+                        text="NavigationMethod:">
                         <DropdownList
                           height={200}
                           toTop={true}
@@ -410,12 +410,11 @@ const Controller = ({ state, ...props }) => {
                             "Snap"
                           }
                         />
-                      </View>
+                      </Form>
 
-                      <View css="form">
-                        <Text invertColor={true}>
-                          Font:
-                        </Text>
+                      <Form
+                        css="form"
+                        text="Font:">
                         <DropdownList
                           height="80"
                           toTop={true}
@@ -473,11 +472,10 @@ const Controller = ({ state, ...props }) => {
                             "SourceSans3-Black"
                           }
                         />
-                      </View>
-                      <View css="form">
-                        <Text invertColor={true}>
-                          FontSize:
-                        </Text>
+                      </Form>
+                      <Form
+                        css="form"
+                        text="FontSize:">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -494,12 +492,11 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={15}
                           maximumValue={40}
                         />
-                      </View>
+                      </Form>
 
-                      <View css="form">
-                        <Text invertColor={true}>
-                          FontStyle:
-                        </Text>
+                      <Form
+                        css="form"
+                        text="FontStyle:">
                         <DropdownList
                           height={200}
                           toTop={true}
@@ -551,12 +548,10 @@ const Controller = ({ state, ...props }) => {
                             "normal"
                           ).displayName()}
                         />
-                      </View>
-
-                      <View css="form">
-                        <Text invertColor={true}>
-                          Padding:
-                        </Text>
+                      </Form>
+                      <Form
+                        css="form"
+                        text="Padding:">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -573,80 +568,68 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={5}
                           maximumValue={40}
                         />
-                      </View>
-                      <View css="form">
-                        <Text invertColor={true}>
-                          LockScreen:
-                        </Text>
-                        <CheckBox
-                          css="pal:1"
-                          invertColor={true}
-                          checked={
-                            g.appSettings
-                              .lockScreen
-                          }
-                          onChange={() => {
-                            editSettings({
-                              lockScreen:
-                                !g.appSettings
-                                  .lockScreen
-                            });
-                          }}
-                        />
-                      </View>
+                      </Form>
 
-                      <View css="form">
-                        <Text invertColor={true}>
-                          3D Font:
-                        </Text>
-                        <CheckBox
-                          css="pal:1"
-                          invertColor={true}
-                          checked={
-                            g.appSettings.use3D
-                          }
-                          onChange={() => {
-                            editSettings({
-                              use3D:
-                                !g.appSettings
-                                  .use3D
-                            });
-                          }}
-                        />
-                      </View>
-                      <View
-                        css="form"
-                        ifTrue={() =>
-                          g.appSettings.use3D ==
-                          true
-                        }>
-                        <Text invertColor={true}>
-                          Shadow Length:
-                        </Text>
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          value={(1).sureValue(
-                            g.appSettings
-                              .shadowLength,
+                      <CheckBox
+                        text="LockScreen:"
+                        css="pal:1"
+                        invertColor={true}
+                        checked={
+                          g.appSettings.lockScreen
+                        }
+                        onChange={() => {
+                          editSettings({
+                            lockScreen:
+                              !g.appSettings
+                                .lockScreen
+                          });
+                        }}
+                      />
+
+                      <CheckBox
+                        text="3D Font:"
+                        css="pal:1"
+                        invertColor={true}
+                        checked={
+                          g.appSettings.use3D
+                        }
+                        onChange={() => {
+                          editSettings({
+                            use3D:
+                              !g.appSettings.use3D
+                          });
+                        }}>
+                        <Form
+                          css="form"
+                          text="Shadow Length:"
+                          ifTrue={() =>
+                            g.appSettings.use3D ==
                             true
-                          )}
-                          onSlidingComplete={shadowLength => {
-                            editSettings({
-                              shadowLength
-                            });
-                          }}
-                          minimumValue={1}
-                          maximumValue={3}
-                        />
-                      </View>
+                          }>
+                          <Slider
+                            css="flex"
+                            renderValue={true}
+                            invertColor={true}
+                            buttons={true}
+                            value={(1).sureValue(
+                              g.appSettings
+                                .shadowLength,
+                              true
+                            )}
+                            onSlidingComplete={shadowLength => {
+                              editSettings({
+                                shadowLength
+                              });
+                            }}
+                            minimumValue={1}
+                            maximumValue={3}
+                          />
+                        </Form>
+                      </CheckBox>
 
-                      <View css="form">
-                        <Text invertColor={true}>
-                          Background:
-                        </Text>
+                      <Form
+                        css="form"
+                        text="Background:">
                         <ColorPicker
                           value={
                             g.appSettings
@@ -658,11 +641,10 @@ const Controller = ({ state, ...props }) => {
                             })
                           }
                         />
-                      </View>
-                      <View css="form">
-                        <Text invertColor={true}>
-                          TextAlign
-                        </Text>
+                      </Form>
+                      <Form
+                        css="row"
+                        text="TextAlign:">
                         {[
                           "align-left",
                           "align-center",
@@ -699,11 +681,10 @@ const Controller = ({ state, ...props }) => {
                             />
                           </TouchableOpacity>
                         ))}
-                      </View>
-                      <View css="form he:200">
-                        <Text invertColor={true}>
-                          InlineStyle
-                        </Text>
+                      </Form>
+                      <Form
+                        css="form he:200"
+                        text="InlineStyle:">
                         <TextInput
                           isModole={true}
                           invertColor={false}
@@ -719,13 +700,12 @@ const Controller = ({ state, ...props }) => {
                             g.player.book.saveChanges();
                           }}
                         />
-                      </View>
+                      </Form>
                     </View>
                     <View title="Voice">
-                      <View css="form">
-                        <Text invertColor={true}>
-                          Voices:
-                        </Text>
+                      <Form
+                        css="form"
+                        text="Voices:">
                         <DropdownList
                           height="80"
                           toTop={true}
@@ -822,12 +802,10 @@ const Controller = ({ state, ...props }) => {
                             ""
                           }
                         />
-                      </View>
-                      <View css="form">
-                        <Text invertColor={true}>
-                          Pitch:
-                        </Text>
-
+                      </Form>
+                      <Form
+                        css="form"
+                        text="Pitch:">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -845,11 +823,10 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={0.9}
                           maximumValue={3}
                         />
-                      </View>
-                      <View css="form">
-                        <Text invertColor={true}>
-                          Rate:
-                        </Text>
+                      </Form>
+                      <Form
+                        css="form"
+                        text="Rate:">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -867,7 +844,7 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={0.9}
                           maximumValue={3}
                         />
-                      </View>
+                      </Form>
                     </View>
                     <View title="Text Replacements">
                       <View

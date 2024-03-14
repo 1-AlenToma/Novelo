@@ -80,49 +80,56 @@ export default ({
   if (!items || !items.has()) return null;
 
   return (
-    <FlashList
-      ref={c => {
-        ref.current = c;
-      }}
-      onContentSizeChange={() => {
-        time(() => scrollTo());
-      }}
-      contentContainerStyle={{
-        padding: 1
-      }}
-      onScrollBeginDrag={() => {
-        selected.current = true;
-      }}
-      nestedScrollEnabled={nested}
-      initialScrollIndex={scrollIndex}
-      horizontal={vMode !== true}
-      data={items}
-      estimatedItemSize={200}
-      initialNumToRender={Math.max(30, (0).sureValue())}
-      onEndReachedThreshold={0.5}
-      onMomentumScrollBegin={() => {
-        onEndReachedCalledDuringMomentum.current =
-          false;
-      }}
-      extraData={[
-        ...(updater ?? []),
-        selectedIndex
-      ]}
-      onEndReached={() => {
-        if (
-          !onEndReachedCalledDuringMomentum.current
-        ) {
-          onEndReached?.();
+    <View
+      ready={true}
+      css="fg:1 clearboth maw:100%">
+      <FlashList
+        ref={c => {
+          ref.current = c;
+        }}
+        onContentSizeChange={() => {
+          time(() => scrollTo());
+        }}
+        contentContainerStyle={{
+          padding: 1
+        }}
+        onScrollBeginDrag={() => {
+          selected.current = true;
+        }}
+        nestedScrollEnabled={nested}
+        initialScrollIndex={scrollIndex}
+        horizontal={vMode !== true}
+        data={items}
+        estimatedItemSize={200}
+        initialNumToRender={Math.max(
+          30,
+          (0).sureValue()
+        )}
+        onEndReachedThreshold={0.5}
+        onMomentumScrollBegin={() => {
           onEndReachedCalledDuringMomentum.current =
-            true;
+            false;
+        }}
+        extraData={[
+          ...(updater ?? []),
+          selectedIndex
+        ]}
+        onEndReached={() => {
+          if (
+            !onEndReachedCalledDuringMomentum.current
+          ) {
+            onEndReached?.();
+            onEndReachedCalledDuringMomentum.current =
+              true;
+          }
+        }}
+        renderItem={({ item, index }) =>
+          render(item, index)
         }
-      }}
-      renderItem={({ item, index }) =>
-        render(item, index)
-      }
-      keyExtractor={(item, index) =>
-        index.toString()
-      }
-    />
+        keyExtractor={(item, index) =>
+          index.toString()
+        }
+      />
+    </View>
   );
 };

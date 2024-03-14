@@ -24,6 +24,7 @@ import AlertView from "./AlertView";
 import AnimatedView from "./AnimatedView";
 import ProgressBar from "./ProgressBar";
 import ColorPicker from "./ColorPicker";
+import Form from "./Form";
 
 import {
   AppContainer,
@@ -58,5 +59,6 @@ export {
   AlertView,
   ProgressBar,
   AnimatedView,
-  ColorPicker
+  ColorPicker,
+  Form
 };

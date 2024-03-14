@@ -259,6 +259,7 @@ export default ({ ...props }: any) => {
             inputEnabled={true}
           />
         </CurrentItem>
+
         {groups.map((x, i) => (
           <NovelGroup
             {...props}
