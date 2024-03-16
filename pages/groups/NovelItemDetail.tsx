@@ -65,6 +65,7 @@ export default ({ ...props }: any) => {
 
   let loadInfo = async (novel: any) => {
     try {
+      return;
       state.infoLoading = true;
       if (novel && (novel.name?.has() ?? false)) {
         let item = await g.parser
@@ -118,7 +119,6 @@ export default ({ ...props }: any) => {
         fontSize={9}>
         <View
           css="flex pab:70"
-          title="Info"
           disableScrolling={true}
           icon={{
             name: "info-circle",
@@ -138,11 +138,11 @@ export default ({ ...props }: any) => {
                   <View css="flex pa:5">
                     <Text
                       selectable={true}
-                      css="header flex flg:1 bold fos:18"
+                      css="header flex flg:1 fos:18"
                       invertColor={true}>
                       {state.novel.name}
                       <Text
-                        css="desc bold co:#775903 clearwidth"
+                        css="desc co:#775903 clearwidth"
                         ifTrue={
                           state.infoLoading
                         }>
@@ -158,7 +158,7 @@ export default ({ ...props }: any) => {
                         false
                       }
                       invertColor={true}
-                      css="desc bold">
+                      css="desc">
                       NovelUpdateRating:
                       {state.novel?.novelUpdateRating?.sSpace()}
                     </Text>
@@ -168,7 +168,7 @@ export default ({ ...props }: any) => {
                         false
                       }
                       invertColor={true}
-                      css="desc bold">
+                      css="desc">
                       Rating:
                       {state.novel?.rating?.sSpace()}
                     </Text>
@@ -178,7 +178,7 @@ export default ({ ...props }: any) => {
                         false
                       }
                       invertColor={true}
-                      css="desc bold">
+                      css="desc">
                       Status:
                       {state.novel?.status?.sSpace()}
                     </Text>
@@ -188,7 +188,7 @@ export default ({ ...props }: any) => {
                         false
                       }
                       invertColor={true}
-                      css="desc bold">
+                      css="desc">
                       AlternativeNames:
                       {state.novel?.alternativeNames?.sSpace()}
                     </Text>
@@ -198,9 +198,19 @@ export default ({ ...props }: any) => {
                         false
                       }
                       invertColor={true}
-                      css="desc bold">
+                      css="desc">
                       Created By:
                       {state.novel?.author?.sSpace()}
+                    </Text>
+                    <Text
+                      ifTrue={() =>
+                        state.novel.lastUpdated?.has() ??
+                        false
+                      }
+                      invertColor={true}
+                      css="desc">
+                      Last Update:
+                      {state.novel?.lastUpdated?.sSpace()}
                     </Text>
                   </View>
                 </View>
@@ -233,7 +243,7 @@ export default ({ ...props }: any) => {
                               css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8"
                               key={i}>
                               <Text
-                                css="desc bold fos:15"
+                                css="desc fos:15"
                                 invertColor={
                                   true
                                 }>
@@ -265,7 +275,7 @@ export default ({ ...props }: any) => {
                               css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8"
                               key={i}>
                               <Text
-                                css="desc bold fos:15"
+                                css="desc fos:15"
                                 invertColor={
                                   false
                                 }>
@@ -282,7 +292,7 @@ export default ({ ...props }: any) => {
                   css="box pal:10 par:10"
                   invertColor={true}>
                   <FText
-                    css="bold lih:20 pab:10"
+                    css="desc fos:14 lih:20 pab:10"
                     invertColor={true}
                     selectable={true}
                     text={state.novel.decription?.cleanHtml()}
@@ -294,7 +304,7 @@ export default ({ ...props }: any) => {
                         false
                       }
                       invertColor={true}
-                      css="header bold fos:15">
+                      css="desc fos:15">
                       {state.novel.chapters
                         ?.length + " Chapter "}
                       {(
@@ -361,7 +371,7 @@ export default ({ ...props }: any) => {
                   css="box he:265 pal:10 par:10 juc:flex-start">
                   <Text
                     invertColor={true}
-                    css="header bold pab:5">
+                    css="header pab:5">
                     Recommendations
                   </Text>
                   <ItemList
@@ -383,7 +393,7 @@ export default ({ ...props }: any) => {
                         />
                         <View css="clearwidth bottom he:30% overflow">
                           <View css="blur bottom clearboth" />
-                          <Text css="clearwidth mih:40% overflow header bold co:#fff pa:4 tea:center">
+                          <Text css="clearwidth mih:40% overflow header co:#fff pa:4 tea:center">
                             {item.name}
                           </Text>
                         </View>
@@ -498,7 +508,6 @@ export default ({ ...props }: any) => {
           </View>
         </View>
         <View
-          title="Comment"
           css="flex"
           disableScrolling={true}
           ifTrue={() =>

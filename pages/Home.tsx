@@ -64,7 +64,7 @@ const CurrentItem = ({
   )(() => reload());
 
   let book = books?.firstOrDefault() ?? {};
-  if (!books?.firstOrDefault()) return null;
+  if (!books?.firstOrDefault()) return children;
   return (
     <>
       <ActionSheet
@@ -197,12 +197,12 @@ const CurrentItem = ({
               css="header pa:4">
               {book.name}
             </Text>
-            <Text css="desc bold co:red pal:4">
+            <Text css="desc co:red pal:4">
               {book.parserName.displayName()}
             </Text>
             <Text
               invertColor={true}
-              css="desc bold co:red bottom le:35%">
+              css="desc co:red bottom le:35%">
               READING NOW
               {g.appSettings.currentNovel
                 ?.isEpub &&

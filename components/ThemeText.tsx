@@ -2,7 +2,8 @@ import { Text } from "react-native";
 import {
   removeProps,
   parseThemeStyle,
-  StyledView
+  StyledView,
+  ifSelector
 } from "../Methods";
 const Txt = StyledView(Text, "Text");
 export default ({
@@ -13,7 +14,8 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if (ifTrue === false) return null;
+  if (ifSelector(ifTrue) === false) return null;
+
   let st = parseThemeStyle(
     style,
     css,

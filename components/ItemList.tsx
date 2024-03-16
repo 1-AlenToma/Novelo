@@ -2,12 +2,14 @@ import { FlatList } from "react-native";
 import {
   useRef,
   useEffect,
-  useCallback
+  useCallback,
+  useState
 } from "react";
 import { FlashList } from "@shopify/flash-list";
 import TouchableOpacity from "./TouchableOpacityView";
 import View from "./ThemeView";
 import { useUpdate, useTimer } from "../hooks";
+import { newId } from "../Methods";
 
 export default ({
   items,
@@ -82,7 +84,13 @@ export default ({
   return (
     <View
       ready={true}
-      css="fg:1 clearboth maw:100%">
+      style={{
+        maxHeight: "100%",
+        width: "100%",
+        height: "100%",
+        flex:0
+      }}
+      css="fg:1 mah:100%">
       <FlashList
         ref={c => {
           ref.current = c;

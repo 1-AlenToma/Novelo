@@ -18,7 +18,7 @@ let getFirstLine = (text: any) => {
   for (let s of text) {
     if (s == "\r" || s == "\n") continue;
     txt += s;
-    if (s == "." && txt.length >= 20) break;
+    if ((s == "." || s=="!") && txt.length >= 20) break;
   }
   return txt;
 };

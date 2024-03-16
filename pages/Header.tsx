@@ -41,11 +41,7 @@ export default ({
   const [params, navOption] =
     useNavigation(props);
   const updater = useUpdate();
-  gdata.hook(
-    "theme.invertSettings",
-    "KeyboardState",
-    "isFullScreen"
-  );
+  gdata.hook("KeyboardState", "isFullScreen");
   const input = useRef();
   const state = useState(
     {
@@ -138,7 +134,7 @@ export default ({
                 onInputChange(state.text)
               }
               placeholder="Search Novels"
-              css="he:90% clearwidth bow:1 bor:3 bold boc:#ccc pal:10"
+              css="he:90% clearwidth bow:1 bor:3 desc fos:14 boc:#ccc pal:10"
               onFocus={() =>
                 state.inputAnimator.show()
               }
@@ -156,14 +152,18 @@ export default ({
                   ? "90%"
                   : "98%"
             }}
-            css="flex absolute le:5 he:85% juc:center pal:5 bor:2">
-            <Text css="bold">Search Novels</Text>
+            css="flex absolute le:5 he:85% juc:center pal:5 bow:1 bor:3 boc:#ccc">
+            <Text
+              invertColor={false}
+              css="desc fos:14">
+              Search Novels
+            </Text>
           </TouchableOpacity>
         ) : title && !title.empty() ? (
           <Text
             invertColor={true}
             css={
-              "header bold fos:18 foso:italic " +
+              "header fos:18 foso:italic " +
               titleCss
             }>
             {title}

@@ -30,7 +30,7 @@ export default () => {
           </Text>
           <Text
             invertColor={true}
-            css="fos:15 clearboth">
+            css="desc fos:15 clearboth">
             {message.msg}
           </Text>
         </View>

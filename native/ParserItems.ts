@@ -11,6 +11,7 @@ class LightInfo extends ChapterInfo {
   decription: string = "";
   image: string = "";
   info: string = "";
+  isNew: boolean = false;
 }
 
 class CommentScript {
@@ -18,7 +19,7 @@ class CommentScript {
   url: string = "";
 }
 
-public_m(CommentScript)
+public_m(CommentScript);
 
 class DetailInfo extends LightInfo {
   rating: string = "";
@@ -31,6 +32,7 @@ class DetailInfo extends LightInfo {
   author: string = "";
   status: string = "";
   chapters: ChapterInfo[] = [];
+  lastUpdated: string = "";
   commentScript: CommentScript =
     new CommentScript();
 }

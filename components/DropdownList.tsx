@@ -20,6 +20,7 @@ export default ({
   hooks,
   disableInput,
   onSearch,
+  invertColor,
   ...props
 }: any) => {
   let [visible, setVisible] = useState(false);
@@ -43,15 +44,23 @@ export default ({
           }}>
           <Text
             numberOfLines={1}
-            invertColor={true}
-            css="bold fos:12 pal:10 maw:80% overflow">
+            invertColor={
+              invertColor == undefined
+                ? true
+                : invertColor
+            }
+            css="desc fos:12 pal:10 maw:80% overflow">
             {selectedValue?.replace(
               /\-|\_/g,
               " "
             )}
           </Text>
           <Icon
-            invertColor={true}
+            invertColor={
+              invertColor == undefined
+                ? true
+                : invertColor
+            }
             type="AntDesign"
             size={16}
             name={
@@ -86,9 +95,9 @@ export default ({
           updater={updater}
           selectedIndex={selectedIndex}
           css="flex"
-          onPress={item => {
+          onPress={async item => {
+           await setVisible(false);
             onSelect(item);
-            setVisible(false);
           }}
           items={items?.filter(
             x =>

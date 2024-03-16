@@ -52,12 +52,11 @@ abstract class ICreate {
 class Create<T extends object> extends ICreate {
   ___onChange(key: string) {
     try {
-      let global =
-        key
-          .split(".")
-          .reverse()
-          .filter((x, i) => i > 0)
-          .join(".")
+      let global = key
+        .split(".")
+        .reverse()
+        .filter((x, i) => i > 0)
+        .join(".");
 
       for (let item in this.___events) {
         if (

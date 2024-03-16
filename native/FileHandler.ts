@@ -5,7 +5,7 @@ import {
   useRef
 } from "react";
 import { newId } from "../Methods";
-import {useLoader} from "../components";
+import { useLoader } from "../components";
 export type Dir = "Cache" | "File";
 type Fnc = (
   type: "Write" | "Delete",
@@ -35,8 +35,10 @@ export default class FileHandler {
   }
 
   enable() {
-    this.disable = false;
-    this.trigger("", "", "", true);
+    if (this.disable) {
+      this.disable = false;
+      this.trigger("", "", "", true);
+    }
   }
 
   trigger(

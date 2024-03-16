@@ -179,15 +179,15 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
         </View>
       </ActionSheet>
-      <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
-        <TextInput
-          onChangeText={x => (state.text = x)}
-          invertColor={true}
-          css="wi:90% pa:5 bor:2"
-          defaultValue={state.text}
-          placeholder="Search..."
-        />
-      </View>
+      <Header
+        {...navop}
+        value={state.text}
+        inputEnabled={true}
+        onInputChange={txt => {
+          state.text = txt;
+        }}
+      />
+
       <ItemList
         css="flex"
         onPress={x =>

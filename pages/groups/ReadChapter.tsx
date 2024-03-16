@@ -52,6 +52,7 @@ import {
   invertColor,
   sleep
 } from "../../Methods";
+import { useKeepAwake } from "expo-keep-awake";
 const lang = {};
 
 for (let l in LANGUAGE_TABLE) {
@@ -160,7 +161,7 @@ const Controller = ({ state, ...props }) => {
         invertColor={true}>
         <Text
           invertColor={true}
-          css="desc bold foso:italic">
+          css="desc fos:13">
           {g.player.procent(
             thisState.chapterSliderValue
           )}
@@ -287,7 +288,7 @@ const Controller = ({ state, ...props }) => {
                             : ""
                         }`}>
                         <Text
-                          css="bold desc maw:90%"
+                          css="desc maw:90%"
                           invertColor={true}>
                           {item.name.safeSplit(
                             "/",
@@ -390,7 +391,7 @@ const Controller = ({ state, ...props }) => {
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
                                 `}>
                                 <Text
-                                  css={`bold desc`}
+                                  css={`desc fos:13`}
                                   invertColor={
                                     true
                                   }>
@@ -528,7 +529,7 @@ const Controller = ({ state, ...props }) => {
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
                                 `}>
                                 <Text
-                                  css={`bold desc`}
+                                  css={`desc fos:13`}
                                   invertColor={
                                     true
                                   }>
@@ -751,7 +752,7 @@ const Controller = ({ state, ...props }) => {
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between
                                 `}>
                                 <Text
-                                  css={`bold desc`}
+                                  css={`desc fos:13`}
                                   invertColor={
                                     true
                                   }>
@@ -767,6 +768,8 @@ const Controller = ({ state, ...props }) => {
                                         .toLowerCase()
                                     ] ||
                                     item.language}
+                                  ({item.language}
+                                  )
                                 </Text>
                                 <TouchableOpacity
                                   onPress={() =>
@@ -871,14 +874,14 @@ const Controller = ({ state, ...props }) => {
                               }}
                               css="flex di:flex row juc:space-between ali:center pal:10 bor:2">
                               <Text
-                                css="bold desc"
+                                css="desc fos:13"
                                 invertColor={
                                   true
                                 }>
                                 {item.edit}
                               </Text>
                               <Text
-                                css="bold desc"
+                                css="desc fos:13"
                                 invertColor={
                                   true
                                 }>
@@ -952,121 +955,115 @@ const InternalWeb = ({
   );
 
   return (
-    <>
-      <Web
-        navigationType={
-          g.appSettings.navigationType
-        }
-        scrollDisabled={g.player.showPlayer}
-        fontName={g.appSettings.fontName}
-        inlineStyle={g.player.book.inlineStyle}
-        css={`
-          *:not(context):not(context *) {
-            font-family: "${g.appSettings
-              .fontName}";
-            font-size-adjust: 1;
-            font-style: ${g.appSettings
-              .fontStyle ?? "normal"};
-            ${g.appSettings.use3D
-              ? `
+    <Web
+      navigationType={
+        g.appSettings.navigationType
+      }
+      scrollDisabled={g.player.showPlayer}
+      fontName={g.appSettings.fontName}
+      inlineStyle={g.player.book.inlineStyle}
+      css={`
+        *:not(context):not(context *) {
+          font-family: "${g.appSettings
+            .fontName}";
+          font-size-adjust: 1;
+          font-style: ${g.appSettings.fontStyle ??
+          "normal"};
+          ${g.appSettings.use3D
+            ? `
             text-shadow: 1px ${shadowLength}px 1px ${shadow};
             `
-              : ""}
-          }
-          parameter {
-            display: none;
-          }
-          blur p {
-            color: ${color};
-            background-color: ${inverted};
-            padding: 5px;
-            border-radius: 10px;
-            overflow: hidden;
-          }
-          *:not(context):not(context *):not(
-              .custom
-            ):not(blur):not(blur *) {
-            background-color: transparent;
-            color: ${inverted} !important;
-          }
-          body {
-            background-color: ${color} !important;
-          }
-          .comments {
-            text-decoration: underline;
-            display: inline-block;
-            position: relative;
-          }
-          context > div > a {
-            width: 100%;
-          }
-          body img {
-            max-width: 98%;
-          }
-          body .novel {
-            max-width: 100%;
-            min-height: ${!g.player.showPlayer
-              ? "100%"
-              : "50%"};
-            top: ${g.player.showPlayer
-              ? "45px"
-              : "0px"};
-            position: relative;
-            overflow: hidden;
-            text-align-vertical: top;
-            padding-bottom: ${g.player.paddingBottom()}px;
-            padding-top: ${g.player.paddingTop()}px;
-            padding-left: ${(5).sureValue(
-              g.appSettings.margin
-            )}px;
-            padding-right: ${(5).sureValue(
-              g.appSettings.margin
-            )}px;
-            font-size: ${g.appSettings
-              .fontSize}px;
-            line-height: ${g.appSettings
-              .fontSize * 1.7}px;
-            text-align: ${g.appSettings
-              .textAlign};
-          }
-        `}
-        click={() => {
-          g.player.showController =
-            !g.player.showController;
-        }}
-        onComments={index => {
-          state.comment =
-            g.player.book.textReplacements[
-              index
-            ].comments;
-        }}
-        onMenu={(item: any) => {
-          // handle later
-          if (item.item.text == "Translate")
-            state.textToTranslate =
-              item.selection;
-          else if (item.item.text === "Copy") {
-            Clipboard.setStringAsync(
-              item.selection
-            );
-          } else if (
-            item.item.text === "Define"
-          ) {
-            state.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
-              / /g,
-              "+"
-            )}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
-          } else {
-            state.textEdit = {
-              edit: item.selection,
-              bgColor: undefined,
-              comments: undefined,
-              editWith: item.selection
-            };
-          }
-        }}
-        content={{
-          content: `
+            : ""}
+        }
+        parameter {
+          display: none;
+        }
+        blur p {
+          color: ${color};
+          background-color: ${inverted};
+          padding: 5px;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        *:not(context):not(context *):not(
+            .custom
+          ):not(blur):not(blur *) {
+          background-color: transparent;
+          color: ${inverted} !important;
+        }
+        body {
+          background-color: ${color} !important;
+        }
+        .comments {
+          text-decoration: underline;
+          display: inline-block;
+          position: relative;
+        }
+        context > div > a {
+          width: 100%;
+        }
+        body img {
+          max-width: 98%;
+        }
+        body .novel {
+          max-width: 100%;
+          min-height: ${!g.player.showPlayer
+            ? "100%"
+            : "50%"};
+          top: ${g.player.showPlayer
+            ? "45px"
+            : "0px"};
+          position: relative;
+          overflow: hidden;
+          text-align-vertical: top;
+          padding-bottom: ${g.player.paddingBottom()}px;
+          padding-top: ${g.player.paddingTop()}px;
+          padding-left: ${(5).sureValue(
+            g.appSettings.margin
+          )}px;
+          padding-right: ${(5).sureValue(
+            g.appSettings.margin
+          )}px;
+          font-size: ${g.appSettings.fontSize}px;
+          line-height: ${g.appSettings.fontSize *
+          1.7}px;
+          text-align: ${g.appSettings.textAlign};
+        }
+      `}
+      click={() => {
+        g.player.showController =
+          !g.player.showController;
+      }}
+      onComments={index => {
+        state.comment =
+          g.player.book.textReplacements[
+            index
+          ].comments;
+      }}
+      onMenu={(item: any) => {
+        // handle later
+        if (item.item.text == "Translate")
+          state.textToTranslate = item.selection;
+        else if (item.item.text === "Copy") {
+          Clipboard.setStringAsync(
+            item.selection
+          );
+        } else if (item.item.text === "Define") {
+          state.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
+            / /g,
+            "+"
+          )}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
+        } else {
+          state.textEdit = {
+            edit: item.selection,
+            bgColor: undefined,
+            comments: undefined,
+            editWith: item.selection
+          };
+        }
+      }}
+      content={{
+        content: `
           <div id="novel" style="visibility:hidden" class="novel">
           ${
             g.player.showPlayer
@@ -1078,48 +1075,47 @@ const InternalWeb = ({
               : g.player.html
           }
           </div>`,
-          scroll:
-            g.player.currentChapterSettings
-              .scrollProgress
-        }}
-        menuItems={{
-          rows: [
-            {
-              cols: [
-                {
-                  text: "Copy",
-                  icon: "content_copy"
-                },
-                {
-                  text: "Translate",
-                  icon: "translate"
-                },
-                {
-                  text: "Define",
-                  icon: "search"
-                }
-              ]
-            },
-            {
-              cols: [
-                {
-                  text: "Edit",
-                  icon: "edit_note"
-                }
-              ]
-            }
-          ]
-        }}
-        bottomReched={() => g.player.next(true)}
-        topReched={() => g.player.prev()}
-        onScroll={(y: number) => {
-          g.player.currentChapterSettings.scrollProgress =
-            y;
-          //console.log(y);
-          g.player.currentChapterSettings.saveChanges();
-        }}
-      />
-    </>
+        scroll:
+          g.player.currentChapterSettings
+            .scrollProgress
+      }}
+      menuItems={{
+        rows: [
+          {
+            cols: [
+              {
+                text: "Copy",
+                icon: "content_copy"
+              },
+              {
+                text: "Translate",
+                icon: "translate"
+              },
+              {
+                text: "Define",
+                icon: "search"
+              }
+            ]
+          },
+          {
+            cols: [
+              {
+                text: "Edit",
+                icon: "edit_note"
+              }
+            ]
+          }
+        ]
+      }}
+      bottomReched={() => g.player.next(true)}
+      topReched={() => g.player.prev()}
+      onScroll={(y: number) => {
+        g.player.currentChapterSettings.scrollProgress =
+          y;
+        //console.log(y);
+        g.player.currentChapterSettings.saveChanges();
+      }}
+    />
   );
 };
 
@@ -1128,6 +1124,7 @@ export default (props: any) => {
     useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
+  useKeepAwake();
   const files = g
     .files()
     .useFile("json", undefined, "New");
@@ -1381,7 +1378,7 @@ export default (props: any) => {
               render={item => {
                 return (
                   <Text
-                    css="bold desc"
+                    css="desc fos:13"
                     invertColor={true}>
                     {item}
                   </Text>
@@ -1473,14 +1470,21 @@ export default (props: any) => {
           </View>
         </View>
       </Modal>
-      <Controller
-        state={state}
-        {...props}
-      />
-      <InternalWeb
-        state={state}
-        {...props}
-      />
+      <View
+        css="flex"
+        style={{
+          backgroundColor:g.appSettings.backgroundColor
+        }}
+        ready={true}>
+        <Controller
+          state={state}
+          {...props}
+        />
+        <InternalWeb
+          state={state}
+          {...props}
+        />
+      </View>
     </>
   );
 };

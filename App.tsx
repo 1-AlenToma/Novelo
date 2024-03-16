@@ -37,18 +37,24 @@ export default function App() {
     "updater"
   );
 
-  GlobalData.subscribe((item, props) => {
-    NavigationBar.setVisibilityAsync(
-      GlobalData.isFullScreen
-        ? "hidden"
-        : "visible"
-    );
-    setStatusBarHidden(GlobalData.isFullScreen);
-    if (!GlobalData.isFullScreen)
-      NavigationBar.setBehaviorAsync(
-        "overlay-swipe"
+  GlobalData.subscribe(
+    (item, props) => {
+      NavigationBar.setVisibilityAsync(
+        GlobalData.isFullScreen &&
+          !GlobalData.KeyboardState
+          ? "hidden"
+          : "visible"
       );
-  }, "isFullScreen");
+      setStatusBarHidden(GlobalData.isFullScreen);
+      if (!GlobalData.isFullScreen)
+        NavigationBar.setBehaviorAsync(
+          "overlay-swipe"
+        );
+    },
+    "isFullScreen",
+    "KeyboardState"
+  );
+
   const visibility =
     NavigationBar.useVisibility();
   const loader = useLoader(true);
@@ -80,10 +86,10 @@ export default function App() {
       ...themeContainerStyle
     };
   };
-  GlobalData.subscribe(
-    setThemeStyle,
-    "theme.themeMode"
-  );
+  
+  GlobalData.subscribe(()=> {
+    setThemeStyle();
+  },"theme.themeMode")
 
   useEffect(() => {
     setThemeStyle();

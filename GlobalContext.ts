@@ -104,7 +104,7 @@ const data = GlobalState(
     theme: {
       settings: {},
       invertSettings: () => {},
-      themeMode: "light" as ThemeMode,
+      themeMode: "dark" as ThemeMode,
       textTheme: () => {
         return { color: data.theme.color };
       },
@@ -149,6 +149,7 @@ const data = GlobalState(
             "AppSettings"
           )
           .findOrSave(data.appSettings);
+        data.theme.themeMode =data.appSettings.theme;
         loadVoices();
         data.parser.current().settings =
           await data.parser.current().load();

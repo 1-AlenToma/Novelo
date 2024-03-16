@@ -1,4 +1,6 @@
-import cssTranslator from "./cssTranslator";
+import cssTranslator, {
+  clearStyles
+} from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as allowedKeys from "./ValidViewStylesAttributes";
 import * as React from "react";
@@ -179,5 +181,6 @@ const Styleable = function <T>(
 export {
   Styleable,
   NestedStyleSheet,
-  cssTranslator
+  cssTranslator,
+  clearStyles
 };

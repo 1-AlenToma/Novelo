@@ -150,16 +150,18 @@ const parseThemeStyle = (
   css: any,
   invertColor: any
 ) => {
-  const id = useRef(newId()).current;
+  const id = useRef(newId());
   let globalData =
     require("./GlobalContext").default;
   let themeSettings = {
-    ...(!invertColor
+    ...(!(invertColor ?? false)
       ? globalData.theme.settings
       : globalData.theme.invertSettings())
   };
-  if (invertColor === undefined)
+  if (invertColor === undefined){
     delete themeSettings.backgroundColor;
+    delete themeSettings.color;
+  }
 
   let st =
     style && Array.isArray(style)

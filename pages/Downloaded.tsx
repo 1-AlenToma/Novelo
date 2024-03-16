@@ -149,13 +149,13 @@ export default ({ ...props }: any) => {
 
   const loadEpub = async () => {
     try {
-      loader.show();
       let { assets } =
         await DocumentPicker.getDocumentAsync({
           copyToCacheDirectory: true,
           type: "application/epub+zip"
         });
       if (!assets || assets.length <= 0) return;
+      loader.show();
       await g.db().disableHooks();
       await g.db().disableWatchers();
       g.files().disable();
@@ -411,41 +411,39 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
         </View>
       </ActionSheet>
-      <View
-        invertColor={true}
-        css="band overflow clearwidth par:5 he:40 ali:flex-end relative juc:center di:flex">
-        <Text
-          invertColor={true}
-          css="header absolute le:5">
-          Downloaded and Added Epubs
-        </Text>
-        <TouchableOpacity
-          onPress={() => {
-            g.alert(
-              `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
-              "Please Confirm"
-            ).confirm(answer => {
-              state.skipImages = answer;
-              loadEpub();
-            });
-          }}>
-          <Icon
-            invertColor={true}
-            size={35}
-            name="file-zip"
-            type="Octicons"
-          />
-        </TouchableOpacity>
-      </View>
-      <View css="juc:flex-start clearwidth ali:center he:30 mab:10 mat:10">
-        <TextInput
-          onChangeText={x => (state.text = x)}
-          invertColor={true}
-          css="wi:90% pa:5 bor:2"
-          defaultValue={state.text}
-          placeholder="Search..."
-        />
-      </View>
+
+      <Header
+        {...navop}
+        buttons={[
+          {
+            text: (
+              <Icon
+                invertColor={true}
+                size={35}
+                name="file-zip"
+                type="Octicons"
+              />
+            ),
+            press: () => {
+              g.alert(
+                `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
+                "Please Confirm"
+              ).confirm(answer => {
+                state.skipImages = answer;
+                loadEpub();
+              });
+            }
+          }
+        ]}
+        value={state.text}
+        inputEnabled={true}
+        onInputChange={txt => {
+          state.text = txt;
+        }}
+      />
+      <Text css="header pa:10 clearwidth">
+        Downloaded and Added Epubs
+      </Text>
       <ItemList
         css="flex"
         onPress={x =>

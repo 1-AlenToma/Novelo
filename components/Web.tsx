@@ -54,7 +54,7 @@ const Clock = () => {
     let h = today.getHours();
     let m = today.getMinutes();
     let s = today.getSeconds();
-    h=checkTime(h)
+    h = checkTime(h);
     m = checkTime(m);
     s = checkTime(s);
     setTime(h + ":" + m + ":" + s);
@@ -182,7 +182,7 @@ export default ({
   scrollDisabled,
   navigationType
 }: any) => {
-  g.hook("size");
+  // g.hook("size");
   const loading = useRef(true);
   const timer = useTimer(200);
   const webView = useRef();
@@ -334,7 +334,9 @@ export default ({
           strokeWidth={4}
         />
         <Clock />
-        <BattariView color={g.appSettings.backgroundColor}/>
+        <BattariView
+          color={g.appSettings.backgroundColor}
+        />
       </View>
       <WebView
         ref={r => {
@@ -482,9 +484,9 @@ export default ({
         scrollEnabled={true}
         containerStyle={[
           {
-            ...g.size.screen,
             zIndex: 70,
-            flex: 0
+            flex: 0,
+            flexGrow:1
           },
           style
         ]}

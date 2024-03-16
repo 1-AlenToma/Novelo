@@ -228,6 +228,7 @@ const cleanKey = (k, string) => {
   return has(k, "$") ? k.substring(1) : k;
 };
 let serilizedCssStyle = new Map();
+
 const serilizeCssStyle = (style: any) => {
   if (serilizedCssStyle.has(style))
     return serilizedCssStyle.get(style);
@@ -259,6 +260,7 @@ const serilizeCssStyle = (style: any) => {
   return sItem;
 };
 const cachedCSS = new Map();
+
 const css_translator = (
   css?: string,
   styleFile: any,
@@ -296,7 +298,7 @@ const css_translator = (
       let short = shortk.find(
         x => x[k.toLowerCase()] !== undefined
       );
-  
+
       if (short) {
         if (!propStyle || propStyle[short.key])
           cssItem[short.key] = value;
@@ -319,9 +321,13 @@ const css_translator = (
       continue;
     }
   }
-  if(id)
-  cachedCSS.set(id, { css, style: cssItem });
+  if (id)
+    cachedCSS.set(id, { css, style: cssItem });
   return cssItem;
+};
+
+export const clearStyles = () => {
+  cachedCSS.clear();
 };
 
 export default css_translator;

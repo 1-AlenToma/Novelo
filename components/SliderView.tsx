@@ -3,7 +3,8 @@ import {
   removeProps,
   parseThemeStyle,
   StyledView,
-  newId
+  newId,
+  invertColor as InvertColor
 } from "../Methods";
 import {
   useRef,
@@ -35,7 +36,7 @@ export default ({
     undefined,
     invertColor
   );
-
+  
   useEffect(() => {
     setValue(props.value);
   }, [props.value]);
@@ -77,17 +78,18 @@ export default ({
         </TouchableOpacity>
       ) : null}
       <View
-        css="bac:#fff wi:35 he:20 pal:5 par:5 juc:center ali:center"
+        invertColor={!invertColor}
+        css="wi:35 he:20 pal:5 par:5 juc:center ali:center"
         ifTrue={() => renderValue == true}>
         <Text
-          invertColor={false}
-          css="bold fos:10 tea:center">
+          invertColor={!invertColor}
+          css="desc fos:10 tea:center">
           {(0).sureValue(value).readAble()}
         </Text>
       </View>
       <View css={`flex`}>
         <Slider
-          minimumTrackTintColor="#FFFFFF"
+          minimumTrackTintColor="#f17c7c"
           maximumTrackTintColor="#000000"
           step={1}
           {...props}

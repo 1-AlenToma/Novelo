@@ -62,7 +62,7 @@ export default memo(
         {loader.elem}
         <View css="pal:5 clearwidth par:5 row juc:space-between">
           {!vMode ? (
-            <Text css="header he:20 bold">
+            <Text css="header he:20">
               {item.text}
             </Text>
           ) : null}
@@ -80,7 +80,10 @@ export default memo(
                   })
                   .push();
               }}>
-              <Text css="bold">Browse</Text>
+              <Text
+                css="desc fos:14">
+                Browse
+              </Text>
             </TouchableOpacity>
           ) : null}
         </View>
@@ -109,8 +112,8 @@ export default memo(
           }}
           itemCss={
             !vMode
-              ? "boc:#ccc bow:1 he:220 wi:170 pa:4 mal:5 bor:5 overflow"
-              : "boc:#ccc bow:1 he:170 wi:98% mat:5 pa:4 mal:5 bor:5"
+              ? "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"
+              : "boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
           }
           items={items}
           container={HomeNovelItem}

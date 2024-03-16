@@ -26,6 +26,7 @@ export default ({
     css,
     invertColor
   );
+  
   return (
     <Btn
       {...props}

@@ -72,11 +72,11 @@ const TabBar = ({
     animateLeft(i);
   };
 
-  
-
   useEffect(() => {
     loadChildren(index);
   }, [size]);
+
+  
 
   useEffect(
     () => {

@@ -28,6 +28,7 @@ class AppSettings extends IBaseModule<TableNames> {
   use3D?: boolean = false;
   shadowLength?: number = 1;
   fontStyle?: string = "normal";
+  theme?: string = "light";
   constructor() {
     super("AppSettings");
   }
@@ -44,6 +45,7 @@ class AppSettings extends IBaseModule<TableNames> {
       .number.column("margin")
       .nullable.number.column("textAlign")
       .column("backgroundColor")
+      .column("theme")
       .column("isBold")
       .boolean.column("fontName")
       .column("lockScreen")
@@ -51,8 +53,7 @@ class AppSettings extends IBaseModule<TableNames> {
       .nullable.json.column("navigationType")
       .nullable.column("use3D")
       .nullable.boolean.column("fontStyle")
-      .nullable
-      .column("shadowLength")
+      .nullable.column("shadowLength")
       .nullable.number.objectPrototype(
         AppSettings.prototype
       );

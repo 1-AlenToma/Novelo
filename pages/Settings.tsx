@@ -9,8 +9,11 @@ import {
   CheckBox,
   ItemList,
   Image,
-  useLoader
+  useLoader,
+  DropdownList,
+  Form
 } from "../components/";
+import * as Updates from "expo-updates";
 import g from "../GlobalContext";
 import { Book, Chapter } from "..db";
 import {
@@ -23,6 +26,7 @@ import * as DocumentPicker from "expo-document-picker";
 
 export default (props: any) => {
   let loader = useLoader();
+  g.hook("theme.themeMode");
   const { fileItems, elem } = g
     .files()
     .useFile("json", undefined, "NewDelete");
@@ -64,8 +68,9 @@ export default (props: any) => {
     g.alert(
       "Are you sure?",
       "Please Confirm"
-    ).confirm(async () => {
+    ).confirm(async answer => {
       try {
+        if (!answer) return;
         loader.show();
 
         let _books = g
@@ -132,95 +137,93 @@ export default (props: any) => {
         }
         visible={state.downloadShow}
         title="Backup options">
-        <ScrollView>
-          <View css="flex pat:10">
-            <CheckBox
-              text="Include FontSettings:"
+        <View css="clearwidth ali:center bottom bo:10 zi:10">
+          <TouchableOpacity
+            css="button"
+            onPress={download}>
+            <Text
               invertColor={true}
-              checked={state.appSettings}
+              css="fos:15 bold">
+              DOWNLOAD
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View css="pat:10">
+          <CheckBox
+            text="Include FontSettings:"
+            invertColor={true}
+            checked={state.appSettings}
+            onChange={() =>
+              (state.appSettings =
+                !state.appSettings)
+            }
+          />
+
+          <CheckBox
+            text="Include Epubs:"
+            invertColor={true}
+            checked={state.epubs}
+            onChange={() =>
+              (state.epubs = !state.epubs)
+            }
+          />
+
+          <View css="mat:20 mih:100">
+            <CheckBox
+              text="Include All novels:"
+              invertColor={true}
+              checked={state.all}
               onChange={() =>
-                (state.appSettings =
-                  !state.appSettings)
+                (state.all = !state.all)
               }
             />
 
-            <CheckBox
-              text="Include Epubs:"
-              invertColor={true}
-              checked={state.epubs}
-              onChange={() =>
-                (state.epubs = !state.epubs)
-              }
-            />
-
-            <View css="mat:20 mih:100">
-              <CheckBox
-                text="Include All novels:"
-                invertColor={true}
-                checked={state.all}
-                onChange={() =>
-                  (state.all = !state.all)
-                }
-              />
-
-              <ItemList
-                updater={[state.items, state.all]}
-                onPress={item => {
-                  state.all = false;
-                  if (
+            <ItemList
+              updater={[state.items, state.all]}
+              onPress={item => {
+                state.all = false;
+                if (
+                  state.items.find(
+                    x =>
+                      x.url === item.url &&
+                      x.parserName ==
+                        item.parserName
+                  )
+                ) {
+                  state.items = [
+                    ...state.items.filter(
+                      x =>
+                        x.url !== item.url &&
+                        x.parserName !=
+                          item.parserName
+                    )
+                  ];
+                } else
+                  state.items = [
+                    ...state.items,
+                    item
+                  ];
+              }}
+              items={books}
+              container={({ item }) => (
+                <CheckBox
+                  text={item.name + ":"}
+                  invertColor={true}
+                  checked={
+                    state.all ||
                     state.items.find(
                       x =>
                         x.url === item.url &&
                         x.parserName ==
                           item.parserName
                     )
-                  ) {
-                    state.items = [
-                      ...state.items.filter(
-                        x =>
-                          x.url !== item.url &&
-                          x.parserName !=
-                            item.parserName
-                      )
-                    ];
-                  } else
-                    state.items = [
-                      ...state.items,
-                      item
-                    ];
-                }}
-                items={books}
-                container={({ item }) => (
-                  <CheckBox
-                    text={item.name + ":"}
-                    invertColor={true}
-                    checked={
-                      state.all ||
-                      state.items.find(
-                        x =>
-                          x.url === item.url &&
-                          x.parserName ==
-                            item.parserName
-                      )
-                    }
-                  />
-                )}
-                vMode={true}
-              />
-              <View css="clearwidth ali:center">
-                <TouchableOpacity
-                  css="button"
-                  onPress={download}>
-                  <Text
-                    invertColor={true}
-                    css="fos:15 bold">
-                    DOWNLOAD
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                  }
+                />
+              )}
+              vMode={true}
+            />
           </View>
-        </ScrollView>
+        </View>
       </Modal>
       <View
         ifTrue={
@@ -284,6 +287,59 @@ export default (props: any) => {
               cache and db
             </Text>
           </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          css="settingButton"
+          onPress={cleanData}>
+          <Icon
+            invertColor={true}
+            type="MaterialCommunityIcons"
+            name="theme-light-dark"
+          />
+          <DropdownList
+            invertColor={true}
+            height={200}
+            toTop={true}
+            selectedIndex={
+              g.appSettings.theme == "dark"
+                ? 1
+                : 0
+            }
+            updater={[g.appSettings.theme]}
+            hooks={["appSettings.theme"]}
+            items={["light", "dark"]}
+            render={item => {
+              return (
+                <View
+                  css={`
+                    ${item == g.appSettings.theme
+                      ? "selectedRow"
+                      : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
+                  `}>
+                  <Text
+                    css={`desc fos:13`}
+                    invertColor={true}>
+                    {item.displayName()}
+                  </Text>
+                </View>
+              );
+            }}
+            onSelect={theme => {
+              g.alert(
+                "Novelo will have to restart, should I continue?","Please Confirm"
+              ).confirm(async answer => {
+                if (!answer) return;
+                g.appSettings.theme = theme;
+                await g.appSettings.saveChanges();
+                //g.theme.themeMode = theme;
+                Updates.reloadAsync();
+              });
+            }}
+            selectedValue={(
+              g.appSettings.theme ?? "light"
+            ).displayName()}
+          />
         </TouchableOpacity>
       </View>
     </View>

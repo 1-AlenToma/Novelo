@@ -107,6 +107,9 @@ export default class ReadNovelFull extends Parser {
               )
               .Info(f.find(".chr-text").text)
               .Decription(f.find(".author").text)
+              .IsNew(
+                f.find(".label-new").hasValue
+              )
               .ParserName(this.name);
         });
       })
@@ -130,6 +133,7 @@ export default class ReadNovelFull extends Parser {
       await this.http.get_html(url, this.url)
     ).html;
     let body = html.$("body");
+
     let item = DetailInfo.n();
     item
       .Name(body.find(".books .title").text)
@@ -168,7 +172,9 @@ export default class ReadNovelFull extends Parser {
         body.find('span[itemprop="ratingValue"]')
           .text
       )
-
+      .LastUpdated(
+        body.find("div.item-time").text?.trim()
+      )
       .ParserName(this.name);
     item.commentScript.Url(
       url + "#tab-comment-title"
