@@ -29,7 +29,9 @@ export default ({
         />
         <View css="clearwidth bottom he:50% overflow">
           <View css="blur bottom clearboth" />
-          <Text css="clearwidth mih:40% wi:100% header co:#fff pa:4 teA:center">
+          <Text
+            numberOfLines={3}
+            css="clearwidth mih:40% wi:100% header co:#fff pa:4 teA:center">
             {item.name}
           </Text>
           <View css="row wi:100% pal:5 par:5 di:flex ali:flex-start juc:center">
@@ -39,12 +41,12 @@ export default ({
               size={15}
               css="co:#fff"
             />
-            <Text css="desc co:#fff fos:8 tea:center">
+            <Text numberOfLines={1} css="desc co:#fff fos:8 tea:center">
               {item.decription}
             </Text>
           </View>
 
-          <Text css="desc co:#e30505 clearwidth bottom pa:4 tea:center">
+          <Text numberOfLines={2} css="desc co:#e30505 clearwidth bottom pa:4 tea:center">
             {item.info}
           </Text>
         </View>

@@ -24,7 +24,7 @@ import {
   ifSelector
 } from "../Methods";
 import GlobalData from "../GlobalContext";
-import { useUpdate } from "../hooks";
+import { useUpdate, useTimer } from "../hooks";
 import Text from "./ThemeText";
 import { TabIcon, TabChild } from "../Types";
 const TabBar = ({
@@ -49,34 +49,46 @@ const TabBar = ({
   scrollableHeader?: boolean;
 }) => {
   const [size, setSize] = useState(undefined);
-  const [panResponse, setPanResponse] =
-    useState();
+
+  const getWidth = (index: number) => {
+    let v = index * size?.width;
+    if (isNaN(v)) return 0;
+    return v;
+  };
+
+  const getInputRange = () => {
+    let item = children
+      .map((x, i) => {
+        return {
+          index: i,
+          value: i == 0 ? 0 : -getWidth(i)
+        };
+      })
+      .sort((a, b) => a.value - b.value);
+
+    return item;
+  };
+  const startValue = useRef();
+  const [interpolate, setInterpolate] = useState(
+    getInputRange()
+  );
+
   const [rItems, setrItems] = useState(
     children.map(x => {})
   );
+  const panResponse = useRef();
   const animLeft = useRef(
     new Animated.ValueXY({ x: 0, y: 0 })
   ).current;
   const [index, setIndex] = useState(
     (0).sureValue(selectedIndex)
   );
-  const isAnimating = useRef(false);
-  let loadChildren = (i: number) => {
-    if (!rItems[i] && children[i]) {
-      rItems[i] = {
-        child: childPrep(children[i])
-      };
-    }
 
-    setIndex(i);
-    animateLeft(i);
-  };
+  const isAnimating = useRef(false);
 
   useEffect(() => {
-    loadChildren(index);
-  }, [size]);
-
-  
+    tAnimate(index, 0);
+  }, [interpolate]);
 
   useEffect(
     () => {
@@ -85,7 +97,6 @@ const TabBar = ({
           rItems[i].child = childPrep(x);
         }
       });
-
       loadChildren(index);
     },
     children.map(x => x)
@@ -99,24 +110,57 @@ const TabBar = ({
     if (index !== undefined) change?.(index);
   }, [index]);
 
-  const animateLeft = async (index: number) => {
-    while (isAnimating.current) await sleep(100);
-    if (!size || isAnimating.current) return;
-    isAnimating.current = true;
+  const tAnimate = (
+    index: number,
+    speed?: number,
+    fn: any
+  ) => {
+    let value =
+      interpolate.find(x => x.index == index)
+        ?.value ?? 0;
     Animated.timing(animLeft.x, {
-      toValue: index,
-      duration: 300,
+      toValue: value,
+      duration: (300).sureValue(speed, true),
       useNativeDriver: true
     }).start(() => {
+      animLeft.setValue({
+        y: 0,
+        x: value
+      });
+      animLeft.flattenOffset();
+
+      fn?.();
+    });
+  };
+
+  const animateLeft = async (index: number) => {
+    //while (isAnimating.current) await sleep(100);
+    if (!size) return;
+    isAnimating.current = true;
+    tAnimate(index, undefined, () => {
       isAnimating.current = false;
     });
   };
 
-  const getWidth = (index: number) => {
-    let v = index * size?.width;
-    if (isNaN(v)) return 0;
-    return v;
+  let loadChildren = (i: number) => {
+    if (!rItems[i] && children[i]) {
+      rItems[i] = {
+        child: childPrep(children[i])
+      };
+    }
+    if (
+      i >= 0 &&
+      i < children.length &&
+      !isAnimating.current
+    ) {
+      setIndex(i);
+      animateLeft(i);
+    }
   };
+
+  useEffect(() => {
+    setInterpolate(getInputRange());
+  }, [children, size]);
 
   const childPrep = child => {
     if (child) {
@@ -147,6 +191,72 @@ const TabBar = ({
         />
       );
   };
+
+  // animTop.extractOffset();
+
+  panResponse.current = PanResponder.create({
+    onMoveShouldSetPanResponder: (
+      evt,
+      gestureState
+    ) => {
+      //return true if user is swiping, return false if it's a single click
+      const { dx, dy } = gestureState;
+      let lng = 5;
+      return (
+        !isAnimating.current &&
+        (dx > lng ||
+          dx < -lng ||
+          dy > lng ||
+          dy < -lng)
+      );
+    },
+    onPanResponderGrant: (e, gestureState) => {
+      startValue.current = gestureState.dx;
+      //alert(interpolate.outputRange[index]);
+      animLeft.setValue({
+        x:
+          interpolate.find(
+            x => x.index == (index ?? 0)
+          )?.value ?? 0,
+        y: 0
+      });
+      animLeft.extractOffset();
+      return true;
+    },
+    onPanResponderMove: Animated.event(
+      [null, { dx: animLeft.x, dy: animLeft.y }],
+      { useNativeDriver: false }
+    ),
+    onPanResponderRelease: (
+      evt,
+      gestureState
+    ) => {
+      let newValue = gestureState.dx;
+      let diff = newValue - startValue.current;
+      let width = size?.width ?? 0;
+      let i = index == undefined ? 0 : index;
+      //console.warn(diff, i);
+      animLeft.flattenOffset();
+      let speed = 200;
+      if (Math.abs(diff) > width / 3) {
+        //  animLeft.flattenOffset();
+        // alert("animating" + index + 1);
+        //console.warn(diff, i);
+        if (diff < 0) {
+          if (i + 1 < children.length)
+            loadChildren(i + 1);
+          else tAnimate(i, speed);
+        } else {
+          if (i - 1 >= 0) loadChildren(i - 1);
+          else tAnimate(i, speed);
+        }
+        //  onHide(!visible);
+      } else {
+        tAnimate(i, speed); // reset to start value
+      }
+      return false;
+    }
+  });
 
   let MContainer = View;
   let prop = {
@@ -233,14 +343,13 @@ const TabBar = ({
               {
                 translateX:
                   animLeft.x.interpolate({
-                    inputRange: children.map(
-                      (x, i) => i
+                    inputRange: interpolate.map(
+                      x => x.value
                     ),
-                    outputRange: children.map(
-                      (x, i) =>
-                        i == 0 ? 0 : -getWidth(i)
+                    outputRange: interpolate.map(
+                      x => x.value
                     ),
-                    extrapolateLeft: "identity",
+                    extrapolateLeft: "extend",
                     extrapolate: "clamp"
                   })
               }
@@ -252,10 +361,12 @@ const TabBar = ({
             width:
               (size?.width ?? 0) * children.length
           }
-        ]}>
+        ]}
+        {...(panResponse.current?.panHandlers ??
+          {})}>
         {children.map((x, i) => (
           <View
-            css="flex"
+            css="flex fg:1"
             key={i}>
             {x.props.head}
             {!disableScrolling &&
