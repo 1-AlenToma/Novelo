@@ -27,6 +27,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 import { useFonts } from "./hooks";
+import { clearStyles } from "./styles";
 
 export default function App() {
   const fontLoader = useFonts();
@@ -81,15 +82,17 @@ export default function App() {
             ...styles.lightThemeText
           };
     };
+    clearStyles();
     GlobalData.theme.settings = {
       ...themeTextStyle,
       ...themeContainerStyle
     };
+    
   };
-  
-  GlobalData.subscribe(()=> {
+
+  GlobalData.subscribe(() => {
     setThemeStyle();
-  },"theme.themeMode")
+  }, "theme.themeMode");
 
   useEffect(() => {
     setThemeStyle();

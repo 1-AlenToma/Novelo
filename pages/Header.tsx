@@ -41,7 +41,7 @@ export default ({
   const [params, navOption] =
     useNavigation(props);
   const updater = useUpdate();
-  gdata.hook("KeyboardState", "isFullScreen");
+  gdata.hook("KeyboardState", "isFullScreen", "theme.settings");
   const input = useRef();
   const state = useState(
     {

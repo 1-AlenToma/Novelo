@@ -41,6 +41,7 @@ export default ({
 }) => {
   const g = require("../GlobalContext").default;
   if (hooks) g.hook(...hooks);
+  g.hook("theme.settings");
   const time = useTimer(100);
 
   const onEndReachedCalledDuringMomentum =
@@ -88,7 +89,7 @@ export default ({
         maxHeight: "100%",
         width: "100%",
         height: "100%",
-        flex:0
+        flex: 0
       }}
       css="fg:1 mah:100%">
       <FlashList
@@ -120,7 +121,8 @@ export default ({
         }}
         extraData={[
           ...(updater ?? []),
-          selectedIndex
+          selectedIndex,
+          g.theme.settings
         ]}
         onEndReached={() => {
           if (

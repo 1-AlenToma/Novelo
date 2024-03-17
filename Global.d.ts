@@ -1,5 +1,5 @@
 import CStyle from "./components/CStyle";
-import { cssTranslator } from "./styles";
+import { cssTranslator,clearStyles } from "./styles";
 import IDOMParser from "advanced-html-parser";
 const cheerio = require("react-native-cheerio");
 declare global {

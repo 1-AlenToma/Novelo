@@ -102,7 +102,7 @@ const data = GlobalState(
     },
     updater: newId(),
     theme: {
-      settings: {},
+      settings: undefined,
       invertSettings: () => {},
       themeMode: "dark" as ThemeMode,
       textTheme: () => {

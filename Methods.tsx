@@ -1,9 +1,9 @@
 import uuid from "react-native-uuid";
-import { Styleable } from "./styles";
+import { Styleable, clearStyles } from "./styles";
 import * as MediaLibrary from "expo-media-library";
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 let downloadsFolder = null;
 const getDirectoryPermissions = async () => {
@@ -151,6 +151,7 @@ const parseThemeStyle = (
   invertColor: any
 ) => {
   const id = useRef(newId());
+
   let globalData =
     require("./GlobalContext").default;
   let themeSettings = {
@@ -158,7 +159,7 @@ const parseThemeStyle = (
       ? globalData.theme.settings
       : globalData.theme.invertSettings())
   };
-  if (invertColor === undefined){
+  if (invertColor === undefined) {
     delete themeSettings.backgroundColor;
     delete themeSettings.color;
   }
@@ -169,6 +170,9 @@ const parseThemeStyle = (
       : [style || {}];
   st = [themeSettings, ...st];
   if (css) st.push(css.css(id));
+  useEffect(() => {
+    return () => clearStyles(id);
+  }, []);
   return st;
 };
 

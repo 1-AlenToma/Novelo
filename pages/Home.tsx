@@ -38,6 +38,7 @@ const CurrentItem = ({
   const [_, options, navop] =
     useNavigation(props);
   const [visible, setVisible] = useState(false);
+  g.hook("theme.settings")
   const [books, dataIsLoading, reload] = g
     .db()
     .useQuery(

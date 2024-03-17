@@ -54,7 +54,7 @@ const ActionItem = ({
       invertColor={true}
       css="mih:50 pa:10 pat:15">
       <ActionSheetButton
-        height="50%"
+        height="50"
         title={keyName.displayName()}
         btn={
           <Text

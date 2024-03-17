@@ -4,6 +4,7 @@ import {
   useEffect
 } from "react";
 import { newId } from "../Methods";
+import { useTimer } from "../hooks";
 
 const keys = (item: any) => {
   let prototype = Object.getPrototypeOf(item);
@@ -23,6 +24,25 @@ const keys = (item: any) => {
   return ks.filter(
     x => !obp.includes(x) && !cbp.includes(x)
   );
+};
+const speed = 100;
+const getValueByPath = (
+  value: any,
+  path: string
+) => {
+  let current = value;
+  for (let item of path.split(".")) {
+    current = current[item];
+  }
+  if (current == undefined || current == null)
+    current = {};
+  else if (
+    typeof current !== "object" ||
+    Array.isArray(current)
+  ) {
+    current = { item: current };
+  }
+  return current;
 };
 
 const valid = (item: any) => {
@@ -78,9 +98,11 @@ class Create<T extends object> extends ICreate {
 
   hook(...keys: NestedKeyOf<T>) {
     let id = useRef(newId()).current;
+
     let [update, setUpdate] = useState();
+    const timer = useTimer(speed);
     this.___events[id] = {
-      fn: () => setUpdate(newId()),
+      fn: () => timer(() => setUpdate(newId())),
       keys: keys
     };
 
@@ -94,8 +116,9 @@ class Create<T extends object> extends ICreate {
     ...keys: NestedKeyOf<T>
   ) {
     let id = useRef(newId()).current;
+    const timer = useTimer(speed);
     this.___events[id] = {
-      fn: () => fn(this),
+      fn: () => timer(() => fn(this)),
       keys: keys
     };
 

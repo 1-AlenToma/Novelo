@@ -6,7 +6,7 @@ import {
   ifSelector
 } from "../Methods";
 import { useTimer } from "../hooks";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 let styledItems = {};
 export default ({
   name,
@@ -39,6 +39,10 @@ export default ({
     css,
     invertColor
   );
+  if (props.color)
+    useEffect(() => {
+      setColor(props.color)
+    }, [props.color]);
   return (
     <ICO
       {...props}

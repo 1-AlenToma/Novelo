@@ -155,69 +155,85 @@ export default ({ ...props }: any) => {
           type: "application/epub+zip"
         });
       if (!assets || assets.length <= 0) return;
-      loader.show();
-      await g.db().disableHooks();
-      await g.db().disableWatchers();
-      g.files().disable();
-      let uri = assets?.firstOrDefault("uri");
-      let name = assets?.firstOrDefault("name");
-      let bk = await ZipBook.load(
-        uri,
-        name,
-        p => {
-          loader.show(p);
-        },
-        state.skipImages
-      );
-      let images = bk.files.filter(
-        x => x.type === "Image"
-      );
-      let total = images.length;
-      let count = 0;
-      const calc = async () => {
-        count++;
-        loader.show((100 * count) / total);
-      };
-      if (!state.skipImages) {
-        for (let file of images) {
-          await calc();
-          file.content = await g
-            .imageCache()
-            .write(file.url, file.content);
-        }
+      g.alert(
+        `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
+        "Please Confirm"
+      ).confirm(async answer => {
+        state.skipImages = answer;
+        try {
+          loader.show();
+          await g.db().disableHooks();
+          await g.db().disableWatchers();
+          g.files().disable();
+          let uri = assets?.firstOrDefault("uri");
+          let name =
+            assets?.firstOrDefault("name");
+          let bk = await ZipBook.load(
+            uri,
+            name,
+            p => {
+              loader.show(p);
+            },
+            state.skipImages
+          );
+          let images = bk.files.filter(
+            x => x.type === "Image"
+          );
+          let total = images.length;
+          let count = 0;
+          const calc = async () => {
+            count++;
+            loader.show((100 * count) / total);
+          };
+          if (!state.skipImages) {
+            for (let file of images) {
+              await calc();
+              file.content = await g
+                .imageCache()
+                .write(file.url, file.content);
+            }
 
-        let chImage =
-          ZipBook.createImageChapter(images);
-        if (chImage)
-          bk.chapters = [chImage, ...bk.chapters];
-      }
-      let book = Book.n()
-        .Name(bk.name)
-        .Url(bk.url)
-        .Favorit(false)
-        .InlineStyle(
-          bk.files
-            .filter(x => x.type === "CSS")
-            .map(x => x.content)
-            .join("\n")
-        )
-        .ImageBase64(
-          bk.files.find(x => x.type === "Image")
-            ?.content ?? ""
-        )
-        .ParserName("epub");
-      await g
-        .files()
-        .write(bk.url, JSON.stringify(bk));
-      await g.db().save(book);
+            let chImage =
+              ZipBook.createImageChapter(images);
+            if (chImage)
+              bk.chapters = [
+                chImage,
+                ...bk.chapters
+              ];
+          }
+          let book = Book.n()
+            .Name(bk.name)
+            .Url(bk.url)
+            .Favorit(false)
+            .InlineStyle(
+              bk.files
+                .filter(x => x.type === "CSS")
+                .map(x => x.content)
+                .join("\n")
+            )
+            .ImageBase64(
+              bk.files.find(
+                x => x.type === "Image"
+              )?.content ?? ""
+            )
+            .ParserName("epub");
+          await g
+            .files()
+            .write(bk.url, JSON.stringify(bk));
+          await g.db().save(book);
+        } catch (e) {
+          g.alert(e.message).show();
+          console.error(e);
+        } finally {
+          g.db().enableWatchers();
+          g.db().enableHooks();
+          g.files().enable();
+          loader.hide();
+        }
+      });
     } catch (e) {
       g.alert(e.message).show();
       console.error(e);
-    } finally {
-      g.db().enableWatchers();
-      g.db().enableHooks();
-      g.files().enable();
-      loader.hide();
     }
   };
 
@@ -416,7 +432,7 @@ export default ({ ...props }: any) => {
         {...navop}
         buttons={[
           {
-            text: (
+            text: () => (
               <Icon
                 invertColor={true}
                 size={35}
@@ -425,13 +441,7 @@ export default ({ ...props }: any) => {
               />
             ),
             press: () => {
-              g.alert(
-                `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
-                "Please Confirm"
-              ).confirm(answer => {
-                state.skipImages = answer;
-                loadEpub();
-              });
+              loadEpub();
             }
           }
         ]}

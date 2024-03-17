@@ -326,8 +326,10 @@ const css_translator = (
   return cssItem;
 };
 
-export const clearStyles = () => {
+export const clearStyles = (id:any) => {
+  if(id=== undefined)
   cachedCSS.clear();
+  else cachedCSS.delete(id)
 };
 
 export default css_translator;

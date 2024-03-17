@@ -87,6 +87,10 @@ let StyledWrapper = React.forwardRef(
       setUpdater(x => (x > 1000 ? 1 : x) + 1);
     }, [css]);
 
+    React.useEffect(() => {
+      return () => clearStyles(id);
+    }, []);
+
     if (
       styleFile &&
       parsedData.style == undefined

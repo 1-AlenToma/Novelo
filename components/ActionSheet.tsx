@@ -17,6 +17,7 @@ import {
   Easing,
   PanResponder
 } from "react-native";
+import { useUpdate } from "../hooks";
 const g = require("../GlobalContext").default;
 export default ({
   title,
@@ -38,20 +39,18 @@ export default ({
   toTop?: boolean;
 }) => {
   let getHeight = () => {
-    if (
-      typeof height === "number" &&
-      height > 100
-    )
-      return height;
-    return proc(
-      parseFloat(
-        (height?.toString() ?? "0").replace(
-          /%/g,
-          ""
-        )
-      ),
-      g.size.window.height
-    );
+    let h = height;
+    if (!(typeof h === "number" && h > 100)) {
+      h = proc(
+        parseFloat(
+          (h?.toString() ?? "0").replace(/%/g, "")
+        ),
+        g.size.window.height
+      );
+    }
+    if (h < 400) h = 400;
+
+    return h;
   };
   g.hook("size", "selection");
   let context = useContext(ElementsContext);
@@ -60,10 +59,11 @@ export default ({
   const panResponse = useRef();
   const isTouched = useRef(false);
   const [onReady, setOnReady] = useState(!ready);
-  let interpolate = [
+  const updater = useUpdate();
+  const [interpolate, setInterpolate] = useState([
     g.size.window.height - getHeight() + 80,
     g.size.window.height + 50
-  ];
+  ]);
 
   const animTop = useRef(
     new Animated.ValueXY({
@@ -74,10 +74,16 @@ export default ({
   const animating = useRef(false);
   let id = useRef(newId());
 
-  const tAnimate = (value: number, fn: any) => {
+  const tAnimate = (
+    value: number,
+    fn: any,
+    sp?: number
+  ) => {
     Animated.timing(animTop.y, {
       toValue: value,
-      duration: (100).sureValue(speed),
+      duration: (100).sureValue(
+        sp == undefined ? speed : sp
+      ),
       easing: Easing.linear,
       useNativeDriver: true
     }).start(() => {
@@ -98,22 +104,29 @@ export default ({
       if (typeof visible !== "function")
         setIsV(visible);
       else setIsV(visible());
-      context.update();
+
       if (show) setOnReady(true);
+      panResponse.current = undefined;
+      updater();
       //if (!show) animTop.flattenOffset();
 
       //setIsV(visible);
     });
   };
 
-  g.subscribe(
-    () => {
-      //setAnimTop(new Animated.Value(-vHeight));
-      toggle(isV);
-    },
-    "size",
-    "theme.themeMode"
-  );
+  g.subscribe(() => {
+    setInterpolate([
+      g.size.window.height - getHeight() + 80,
+      g.size.window.height + 50
+    ]);
+  }, "size");
+  useEffect(() => {
+    if (isV) {
+      panResponse.current = undefined;
+      animTop.flattenOffset();
+      tAnimate(interpolate[0], () => updater(),1);
+    }
+  }, [interpolate]);
   if (typeof visible === "function")
     g.subscribe(() => {
       if (!isV) setIsV(visible());

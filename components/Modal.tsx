@@ -36,11 +36,7 @@ export default ({
   toTop?: boolean;
 }) => {
   let getHeight = () => {
-    if (
-      typeof height === "number" &&
-      height > 100
-    )
-      return height;
+    if (typeof height === "number") return height;
     return proc(
       parseFloat(
         (height?.toString() ?? "0").replace(
@@ -89,8 +85,10 @@ export default ({
 
   useEffect(() => {
     if (!isV) setIsV(visible);
+    // animTop.setValue(-getHeight());
+    // animTop.flattenOffset();
     toggle(visible);
-  }, [visible]);
+  }, [visible, height]);
 
   useEffect(() => {
     setStarted(true);
@@ -175,13 +173,7 @@ export default ({
       }
     );
     context.update();
-  }, [
-    props,
-    title,
-    children,
-    isV,
-    animating.current
-  ]);
+  });
 
   return null;
 };

@@ -20,6 +20,7 @@ import {
   Platform,
   ScrollView
 } from "react-native";
+import { clearStyles } from "../styles";
 import { useState } from "../native";
 import { getDirectoryPermissions } from "../Methods";
 import * as DocumentPicker from "expo-document-picker";
@@ -289,9 +290,7 @@ export default (props: any) => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          css="settingButton"
-          onPress={cleanData}>
+        <View css="settingButton">
           <Icon
             invertColor={true}
             type="MaterialCommunityIcons"
@@ -325,22 +324,17 @@ export default (props: any) => {
                 </View>
               );
             }}
-            onSelect={theme => {
-              g.alert(
-                "Novelo will have to restart, should I continue?","Please Confirm"
-              ).confirm(async answer => {
-                if (!answer) return;
-                g.appSettings.theme = theme;
-                await g.appSettings.saveChanges();
-                //g.theme.themeMode = theme;
-                Updates.reloadAsync();
-              });
+            onSelect={async theme => {
+              g.appSettings.theme = theme;
+              await g.appSettings.saveChanges();
+              g.theme.themeMode = theme;
+              //Updates.reloadAsync();
             }}
             selectedValue={(
               g.appSettings.theme ?? "light"
             ).displayName()}
           />
-        </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
