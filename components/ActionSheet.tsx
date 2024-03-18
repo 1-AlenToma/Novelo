@@ -124,7 +124,11 @@ export default ({
     if (isV) {
       panResponse.current = undefined;
       animTop.flattenOffset();
-      tAnimate(interpolate[0], () => updater(),1);
+      tAnimate(
+        interpolate[0],
+        () => updater(),
+        1
+      );
     }
   }, [interpolate]);
   if (typeof visible === "function")
@@ -268,7 +272,7 @@ export default ({
                 {title}
               </Text>
             </View>
-            <View css="flex zi:5 maw:99%">
+            <View css="flex fg:1 zi:5 maw:99%">
               {onReady ? children : null}
             </View>
           </View>

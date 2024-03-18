@@ -148,7 +148,8 @@ function proc(partialValue, totalValue) {
 const parseThemeStyle = (
   style: any,
   css: any,
-  invertColor: any
+  invertColor: any,
+  isRootView?: boolean
 ) => {
   const id = useRef(newId());
 
@@ -168,8 +169,13 @@ const parseThemeStyle = (
     style && Array.isArray(style)
       ? [...style]
       : [style || {}];
+
   st = [themeSettings, ...st];
+  
+
   if (css) st.push(css.css(id));
+  if (isRootView)
+    st = [...st,globalData.theme.getRootTheme()];
   useEffect(() => {
     return () => clearStyles(id);
   }, []);

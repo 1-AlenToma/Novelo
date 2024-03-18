@@ -34,7 +34,8 @@ export default ({
   let st = parseThemeStyle(
     style,
     undefined,
-    invertColor
+    invertColor,
+    rootView
   );
 
   if (rootView && !g.isFullScreen) {

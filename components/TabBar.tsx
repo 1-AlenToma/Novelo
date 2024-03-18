@@ -14,7 +14,8 @@ import {
   useState,
   useEffect,
   ReactNode,
-  useRef
+  useRef,
+  useCallback
 } from "react";
 import {
   sleep,
@@ -27,6 +28,110 @@ import GlobalData from "../GlobalContext";
 import { useUpdate, useTimer } from "../hooks";
 import Text from "./ThemeText";
 import { TabIcon, TabChild } from "../Types";
+
+const Menu = ({
+  children,
+  index,
+  loadChildren,
+  scrollableHeader,
+  fontSize
+}: any) => {
+  let use;
+  let [cIndex, setCIndex] = useState(index ?? 0);
+  useEffect(() => {
+    setCIndex(index);
+  }, [index]);
+
+  const getIcon = (
+    icon?: TabIcon,
+    iconSize,
+    style
+  ) => {
+    if (!icon) return null;
+    let Type = Icons[icon.type];
+    if (Type)
+      return (
+        <Type
+          name={icon.name}
+          size={(15).sureValue(iconSize)}
+          style={removeProps(
+            style,
+            "backgroundColor"
+          )}
+        />
+      );
+  };
+
+  let MContainer = View;
+  let prop = {
+    style: [
+      styles.menu,
+      GlobalData.theme.invertSettings()
+    ]
+  };
+  let menuItems = children.filter(
+    x => ifSelector(x.props.ifTrue) !== false
+  );
+
+  if (scrollableHeader) {
+    MContainer = ScrollView;
+    prop = {
+      contentContainerStyle: prop.style,
+      style: {
+        minHeight: 40,
+        height: 40,
+        flex: 0,
+        flexGrow: 1
+      },
+      horizontal: true
+    };
+  }
+  if (menuItems.length <= 1) return null;
+  return (
+    <MContainer {...prop}>
+      {menuItems.map((x, i) => (
+        <TouchableOpacity
+          style={[
+            styles.menuBtn,
+            i == cIndex
+              ? GlobalData.theme.settings
+              : undefined
+          ]}
+          key={i}
+          onPress={() => {
+            loadChildren(i);
+            setCIndex(i);
+          }}>
+          {getIcon(
+            x.props.icon,
+            i == cIndex ? 15 : 18,
+            [
+              styles.menuText,
+              GlobalData.theme.invertSettings(),
+              i == cIndex
+                ? GlobalData.theme.settings
+                : undefined
+            ]
+          )}
+          {!(x.props.title || "").empty() ? (
+            <Text
+              invertColor={true}
+              style={[
+                styles.menuText,
+                { fontSize },
+                i == cIndex
+                  ? GlobalData.theme.settings
+                  : undefined
+              ]}>
+              {x.props.title}
+            </Text>
+          ) : null}
+        </TouchableOpacity>
+      ))}
+    </MContainer>
+  );
+};
+
 const TabBar = ({
   children,
   selectedIndex,
@@ -49,7 +154,7 @@ const TabBar = ({
   scrollableHeader?: boolean;
 }) => {
   const [size, setSize] = useState(undefined);
-
+  GlobalData.hook("theme.settings");
   const getWidth = (index: number) => {
     let v = index * size?.width;
     if (isNaN(v)) return 0;
@@ -69,9 +174,7 @@ const TabBar = ({
     return item;
   };
   const startValue = useRef();
-  const [interpolate, setInterpolate] = useState(
-    getInputRange()
-  );
+  const interpolate = useRef(getInputRange());
 
   const [rItems, setrItems] = useState(
     children.map(x => {})
@@ -83,13 +186,8 @@ const TabBar = ({
   const [index, setIndex] = useState(
     (0).sureValue(selectedIndex)
   );
-
-  const isAnimating = useRef(false);
-
-  useEffect(() => {
-    tAnimate(index, 0);
-  }, [interpolate]);
-
+  const isAnimating = useRef();
+  
   useEffect(
     () => {
       children.forEach((x, i) => {
@@ -116,50 +214,50 @@ const TabBar = ({
     fn: any
   ) => {
     let value =
-      interpolate.find(x => x.index == index)
+      interpolate.current.find(x => x.index == index)
         ?.value ?? 0;
-    Animated.timing(animLeft.x, {
-      toValue: value,
-      duration: (300).sureValue(speed, true),
-      useNativeDriver: true
-    }).start(() => {
+    isAnimating.current?.stop();
+    isAnimating.current = Animated.timing(
+      animLeft.x,
+      {
+        toValue: value,
+        duration: (300).sureValue(speed, true),
+        useNativeDriver: true
+      }
+    );
+    isAnimating.current.start(() => {
+      fn?.();
       animLeft.setValue({
         y: 0,
         x: value
       });
       animLeft.flattenOffset();
-
-      fn?.();
     });
   };
 
   const animateLeft = async (index: number) => {
     //while (isAnimating.current) await sleep(100);
     if (!size) return;
-    isAnimating.current = true;
+    //setIndex(index);
     tAnimate(index, undefined, () => {
-      isAnimating.current = false;
+      setIndex(index);
     });
   };
 
-  let loadChildren = (i: number) => {
+  let loadChildren = async (i: number) => {
+    if (i >= 0 && i < children.length) {
+      animateLeft(i);
+    }
     if (!rItems[i] && children[i]) {
       rItems[i] = {
         child: childPrep(children[i])
       };
     }
-    if (
-      i >= 0 &&
-      i < children.length &&
-      !isAnimating.current
-    ) {
-      setIndex(i);
-      animateLeft(i);
-    }
   };
 
   useEffect(() => {
-    setInterpolate(getInputRange());
+    interpolate.current =getInputRange();
+    tAnimate(index, 0);
   }, [children, size]);
 
   const childPrep = child => {
@@ -170,26 +268,6 @@ const TabBar = ({
       else child.props.style.flex = 1;
     }
     return child;
-  };
-
-  const getIcon = (
-    icon?: TabIcon,
-    iconSize,
-    style
-  ) => {
-    if (!icon) return null;
-    let Type = Icons[icon.type];
-    if (Type)
-      return (
-        <Type
-          name={icon.name}
-          size={(15).sureValue(iconSize)}
-          style={removeProps(
-            style,
-            "backgroundColor"
-          )}
-        />
-      );
   };
 
   // animTop.extractOffset();
@@ -203,11 +281,10 @@ const TabBar = ({
       const { dx, dy } = gestureState;
       let lng = 5;
       return (
-        !isAnimating.current &&
-        (dx > lng ||
-          dx < -lng ||
-          dy > lng ||
-          dy < -lng)
+        dx > lng ||
+        dx < -lng ||
+        dy > lng ||
+        dy < -lng
       );
     },
     onPanResponderGrant: (e, gestureState) => {
@@ -215,7 +292,7 @@ const TabBar = ({
       //alert(interpolate.outputRange[index]);
       animLeft.setValue({
         x:
-          interpolate.find(
+          interpolate.current.find(
             x => x.index == (index ?? 0)
           )?.value ?? 0,
         y: 0
@@ -258,66 +335,6 @@ const TabBar = ({
     }
   });
 
-  let MContainer = View;
-  let prop = {
-    style: [
-      styles.menu,
-      GlobalData.theme.invertSettings()
-    ]
-  };
-  if (scrollableHeader) {
-    MContainer = ScrollView;
-    prop = {
-      contentContainerStyle: prop.style,
-      style: { height: 40 },
-      horizontal: true
-    };
-  }
-  let menuItems = children.filter(
-    x => ifSelector(x.props.ifTrue) !== false
-  );
-  let menu =
-    menuItems.length > 1 ? (
-      <MContainer {...prop}>
-        {menuItems.map((x, i) => (
-          <TouchableOpacity
-            style={[
-              styles.menuBtn,
-              i == (0).sureValue(index)
-                ? GlobalData.theme.settings
-                : undefined
-            ]}
-            key={i + "txt"}
-            onPress={() => loadChildren(i)}>
-            {getIcon(
-              x.props.icon,
-              i == (0).sureValue(index) ? 15 : 18,
-              [
-                styles.menuText,
-                GlobalData.theme.invertSettings(),
-                i == (0).sureValue(index)
-                  ? GlobalData.theme.settings
-                  : undefined
-              ]
-            )}
-            {!(x.props.title || "").empty() ? (
-              <Text
-                invertColor={true}
-                style={[
-                  styles.menuText,
-                  { fontSize },
-                  i == (0).sureValue(index)
-                    ? GlobalData.theme.settings
-                    : undefined
-                ]}>
-                {x.props.title}
-              </Text>
-            ) : null}
-          </TouchableOpacity>
-        ))}
-      </MContainer>
-    ) : null;
-
   return (
     <View
       rootView={rootView}
@@ -327,26 +344,36 @@ const TabBar = ({
           flex: 1,
           width: "100%",
           height: "100%",
-          overflow: "hidden",
-          backgroundColor: "inherit"
+          overflow: "hidden"
         }
       ]}
       onLayout={event => {
         setSize(event.nativeEvent.layout);
       }}>
-      {position === "Top" ? menu : null}
+      {position === "Top" ? (
+        <Menu
+          index={index}
+          children={children}
+          loadChildren={loadChildren}
+          scrollableHeader={scrollableHeader}
+          fontSize={fontSize}
+        />
+      ) : null}
       <Animated.View
         style={[
           styles.container,
           {
+            flex: position === "Top" ? 0 : 1,
+            flexGrow: 1,
+            backgroundColor: "transparent",
             transform: [
               {
                 translateX:
                   animLeft.x.interpolate({
-                    inputRange: interpolate.map(
+                    inputRange: interpolate.current.map(
                       x => x.value
                     ),
-                    outputRange: interpolate.map(
+                    outputRange: interpolate.current.map(
                       x => x.value
                     ),
                     extrapolateLeft: "extend",
@@ -354,10 +381,10 @@ const TabBar = ({
                   })
               }
             ],
-            height: (0).sureValue(
+            /* height: (0).sureValue(
               size?.height -
                 (menu ? styles.menu.height : 0)
-            ),
+            ),*/
             width:
               (size?.width ?? 0) * children.length
           }
@@ -366,7 +393,7 @@ const TabBar = ({
           {})}>
         {children.map((x, i) => (
           <View
-            css="flex fg:1"
+            css="flex fg:1 bac:transparent"
             key={i}>
             {x.props.head}
             {!disableScrolling &&
@@ -390,7 +417,15 @@ const TabBar = ({
           </View>
         ))}
       </Animated.View>
-      {position !== "Top" ? menu : null}
+      {position !== "Top" ? (
+        <Menu
+          index={index}
+          children={children}
+          loadChildren={loadChildren}
+          scrollableHeader={scrollableHeader}
+          fontSize={fontSize}
+        />
+      ) : null}
     </View>
   );
 };
@@ -407,9 +442,9 @@ const styles = StyleSheet.create({
   menuBtn: {
     justifyContent: "center",
     alignItems: "center",
-    height: "100%",
     flex: 1,
-    borderRadius: 0
+    borderRadius: 0,
+    height: 40
   },
   menuText: {
     fontWeight: "bold",
@@ -422,7 +457,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
+    maxHeight: 40,
     height: 40,
+    flex: 0,
+    flexGrow: 1,
     backgroundColor: "transparent"
   }
 });

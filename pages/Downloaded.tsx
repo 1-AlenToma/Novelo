@@ -451,7 +451,7 @@ export default ({ ...props }: any) => {
           state.text = txt;
         }}
       />
-      <Text css="header pa:10 clearwidth">
+      <Text invertColor={false} css="header pa:10 clearwidth">
         Downloaded and Added Epubs
       </Text>
       <ItemList

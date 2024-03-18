@@ -296,7 +296,7 @@ export default ({ ...props }: any) => {
             fetchData();
           }
         }}
-        itemCss="boc:#ccc bow:1 he:170 wi:98% mat:5 pa:4 mal:5 bor:5"
+        itemCss="boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
         items={state.items}
         container={HomeNovelItem}
       />

@@ -57,12 +57,12 @@ export default memo(
         css={
           !vMode
             ? "he:240 mab:10 clearwidth"
-            : "flex mab:10 mat:10"
+            : "flex mab:10"
         }>
         {loader.elem}
         <View css="pal:5 clearwidth par:5 row juc:space-between">
           {!vMode ? (
-            <Text css="header he:20">
+            <Text invertColor={false} css="header he:20">
               {item.text}
             </Text>
           ) : null}
@@ -81,6 +81,7 @@ export default memo(
                   .push();
               }}>
               <Text
+                invertColor={false}
                 css="desc fos:14">
                 Browse
               </Text>

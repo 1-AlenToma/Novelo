@@ -98,11 +98,10 @@ class Create<T extends object> extends ICreate {
 
   hook(...keys: NestedKeyOf<T>) {
     let id = useRef(newId()).current;
-
     let [update, setUpdate] = useState();
     const timer = useTimer(speed);
     this.___events[id] = {
-      fn: () => timer(() => setUpdate(newId())),
+      fn: async() => timer(() => setUpdate(newId())),
       keys: keys
     };
 

@@ -105,6 +105,7 @@ const data = GlobalState(
       settings: undefined,
       invertSettings: () => {},
       themeMode: "dark" as ThemeMode,
+      getRootTheme:(themeMode?:ThemeMode) => {},
       textTheme: () => {
         return { color: data.theme.color };
       },

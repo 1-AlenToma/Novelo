@@ -5,6 +5,7 @@ import {
   StyledView,
   ifSelector
 } from "../Methods";
+import g from "../GlobalContext";
 const Txt = StyledView(Text, "Text");
 export default ({
   style,
@@ -15,7 +16,7 @@ export default ({
   ...props
 }: any) => {
   if (ifSelector(ifTrue) === false) return null;
-
+  g.hook("theme.settings");
   let st = parseThemeStyle(
     style,
     css,

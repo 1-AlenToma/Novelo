@@ -1473,7 +1473,8 @@ export default (props: any) => {
       <View
         css="flex"
         style={{
-          backgroundColor:g.appSettings.backgroundColor
+          backgroundColor:
+            g.appSettings.backgroundColor
         }}
         ready={true}>
         <Controller

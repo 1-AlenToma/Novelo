@@ -71,6 +71,17 @@ export default function App() {
       colorScheme === "light"
         ? styles.lightContainer
         : styles.darkContainer;
+    GlobalData.theme.getRootTheme = (
+      theme: any
+    ) => {
+      theme = theme || GlobalData.theme.themeMode;
+
+      return {
+        ...(theme == "light"
+          ? styles.lightRootTheme
+          : styles.darkRootTheme)
+      };
+    };
     GlobalData.theme.invertSettings = () => {
       return GlobalData.theme.themeMode == "light"
         ? {
@@ -87,7 +98,6 @@ export default function App() {
       ...themeTextStyle,
       ...themeContainerStyle
     };
-    
   };
 
   GlobalData.subscribe(() => {
@@ -151,5 +161,11 @@ const styles = StyleSheet.create({
   },
   darkThemeText: {
     color: "#f7f7f6"
+  },
+  darkRootTheme: {
+    backgroundColor: "#383838"
+  },
+  lightRootTheme: {
+    backgroundColor: "#ffffff"
   }
 });
