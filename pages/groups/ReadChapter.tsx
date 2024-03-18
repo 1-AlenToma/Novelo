@@ -235,14 +235,7 @@ const Controller = ({ state, ...props }) => {
                     name="menu"
                   />
                 }>
-                <View
-                  style={{
-                    height: proc(
-                      95,
-                      g.size.window.height
-                    )
-                  }}
-                  css="clearboth juc:flex-start mih:100%">
+                <View css="clearboth juc:flex-start mah:90%">
                   <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
                     <TextInput
                       onChangeText={x =>
@@ -350,6 +343,7 @@ const Controller = ({ state, ...props }) => {
                 }>
                 <View css="flex">
                   <TabBar
+                    fontSize={14}
                     scrollableHeader={true}
                     position="Top"
                     scrollHeight={proc(

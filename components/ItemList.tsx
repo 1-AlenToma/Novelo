@@ -40,10 +40,8 @@ export default ({
   selectedIndex?: number;
 }) => {
   const g = require("../GlobalContext").default;
-  if (hooks) g.hook(...hooks);
-  g.hook("theme.settings");
+  g.hook("theme.settings", ...(hooks ?? []));
   const time = useTimer(100);
-
   const onEndReachedCalledDuringMomentum =
     useRef(true);
   const ref = useRef();

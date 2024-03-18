@@ -324,7 +324,7 @@ export default ({ ...props }: any) => {
                       }
                       title="Chapters"
                       height="80%">
-                      <View css="clearboth mah:100% juc:flex-start">
+                      <View css="clearboth mah:100% juc:flex-start mah:90%">
                         <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
                           <TextInput
                             onChangeText={x =>

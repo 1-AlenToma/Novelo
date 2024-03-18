@@ -39,7 +39,7 @@ export default ({
     css,
     invertColor
   );
-  if (props.color)
+  //if (props.color)
     useEffect(() => {
       setColor(props.color)
     }, [props.color]);

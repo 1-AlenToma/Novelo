@@ -9,7 +9,7 @@ export default ({ ...props }) => {
   return (
     <TabBar
       rootView={true}
-      fontSize={9}>
+      fontSize={12}>
       <Home
         disableScrolling={true}
         {...props}

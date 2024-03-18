@@ -23,10 +23,8 @@ export default ({
 }: any) => {
   if (ifSelector(ifTrue) === false) return null;
   let keys = ["theme.settings"];
-  if (rootView)
-    keys.push("isFullScreen");
-  //if (ready) keys.push("size");
-  if (keys.has()) g.hook(...keys);
+  if (rootView) keys.push("isFullScreen");
+  g.hook(...keys);
   const [state, setState] = useState(
     ready !== true
   );

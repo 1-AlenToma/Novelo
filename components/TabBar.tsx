@@ -34,7 +34,8 @@ const Menu = ({
   index,
   loadChildren,
   scrollableHeader,
-  fontSize
+  fontSize,
+  position
 }: any) => {
   let use;
   let [cIndex, setCIndex] = useState(index ?? 0);
@@ -61,6 +62,17 @@ const Menu = ({
         />
       );
   };
+
+  const selectedStyle =
+    position != "Top"
+      ? {
+          borderTopWidth: 2,
+          borderTopColor: "#ffff2d"
+        }
+      : {
+          borderBottomWidth: 2,
+          borderBottomColor: "#ffff2d"
+        };
 
   let MContainer = View;
   let prop = {
@@ -95,6 +107,9 @@ const Menu = ({
             styles.menuBtn,
             i == cIndex
               ? GlobalData.theme.settings
+              : undefined,
+            i == cIndex
+              ? selectedStyle
               : undefined
           ]}
           key={i}
@@ -118,11 +133,11 @@ const Menu = ({
               invertColor={true}
               style={[
                 styles.menuText,
-                { fontSize },
                 i == cIndex
                   ? GlobalData.theme.settings
                   : undefined
-              ]}>
+              ]}
+              css={`desc fos:${fontSize ?? 9}`}>
               {x.props.title}
             </Text>
           ) : null}
@@ -187,7 +202,7 @@ const TabBar = ({
     (0).sureValue(selectedIndex)
   );
   const isAnimating = useRef();
-  
+
   useEffect(
     () => {
       children.forEach((x, i) => {
@@ -214,8 +229,9 @@ const TabBar = ({
     fn: any
   ) => {
     let value =
-      interpolate.current.find(x => x.index == index)
-        ?.value ?? 0;
+      interpolate.current.find(
+        x => x.index == index
+      )?.value ?? 0;
     isAnimating.current?.stop();
     isAnimating.current = Animated.timing(
       animLeft.x,
@@ -256,7 +272,7 @@ const TabBar = ({
   };
 
   useEffect(() => {
-    interpolate.current =getInputRange();
+    interpolate.current = getInputRange();
     tAnimate(index, 0);
   }, [children, size]);
 
@@ -357,6 +373,7 @@ const TabBar = ({
           loadChildren={loadChildren}
           scrollableHeader={scrollableHeader}
           fontSize={fontSize}
+          position={position}
         />
       ) : null}
       <Animated.View
@@ -370,12 +387,14 @@ const TabBar = ({
               {
                 translateX:
                   animLeft.x.interpolate({
-                    inputRange: interpolate.current.map(
-                      x => x.value
-                    ),
-                    outputRange: interpolate.current.map(
-                      x => x.value
-                    ),
+                    inputRange:
+                      interpolate.current.map(
+                        x => x.value
+                      ),
+                    outputRange:
+                      interpolate.current.map(
+                        x => x.value
+                      ),
                     extrapolateLeft: "extend",
                     extrapolate: "clamp"
                   })
@@ -424,6 +443,7 @@ const TabBar = ({
           loadChildren={loadChildren}
           scrollableHeader={scrollableHeader}
           fontSize={fontSize}
+          position={position}
         />
       ) : null}
     </View>
@@ -447,7 +467,6 @@ const styles = StyleSheet.create({
     height: 40
   },
   menuText: {
-    fontWeight: "bold",
     alignSelf: "center",
     textTransform: "uppercase"
   },

@@ -8,7 +8,7 @@ import {
 import { newId } from "../Methods";
 import View from "./ThemeView";
 import Text from "./ThemeText";
-import { useUpdate } from "../hooks";
+import { useUpdate, useTimer } from "../hooks";
 
 const ElementsContext = createContext({});
 let zindex = 1;
@@ -78,7 +78,7 @@ const AppContainer = ({
 
 const AppChildContainer = () => {
   const updater = useUpdate();
-
+  const time = useTimer(10);
   const [kk, setK] = useState("12");
   const context = useContext(ElementsContext);
   context.update = () => {
