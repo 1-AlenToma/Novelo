@@ -22,10 +22,9 @@ import {
 } from "../hooks";
 import { useNavigation } from "@react-navigation/native";
 import { Player, DetailInfo } from "../native";
-import g from "../GlobalContext";
 
 export default ({ ...props }: any) => {
-  g.hook(
+  context.hook(
     "player.showController",
     "appSettings",
     "player.showPlayer",
@@ -41,31 +40,33 @@ export default ({ ...props }: any) => {
   let pan = useRef();
   useDbHook(
     "Chapters",
-    item => item.parent_Id === g.player.book?.id,
-    () => g.player.currentChapterSettings,
+    item =>
+      item.parent_Id === context.player.book?.id,
+    () => context.player.currentChapterSettings,
     "audioProgress"
   );
 
-  g.subscribe(() => {
-    if (g.player.hooked && moved.current) {
+  context.subscribe(() => {
+    if (context.player.hooked && moved.current) {
       animation.resetAnimation();
       moved.current = false;
     }
   }, "player.hooked");
   const audioProgressTimer = useTimer(100);
-  if (!g.player || !g.player.book) return null;
+  if (!context.player || !context.player.book)
+    return null;
 
   const touchThreshold = 20;
   if (!pan.current) {
     pan.current = PanResponder.create({
-      onStartShouldSetPanResponder: () => !g.player.hooked,
+      onStartShouldSetPanResponder: () =>
+        !context.player.hooked,
       onMoveShouldSetPanResponder: (
         e,
         gestureState
       ) => {
         const { dx, dy } = gestureState;
-        if(g.player.hooked)
-           return false;
+        if (context.player.hooked) return false;
         return (
           Math.abs(dx) > touchThreshold ||
           Math.abs(dy) > touchThreshold
@@ -95,12 +96,12 @@ export default ({ ...props }: any) => {
   return (
     <>
       <AnimatedView
-        ifTrue={g.player.showPlayer}
+        ifTrue={context.player.showPlayer}
         style={[
           {
             top:
-              g.player.hooked &&
-              g.player.showController &&
+              context.player.hooked &&
+              context.player.showController &&
               !moved.current
                 ? 41
                 : 1,
@@ -110,11 +111,15 @@ export default ({ ...props }: any) => {
                   animation.y.interpolate({
                     inputRange: [
                       0,
-                      g.size.window.height - 40
+                      context.size.window.height -
+                        40
                     ],
                     outputRange: [
-                      g.player.hooked ?0:41,
-                      g.size.window.height - 40
+                      context.player.hooked
+                        ? 0
+                        : 41,
+                      context.size.window.height -
+                        40
                     ],
                     extrapolate: "clamp"
                   })
@@ -123,11 +128,14 @@ export default ({ ...props }: any) => {
           }
         ]}
         css={`band zi:500 bac:black absolute overflow he:40 juc:center ali:center row pal:10 par:10 ${
-          g.player.viewState == "Folded"
+          context.player.viewState == "Folded"
             ? "wi:40 bor:4 ri:2"
-            : !g.player.hooked
+            : !context.player.hooked
             ? "bor:4"
-            : ""
+            : `bobw:1 boc:${methods.invertColor(
+                context.appSettings
+                  .backgroundColor
+              )}`
         }`}
         {...pan.current.panHandlers}
         invertColor={true}>
@@ -138,15 +146,17 @@ export default ({ ...props }: any) => {
             }
             css="wi:30"
             onPress={() => {
-              g.player.viewState =
-                g.player.viewState == "Folded"
+              context.player.viewState =
+                context.player.viewState ==
+                "Folded"
                   ? "Unfolded"
                   : "Folded";
             }}>
             <Icon
               invertColor={true}
               name={
-                g.player.viewState == "Folded"
+                context.player.viewState ==
+                "Folded"
                   ? "menu-unfold"
                   : "menu-fold"
               }
@@ -155,19 +165,22 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              g.nav
+              context.nav
                 .nav("ReadChapter")
                 .add({
-                  url: g.player.novel.url,
+                  url: context.player.novel.url,
                   parserName:
-                    g.player.novel.parserName
+                    context.player.novel
+                      .parserName,
+                  epub: context.player.isEpup
                 })
                 .push();
             }}
             css="wi:30"
             ifTrue={
-              !g.player.hooked &&
-              g.player.viewState !== "Folded"
+              !context.player.hooked &&
+              context.player.viewState !==
+                "Folded"
             }>
             <Icon
               invertColor={true}
@@ -177,55 +190,59 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
           <View
             ifTrue={
-              g.player.viewState != "Folded"
+              context.player.viewState != "Folded"
             }
             invertColor={false}
             css="wi:40 he:30 juc:center ali:center">
             <Text
               css="bold fos:10 tea:center"
               invertColor={false}>
-              {g.player.currentChapterSettings
+              {context.player
+                .currentChapterSettings
                 .audioProgress + 1}
-              /{g.player.chapterArray.length}
+              /
+              {context.player.chapterArray.length}
             </Text>
           </View>
           <View
             css="clearheight flex"
             ifTrue={
-              g.player.viewState != "Folded"
+              context.player.viewState != "Folded"
             }>
             <Slider
               value={
-                g.player.currentChapterSettings
+                context.player
+                  .currentChapterSettings
                   .audioProgress
               }
               onValueChange={value => {
                 audioProgressTimer(async () => {
-                  g.player.currentChapterSettings.audioProgress =
+                  context.player.currentChapterSettings.audioProgress =
                     value;
-                  await g.player.currentChapterSettings.saveChanges();
-                  if (g.player.playing())
-                    g.player.speak();
+                  await context.player.currentChapterSettings.saveChanges();
+                  if (context.player.playing())
+                    context.player.speak();
                 });
               }}
               minimumValue={0}
               maximumValue={
-                g.player.chapterArray.length - 1
+                context.player.chapterArray
+                  .length - 1
               }
             />
           </View>
           <TouchableOpacity
             ifTrue={
-              g.player.viewState != "Folded"
+              context.player.viewState != "Folded"
             }
             onPress={() =>
-              g.player.playing(
-                !g.player.playing()
+              context.player.playing(
+                !context.player.playing()
               )
             }>
             <Icon
               name={
-                g.player.playing()
+                context.player.playing()
                   ? "pause-circle"
                   : "play-circle"
               }
@@ -236,9 +253,11 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
           <TouchableOpacity
             ifTrue={
-              g.player.viewState != "Folded"
+              context.player.viewState != "Folded"
             }
-            onPress={() => g.player.playPrev()}>
+            onPress={() =>
+              context.player.playPrev()
+            }>
             <Icon
               name="play-back-circle"
               size={35}
@@ -248,9 +267,11 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
           <TouchableOpacity
             ifTrue={
-              g.player.viewState != "Folded"
+              context.player.viewState != "Folded"
             }
-            onPress={() => g.player.playNext()}>
+            onPress={() =>
+              context.player.playNext()
+            }>
             <Icon
               name="play-forward-circle"
               size={35}

@@ -10,6 +10,7 @@ import {
   useEffect,
   useRef
 } from "react";
+import { useTimer } from "../hooks";
 import {
   Animated,
   KeyboardAvoidingView,
@@ -52,6 +53,7 @@ export default ({
   const [animTop, setAnimTop] = useState(
     new Animated.Value(-getHeight())
   );
+  const timer = useTimer(5000);
   const animating = useRef();
   let id = useRef(newId());
 
@@ -59,12 +61,15 @@ export default ({
     animating.current?.stop();
     animating.current = Animated.timing(animTop, {
       toValue: !show ? 0 : 1,
-      duration: (100).sureValue(speed),
+      duration: (500).sureValue(speed),
       easing: Easing.linear,
       useNativeDriver: true
     });
     animating.current.start(() => {
-      setIsV(visible);
+      if (isV && !show) {
+        onHide?.();
+        setIsV(false);
+      } else setIsV(visible);
       elContext.update();
     });
   };
@@ -83,6 +88,10 @@ export default ({
   }, [visible, height]);
 
   useEffect(() => {
+    if (isV) timer(() => toggle(false));
+  }, [isV]);
+
+  useEffect(() => {
     return () => {
       elContext.remove(id.current);
       elContext.update();
@@ -98,8 +107,7 @@ export default ({
         <TouchableOpacity
           ifTrue={() => isV}
           onPress={() => {
-            if (props.blur !== false)
-              (onHide || setIsV)(false);
+            toggle(false);
           }}
           css="blur flex"
         />
@@ -114,49 +122,27 @@ export default ({
                       inputRange: [0, 1],
                       outputRange: [
                         -getHeight(),
-                        (context.size.window
-                          .height /
-                          100) *
-                          50 +
-                          (-getHeight() / 100) *
-                            50
+                        40
                       ]
                     }
                   )
                 }
               ]
             },
-            "absolute mah:95% overflow wi:90% juc:flex-start bor:25 le:5%".css()
+            "absolute mah:95% overflow wi:90% juc:flex-start bor:2 le:5%".css()
           ]}>
-          <View
+          <TouchableOpacity
+            onPress={() => toggle(false)}
             invertColor={true}
-            css="clearboth pa:10 flex">
-            <View css="he:30 zi:1">
-              <View css="zi:1 to:5 wi:40 he:26 juc:center ali:center absolute ri:5">
-                <TouchableOpacity
-                  onPress={() => {
-                    (onHide || setIsV)(false);
-                  }}
-                  css="clearboth flex juc:center ali:center">
-                  <Icon
-                    css="bold co:#e7b61d"
-                    type="AntDesign"
-                    name="closecircle"
-                    size={24}
-                  />
-                </TouchableOpacity>
-              </View>
-              <Text
-                ifTrue={title != undefined}
-                invertColor={true}
-                css="header fos:18 bold co:white clearwidth flex">
-                {title}
-              </Text>
-            </View>
-            <View css="flex clearboth">
-              {children}
-            </View>
-          </View>
+            css="flex pal:10 pat:5">
+            <Text
+              ifTrue={title != undefined}
+              invertColor={true}
+              css="header fos:18 clearwidth">
+              {title}
+            </Text>
+            {children}
+          </TouchableOpacity>
         </Animated.View>
       </>,
       id.current,

@@ -8,7 +8,6 @@ import {
   ActionSheetButton
 } from "../components";
 import { useState } from "../native";
-import gdata from "../GlobalContext";
 import { proc } from "../Methods";
 import {
   useNavigation,
@@ -41,13 +40,17 @@ export default ({
   const [params, navOption] =
     useNavigation(props);
   const updater = useUpdate();
-  gdata.hook("KeyboardState", "isFullScreen", "theme.settings");
+  context.hook(
+    "KeyboardState",
+    "isFullScreen",
+    "theme.settings"
+  );
   const input = useRef();
   const state = useState(
     {
       text: "",
       inputAnimator: {
-        width: gdata.size.screen?.width,
+        width: context.size.screen?.width,
         state: false
       }
     },
@@ -66,28 +69,28 @@ export default ({
       updater();
     }, [...buttons]);
 
-  gdata.subscribe(() => {
+  context.subscribe(() => {
     updater();
   }, "appSettings");
 
-  gdata.subscribe(() => {
+  context.subscribe(() => {
     if (
       inputEnabled &&
       state.inputAnimator.show
     ) {
-      if (gdata.KeyboardState)
+      if (context.KeyboardState)
         state.inputAnimator.show();
       else state.inputAnimator.hide();
     }
   }, "KeyboardState");
   let inputWidth = proc(
     50,
-    gdata.size.screen?.width
+    context.size.screen?.width
   );
   return (
     <>
       {state.inputAnimator.state &&
-      gdata.KeyboardState ? (
+      context.KeyboardState ? (
         <TouchableOpacity
           ifTrue={ifTrue}
           onPress={() => input.current.blur()}
@@ -148,7 +151,7 @@ export default ({
             invertColor={false}
             style={{
               width:
-                gdata.parser.all().length > 1
+                context.parser.all().length > 1
                   ? "90%"
                   : "98%"
             }}
@@ -192,7 +195,7 @@ export default ({
               ifTrue={() =>
                 inputEnabled &&
                 !onInputChange &&
-                gdata.parser.all().length > 1
+                context.parser.all().length > 1
               }
               css="mal:10"
               height="60"
@@ -205,23 +208,26 @@ export default ({
                   invertColor={true}
                 />
               }>
-              {gdata.parser.all().map((x, i) => (
-                <TouchableOpacity
-                  key={i}
-                  onPress={() =>
-                    gdata.parser.set(x)
-                  }
-                  css={`listButton pal:5 ${
-                    x.name ===
-                    gdata.parser.current().name
-                      ? "selectedRow bor:5"
-                      : ""
-                  }`}>
-                  <Text invertColor={true}>
-                    {x.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {context.parser
+                .all()
+                .map((x, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() =>
+                      context.parser.set(x)
+                    }
+                    css={`listButton pal:5 ${
+                      x.name ===
+                      context.parser.current()
+                        .name
+                        ? "selectedRow bor:5"
+                        : ""
+                    }`}>
+                    <Text invertColor={true}>
+                      {x.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
             </ActionSheetButton>
           </>
         </View>

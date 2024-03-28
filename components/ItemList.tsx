@@ -39,8 +39,8 @@ export default ({
   hooks?: any[];
   selectedIndex?: number;
 }) => {
-  const g = require("../GlobalContext").default;
-  g.hook("theme.settings", ...(hooks ?? []));
+  
+  context.hook("theme.settings", ...(hooks ?? []));
   const time = useTimer(100);
   const onEndReachedCalledDuringMomentum =
     useRef(true);
@@ -120,7 +120,7 @@ export default ({
         extraData={[
           ...(updater ?? []),
           selectedIndex,
-          g.theme.settings
+          context.theme.settings
         ]}
         onEndReached={() => {
           if (

@@ -1,4 +1,3 @@
-import g from "../GlobalContext";
 import {
   DetailInfo,
   ChapterInfo
@@ -30,6 +29,7 @@ class Player {
   scrollProcent: any = 0;
   isEpup: boolean;
   testVoice: string = "";
+  networkError: boolean = false;
   constructor(
     novel: DetailInfo,
     book: Book,
@@ -53,13 +53,14 @@ class Player {
       html ??
       this.currentChapter.content ??
       this.html;
+      txt=txt.html().html()
     try {
-      //txt = g.dbContext().decode(txt);
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(
           t.edit.escapeRegExp(),
           "gim"
         );
+        
         let className = t.comments?.has()
           ? "comments"
           : "";
@@ -89,26 +90,33 @@ class Player {
     try {
       this.loader?.show();
       if (!this.currentChapterSettings) return;
-      if (this.currentChapter.content?.has()) {
+      if (
+        this.currentChapter.content?.length >= 10
+      ) {
         return await this.clean(
           this.currentChapter.content
         );
       }
-      let parser = g.parser.find(
+      let parser = context.parser.find(
         this.book.parserName
       );
-
+      parser.clearError();
       let str =
         this.novel.epub ||
-        this.currentChapter.content
+        this.currentChapter.content?.length >= 10
           ? this.currentChapter.content
           : await parser.chapter(url);
+
+      this.networkError =
+        parser.getError() &&
+        parser.getError().isNetwork();
 
       return await this.clean(
         (this.currentChapter.content = str)
       );
     } catch (e) {
       console.error(e);
+      this.html = e.message;
       return "could not connect";
     } finally {
       this.loader?.hide();
@@ -128,7 +136,9 @@ class Player {
           let imageData = img.content.startsWith(
             "file"
           )
-            ? await g.imageCache().read(img.content)
+            ? await context
+                .imageCache()
+                .read(img.content)
             : img.content;
           imgs.push({ h, cn: imageData });
         }
@@ -146,7 +156,8 @@ class Player {
   paddingTop() {
     if (
       this.showPlayer ||
-      g.appSettings.navigationType !== "Scroll"
+      context.appSettings.navigationType !==
+        "Scroll"
     )
       return 2;
     return this.currentChapterIndex > 0
@@ -158,22 +169,22 @@ class Player {
     if (index === undefined)
       index = this.book.selectedChapterIndex;
     if (
-      !g.appSettings.currentNovel ||
-      g.appSettings.currentNovel.url !=
+      !context.appSettings.currentNovel ||
+      context.appSettings.currentNovel.url !=
         this.book.url ||
-      g.appSettings.currentNovel.parserName !=
-        this.book.parserName ||
-      g.appSettings.currentNovel.isEpub !=
+      context.appSettings.currentNovel
+        .parserName != this.book.parserName ||
+      context.appSettings.currentNovel.isEpub !=
         this.isEpub
     ) {
-      g.appSettings.currentNovel = {
+      context.appSettings.currentNovel = {
         url: this.book.url,
         parserName: this.book.parserName,
         isEpub:
           this.isEpup ||
           this.book.parserName === "epub"
       };
-      await g.appSettings.saveChanges();
+      await context.appSettings.saveChanges();
     }
     if (typeof index === "string")
       index = this.novel.chapters.findIndex(
@@ -199,15 +210,16 @@ class Player {
         .Name(this.currentChapter.name)
         .ScrollProgress(
           this.currentChapterIndex > 0 &&
-            g.appSettings.navigationType ===
+            context.appSettings.navigationType ===
               "Scroll"
             ? 100
             : 10
         )
         .Parent_Id(this.book.id);
-      await g.db().save<Chapter>(chSettings);
-      this.currentChapterSettings = await g
+      await context
         .db()
+        .save<Chapter>(chSettings);
+      this.currentChapterSettings = await context.db()
         .asQueryable<Chapter>(chSettings);
       this.book.chapterSettings.push(
         this.currentChapterSettings
@@ -308,11 +320,11 @@ class Player {
     this.stop();
     let text =
       this.currentPlaying()?.cleanText() ?? "";
-    g.speech.speak(text, {
+    context.speech.speak(text, {
       language: undefined,
-      pitch: g.appSettings.pitch,
-      rate: g.appSettings.rate,
-      voice: g.appSettings.voice,
+      pitch: context.appSettings.pitch,
+      rate: context.appSettings.rate,
+      voice: context.appSettings.voice,
       onDone: async () => {
         if (this.playing()) this.playNext();
       }
@@ -320,12 +332,12 @@ class Player {
   }
 
   async testPlay(voice: string) {
-    g.speech.speak(
+    context.speech.speak(
       `There are a number of ways to identify a hearing loss.`,
       {
         language: undefined,
-        pitch: g.appSettings.pitch,
-        rate: g.appSettings.rate,
+        pitch: context.appSettings.pitch,
+        rate: context.appSettings.rate,
         voice: voice,
         onDone: async () => {
           this.testVoice = "";
@@ -335,7 +347,7 @@ class Player {
   }
 
   stop() {
-    g.speech.stop();
+    context.speech.stop();
   }
 }
 

@@ -18,7 +18,6 @@ import {
   PanResponder
 } from "react-native";
 import { useUpdate } from "../hooks";
-const g = require("../GlobalContext").default;
 export default ({
   title,
   height,
@@ -45,7 +44,7 @@ export default ({
         parseFloat(
           (h?.toString() ?? "0").replace(/%/g, "")
         ),
-        g.size.window.height
+        context.size.window.height
       );
     }
     if (h < 400) h = 400;
@@ -53,14 +52,14 @@ export default ({
     return h;
   };
 
-  let context = useContext(ElementsContext);
+  let elContext = useContext(ElementsContext);
   const [started, setStarted] = useState(false);
   const isVisible = useRef(false);
   const panResponse = useRef();
   const isTouched = useRef(false);
   const interpolate = useRef([
-    g.size.window.height - getHeight() + 80,
-    g.size.window.height + 50
+    context.size.window.height - getHeight() + 80,
+    context.size.window.height + 50
   ]);
 
   const animTop = useRef(
@@ -110,10 +109,12 @@ export default ({
     );
   };
 
-  g.subscribe(() => {
+  context.subscribe(() => {
     interpolate.current = [
-      g.size.window.height - getHeight() + 80,
-      g.size.window.height + 50
+      context.size.window.height -
+        getHeight() +
+        80,
+      context.size.window.height + 50
     ];
 
     if (isVisible.current) {
@@ -129,7 +130,7 @@ export default ({
   }, "size");
 
   if (typeof visible === "function")
-    g.subscribe(() => {
+    context.subscribe(() => {
       toggle(visible());
     }, "selection");
   if (typeof visible !== "function")
@@ -140,8 +141,8 @@ export default ({
   useEffect(() => {
     setStarted(true);
     return () => {
-      context.remove(id.current);
-      context.update();
+      elContext.remove(id.current);
+      elContext.update();
     };
   }, []);
 
@@ -202,9 +203,9 @@ export default ({
         }
       });
     }
-    let op = !context.has(id.current)
-      ? context.push.bind(context)
-      : context.updateProps.bind(context);
+    let op = !elContext.has(id.current)
+      ? elContext.push.bind(elContext)
+      : elContext.updateProps.bind(elContext);
     op(
       <>
         <TouchableOpacity

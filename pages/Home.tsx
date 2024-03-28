@@ -17,7 +17,6 @@ import {
   useRef,
   memo
 } from "react";
-import g from "../GlobalContext";
 import Header from "./Header";
 import {
   useNavigation,
@@ -38,29 +37,29 @@ const CurrentItem = ({
   const [_, options, navop] =
     useNavigation(props);
   const [visible, setVisible] = useState(false);
-  g.hook("theme.settings")
-  const [books, dataIsLoading, reload] = g
+  context.hook("theme.settings");
+  const [books, dataIsLoading, reload] = context
     .db()
     .useQuery(
       "Books",
-      g
+      context
         .db()
         .querySelector<Book>("Books")
         .Where.Column(x => x.url)
         .EqualTo(
-          g.appSettings.currentNovel?.url ??
+          context.appSettings.currentNovel?.url ??
             "hhhh"
         )
         .AND.Column(x => x.parserName)
         .EqualTo(
-          g.appSettings.currentNovel
+          context.appSettings.currentNovel
             ?.parserName ?? "gggg"
         )
     );
   useDbHook(
     "AppSettings",
     item => true,
-    () => g.appSettings,
+    () => context.appSettings,
     "currentNovel"
   )(() => reload());
 
@@ -106,8 +105,8 @@ const CurrentItem = ({
                   parserName: book.parserName,
                   epub:
                     book.parserName == "epub" ||
-                    g.appSettings.currentNovel
-                      ?.isEpub
+                    context.appSettings
+                      .currentNovel?.isEpub
                 })
                 .push();
               setVisible(false);
@@ -119,7 +118,7 @@ const CurrentItem = ({
             />
             <Text invertColor={true}>
               Read
-              {g.appSettings.currentNovel
+              {context.appSettings.currentNovel
                 ?.isEpub &&
               book.parserName != "epub"
                 ? ` (Epub)`
@@ -128,7 +127,7 @@ const CurrentItem = ({
           </TouchableOpacity>
           <TouchableOpacity
             ifTrue={() =>
-              g.appSettings.currentNovel
+              context.appSettings.currentNovel
                 ?.isEpub &&
               book.parserName != "epub"
             }
@@ -155,8 +154,9 @@ const CurrentItem = ({
           <TouchableOpacity
             css="listButton"
             onPress={() => {
-              g.appSettings.currentNovel = {};
-              g.appSettings.saveChanges();
+              context.appSettings.currentNovel =
+                {};
+              context.appSettings.saveChanges();
               setVisible(false);
             }}>
             <Icon
@@ -170,6 +170,7 @@ const CurrentItem = ({
       </ActionSheet>
       <AnimatedView
         style={style}
+        css="bor:5 overflow ma:5"
         invertColor={true}>
         {children}
         <TouchableOpacity
@@ -183,7 +184,7 @@ const CurrentItem = ({
                 parserName: book.parserName,
                 epub:
                   book.parserName == "epub" ||
-                  g.appSettings.currentNovel
+                  context.appSettings.currentNovel
                     ?.isEpub
               })
               .push();
@@ -205,7 +206,7 @@ const CurrentItem = ({
               invertColor={true}
               css="desc co:red bottom le:35%">
               READING NOW
-              {g.appSettings.currentNovel
+              {context.appSettings.currentNovel
                 ?.isEpub &&
               book.parserName != "epub"
                 ? ` (Epub)`
@@ -220,8 +221,9 @@ const CurrentItem = ({
 export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
-  g.nav = options;
-  let groups = g.parser.current().settings.group;
+  context.nav = options;
+  let groups =
+    context.parser.current().settings.group;
   let scrollAnimation = useRef(
     new Animated.Value(0)
   ).current;
@@ -262,12 +264,18 @@ export default ({ ...props }: any) => {
         </CurrentItem>
 
         {groups.map((x, i) => (
-          <NovelGroup
-            {...props}
-            key={i + g.parser.current().name}
-            item={x}
-            vMode={false}
-          />
+          <View
+            invertColor={true}
+            css="ali:center bor:5 overflow ma:5 pa:5 pab:0"
+            key={
+              i + context.parser.current().name
+            }>
+            <NovelGroup
+              {...props}
+              item={x}
+              vMode={false}
+            />
+          </View>
         ))}
       </ScrollView>
     </View>

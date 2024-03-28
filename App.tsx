@@ -1,3 +1,4 @@
+import "./Global.d";
 import {
   StatusBar,
   setStatusBarHidden
@@ -10,7 +11,7 @@ import {
   Dimensions,
   LogBox
 } from "react-native";
-import "./Global.d";
+
 import {
   useLoader,
   AppContainer,
@@ -22,7 +23,6 @@ import {
   AlertView,
   CheckBox
 } from "./components";
-import GlobalData from "./GlobalContext";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
@@ -31,23 +31,23 @@ import { clearStyles } from "./styles";
 
 export default function App() {
   const fontLoader = useFonts();
-  GlobalData.hook(
+  context.hook(
     "size",
     "theme.settings",
     "isFullScreen",
     "updater"
   );
 
-  GlobalData.subscribe(
+  context.subscribe(
     (item, props) => {
       NavigationBar.setVisibilityAsync(
-        GlobalData.isFullScreen &&
-          !GlobalData.KeyboardState
+        context.isFullScreen &&
+          !context.KeyboardState
           ? "hidden"
           : "visible"
       );
-      setStatusBarHidden(GlobalData.isFullScreen);
-      if (!GlobalData.isFullScreen)
+      setStatusBarHidden(context.isFullScreen);
+      if (!context.isFullScreen)
         NavigationBar.setBehaviorAsync(
           "overlay-swipe"
         );
@@ -61,8 +61,7 @@ export default function App() {
   const loader = useLoader(true);
 
   const setThemeStyle = () => {
-    const colorScheme =
-      GlobalData.theme.themeMode;
+    const colorScheme = context.theme.themeMode;
     const themeTextStyle =
       colorScheme === "light"
         ? styles.lightThemeText
@@ -71,10 +70,8 @@ export default function App() {
       colorScheme === "light"
         ? styles.lightContainer
         : styles.darkContainer;
-    GlobalData.theme.getRootTheme = (
-      theme: any
-    ) => {
-      theme = theme || GlobalData.theme.themeMode;
+    context.theme.getRootTheme = (theme: any) => {
+      theme = theme || context.theme.themeMode;
 
       return {
         ...(theme == "light"
@@ -82,8 +79,8 @@ export default function App() {
           : styles.darkRootTheme)
       };
     };
-    GlobalData.theme.invertSettings = () => {
-      return GlobalData.theme.themeMode == "light"
+    context.theme.invertSettings = () => {
+      return context.theme.themeMode == "light"
         ? {
             ...styles.darkContainer,
             ...styles.darkThemeText
@@ -94,13 +91,13 @@ export default function App() {
           };
     };
     clearStyles();
-    GlobalData.theme.settings = {
+    context.theme.settings = {
       ...themeTextStyle,
       ...themeContainerStyle
     };
   };
 
-  GlobalData.subscribe(() => {
+  context.subscribe(() => {
     setThemeStyle();
   }, "theme.themeMode");
 
@@ -110,8 +107,8 @@ export default function App() {
     (async () => {
       try {
         loader.show();
-        itemToRemove = await GlobalData.init();
-        GlobalData.isFullScreen = false;
+        itemToRemove = await context.init();
+        context.isFullScreen = false;
       } catch (e) {
         console.error(e);
       } finally {
@@ -126,6 +123,7 @@ export default function App() {
 
   if (loader.loading) return loader.elem;
   if (fontLoader.loading) return fontLoader.elem;
+  //context.alert("test").toast();
   return (
     <AppContainer>
       <NavigationContainer>
@@ -134,7 +132,7 @@ export default function App() {
       </NavigationContainer>
       <StatusBar
         style={
-          GlobalData.theme.themeMode == "light"
+          context.theme.themeMode == "light"
             ? "dark"
             : "light"
         }

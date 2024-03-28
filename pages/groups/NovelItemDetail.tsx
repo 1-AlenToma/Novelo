@@ -22,7 +22,6 @@ import {
 } from "react-native";
 import { useNavigation } from "../../hooks";
 import { useState } from "../../native";
-import g from "../../GlobalContext";
 import Header from "../../pages/Header";
 import { Book } from "../../db";
 
@@ -39,13 +38,16 @@ export default ({ ...props }: any) => {
   });
   let fetchData = async () => {
     loader.show();
+    let parser = context.parser.find(parserName);
     try {
-      let parser = g.parser.find(parserName);
       if (parser && url) {
-        let novel = await parser.detail(url);
+        let novel = await parser.detail(
+          url,
+          true
+        );
         state.novel = novel ?? {};
         if (novel) {
-          state.book = await g
+          state.book = await context
             .db()
             .querySelector<Book>("Books")
             .Where.Column(x => x.url)
@@ -68,9 +70,9 @@ export default ({ ...props }: any) => {
       return;
       state.infoLoading = true;
       if (novel && (novel.name?.has() ?? false)) {
-        let item = await g.parser
+        let item = await context.parser
           .find(parserName)
-          .novelInfo(novel);
+          .novelInfo(novel, true);
         if (item) {
           state.novel = item;
         }
@@ -419,14 +421,18 @@ export default ({ ...props }: any) => {
               css="button mar:5 clearheight juc:center"
               invertColor={true}
               onPress={async () => {
-                g.downloadManager().download(
-                  state.novel.url,
-                  state.novel.parserName
-                );
-                g.alert(
-                  "novel is downloading",
-                  "attantion"
-                ).show();
+                context
+                  .downloadManager()
+                  .download(
+                    state.novel.url,
+                    state.novel.parserName
+                  );
+                context
+                  .alert(
+                    "novel is downloading",
+                    "attantion"
+                  )
+                  .show();
               }}>
               <View css="blur" />
               <Icon

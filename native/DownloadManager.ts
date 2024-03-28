@@ -46,12 +46,7 @@ export default class DownloadManager {
       if (this.items.has(url)) return;
       this.items.set(url, 0.1);
       this.change();
-      let key = `${(url + parserName)
-        .replace(
-          /(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim,
-          ""
-        )
-        .toLowerCase()}.json`;
+      let key = "".fileName(url , parserName);
       const g =
         require("../GlobalContext").default;
       const ParserWrapper =
@@ -96,6 +91,13 @@ export default class DownloadManager {
           let cn = ch.content;
           if (cn === undefined) {
             cn = await parser.chapter(ch.url);
+            while (
+              parser.getError() &&
+              parser.getError().isNetwork()
+            ) {
+              await sleep(10000);
+              cn = await parser.chapter(ch.url);
+            }
           }
 
           if (!cn || !cn.has()) {
@@ -142,7 +144,7 @@ export default class DownloadManager {
     } catch (e) {
       console.error(e);
     }
-    
+
     this.items.delete(url);
     this.change();
   }

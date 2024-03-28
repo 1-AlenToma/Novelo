@@ -14,7 +14,6 @@ import {
   Modal
 } from "../components";
 import { useEffect, useRef, memo } from "react";
-import g from "../GlobalContext";
 import Header from "./Header";
 import { Buffer } from "buffer";
 import {
@@ -32,11 +31,23 @@ import {
 } from "../native";
 import { sleep } from "../Methods";
 const ItemRender = ({ item, state }: any) => {
-  const { fileItems, elem } = g
+  if (!item) return null;
+  const { fileItems, elem } = context
     .files()
-    .useFile("json", x => item.url == x.url);
+    .useFile("json", x => {
+      return x.has(
+        "".fileName(
+          item.url,
+          item.parserName == "epub"
+            ? ""
+            : item.parserName
+        )
+      );
+    });
   const loader = useLoader(true);
-  const urls = g.downloadManager().useDownload();
+  const urls = context
+    .downloadManager()
+    .useDownload();
   const itemState = useState({
     info: undefined
   });
@@ -94,7 +105,9 @@ const ItemRender = ({ item, state }: any) => {
         <TouchableOpacity
           css="button zi:6 miw:30"
           onPress={() =>
-            g.downloadManager().stop(item.url)
+            context
+              .downloadManager()
+              .stop(item.url)
           }>
           <Icon
             invertColor={true}
@@ -122,14 +135,14 @@ export default ({ ...props }: any) => {
     skipImages: false
   });
   const loader = useLoader();
-  const { fileItems, elem } = g
+  const { fileItems, elem } = context
     .files()
     .useFile("json", undefined, "NewDelete");
-  const [books, dataIsLoading, reload] = g
+  const [books, dataIsLoading, reload] = context
     .db()
     .useQuery(
       "Books",
-      g
+      context
         .db()
         .querySelector<Book>("Books")
         .LoadChildren<Chapter>(
@@ -155,84 +168,89 @@ export default ({ ...props }: any) => {
           type: "application/epub+zip"
         });
       if (!assets || assets.length <= 0) return;
-      g.alert(
-        `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
-        "Please Confirm"
-      ).confirm(async answer => {
-        state.skipImages = answer;
-        try {
-          loader.show();
-          await g.db().disableHooks();
-          await g.db().disableWatchers();
-          g.files().disable();
-          let uri = assets?.firstOrDefault("uri");
-          let name =
-            assets?.firstOrDefault("name");
-          let bk = await ZipBook.load(
-            uri,
-            name,
-            p => {
-              loader.show(p);
-            },
-            state.skipImages
-          );
-          let images = bk.files.filter(
-            x => x.type === "Image"
-          );
-          let total = images.length;
-          let count = 0;
-          const calc = async () => {
-            count++;
-            loader.show((100 * count) / total);
-          };
-          if (!state.skipImages) {
-            for (let file of images) {
-              await calc();
-              file.content = await g
-                .imageCache()
-                .write(file.url, file.content);
-            }
+      context
+        .alert(
+          `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
+          "Please Confirm"
+        )
+        .confirm(async answer => {
+          state.skipImages = answer;
+          try {
+            loader.show();
+            await context.db().disableHooks();
+            await context.db().disableWatchers();
+            context.files().disable();
+            let uri =
+              assets?.firstOrDefault("uri");
+            let name =
+              assets?.firstOrDefault("name");
+            let bk = await ZipBook.load(
+              uri,
+              name,
+              p => {
+                loader.show(p);
+              },
+              state.skipImages
+            );
+            let images = bk.files.filter(
+              x => x.type === "Image"
+            );
+            let total = images.length;
+            let count = 0;
+            const calc = async () => {
+              count++;
+              loader.show((100 * count) / total);
+            };
+            if (!state.skipImages) {
+              for (let file of images) {
+                await calc();
+                file.content = await g
+                  .imageCache()
+                  .write(file.url, file.content);
+              }
 
-            let chImage =
-              ZipBook.createImageChapter(images);
-            if (chImage)
-              bk.chapters = [
-                chImage,
-                ...bk.chapters
-              ];
+              let chImage =
+                ZipBook.createImageChapter(
+                  images
+                );
+              if (chImage)
+                bk.chapters = [
+                  chImage,
+                  ...bk.chapters
+                ];
+            }
+            let book = Book.n()
+              .Name(bk.name)
+              .Url(bk.url)
+              .Favorit(false)
+              .InlineStyle(
+                bk.files
+                  .filter(x => x.type === "CSS")
+                  .map(x => x.content)
+                  .join("\n")
+              )
+              .ImageBase64(
+                bk.files.find(
+                  x => x.type === "Image"
+                )?.content ?? ""
+              )
+              .ParserName("epub");
+            await g
+              .files()
+              .write(bk.url, JSON.stringify(bk));
+            await context.db().save(book);
+          } catch (e) {
+            context.alert(e.message).show();
+            console.error(e);
+          } finally {
+            context.db().enableWatchers();
+            context.db().enableHooks();
+            context.files().enable();
+            loader.hide();
           }
-          let book = Book.n()
-            .Name(bk.name)
-            .Url(bk.url)
-            .Favorit(false)
-            .InlineStyle(
-              bk.files
-                .filter(x => x.type === "CSS")
-                .map(x => x.content)
-                .join("\n")
-            )
-            .ImageBase64(
-              bk.files.find(
-                x => x.type === "Image"
-              )?.content ?? ""
-            )
-            .ParserName("epub");
-          await g
-            .files()
-            .write(bk.url, JSON.stringify(bk));
-          await g.db().save(book);
-        } catch (e) {
-          g.alert(e.message).show();
-          console.error(e);
-        } finally {
-          g.db().enableWatchers();
-          g.db().enableHooks();
-          g.files().enable();
-          loader.hide();
-        }
-      });
+        });
     } catch (e) {
-      g.alert(e.message).show();
+      context.alert(e.message).show();
       console.error(e);
     }
   };
@@ -254,11 +272,14 @@ export default ({ ...props }: any) => {
           overflow: "hidden",
           "text-align-vertical": "top",
           "font-size":
-            g.appSettings.fontSize + "px",
+            context.appSettings.fontSize + "px",
           "line-height":
-            g.appSettings.fontSize * 1.7 + "px",
-          "text-align": g.appSettings.textAlign,
-          "font-weight": g.appSettings.isBold
+            context.appSettings.fontSize * 1.7 +
+            "px",
+          "text-align":
+            context.appSettings.textAlign,
+          "font-weight": context.appSettings
+            .isBold
             ? "bold"
             : "normal"
         }
@@ -281,34 +302,35 @@ export default ({ ...props }: any) => {
       <ActionSheet
         title="Actions"
         onHide={() =>
-          (g.selection.downloadSelectedItem =
+          (context.selection.downloadSelectedItem =
             undefined)
         }
         visible={() =>
-          g.selection.downloadSelectedItem !==
-          undefined
+          context.selection
+            .downloadSelectedItem !== undefined
         }
         height={300}>
         <View>
           <TouchableOpacity
             css="listButton"
             ifTrue={() =>
-              g.selection.downloadSelectedItem
+              context.selection
+                .downloadSelectedItem
                 ?.parserName != "epub"
             }
             onPress={() => {
               options
                 .nav("NovelItemDetail")
                 .add({
-                  url: g.selection
+                  url: context.selection
                     .downloadSelectedItem.url,
                   parserName:
-                    g.selection
+                    context.selection
                       .downloadSelectedItem
                       .parserName
                 })
                 .push();
-              g.selection.downloadSelectedItem =
+              context.selection.downloadSelectedItem =
                 undefined;
             }}>
             <Icon
@@ -324,16 +346,16 @@ export default ({ ...props }: any) => {
               options
                 .nav("ReadChapter")
                 .add({
-                  url: g.selection
+                  url: context.selection
                     .downloadSelectedItem.url,
                   parserName:
-                    g.selection
+                    context.selection
                       .downloadSelectedItem
                       .parserName,
                   epub: true
                 })
                 .push();
-              g.selection.downloadSelectedItem =
+              context.selection.downloadSelectedItem =
                 undefined;
             }}>
             <Icon
@@ -346,48 +368,51 @@ export default ({ ...props }: any) => {
           <TouchableOpacity
             css="listButton"
             onPress={() => {
-              g.alert(
-                `You will be deleting this novel.\nAre you sure?`,
-                "Please Confirm"
-              ).confirm(async answer => {
-                loader.show();
-                if (answer) {
-                  try {
-                    let file = fileItems.find(
-                      x =>
-                        x.url ==
-                        g.selection
-                          .downloadSelectedItem
-                          .url
-                    );
+              context
+                .alert(
+                  `You will be deleting this novel.\nAre you sure?`,
+                  "Please Confirm"
+                )
+                .confirm(async answer => {
+                  loader.show();
+                  if (answer) {
+                    try {
+                      let file = fileItems.find(
+                        x =>
+                          x.url ==
+                          context.selection
+                            .downloadSelectedItem
+                            .url
+                      );
 
-                    if (file) {
-                      if (
-                        g.selection
-                          .downloadSelectedItem
-                          .parserName == "epub" ||
-                        !g.selection
-                          .downloadSelectedItem
-                          .favorit
-                      ) {
-                        await g
-                          .dbContext()
-                          .deleteBook(
-                            g.selection
-                              .downloadSelectedItem
-                              .id
-                          );
+                      if (file) {
+                        if (
+                          context.selection
+                            .downloadSelectedItem
+                            .parserName ==
+                            "epub" ||
+                          !context.selection
+                            .downloadSelectedItem
+                            .favorit
+                        ) {
+                          await g
+                            .dbContext()
+                            .deleteBook(
+                              context.selection
+                                .downloadSelectedItem
+                                .id
+                            );
+                        }
+                        await file.deleteFile();
                       }
-                      await file.deleteFile();
+                    } catch (e) {
+                      console.error(e);
                     }
-                  } catch (e) {
-                    console.error(e);
+                    context.selection.downloadSelectedItem =
+                      undefined;
                   }
-                  g.selection.downloadSelectedItem =
-                    undefined;
-                }
-                loader.hide();
-              });
+                  loader.hide();
+                });
             }}>
             <Icon
               invertColor={true}
@@ -398,24 +423,29 @@ export default ({ ...props }: any) => {
           </TouchableOpacity>
           <TouchableOpacity
             ifTrue={() =>
-              g.selection.downloadSelectedItem
+              context.selection
+                .downloadSelectedItem
                 ?.parserName !== "epub" &&
               !g
                 .downloadManager()
                 .items.has(
-                  g.selection.downloadSelectedItem
-                    ?.url ?? ""
+                  context.selection
+                    .downloadSelectedItem?.url ??
+                    ""
                 )
             }
             css="listButton"
             onPress={() => {
-              g.downloadManager().download(
-                g.selection.downloadSelectedItem
-                  .url,
-                g.selection.downloadSelectedItem
-                  .parserName
-              );
-              g.selection.downloadSelectedItem =
+              context
+                .downloadManager()
+                .download(
+                  context.selection
+                    .downloadSelectedItem.url,
+                  context.selection
+                    .downloadSelectedItem
+                    .parserName
+                );
+              context.selection.downloadSelectedItem =
                 undefined;
             }}>
             <Icon
@@ -451,13 +481,16 @@ export default ({ ...props }: any) => {
           state.text = txt;
         }}
       />
-      <Text invertColor={false} css="header pa:10 clearwidth">
+      <Text
+        invertColor={false}
+        css="header pa:10 clearwidth">
         Downloaded and Added Epubs
       </Text>
       <ItemList
         css="flex"
         onPress={x =>
-          (g.selection.downloadSelectedItem = x)
+          (context.selection.downloadSelectedItem =
+            x)
         }
         items={books?.filter(x =>
           x.name.has(state.text)

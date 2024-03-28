@@ -71,6 +71,7 @@ export default ({
       </View>
       <Component
         {...props}
+        blur={false}
         visible={visible}
         onHide={() => setVisible(false)}>
         <View

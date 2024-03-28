@@ -12,29 +12,27 @@ export default (
   let currentValues = useRef({}).current;
   const on = useRef();
   let setValues = (item: any) => {
-    if(!item)
-     return;
+    if (!item) return;
     for (let k of keys) {
-      if(k=="*")
-        return;
+      if (k == "*") return;
       currentValues[k] = item[k];
     }
-    if(on.current)
-       on.current()
+    if (on.current) on.current();
   };
 
   let hasChange = (item: any) => {
     if (validator(item)) {
       for (let k of keys) {
-        if(k=="*")
-        return true;
+        if (k == "*") return true;
         let a = currentValues[k];
         let b = item[k];
-        if (a !== b) return true;
+        if (a !== b) {
+          return true;
+        }
       }
     }
   };
-  
+
   useEffect(() => {
     setValues(currentItem());
     var watcher = g.db().watch<any>(tbName);
@@ -49,5 +47,5 @@ export default (
     return () => watcher.removeWatch();
   }, []);
 
-  return (fn:any)=> on.current=fn;
+  return (fn: any) => (on.current = fn);
 };

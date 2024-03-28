@@ -12,7 +12,7 @@ import {
   ActionSheet
 } from "../components";
 import { useEffect, useRef, memo } from "react";
-import g from "../GlobalContext";
+
 import Header from "./Header";
 import { Buffer } from "buffer";
 import {
@@ -39,28 +39,32 @@ export default ({ ...props }: any) => {
     json: "",
     infoNovel: {}
   });
-  const { fileItems } = g.files().useFile("json");
-  const [books, dataIsLoading] = g.db().useQuery(
-    "Books",
-    g
-      .db()
-      .querySelector<Book>("Books")
-      .LoadChildren<Chapter>(
-        "Chapters",
-        "parent_Id",
-        "id",
-        "chapterSettings",
-        true
-      )
-      .Where.Column(x => x.favorit)
-      .EqualTo(true)
-  );
+  const { fileItems } = context
+    .files()
+    .useFile("json");
+  const [books, dataIsLoading] = context
+    .db()
+    .useQuery(
+      "Books",
+      context
+        .db()
+        .querySelector<Book>("Books")
+        .LoadChildren<Chapter>(
+          "Chapters",
+          "parent_Id",
+          "id",
+          "chapterSettings",
+          true
+        )
+        .Where.Column(x => x.favorit)
+        .EqualTo(true)
+    );
 
   useEffect(() => {
     (async () => {
       for (let b of books) {
         if (b.parserName !== "epub") {
-          let novel = await g.parser
+          let novel = await context.parser
             .find(b.parserName)
             .detail(b.url);
           if (novel) {
@@ -81,10 +85,12 @@ export default ({ ...props }: any) => {
       <ActionSheet
         title="Actions"
         onHide={() =>
-          (g.selection.favoritItem = undefined)
+          (context.selection.favoritItem =
+            undefined)
         }
         visible={() =>
-          g.selection.favoritItem !== undefined
+          context.selection.favoritItem !==
+          undefined
         }
         height={300}>
         <View>
@@ -94,14 +100,15 @@ export default ({ ...props }: any) => {
               options
                 .nav("NovelItemDetail")
                 .add({
-                  url: g.selection.favoritItem
-                    .url,
+                  url: context.selection
+                    .favoritItem.url,
                   parserName:
-                    g.selection.favoritItem
+                    context.selection.favoritItem
                       .parserName
                 })
                 .push();
-              g.selection.favoritItem = undefined;
+              context.selection.favoritItem =
+                undefined;
             }}>
             <Icon
               invertColor={true}
@@ -116,14 +123,15 @@ export default ({ ...props }: any) => {
               options
                 .nav("ReadChapter")
                 .add({
-                  url: g.selection.favoritItem
-                    .url,
+                  url: context.selection
+                    .favoritItem.url,
                   parserName:
-                    g.selection.favoritItem
+                    context.selection.favoritItem
                       .parserName
                 })
                 .push();
-              g.selection.favoritItem = undefined;
+              context.selection.favoritItem =
+                undefined;
             }}>
             <Icon
               invertColor={true}
@@ -135,40 +143,42 @@ export default ({ ...props }: any) => {
           <TouchableOpacity
             css="listButton"
             onPress={() => {
-              g.alert(
-                `You will be deleting this novel.\nAre you sure?`,
-                "Please Confirm"
-              ).confirm(async answer => {
-                loader.show();
-                if (answer) {
-                  try {
-                    let file = fileItems.find(
-                      x =>
-                        x.url ==
-                        g.selection.favoritItem
-                          .url
-                    );
+              context
+                .alert(
+                  `You will be deleting this novel.\nAre you sure?`,
+                  "Please Confirm"
+                )
+                .confirm(async answer => {
+                  loader.show();
+                  if (answer) {
+                    try {
+                      let file = fileItems.find(
+                        x =>
+                          x.url ==
+                          context.selection
+                            .favoritItem.url
+                      );
 
-                    if (file) {
-                      await g.selection.favoritItem
-                        .Favorit(false)
-                        .saveChanges();
-                    } else {
-                      await g
-                        .dbContext()
-                        .deleteBook(
-                          g.selection.favoritItem
-                            .id
-                        );
+                      if (file) {
+                        awaitcontext.selection.favoritItem
+                          .Favorit(false)
+                          .saveChanges();
+                      } else {
+                        await g
+                          .dbContext()
+                          .deleteBook(
+                            context.selection
+                              .favoritItem.id
+                          );
+                      }
+                    } catch (e) {
+                      console.error(e);
                     }
-                  } catch (e) {
-                    console.error(e);
+                    context.selection.favoritItem =
+                      undefined;
                   }
-                  g.selection.favoritItem =
-                    undefined;
-                }
-                loader.hide();
-              });
+                  loader.hide();
+                });
             }}>
             <Icon
               invertColor={true}
@@ -191,7 +201,7 @@ export default ({ ...props }: any) => {
       <ItemList
         css="flex"
         onPress={x =>
-          (g.selection.favoritItem = x)
+          (context.selection.favoritItem = x)
         }
         items={books?.filter(x =>
           x.name.has(state.text)

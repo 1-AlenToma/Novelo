@@ -28,7 +28,6 @@ import {
   useState,
   SearchDetail
 } from "../../native";
-import g from "../../GlobalContext";
 import Header from "../../pages/Header";
 
 const ActionItem = ({
@@ -105,8 +104,8 @@ export default ({ ...props }: any) => {
     navop
   ] = useNavigation(props);
   const parser = parserName?.has()
-    ? g.parser.find(parserName)
-    : g.parser.current();
+    ? context.parser.find(parserName)
+    : context.parser.current();
   const loader = useLoader(
     searchTxt?.has() ?? false
   );
@@ -139,7 +138,7 @@ export default ({ ...props }: any) => {
       else txt.page = page;
       let currentItems =
         txt.page > 1 ? [...state.items] : [];
-      let items = await parser.search(txt);
+      let items = await parser.search(txt, true);
       if (txt.page <= 1) currentItems = items;
       else {
         currentItems = currentItems.distinct(

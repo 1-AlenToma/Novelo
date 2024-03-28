@@ -19,6 +19,30 @@ export default class ParserWrapper extends Parser {
     this.novelUpdate = new NovelUpdate();
   }
 
+  getContext() {
+    return context;
+  }
+
+  getError() {
+    return this.parser.http.httpError;
+  }
+
+  clearError() {
+    this.parser.http.httpError = undefined;
+    return this;
+  }
+
+  showError() {
+    if (this.getError()) {
+      context
+        .alert(
+          this.getError().toString(),
+          "Error"
+        )
+        .toast();
+    }
+  }
+
   static getAllParsers(parserName?: string) {
     let prs = [ReadNovelFull].map(
       x => new ParserWrapper(new x())
@@ -43,13 +67,22 @@ export default class ParserWrapper extends Parser {
       data.chapters &&
       data.chapters.length > 0
   })
-  async detail(url: string) {
+  async detail(
+    url: string,
+    alertOnError?: boolean
+  ) {
     let item = await this.parser.detail(url);
+    if (alertOnError) this.showError();
     return item;
   }
 
-  async search(options: SearchDetail) {
-    return await this.parser.search(options);
+  async search(
+    options: SearchDetail,
+    alertOnError?: boolean
+  ) {
+    let item = await this.parser.search(options);
+    if (alertOnError) this.showError();
+    return item;
   }
 
   @Memo({
@@ -71,8 +104,14 @@ export default class ParserWrapper extends Parser {
       data.chapters &&
       data.chapters.length > 0
   })
-  async novelInfo(item: DetailInfo) {
-    return await this.novelUpdate.search(item);
+  async novelInfo(
+    item: DetailInfo,
+    alertOnError?: boolean
+  ) {
+    let novel =
+      await this.novelUpdate.search(item);
+    if (alertOnError) this.showError();
+    return novel;
   }
 
   async fetchSelectorImage(selector: string) {
@@ -122,16 +161,31 @@ export default class ParserWrapper extends Parser {
       !data[0].name.empty() &&
       !data[0].url.empty()
   })
-  async group(value: Value, page: number) {
+  async group(
+    value: Value,
+    page: number,
+    alertOnError?: boolean
+  ) {
     try {
-      return await this.parser.group(value, page);
+      let item = await this.parser.group(
+        value,
+        page
+      );
+      if (alertOnError) this.showError();
+      return item;
     } catch (e) {
       console.error("group", value, e);
+      if (alertOnError) this.showError();
       return [];
     }
   }
 
-  async chapter(url: string) {
-    return await this.parser.chapter(url);
+  async chapter(
+    url: string,
+    alertOnError?: boolean
+  ) {
+    let item = await this.parser.chapter(url);
+    if (alertOnError) this.showError();
+    return item;
   }
 }

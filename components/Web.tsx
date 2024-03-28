@@ -17,7 +17,6 @@ import { ScrollView } from "react-native";
 import { Asset, useAssets } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import { Player, DetailInfo } from "../../native";
-import g from "../GlobalContext";
 import View from "./ThemeView";
 import TextView from "./ThemeText";
 import BattariView from "./BattariView";
@@ -77,7 +76,7 @@ const Clock = () => {
       <TextView
         style={{
           color: invertColor(
-            g.appSettings.backgroundColor
+            context.appSettings.backgroundColor
           )
         }}
         css="bold fos:10">
@@ -88,7 +87,7 @@ const Clock = () => {
 };
 
 const Scroller = ({ ...props }: any) => {
-  g.hook(
+  context.hook(
     "player.scrollProcent",
     "appSettings",
     "player.showPlayer"
@@ -96,17 +95,18 @@ const Scroller = ({ ...props }: any) => {
   const { size, strokeWidth, text, css } = props;
   const radius = (size - strokeWidth) / 2;
   const circum = radius * 2 * Math.PI;
-  let svgProgress = 100 - g.player.scrollProcent;
+  let svgProgress =
+    100 - context.player.scrollProcent;
   if (svgProgress < 0) svgProgress = 0;
   if (svgProgress > 100) svgProgress = 100;
   const textColor = invertColor(
-    g.appSettings.backgroundColor
+    context.appSettings.backgroundColor
   );
   const textSize = 10;
   return (
     <View
       css={css}
-      ifTrue={!g.player.showPlayer}>
+      ifTrue={!context.player.showPlayer}>
       <Svg
         width={size}
         height={size}>
@@ -156,9 +156,9 @@ const Scroller = ({ ...props }: any) => {
           y={size / 2 + (textSize / 2 - 1)}
           textAnchor="middle"
           fill={textColor}>
-          {(g.player.scrollProcent > 100
+          {(context.player.scrollProcent > 100
             ? 100
-            : g.player.scrollProcent
+            : context.player.scrollProcent
           ).toFixed(0)}
         </Text>
       </Svg>
@@ -318,13 +318,16 @@ export default ({
       case "Image":
         postMessage(
           "images",
-          await g.player.getImage(...data.data),
+          await context.player.getImage(
+            ...data.data
+          ),
           "window.loadImages"
         );
         break;
     }
   };
   loading.current = true;
+
   return (
     <>
       <View css="absolute ri:10 bo:10 zi:99 juc:space-between ali:center">
@@ -335,7 +338,9 @@ export default ({
         />
         <Clock />
         <BattariView
-          color={g.appSettings.backgroundColor}
+          color={
+            context.appSettings.backgroundColor
+          }
         />
       </View>
       <WebView
@@ -416,11 +421,11 @@ export default ({
             }" === "Snap"){
              new window.slider({
              id: "novel",
-             hasNext: ${g.player
+             hasNext: ${context.player
                .hasNext()
                .toString()
                .toLowerCase()},
-             hasPrev: ${g.player
+             hasPrev: ${context.player
                .hasPrev()
                .toString()
                .toLowerCase()},
@@ -456,10 +461,10 @@ export default ({
           const contentHeight = Math.round(
             contentSize.height
           );
-          g.player.scrollProcent =
+           context.player.scrollProcent =
             (100 * offset) /
             (contentHeight -
-              g.player.paddingTop());
+              context.player.paddingTop());
           if (scrollDisabled) return;
           if (loading.current) {
             timer(
@@ -482,11 +487,14 @@ export default ({
         scalesPageToFit={true}
         originWhitelist={["*"]}
         scrollEnabled={true}
+        style={style}
         containerStyle={[
           {
+            backgroundColor:
+              context.appSettings.backgroundColor,
             zIndex: 70,
             flex: 0,
-            flexGrow:1
+            flexGrow: 1
           },
           style
         ]}

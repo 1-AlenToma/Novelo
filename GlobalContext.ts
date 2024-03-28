@@ -25,6 +25,7 @@ LogBox.ignoreLogs([
   "new NativeEventEmitter",
   "Internal React error"
 ]);
+
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
 const globalDb = new dbContext();
@@ -64,6 +65,12 @@ const data = GlobalState(
           data.alertMessage.msg = msg;
           data.alertMessage.title = title;
           data.alertMessage.confirm = func;
+        },
+        toast: () => {
+          data.alertMessage.msg = msg;
+          data.alertMessage.title = title;
+          data.alertMessage.confirm = undefined;
+          data.alertMessage.toast = true;
         }
       };
     },
@@ -76,7 +83,7 @@ const data = GlobalState(
     voices: undefined,
     cache: () => cache,
     files: () => files,
-    imageCache: ()=> imageCache,
+    imageCache: () => imageCache,
     speech: Speech,
     nav: undefined,
     orientation: (
@@ -105,7 +112,7 @@ const data = GlobalState(
       settings: undefined,
       invertSettings: () => {},
       themeMode: "dark" as ThemeMode,
-      getRootTheme:(themeMode?:ThemeMode) => {},
+      getRootTheme: (themeMode?: ThemeMode) => {},
       textTheme: () => {
         return { color: data.theme.color };
       },
@@ -150,7 +157,8 @@ const data = GlobalState(
             "AppSettings"
           )
           .findOrSave(data.appSettings);
-        data.theme.themeMode =data.appSettings.theme;
+        data.theme.themeMode =
+          data.appSettings.theme;
         loadVoices();
         data.parser.current().settings =
           await data.parser.current().load();
@@ -189,6 +197,7 @@ const data = GlobalState(
       }
     }
   },
-  "nav"
+  "nav",
+  "player.currentChapterSettings.scrollProgress"
 );
 export default data;

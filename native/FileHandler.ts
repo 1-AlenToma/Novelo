@@ -103,27 +103,31 @@ export default class FileHandler {
         }
       };
     }, []);
+    useEffect(() => {
+      //this.events[id]();
+    }, [validator]);
 
     const loadItems = async () => {
       await loader.show();
       let ims = [];
       await setItems([]);
       for (let file of files.current) {
+        let breakit = false;
         try {
+          if (validator) {
+            if (validator(file)) breakit = true;
+            else continue;
+          }
           let item = await loadContent(
             file,
             globalType
           );
           if (!item) continue;
-          if (validator) {
-            if (validator(item)) {
-              ims.push(item);
-              break;
-            }
-          } else ims.push(item);
+          ims.push(item);
         } catch (e) {
           console.error(e);
         }
+        if (breakit) break;
       }
 
       await setItems(ims);
@@ -134,7 +138,6 @@ export default class FileHandler {
       file: string,
       type?: "json" | "utf8" | "base64"
     ) => {
-      let g = require("../GlobalContext").default;
       let item = await this.read(
         file,
         type && type != "json" ? type : "utf8"
@@ -144,7 +147,7 @@ export default class FileHandler {
         try {
           let tm = JSON.parse(item);
           tm.deleteFile = async () => {
-            await g
+            await context
               .imageCache()
               .clearImages(tm.files ?? []);
             await this.delete(file);

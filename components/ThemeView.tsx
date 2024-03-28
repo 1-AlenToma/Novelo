@@ -1,13 +1,7 @@
 import { View } from "react-native";
 import { useState } from "react";
 import Constants from "expo-constants";
-import {
-  removeProps,
-  parseThemeStyle,
-  StyledView,
-  ifSelector
-} from "../Methods";
-import g from "../GlobalContext";
+import { StyledView } from "../Methods";
 
 const VS = StyledView(View, "View");
 
@@ -21,22 +15,23 @@ export default ({
   ifTrue,
   ...props
 }: any) => {
-  if (ifSelector(ifTrue) === false) return null;
+  if (methods.ifSelector(ifTrue) === false)
+    return null;
   let keys = ["theme.settings"];
   if (rootView) keys.push("isFullScreen");
-  g.hook(...keys);
+  context.hook(...keys);
   const [state, setState] = useState(
     ready !== true
   );
   const [size, setSize] = useState();
-  let st = parseThemeStyle(
+  let st = methods.parseThemeStyle(
     style,
     undefined,
     invertColor,
     rootView
   );
 
-  if (rootView && !g.isFullScreen) {
+  if (rootView && !context.isFullScreen) {
     st.push({
       marginTop: Constants.statusBarHeight
     });

@@ -7,7 +7,5 @@ export default <T>(
   item: T,
   ...ignoreKeys: (keyof T)[]
 ) => {
-  let state = UseState(item, ...ignoreKeys);
-
-  return state;
+  return UseState(item, ...ignoreKeys);
 };

@@ -42,7 +42,6 @@ import {
   Player,
   DetailInfo
 } from "../../native";
-import g from "../../GlobalContext";
 import Header from "../../pages/Header";
 import { Book, Chapter } from "../../db";
 import {
@@ -68,11 +67,11 @@ const Controller = ({ state, ...props }) => {
   useDbHook(
     "Chapters",
     item => item.parent_Id === state.book.id,
-    () => g.player.currentChapterSettings,
+    () => context.player.currentChapterSettings,
     "audioProgress"
   );
 
-  g.hook(
+  context.hook(
     "player.showController",
     "player.showPlayer",
     "player.chapterArray",
@@ -89,11 +88,11 @@ const Controller = ({ state, ...props }) => {
   });
 
   useEffect(() => {
-    if (g.appSettings.lockScreen)
-      g.orientation("LANDSCAPE");
+    if (context.appSettings.lockScreen)
+      context.orientation("LANDSCAPE");
 
     return () => {
-      g.orientation("Default");
+      context.orientation("Default");
     };
   }, []);
 
@@ -115,54 +114,59 @@ const Controller = ({ state, ...props }) => {
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined)
-        g.appSettings.fontSize = fontSize;
+        context.appSettings.fontSize = fontSize;
       if (isBold != undefined) {
-        g.appSettings.isBold = isBold;
+        context.appSettings.isBold = isBold;
       }
       if (backgroundColor !== undefined)
-        g.appSettings.backgroundColor =
+        context.appSettings.backgroundColor =
           backgroundColor;
       if (textAlign != undefined)
-        g.appSettings.textAlign = textAlign;
+        context.appSettings.textAlign = textAlign;
       if (lockScreen != undefined) {
-        g.appSettings.lockScreen = lockScreen;
-        if (g.appSettings.lockScreen)
-          g.orientation("LANDSCAPE");
-        else g.orientation("Default");
+        context.appSettings.lockScreen =
+          lockScreen;
+        if (context.appSettings.lockScreen)
+          context.orientation("LANDSCAPE");
+        else context.orientation("Default");
       }
       if (rate != undefined)
-        g.appSettings.rate = rate;
+        context.appSettings.rate = rate;
       if (pitch != undefined)
-        g.appSettings.pitch = pitch;
+        context.appSettings.pitch = pitch;
       if (fontName)
-        g.appSettings.fontName = fontName;
-      if (voice) g.appSettings.voice = voice;
+        context.appSettings.fontName = fontName;
+      if (voice)
+        context.appSettings.voice = voice;
       if (margin != undefined)
-        g.appSettings.margin = margin;
+        context.appSettings.margin = margin;
       if (navigationType != undefined)
-        g.appSettings.navigationType =
+        context.appSettings.navigationType =
           navigationType;
       if (use3D != undefined)
-        g.appSettings.use3D = use3D;
+        context.appSettings.use3D = use3D;
       if (fontStyle != undefined)
-        g.appSettings.fontStyle = fontStyle;
+        context.appSettings.fontStyle = fontStyle;
       if (shadowLength != undefined)
-        g.appSettings.shadowLength = shadowLength;
+        context.appSettings.shadowLength =
+          shadowLength;
 
-      await g.appSettings.saveChanges();
+      await context.appSettings.saveChanges();
     });
   };
 
   return (
     <>
       <View
-        ifTrue={g.player.showController}
-        css="band he:110 bottom juc:center ali:center pal:10 par:10"
+        ifTrue={context.player.showController}
+        css={`band he:110 bottom juc:center ali:center pal:10 par:10 botw:1 boc:${invertColor(
+          context.appSettings.backgroundColor
+        )}`}
         invertColor={true}>
         <Text
           invertColor={true}
           css="desc fos:13">
-          {g.player.procent(
+          {context.player.procent(
             thisState.chapterSliderValue
           )}
         </Text>
@@ -171,20 +175,23 @@ const Controller = ({ state, ...props }) => {
             invertColor={true}
             buttons={true}
             disableTimer={true}
-            value={g.player.currentChapterIndex}
+            value={
+              context.player.currentChapterIndex
+            }
             onValueChange={v => {
               thisState.chapterSliderValue = v;
             }}
             onSlidingComplete={index => {
               Timer(() => {
-                g.player.jumpTo(index);
+                context.player.jumpTo(index);
                 thisState.chapterSliderValue =
                   undefined;
               });
             }}
             minimumValue={0}
             maximumValue={
-              g.player.novel.chapters.length - 1
+              context.player.novel.chapters
+                .length - 1
             }
           />
         </View>
@@ -199,15 +206,17 @@ const Controller = ({ state, ...props }) => {
             numberOfLines={1}
             css="desc color:red">
             {
-              g.player.currentChapterSettings
-                ?.name
+              context.player
+                .currentChapterSettings?.name
             }
           </Text>
         </View>
       </View>
       <Header
-        ifTrue={g.player.showController}
-        css="absolute to:0"
+        ifTrue={context.player.showController}
+        css={`absolute to:0 bobw:1 boc:${invertColor(
+          context.appSettings.backgroundColor
+        )}`}
         buttons={[
           {
             text: (
@@ -218,9 +227,9 @@ const Controller = ({ state, ...props }) => {
               />
             ),
             press: () => {
-              g.player.playing(false);
-              g.player.showPlayer =
-                !g.player.showPlayer;
+              context.player.playing(false);
+              context.player.showPlayer =
+                !context.player.showPlayer;
             }
           },
           {
@@ -252,13 +261,15 @@ const Controller = ({ state, ...props }) => {
                   <ItemList
                     css="flex"
                     onPress={item => {
-                      g.player.jumpTo(item.url);
+                      context.player.jumpTo(
+                        item.url
+                      );
                     }}
                     selectedIndex={state.novel.chapters?.findIndex(
                       x =>
                         x.url ==
-                        g.player.currentChapter
-                          .url
+                        context.player
+                          .currentChapter.url
                     )}
                     items={state.novel.chapters?.filter(
                       x =>
@@ -275,8 +286,9 @@ const Controller = ({ state, ...props }) => {
                     }) => (
                       <View
                         css={`flex mih:20 row juc:space-between di:flex ali:center pal:5 bor:2 ${
-                          g.player.currentChapter
-                            .url == item.url
+                          context.player
+                            .currentChapter.url ==
+                          item.url
                             ? "selectedRow"
                             : ""
                         }`}>
@@ -292,7 +304,7 @@ const Controller = ({ state, ...props }) => {
                           <Icon
                             invertColor={true}
                             color={
-                              g.player.book.chapterSettings.find(
+                              context.player.book.chapterSettings.find(
                                 x =>
                                   x.url ==
                                   item.url
@@ -308,7 +320,7 @@ const Controller = ({ state, ...props }) => {
                           <Icon
                             invertColor={true}
                             color={
-                              g.player.book.chapterSettings.find(
+                              context.player.book.chapterSettings.find(
                                 x =>
                                   x.url ==
                                   item.url
@@ -346,10 +358,7 @@ const Controller = ({ state, ...props }) => {
                     fontSize={14}
                     scrollableHeader={true}
                     position="Top"
-                    scrollHeight={proc(
-                      95,
-                      g.size.window.height
-                    )}>
+                    >
                     <View
                       title="Settings"
                       css="flex">
@@ -360,11 +369,11 @@ const Controller = ({ state, ...props }) => {
                           height={200}
                           toTop={true}
                           selectedIndex={
-                            g.appSettings
+                            context.appSettings
                               .navigationType
                           }
                           updater={[
-                            g.appSettings
+                            context.appSettings
                               .navigationType
                           ]}
                           hooks={[
@@ -379,7 +388,8 @@ const Controller = ({ state, ...props }) => {
                               <View
                                 css={`
                                   ${item ==
-                                  g.appSettings
+                                  context
+                                    .appSettings
                                     .navigationType
                                     ? "selectedRow"
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
@@ -400,7 +410,7 @@ const Controller = ({ state, ...props }) => {
                             });
                           }}
                           selectedValue={
-                            g.appSettings
+                            context.appSettings
                               .navigationType ||
                             "Snap"
                           }
@@ -418,11 +428,12 @@ const Controller = ({ state, ...props }) => {
                           ).findIndex(
                             x =>
                               x ==
-                              g.appSettings
+                              context.appSettings
                                 .fontName
                           )}
                           updater={[
-                            g.appSettings.fontName
+                            context.appSettings
+                              .fontName
                           ]}
                           hooks={[
                             "appSettings.fontName"
@@ -435,7 +446,8 @@ const Controller = ({ state, ...props }) => {
                               <View
                                 css={`
                                   ${item ==
-                                  g.appSettings
+                                  context
+                                    .appSettings
                                     .fontName
                                     ? "selectedRow"
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
@@ -462,7 +474,7 @@ const Controller = ({ state, ...props }) => {
                             });
                           }}
                           selectedValue={
-                            g.appSettings
+                            context.appSettings
                               .fontName ||
                             "SourceSans3-Black"
                           }
@@ -477,7 +489,8 @@ const Controller = ({ state, ...props }) => {
                           invertColor={true}
                           buttons={true}
                           value={
-                            g.appSettings.fontSize
+                            context.appSettings
+                              .fontSize
                           }
                           onSlidingComplete={fontSize => {
                             editSettings({
@@ -496,11 +509,11 @@ const Controller = ({ state, ...props }) => {
                           height={200}
                           toTop={true}
                           selectedIndex={
-                            g.appSettings
+                            context.appSettings
                               .fontStyle
                           }
                           updater={[
-                            g.appSettings
+                            context.appSettings
                               .fontStyle
                           ]}
                           hooks={[
@@ -516,7 +529,8 @@ const Controller = ({ state, ...props }) => {
                               <View
                                 css={`
                                   ${item ==
-                                  (g.appSettings
+                                  (context
+                                    .appSettings
                                     .fontStyle ??
                                     "normal")
                                     ? "selectedRow"
@@ -538,7 +552,7 @@ const Controller = ({ state, ...props }) => {
                             });
                           }}
                           selectedValue={(
-                            g.appSettings
+                            context.appSettings
                               .fontStyle ||
                             "normal"
                           ).displayName()}
@@ -553,7 +567,8 @@ const Controller = ({ state, ...props }) => {
                           invertColor={true}
                           buttons={true}
                           value={
-                            g.appSettings.margin
+                            context.appSettings
+                              .margin
                           }
                           onSlidingComplete={margin => {
                             editSettings({
@@ -570,12 +585,13 @@ const Controller = ({ state, ...props }) => {
                         css="pal:1"
                         invertColor={true}
                         checked={
-                          g.appSettings.lockScreen
+                          context.appSettings
+                            .lockScreen
                         }
                         onChange={() => {
                           editSettings({
                             lockScreen:
-                              !g.appSettings
+                              !context.appSettings
                                 .lockScreen
                           });
                         }}
@@ -586,20 +602,22 @@ const Controller = ({ state, ...props }) => {
                         css="pal:1"
                         invertColor={true}
                         checked={
-                          g.appSettings.use3D
+                          context.appSettings
+                            .use3D
                         }
                         onChange={() => {
                           editSettings({
                             use3D:
-                              !g.appSettings.use3D
+                              !context.appSettings
+                                .use3D
                           });
                         }}>
                         <Form
                           css="form"
                           text="Shadow Length:"
                           ifTrue={() =>
-                            g.appSettings.use3D ==
-                            true
+                            context.appSettings
+                              .use3D == true
                           }>
                           <Slider
                             css="flex"
@@ -607,7 +625,7 @@ const Controller = ({ state, ...props }) => {
                             invertColor={true}
                             buttons={true}
                             value={(1).sureValue(
-                              g.appSettings
+                              context.appSettings
                                 .shadowLength,
                               true
                             )}
@@ -627,7 +645,7 @@ const Controller = ({ state, ...props }) => {
                         text="Background:">
                         <ColorPicker
                           value={
-                            g.appSettings
+                            context.appSettings
                               .backgroundColor
                           }
                           onComplete={({ hex }) =>
@@ -664,7 +682,8 @@ const Controller = ({ state, ...props }) => {
                               size={30}
                               style={{
                                 ...(x.has(
-                                  g.appSettings
+                                  context
+                                    .appSettings
                                     .textAlign
                                 )
                                   ? {
@@ -683,16 +702,16 @@ const Controller = ({ state, ...props }) => {
                         <TextInput
                           isModole={true}
                           invertColor={false}
-                          css="textAlignVertical:top wi:100% pa:5 bor:2 he:100%"
+                          css="wi:100% pa:5 bor:2 he:100%"
                           multiline={true}
                           defaultValue={
-                            g.player.book
+                            context.player.book
                               .inlineStyle
                           }
                           onChangeText={t => {
-                            g.player.book.inlineStyle =
+                            context.player.book.inlineStyle =
                               t;
-                            g.player.book.saveChanges();
+                            context.player.book.saveChanges();
                           }}
                         />
                       </Form>
@@ -705,12 +724,13 @@ const Controller = ({ state, ...props }) => {
                           height="80"
                           toTop={true}
                           updater={[
-                            g.player.testVoice
+                            context.player
+                              .testVoice
                           ]}
                           hooks={[
                             "player.testVoice"
                           ]}
-                          items={g.voices}
+                          items={context.voices}
                           onSearch={(
                             item,
                             txt
@@ -730,17 +750,19 @@ const Controller = ({ state, ...props }) => {
                               item.language;
                             return l.has(txt);
                           }}
-                          selectedIndex={g.voices.findIndex(
+                          selectedIndex={context.voices.findIndex(
                             x =>
                               x.name ==
-                              g.appSettings.voice
+                              context.appSettings
+                                .voice
                           )}
                           render={item => {
                             return (
                               <View
                                 css={`
                                   ${item.name ==
-                                  g.appSettings
+                                  context
+                                    .appSettings
                                     .voice
                                     ? "selectedRow"
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between
@@ -767,13 +789,14 @@ const Controller = ({ state, ...props }) => {
                                 </Text>
                                 <TouchableOpacity
                                   onPress={() =>
-                                    g.player.testPlaying(
+                                    context.player.testPlaying(
                                       item.name
                                     )
                                   }>
                                   <Icon
                                     name={
-                                      g.player
+                                      context
+                                        .player
                                         .testVoice ==
                                       item.name
                                         ? "stop-circle"
@@ -795,8 +818,8 @@ const Controller = ({ state, ...props }) => {
                             });
                           }}
                           selectedValue={
-                            g.appSettings.voice ??
-                            ""
+                            context.appSettings
+                              .voice ?? ""
                           }
                         />
                       </Form>
@@ -810,7 +833,8 @@ const Controller = ({ state, ...props }) => {
                           buttons={true}
                           step={0.1}
                           value={
-                            g.appSettings.pitch
+                            context.appSettings
+                              .pitch
                           }
                           onSlidingComplete={pitch => {
                             editSettings({
@@ -831,7 +855,8 @@ const Controller = ({ state, ...props }) => {
                           buttons={true}
                           step={0.1}
                           value={
-                            g.appSettings.rate
+                            context.appSettings
+                              .rate
                           }
                           onSlidingComplete={rate => {
                             editSettings({
@@ -848,14 +873,15 @@ const Controller = ({ state, ...props }) => {
                         style={{
                           height: proc(
                             95,
-                            g.size.window.height
+                            context.size.window
+                              .height
                           )
                         }}
                         css="clearboth juc:flex-start mih:100%">
                         <ItemList
                           css="flex"
                           items={
-                            g.player.book
+                            context.player.book
                               .textReplacements
                           }
                           container={({
@@ -883,14 +909,14 @@ const Controller = ({ state, ...props }) => {
                               </Text>
                               <TouchableOpacity
                                 onPress={async () => {
-                                  g.player.book.textReplacements =
-                                    g.player.book.textReplacements.filter(
+                                  context.player.book.textReplacements =
+                                    context.player.book.textReplacements.filter(
                                       x =>
                                         x != item
                                     );
 
-                                  await g.player.book.saveChanges();
-                                  await g.player.clean();
+                                  await context.player.book.saveChanges();
+                                  await context.player.clean();
                                 }}
                                 css="button">
                                 <Text
@@ -926,10 +952,10 @@ const InternalWeb = ({
   useDbHook(
     "Chapters",
     item => item.parent_Id === state.book.id,
-    () => g.player.currentChapterSettings,
+    () => context.player.currentChapterSettings,
     "audioProgress"
   );
-  g.subscribe(
+  context.subscribe(
     () => {
       updater();
     },
@@ -937,33 +963,38 @@ const InternalWeb = ({
     "player.book.inlineStyle",
     "player.showPlayer"
   );
-  let color = g.appSettings.backgroundColor;
+  let color = context.appSettings.backgroundColor;
 
   let inverted = invertColor(color);
   let shadow = inverted.has("white")
     ? "#4e4d4d"
     : "#919191";
   let shadowLength = (1).sureValue(
-    g.appSettings.shadowLength,
+    context.appSettings.shadowLength,
     true
   );
 
   return (
     <Web
+      style={{
+        backgroundColor: color
+      }}
       navigationType={
-        g.appSettings.navigationType
+        context.appSettings.navigationType
       }
-      scrollDisabled={g.player.showPlayer}
-      fontName={g.appSettings.fontName}
-      inlineStyle={g.player.book.inlineStyle}
+      scrollDisabled={context.player.showPlayer}
+      fontName={context.appSettings.fontName}
+      inlineStyle={
+        context.player.book.inlineStyle
+      }
       css={`
         *:not(context):not(context *) {
-          font-family: "${g.appSettings
+          font-family: "${context.appSettings
             .fontName}";
           font-size-adjust: 1;
-          font-style: ${g.appSettings.fontStyle ??
-          "normal"};
-          ${g.appSettings.use3D
+          font-style: ${context.appSettings
+            .fontStyle ?? "normal"};
+          ${context.appSettings.use3D
             ? `
             text-shadow: 1px ${shadowLength}px 1px ${shadow};
             `
@@ -1001,36 +1032,38 @@ const InternalWeb = ({
         }
         body .novel {
           max-width: 100%;
-          min-height: ${!g.player.showPlayer
+          min-height: ${!context.player.showPlayer
             ? "100%"
             : "50%"};
-          top: ${g.player.showPlayer
+          top: ${context.player.showPlayer
             ? "45px"
             : "0px"};
           position: relative;
           overflow: hidden;
           text-align-vertical: top;
-          padding-bottom: ${g.player.paddingBottom()}px;
-          padding-top: ${g.player.paddingTop()}px;
+          padding-bottom: ${context.player.paddingBottom()}px;
+          padding-top: ${context.player.paddingTop()}px;
           padding-left: ${(5).sureValue(
-            g.appSettings.margin
+            context.appSettings.margin
           )}px;
           padding-right: ${(5).sureValue(
-            g.appSettings.margin
+            context.appSettings.margin
           )}px;
-          font-size: ${g.appSettings.fontSize}px;
-          line-height: ${g.appSettings.fontSize *
-          1.7}px;
-          text-align: ${g.appSettings.textAlign};
+          font-size: ${context.appSettings
+            .fontSize}px;
+          line-height: ${context.appSettings
+            .fontSize * 1.7}px;
+          text-align: ${context.appSettings
+            .textAlign};
         }
       `}
       click={() => {
-        g.player.showController =
-          !g.player.showController;
+        context.player.showController =
+          !context.player.showController;
       }}
       onComments={index => {
         state.comment =
-          g.player.book.textReplacements[
+          context.player.book.textReplacements[
             index
           ].comments;
       }}
@@ -1060,17 +1093,17 @@ const InternalWeb = ({
         content: `
           <div id="novel" style="visibility:hidden" class="novel">
           ${
-            g.player.showPlayer
+            context.player.showPlayer
               ? `<p>${
-                  g.player
+                  context.player
                     .currentPlaying()
                     ?.cleanText() ?? ""
                 }</p>`
-              : g.player.html
+              : context.player.html
           }
           </div>`,
         scroll:
-          g.player.currentChapterSettings
+          context.player.currentChapterSettings
             .scrollProgress
       }}
       menuItems={{
@@ -1101,13 +1134,15 @@ const InternalWeb = ({
           }
         ]
       }}
-      bottomReched={() => g.player.next(true)}
-      topReched={() => g.player.prev()}
+      bottomReched={() =>
+        context.player.next(true)
+      }
+      topReched={() => context.player.prev()}
       onScroll={(y: number) => {
-        g.player.currentChapterSettings.scrollProgress =
+        context.player.currentChapterSettings.scrollProgress =
           y;
-        //console.log(y);
-        g.player.currentChapterSettings.saveChanges();
+
+        context.player.currentChapterSettings.saveChanges();
       }}
     />
   );
@@ -1119,25 +1154,37 @@ export default (props: any) => {
   const updater = useUpdate();
   const loader = useLoader(true);
   useKeepAwake();
-  const files = g
-    .files()
-    .useFile("json", undefined, "New");
-  const state = useState({
-    novel: {} as DetailInfo,
-    parser: g.parser.find(parserName),
-    book: {} as Book,
-    textToTranslate: undefined,
-    translationLanguage: "English",
-    translationResult: "",
-    textEdit: undefined,
-    comment: undefined,
-    define: undefined
-  });
+  const files = context.files().useFile(
+    "json",
+    x => {
+      return x.has(
+        "".fileName(
+          url,
+          parserName == "epub" ? "" : parserName
+        )
+      );
+    },
+    "New"
+  );
+  const state = useState(
+    {
+      novel: {} as DetailInfo,
+      parser: context.parser.find(parserName),
+      book: {} as Book,
+      textToTranslate: undefined,
+      translationLanguage: "English",
+      translationResult: "",
+      textEdit: undefined,
+      comment: undefined,
+      define: undefined
+    },
+    "book"
+  );
 
   useDbHook(
     "AppSettings",
     item => true,
-    () => g.appSettings,
+    () => context.appSettings,
     "*"
   );
 
@@ -1149,17 +1196,20 @@ export default (props: any) => {
         return;
       }
       if (
-        !g.player.novel ||
-        g.player.novel.url !== url ||
-        g.player.isEpup != (epub === true)
+        !context.player.novel ||
+        context.player.novel.url !== url ||
+        context.player.isEpup != (epub === true)
       ) {
         state.novel =
           parserName == "epub" || epub
             ? files.fileItems.find(
                 x => x.url === url
               )
-            : await state.parser.detail(url);
-        let book = await g
+            : await state.parser.detail(
+                url,
+                true
+              );
+        let book = await context
           .db()
           .querySelector<Book>("Books")
           .LoadChildren<Chapter>(
@@ -1179,7 +1229,7 @@ export default (props: any) => {
               .Name(state.novel.name)
               .ParserName(parserName)
               .ImageBase64(
-                await g
+                await context
                   .http()
                   .imageUrlToBase64(
                     state.novel.image
@@ -1191,7 +1241,7 @@ export default (props: any) => {
           book.textReplacements = [];
         state.book = book;
 
-        g.player = new Player(
+        context.player = new Player(
           state.novel,
           state.book,
           {
@@ -1200,16 +1250,17 @@ export default (props: any) => {
           },
           epub === true
         );
-        await g.player.jumpTo();
+        await context.player.jumpTo();
       } else {
-        state.novel = g.player.novel;
-        state.book = g.player.book;
-        g.player.loader = {
+        state.novel = context.player.novel;
+        state.book = context.player.book;
+        context.player.loader = {
           show: () => loader.show(),
           hide: () => loader.hide()
         };
-        g.player.hooked = true;
-        g.player.viewState = "Default";
+        context.player.hooked = true;
+        context.player.viewState = "Default";
+        await context.player.jumpTo();
         loader.hide();
       }
     } catch (e) {
@@ -1225,29 +1276,44 @@ export default (props: any) => {
     }, [files.loading]);
 
   useEffect(() => {
-    g.isFullScreen = true;
+    context.isFullScreen = true;
     if (parserName != "epub" && !epub) loadData();
     return () => {
-      g.isFullScreen = false;
-      g.player.hooked = false;
+      context.isFullScreen = false;
+      context.player.hooked = false;
       if (
-        g.player.showPlayer &&
-        g.player.playing()
+        context.player.showPlayer &&
+        context.player.playing()
       )
-        g.player.viewState = "Folded";
+        context.player.viewState = "Folded";
     };
   }, []);
+
+  context.subscribe(() => {
+    if (context.player.networkError) {
+      context
+        .alert(
+          `Something went wrong as the chapter could not be retrieved. Please check your internet connection.\nWould you like to retry`,
+          "Error"
+        )
+        .confirm(answer => {
+          if (answer) context.player.jumpTo();
+        });
+    }
+  }, "player.networkError");
 
   if (
     loader.loading &&
     (!state.novel.name ||
-      !g.player?.currentChapterSettings)
-  )
+      !context.player?.currentChapterSettings)
+  ) {
     return loader.elem;
+  }
   return (
     <>
       {loader.elem}
       <Modal
+        blur={false}
         visible={state.comment != undefined}
         onHide={() => (state.comment = undefined)}
         height={200}>
@@ -1265,6 +1331,7 @@ export default (props: any) => {
         </View>
       </Modal>
       <Modal
+        blur={false}
         visible={state.textEdit != undefined}
         onHide={() =>
           (state.textEdit = undefined)
@@ -1339,11 +1406,11 @@ export default (props: any) => {
             </View>
             <TouchableOpacity
               onPress={async () => {
-                g.player.book.textReplacements.push(
+                context.player.book.textReplacements.push(
                   state.textEdit
                 );
-                await g.player.book.saveChanges();
-                await g.player.clean();
+                await context.player.book.saveChanges();
+                await context.player.clean();
                 state.textEdit = undefined;
               }}
               css="button clearwidth bow:1 boc:#ccc bor:5 juc:center">
@@ -1353,6 +1420,7 @@ export default (props: any) => {
         </ScrollView>
       </Modal>
       <Modal
+        blur={false}
         visible={
           state.textToTranslate != undefined
         }
@@ -1430,6 +1498,7 @@ export default (props: any) => {
       </Modal>
 
       <Modal
+        blur={false}
         visible={state.define != undefined}
         onHide={() => (state.define = undefined)}
         height="100">
@@ -1468,9 +1537,8 @@ export default (props: any) => {
         css="flex"
         style={{
           backgroundColor:
-            g.appSettings.backgroundColor
-        }}
-        ready={true}>
+            context.appSettings.backgroundColor
+        }}>
         <Controller
           state={state}
           {...props}

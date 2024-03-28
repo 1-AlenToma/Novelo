@@ -5,7 +5,6 @@ import ItemList from "./ItemList";
 import useLoader from "./Loader";
 import TouchableOpacity from "./TouchableOpacityView";
 import HomeNovelItem from "./HomeNovelItem";
-import g from "../GlobalContext";
 import { useNavigation } from "../hooks";
 import { Header } from "../pages";
 import {
@@ -32,10 +31,14 @@ export default memo(
     const getItems = async () => {
       loader.show();
       try {
-        let parser = g.parser.current();
+        let parser = context.parser.current();
         let p = page.current + 1;
         let oldItems = [...items];
-        let gitems = await parser.group(item, p);
+        let gitems = await parser.group(
+          item,
+          p,
+          true
+        );
         oldItems.distinct("url", gitems);
         if (oldItems.length > items.length) {
           page.current = p;
@@ -60,9 +63,13 @@ export default memo(
             : "flex mab:10"
         }>
         {loader.elem}
-        <View css="pal:5 clearwidth par:5 row juc:space-between">
+        <View
+          css={`pal:5 clearwidth par:5 row juc:space-between ${!vMode ? "pal:0 par:0" : ""}
+          `}>
           {!vMode ? (
-            <Text invertColor={false} css="header he:20">
+            <Text
+              invertColor={true}
+              css="header he:20">
               {item.text}
             </Text>
           ) : null}
@@ -72,7 +79,7 @@ export default memo(
                 option
                   .nav("GroupDetail")
                   .add({
-                    groupIndex: g.parser
+                    groupIndex: context.parser
                       .current()
                       .settings.group.findIndex(
                         x => x === item
@@ -81,7 +88,7 @@ export default memo(
                   .push();
               }}>
               <Text
-                invertColor={false}
+                invertColor={true}
                 css="desc fos:14">
                 Browse
               </Text>

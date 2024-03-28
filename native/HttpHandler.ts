@@ -31,17 +31,27 @@ const getFetch = async (
     let data = await fetch(url, {
       ...options
     });
-    let text = await data.text();
-    let item = new HttpTemp(text, key);
-    tempData.set(key, item);
-    return item;
+    if (data.ok) {
+      let text = await data.text();
+      let item = new HttpTemp(text, key);
+      tempData.set(key, item);
+      return item;
+    } else {
+      if (data.status === 404)
+        throw new Error("404, Not found");
+      if (data.status === 500)
+        throw new Error(
+          "500, internal server error"
+        );
+      if (
+        data.status === 408 ||
+        data.status == 429
+      )
+        throw new Error(`${data.status} Request Timeout`);
+      // For any other server error
+      throw new Error(data.status);
+    }
   } catch (e) {
-    if (
-      e.message &&
-      e.message.has("network") &&
-      !ignoreAlert
-    )
-      g.alert(e.message, "Error").show();
     tempData.delete(key);
     throw e;
   }
@@ -63,9 +73,15 @@ class HttpTemp {
 class HttpValue {
   value: string;
   baseUrl?: string;
-  constructor(value: string, baseUrl?: string) {
+  httpError?: HttpError;
+  constructor(
+    value: string,
+    baseUrl?: string,
+    httpError?: HttpError
+  ) {
     this.value = value;
     this.baseUrl = baseUrl || "";
+    this.httpError = httpError;
   }
 
   get html() {
@@ -88,12 +104,34 @@ class HttpValue {
     return text;
   }
 }
+
+class HttpError {
+  message: string;
+  constructor(e: any) {
+    this.message = e.message;
+  }
+
+  isNetwork() {
+    return (
+      this.message &&
+      (this.message.has("network") ||
+        this.message.has("Request Timeout"))
+    );
+  }
+
+  toString() {
+    return this.message;
+  }
+}
+
 class HttpHandler {
   ignoreAlert: boolean = false;
+  httpError?: HttpError;
   constructor(ignoreAlert?: boolean) {
     this.ignoreAlert = ignoreAlert === true;
   }
   header(options?: any) {
+    this.httpError = undefined;
     return {
       headers: {
         ...options,
@@ -131,7 +169,12 @@ class HttpHandler {
       );
     } catch (e) {
       console.error("httget", e);
-      return new HttpValue("<div></div>", url);
+      this.httpError = new HttpError(e);
+      return new HttpValue(
+        "<div></div>",
+        url,
+        this.httpError
+      );
     }
   }
 
@@ -152,6 +195,7 @@ class HttpHandler {
       );
       return new HttpValue(await res.text());
     } catch (e) {
+      this.httpError = new HttpError(e);
       console.error(e);
       return null;
     }
@@ -172,17 +216,22 @@ class HttpHandler {
       }
       formBody = formBody.join("&");
 
-      const res = await getFetch(url, {
-        body: formBody,
-        method: "POST",
-        ...this.header({
-          "Content-Type":
-            "application/x-www-form-urlencoded; charset=UTF-8"
-        })
-      },this.ignoreAlert);
+      const res = await getFetch(
+        url,
+        {
+          body: formBody,
+          method: "POST",
+          ...this.header({
+            "Content-Type":
+              "application/x-www-form-urlencoded; charset=UTF-8"
+          })
+        },
+        this.ignoreAlert
+      );
 
       return new HttpValue(await res.text());
     } catch (e) {
+      this.httpError = new HttpError(e);
       console.error(e);
       return null;
     }

@@ -7,7 +7,7 @@ import {
   StyledView,
   ifSelector
 } from "../Methods";
-import g from "../GlobalContext";
+
 
 const VS = StyledView(Animated.View, "AnimatedView");
 
@@ -22,7 +22,7 @@ export default ({
   ...props
 }: any) => {
   if (ifSelector(ifTrue) === false) return null;
-  if (rootView) g.hook("isFullScreen");
+  if (rootView) context.hook("isFullScreen");
   const [state, setState] = useState(
     ready !== true
   );
@@ -33,7 +33,7 @@ export default ({
     invertColor
   );
   st.push(size);
-  if (rootView && !g.isFullScreen) {
+  if (rootView && !context.isFullScreen) {
     st.push({
       marginTop: Constants.statusBarHeight
     });

@@ -14,7 +14,6 @@ import {
   Form
 } from "../components/";
 import * as Updates from "expo-updates";
-import g from "../GlobalContext";
 import { Book, Chapter } from "..db";
 import {
   Platform,
@@ -27,25 +26,27 @@ import * as DocumentPicker from "expo-document-picker";
 
 export default (props: any) => {
   let loader = useLoader();
-  g.hook("theme.themeMode");
-  const { fileItems, elem } = g
+  context.hook("theme.themeMode");
+  const { fileItems, elem } = context
     .files()
     .useFile("json", undefined, "NewDelete");
-  const [books, dataIsLoading] = g.db().useQuery(
-    "Books",
-    g
-      .db()
-      .querySelector<Book>("Books")
-      .LoadChildren<Chapter>(
-        "Chapters",
-        "parent_Id",
-        "id",
-        "chapterSettings",
-        true
-      )
-      .Where.Column(x => x.favorit)
-      .EqualTo(true)
-  );
+  const [books, dataIsLoading] = context
+    .db()
+    .useQuery(
+      "Books",
+      context
+        .db()
+        .querySelector<Book>("Books")
+        .LoadChildren<Chapter>(
+          "Chapters",
+          "parent_Id",
+          "id",
+          "chapterSettings",
+          true
+        )
+        .Where.Column(x => x.favorit)
+        .EqualTo(true)
+    );
   const state = useState({
     procent: 0,
     downloadShow: false,
@@ -58,56 +59,57 @@ export default (props: any) => {
   const download = async () => {
     state.downloadShow = false;
     loader.show();
-    await g.dbContext().downloadDatabase({
+    await context.dbContext().downloadDatabase({
       ...state
     });
     loader.hide();
-    g.alert("File Downloded").show();
+    context.alert("File Downloded").show();
   };
 
   const cleanData = () => {
-    g.alert(
-      "Are you sure?",
-      "Please Confirm"
-    ).confirm(async answer => {
-      try {
-        if (!answer) return;
-        loader.show();
+    context
+      .alert("Are you sure?", "Please Confirm")
+      .confirm(async answer => {
+        try {
+          if (!answer) return;
+          loader.show();
 
-        let _books = g
-          .db()
-          .querySelector<Book>("Books")
-          .Where.Column(x => x.favorit)
-          .EqualTo(false)
-          .AND.Column(x => x.parserName)
-          .NotEqualTo("epub");
-        // skip deleting downloaded files
-        let ids = (await _books.toList())
-          .filter(
-            x =>
-              !fileItems.find(f => x.url == f.url)
-          )
-          .map(x => x.id);
-        if (ids.length > 0)
-          await g
+          let _books = context
             .db()
-            .querySelector<Chapter>("Chapters")
-            .Where.Column(x => x.parent_Id)
-            .IN(ids)
-            .delete();
-        await _books.delete();
-        let cacheFiles = await g
-          .cache()
-          .allFiles();
-        for (let f of cacheFiles) {
-          await g.cache().delete(f);
+            .querySelector<Book>("Books")
+            .Where.Column(x => x.favorit)
+            .EqualTo(false)
+            .AND.Column(x => x.parserName)
+            .NotEqualTo("epub");
+          // skip deleting downloaded files
+          let ids = (await _books.toList())
+            .filter(
+              x =>
+                !fileItems.find(
+                  f => x.url == f.url
+                )
+            )
+            .map(x => x.id);
+          if (ids.length > 0)
+            await g
+              .db()
+              .querySelector<Chapter>("Chapters")
+              .Where.Column(x => x.parent_Id)
+              .IN(ids)
+              .delete();
+          await _books.delete();
+          let cacheFiles = await context
+            .cache()
+            .allFiles();
+          for (let f of cacheFiles) {
+            await context.cache().delete(f);
+          }
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-      }
 
-      loader.hide();
-    });
+        loader.hide();
+      });
   };
 
   const uploadBackup = async () => {
@@ -118,13 +120,13 @@ export default (props: any) => {
       });
     loader.show();
     let uri = assets?.firstOrDefault("uri");
-    let msg = await g
+    let msg = await context
       .dbContext()
       .uploadData(uri, p => {
         state.procent = p;
       });
     loader.hide();
-    if (msg) g.alert(msg);
+    if (msg) context.alert(msg);
   };
 
   return (
@@ -301,18 +303,19 @@ export default (props: any) => {
             height={200}
             toTop={true}
             selectedIndex={
-              g.appSettings.theme == "dark"
+              context.appSettings.theme == "dark"
                 ? 1
                 : 0
             }
-            updater={[g.appSettings.theme]}
+            updater={[context.appSettings.theme]}
             hooks={["appSettings.theme"]}
             items={["light", "dark"]}
             render={item => {
               return (
                 <View
                   css={`
-                    ${item == g.appSettings.theme
+                    ${item ==
+                    context.appSettings.theme
                       ? "selectedRow"
                       : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
                   `}>
@@ -325,13 +328,13 @@ export default (props: any) => {
               );
             }}
             onSelect={async theme => {
-              g.appSettings.theme = theme;
-              await g.appSettings.saveChanges();
-              g.theme.themeMode = theme;
+              context.appSettings.theme = theme;
+              await context.appSettings.saveChanges();
+              context.theme.themeMode = theme;
               //Updates.reloadAsync();
             }}
             selectedValue={(
-              g.appSettings.theme ?? "light"
+              context.appSettings.theme ?? "light"
             ).displayName()}
           />
         </View>

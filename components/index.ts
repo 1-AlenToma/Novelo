@@ -25,6 +25,7 @@ import AnimatedView from "./AnimatedView";
 import ProgressBar from "./ProgressBar";
 import ColorPicker from "./ColorPicker";
 import Form from "./Form";
+import Toast from "./Toast";
 
 import {
   AppContainer,
@@ -60,5 +61,6 @@ export {
   ProgressBar,
   AnimatedView,
   ColorPicker,
-  Form
+  Form,
+  Toast
 };

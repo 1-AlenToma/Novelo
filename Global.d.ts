@@ -1,8 +1,15 @@
 import CStyle from "./components/CStyle";
-import { cssTranslator,clearStyles } from "./styles";
+import {
+  cssTranslator,
+  clearStyles
+} from "./styles";
 import IDOMParser from "advanced-html-parser";
 const cheerio = require("react-native-cheerio");
+import * as Methods from "./Methods";
+
 declare global {
+  context: any;
+  methods: any;
   interface Date {
     getMinDiff: (date: Date) => number;
   }
@@ -28,6 +35,7 @@ declare global {
     ) => string;
   }
   interface String {
+    fileName(...url: string[]): string;
     escapeRegExp(): String;
     join(...relative: String[]): String;
     path(...relative: string[]): String;
@@ -65,6 +73,17 @@ declare global {
   }
 }
 
+String.prototype.fileName = function (
+  ...url: string[]
+) {
+  return `${url
+    .join("")
+    .replace(
+      /(\/|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim,
+      ""
+    )
+    .toLowerCase()}.json`;
+};
 String.prototype.displayName = function () {
   let str = new String(this).toString();
   return str[0].toUpperCase() + str.substring(1);
@@ -106,9 +125,7 @@ Number.prototype.sureValue = function (
     return isInt
       ? parseInt(this.toString())
       : this;
-  return isInt
-      ? parseInt(a.toString())
-      : a;
+  return isInt ? parseInt(a.toString()) : a;
 };
 
 Array.prototype.skip = function (
@@ -237,7 +254,7 @@ String.prototype.cleanHtml = function () {
 
 String.prototype.html = function () {
   let str = new String(this).toString();
-  let html = cheerio.load(str);
+  let html = cheerio.load(str,{decodeEntities: false});
   return html;
 };
 
@@ -419,3 +436,7 @@ String.prototype.join = function (
 
   return url;
 };
+const GlobalContext =
+  require("./GlobalContext").default;
+global.context = GlobalContext;
+global.methods = Methods;

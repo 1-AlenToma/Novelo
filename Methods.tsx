@@ -153,12 +153,11 @@ const parseThemeStyle = (
 ) => {
   const id = useRef(newId());
 
-  let globalData =
-    require("./GlobalContext").default;
+  
   let themeSettings = {
     ...(!(invertColor ?? false)
-      ? globalData.theme.settings
-      : globalData.theme.invertSettings())
+      ? context.theme.settings
+      : context.theme.invertSettings())
   };
   if (invertColor === undefined) {
     delete themeSettings.backgroundColor;
@@ -175,7 +174,7 @@ const parseThemeStyle = (
 
   if (css) st.push(css.css(id));
   if (isRootView)
-    st = [...st,globalData.theme.getRootTheme()];
+    st = [...st, context.theme.getRootTheme()];
   useEffect(() => {
     return () => clearStyles(id);
   }, []);

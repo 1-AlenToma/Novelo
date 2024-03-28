@@ -14,12 +14,11 @@ import {
   useRef
 } from "react";
 import { useNavigation } from "../../hooks";
-import g from "../../GlobalContext";
 export default (props: any) => {
   const [{ groupIndex }, _, navigation] =
     useNavigation(props);
   let group =
-    g.parser.current().settings.group[groupIndex];
+    context.parser.current().settings.group[groupIndex];
   return (
     <View
       css="flex"
