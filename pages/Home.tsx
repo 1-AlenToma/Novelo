@@ -9,7 +9,8 @@ import {
   NovelGroup,
   CheckBox,
   AnimatedView,
-  ActionSheet
+  ActionSheet,
+  Form
 } from "../components";
 import {
   useState,
@@ -262,7 +263,6 @@ export default ({ ...props }: any) => {
             inputEnabled={true}
           />
         </CurrentItem>
-
         {groups.map((x, i) => (
           <View
             invertColor={true}

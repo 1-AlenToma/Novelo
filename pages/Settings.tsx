@@ -129,6 +129,24 @@ export default (props: any) => {
     if (msg) context.alert(msg);
   };
 
+  const itemPress = (item: any) => {
+    if (
+      state.items.find(
+        x =>
+          x.url === item.url &&
+          x.parserName == item.parserName
+      )
+    ) {
+      state.items = [
+        ...state.items.filter(
+          x =>
+            x.url !== item.url &&
+            x.parserName != item.parserName
+        )
+      ];
+    } else state.items = [...state.items, item];
+  };
+
   return (
     <View css="flex">
       {loader.elem ?? elem}
@@ -170,62 +188,41 @@ export default (props: any) => {
               (state.epubs = !state.epubs)
             }
           />
-
-          <View css="mat:20 mih:100">
-            <CheckBox
-              text="Include All novels:"
-              invertColor={true}
-              checked={state.all}
-              onChange={() =>
-                (state.all = !state.all)
-              }
-            />
-
+          <CheckBox
+            text="Include All novels:"
+            invertColor={true}
+            checked={state.all}
+            onChange={() =>
+              (state.all = !state.all)
+            }
+          />
+          <Form
+            ifTrue={!state.all}
+            text="Favorit Novels"
+            root={true}
+            css="mat:20 mih:100 mah:70%">
             <ItemList
-              updater={[state.items, state.all]}
+              updater={[state.items]}
               onPress={item => {
-                state.all = false;
-                if (
-                  state.items.find(
-                    x =>
-                      x.url === item.url &&
-                      x.parserName ==
-                        item.parserName
-                  )
-                ) {
-                  state.items = [
-                    ...state.items.filter(
-                      x =>
-                        x.url !== item.url &&
-                        x.parserName !=
-                          item.parserName
-                    )
-                  ];
-                } else
-                  state.items = [
-                    ...state.items,
-                    item
-                  ];
+                itemPress(item);
+                //state.all = false;
               }}
               items={books}
               container={({ item }) => (
                 <CheckBox
                   text={item.name + ":"}
                   invertColor={true}
-                  checked={
-                    state.all ||
-                    state.items.find(
-                      x =>
-                        x.url === item.url &&
-                        x.parserName ==
-                          item.parserName
-                    )
-                  }
+                  checked={state.items.find(
+                    x =>
+                      x.url === item.url &&
+                      x.parserName ==
+                        item.parserName
+                  )}
                 />
               )}
               vMode={true}
             />
-          </View>
+          </Form>
         </View>
       </Modal>
       <View

@@ -21,7 +21,8 @@ import {
   Modal,
   PlayerView,
   AlertView,
-  CheckBox
+  CheckBox,
+  Form
 } from "./components";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
@@ -127,6 +128,7 @@ export default function App() {
   return (
     <AppContainer>
       <NavigationContainer>
+       
         <AppStack />
         <PlayerView />
       </NavigationContainer>

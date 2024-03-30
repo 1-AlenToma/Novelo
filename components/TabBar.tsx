@@ -169,6 +169,7 @@ const TabBar = ({
   scrollableHeader?: boolean;
 }) => {
   const [size, setSize] = useState(undefined);
+  const update = useUpdate();
   GlobalData.hook("theme.settings");
   const getWidth = (index: number) => {
     let v = index * size?.width;
@@ -199,29 +200,9 @@ const TabBar = ({
     new Animated.ValueXY({ x: 0, y: 0 })
   ).current;
   const [index, setIndex] = useState(
-    (0).sureValue(selectedIndex)
+    selectedIndex ?? 0
   );
   const isAnimating = useRef();
-
-  useEffect(
-    () => {
-      children.forEach((x, i) => {
-        if (rItems[i]) {
-          rItems[i].child = childPrep(x);
-        }
-      });
-      loadChildren(index);
-    },
-    children.map(x => x)
-  );
-
-  useEffect(() => {
-    loadChildren(selectedIndex);
-  }, [selectedIndex]);
-
-  useEffect(() => {
-    if (index !== undefined) change?.(index);
-  }, [index]);
 
   const tAnimate = (
     index: number,
@@ -271,6 +252,26 @@ const TabBar = ({
     }
   };
 
+  useEffect(
+    () => {
+      children.forEach((x, i) => {
+        if (rItems[i]) {
+          rItems[i].child = childPrep(x);
+        }
+      });
+      loadChildren(index);
+    },
+    children.map(x => x)
+  );
+
+  useEffect(() => {
+    loadChildren(selectedIndex);
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    if (index !== undefined) change?.(index);
+  }, [index]);
+
   useEffect(() => {
     interpolate.current = getInputRange();
     tAnimate(index, 0);
@@ -285,7 +286,7 @@ const TabBar = ({
     }
     return child;
   };
-
+interpolate.current = getInputRange();
   // animTop.extractOffset();
 
   panResponse.current = PanResponder.create({
@@ -296,6 +297,7 @@ const TabBar = ({
       //return true if user is swiping, return false if it's a single click
       const { dx, dy } = gestureState;
       let lng = 5;
+
       return (
         dx > lng ||
         dx < -lng ||
@@ -304,6 +306,7 @@ const TabBar = ({
       );
     },
     onPanResponderGrant: (e, gestureState) => {
+      
       startValue.current = gestureState.dx;
       //alert(interpolate.outputRange[index]);
       animLeft.setValue({
@@ -347,7 +350,7 @@ const TabBar = ({
       } else {
         tAnimate(i, speed); // reset to start value
       }
-      return false;
+      //return false;
     }
   });
 
@@ -408,8 +411,7 @@ const TabBar = ({
               (size?.width ?? 0) * children.length
           }
         ]}
-        {...(panResponse.current?.panHandlers ??
-          {})}>
+        {...panResponse.current.panHandlers}>
         {children.map((x, i) => (
           <View
             css="flex fg:1 bac:transparent"

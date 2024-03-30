@@ -14,29 +14,49 @@ export default ({
   onPress,
   css,
   children,
+  root,
   ...props
 }) => {
   let Container = onPress
     ? TouchableOpacity
     : View;
+  let st = methods.parseThemeStyle(
+    [],
+    undefined,
+    true
+  );
   return (
     <View
       {...props}
-      css={`bor:1 pa:5 pal:0 par:2 clearwidth ${
+      css={`bor:1 pa:5 pal:0 pat:10 par:2 clearwidth ${
         css ?? ""
       }`}>
       <Container
         onPress={onPress}
-        css={`row form clearwidth juc:space-between ali:center
+        style={{ borderColor: st[0].color }}
+        css={`bow:1 bor:2 clearwidth juc:center ali:flex-end
       }`}>
-        <Text
+        <View
+          ifTrue={root != true}
+          css={`flex row fg:1 pa:10 juc:space-between ali:center`}>
+          {children}
+        </View>
+        <View
+          ifTrue={root == true}
+          css={`clearboth flex:0 fg:1 pa:10`}>
+          {children}
+        </View>
+        <View
           ifTrue={text != undefined}
           invertColor={true}
-          css={props.tcss}>
-          {text}
-        </Text>
-        <View css="flex fg:1 row juc:space-between ali:center">
-          {children}
+          css="absolute bac:red to:-1.5 le:10 pal:10 he:2 overflow:visible">
+          <Text
+            invertColor={true}
+            css={`
+              ${props.tcss} mat:-10 form.Text he:20 wi:100%
+            `}>
+            {text}
+          </Text>
         </View>
       </Container>
     </View>

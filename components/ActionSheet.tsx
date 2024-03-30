@@ -286,6 +286,7 @@ export default ({
   };
 
   useEffect(() => {
+    //panResponse.current = undefined;
     renderUpdate();
   });
 

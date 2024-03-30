@@ -357,14 +357,11 @@ const Controller = ({ state, ...props }) => {
                   <TabBar
                     fontSize={14}
                     scrollableHeader={true}
-                    position="Top"
-                    >
+                    position="Top">
                     <View
                       title="Settings"
                       css="flex">
-                      <Form
-                        css="form"
-                        text="NavigationMethod:">
+                      <Form text="NavigationMethod">
                         <DropdownList
                           height={200}
                           toTop={true}
@@ -417,9 +414,7 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
 
-                      <Form
-                        css="form"
-                        text="Font:">
+                      <Form text="Font">
                         <DropdownList
                           height="80"
                           toTop={true}
@@ -480,9 +475,7 @@ const Controller = ({ state, ...props }) => {
                           }
                         />
                       </Form>
-                      <Form
-                        css="form"
-                        text="FontSize:">
+                      <Form text="FontSize">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -502,9 +495,7 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
 
-                      <Form
-                        css="form"
-                        text="FontStyle:">
+                      <Form text="FontStyle">
                         <DropdownList
                           height={200}
                           toTop={true}
@@ -558,9 +549,7 @@ const Controller = ({ state, ...props }) => {
                           ).displayName()}
                         />
                       </Form>
-                      <Form
-                        css="form"
-                        text="Padding:">
+                      <Form text="Padding">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -613,8 +602,7 @@ const Controller = ({ state, ...props }) => {
                           });
                         }}>
                         <Form
-                          css="form"
-                          text="Shadow Length:"
+                          text="Shadow Length"
                           ifTrue={() =>
                             context.appSettings
                               .use3D == true
@@ -640,9 +628,7 @@ const Controller = ({ state, ...props }) => {
                         </Form>
                       </CheckBox>
 
-                      <Form
-                        css="form"
-                        text="Background:">
+                      <Form text="Background">
                         <ColorPicker
                           value={
                             context.appSettings
@@ -657,7 +643,7 @@ const Controller = ({ state, ...props }) => {
                       </Form>
                       <Form
                         css="row"
-                        text="TextAlign:">
+                        text="TextAlign">
                         {[
                           "align-left",
                           "align-center",
@@ -698,7 +684,7 @@ const Controller = ({ state, ...props }) => {
                       </Form>
                       <Form
                         css="form he:200"
-                        text="InlineStyle:">
+                        text="InlineStyle">
                         <TextInput
                           isModole={true}
                           invertColor={false}
@@ -717,9 +703,7 @@ const Controller = ({ state, ...props }) => {
                       </Form>
                     </View>
                     <View title="Voice">
-                      <Form
-                        css="form"
-                        text="Voices:">
+                      <Form text="Voices">
                         <DropdownList
                           height="80"
                           toTop={true}
@@ -823,9 +807,7 @@ const Controller = ({ state, ...props }) => {
                           }
                         />
                       </Form>
-                      <Form
-                        css="form"
-                        text="Pitch:">
+                      <Form text="Pitch">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -845,9 +827,7 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={3}
                         />
                       </Form>
-                      <Form
-                        css="form"
-                        text="Rate:">
+                      <Form text="Rate">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -1339,10 +1319,10 @@ export default (props: any) => {
         height="90">
         <ScrollView>
           <View css="flex mat:20">
-            <View css="formRow he:100">
-              <Text invertColor={true}>
-                TextToEdit:
-              </Text>
+            <Form
+              root={true}
+              text="TextToEdit"
+              css="formRow he:100">
               <TextInput
                 onChangeText={x =>
                   (state.textEdit.edit = x)
@@ -1354,11 +1334,11 @@ export default (props: any) => {
                   state.textEdit?.edit
                 }
               />
-            </View>
-            <View css="formRow he:100">
-              <Text invertColor={true}>
-                EditWith:
-              </Text>
+            </Form>
+            <Form
+              root={true}
+              text="EditWith"
+              css="formRow he:100">
               <TextInput
                 onChangeText={x =>
                   (state.textEdit.editWith = x)
@@ -1370,11 +1350,11 @@ export default (props: any) => {
                   state.textEdit?.editWith
                 }
               />
-            </View>
-            <View css="formRow he:100">
-              <Text invertColor={true}>
-                Comments:
-              </Text>
+            </Form>
+            <Form
+              root={true}
+              text="Comment"
+              css="formRow he:100">
               <TextInput
                 onChangeText={x =>
                   (state.textEdit.comments = x)
@@ -1386,11 +1366,9 @@ export default (props: any) => {
                   state.textEdit?.comments
                 }
               />
-            </View>
-            <View css="formRow">
-              <Text invertColor={true}>
-                Background:
-              </Text>
+            </Form>
+            <Form
+              text="BackgroundColor">
               <ColorPicker
                 value={
                   state.textEdit?.bgColor ??
@@ -1403,7 +1381,7 @@ export default (props: any) => {
                   })
                 }
               />
-            </View>
+            </Form>
             <TouchableOpacity
               onPress={async () => {
                 context.player.book.textReplacements.push(
@@ -1447,11 +1425,13 @@ export default (props: any) => {
                 );
               }}
               onSelect={language => {
-                state.translationLanguage =
+                context.appSettings.lang =
                   language;
+                context.appSettings.saveChanges();
               }}
               selectedValue={
-                state.translationLanguage
+                context.appSettings.lang ??
+                "English"
               }
             />
           </View>
@@ -1467,7 +1447,8 @@ export default (props: any) => {
               source={{
                 uri: `https://translate.google.com/m?hl=en&sl=en&tl=${
                   LANGUAGE_TABLE[
-                    state.translationLanguage
+                    context.appSettings.lang ??
+                      "English"
                   ].google
                 }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
                   state.textToTranslate

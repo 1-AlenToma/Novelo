@@ -39,13 +39,15 @@ export default ({
     if (isChecked !== checked && onChange)
       onChange(isChecked);
   }, [isChecked]);
-
+  let Container = onChange
+    ? TouchableOpacity
+    : View;
   return (
     <View
       css={`bor:1 pa:5 pal:10 par:2 clearwidth ${
         css ?? ""
       }`}>
-      <TouchableOpacity
+      <Container
         onPress={() => {
           setIsChecked(!isChecked);
         }}
@@ -54,7 +56,11 @@ export default ({
         <Text
           ifTrue={text != undefined}
           {...props}
-          style={{ flexGrow: 1, maxWidth:"80%", overflow:"hidden" }}>
+          style={{
+            flexGrow: 1,
+            maxWidth: "80%",
+            overflow: "hidden"
+          }}>
           {text}
         </Text>
         <View css="bac:#00000083 bor:10 juc:center wi:60 he:30 overflow he:30">
@@ -82,7 +88,7 @@ export default ({
             />
           </AnimatedView>
         </View>
-      </TouchableOpacity>
+      </Container>
       {children}
     </View>
   );

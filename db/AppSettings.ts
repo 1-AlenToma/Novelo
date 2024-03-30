@@ -29,6 +29,7 @@ class AppSettings extends IBaseModule<TableNames> {
   shadowLength?: number = 1;
   fontStyle?: string = "normal";
   theme?: string = "light";
+  lang?: string = "English";
   constructor() {
     super("AppSettings");
   }
@@ -53,6 +54,7 @@ class AppSettings extends IBaseModule<TableNames> {
       .nullable.json.column("navigationType")
       .nullable.column("use3D")
       .nullable.boolean.column("fontStyle")
+      .nullable.column("lang")
       .nullable.column("shadowLength")
       .nullable.number.objectPrototype(
         AppSettings.prototype

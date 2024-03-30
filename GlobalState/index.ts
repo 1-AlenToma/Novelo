@@ -88,7 +88,6 @@ class Create<T extends object> extends ICreate {
             global
           )
         ) {
-          //console.log(key, this.___events[item].keys);
           this.___events[item].fn();
         }
       }
@@ -192,7 +191,6 @@ class Create<T extends object> extends ICreate {
           configurable: true,
           get: () => item[k],
           set: (value: any) => {
-            //  if(value !==item[k])
             item[k] = parse(value, parentKey);
             parentItem.___onChange(parentKey);
           }
@@ -204,24 +202,22 @@ class Create<T extends object> extends ICreate {
   }
 }
 
-const UseState = function <T extends object>(
+const UseState = function <T>(
   item: T,
   ...ignoreKeys: NestedKeyOf<T>[]
 ) {
   let refItem = useRef();
-  if(typeof item !== "object")
-    return useState(item);
-  else
-  if (refItem.current === undefined) {
+  if (!valid(item)) return useState(item);
+  else if (refItem.current === undefined) {
     refItem.current = new Create(
       item,
       undefined,
       undefined,
       ...ignoreKeys
-    ) as any as T;
+    );
   }
   refItem.current.hook();
-  return refItem.current;
+  return (refItem.current as any as T);
 };
 
 const GlobalState = function <T extends object>(
