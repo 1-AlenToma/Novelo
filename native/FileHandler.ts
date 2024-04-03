@@ -31,12 +31,12 @@ export default class FileHandler {
   }
 
   disable() {
-    this.disable = true;
+    this.disabled = true;
   }
 
   enable() {
-    if (this.disable) {
-      this.disable = false;
+    if (this.disabled) {
+      this.disabled = false;
       this.trigger("", "", "", true);
     }
   }
@@ -164,7 +164,7 @@ export default class FileHandler {
       fileItems,
       loading: loader.loading,
       files: files.current,
-      loadContent,
+      loadContent: async () => await loadContent(),
       elem: loader.elem
     };
   }

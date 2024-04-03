@@ -84,8 +84,7 @@ export default class ZipBook {
           );
 
           if (isImage(fileName)) {
-            if(skipImages)
-               return undefined;
+            if (skipImages) return undefined;
             type = "Image";
             cn = `data:image/jpg;base64,${await file.async(
               "base64"
@@ -192,7 +191,7 @@ export default class ZipBook {
         count++;
         onChange?.((100 * count) / total);
         if (count == 1 || count % 50 == 0)
-          await sleep(10);
+          await sleep(100);
       };
 
       for (let item of items) {

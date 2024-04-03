@@ -17,15 +17,14 @@ import { useNavigation } from "../../hooks";
 export default (props: any) => {
   const [{ groupIndex }, _, navigation] =
     useNavigation(props);
-  let group =
-    context.parser.current().settings.group[groupIndex];
+  
   return (
     <View
       css="flex"
       rootView={true}>
       <NovelGroup
         {...navigation}
-        item={group}
+        itemIndex={groupIndex}
         vMode={true}
       />
     </View>

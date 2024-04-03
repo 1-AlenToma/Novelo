@@ -4,7 +4,11 @@ import Icon from "./Icons";
 import Slider from "./SliderView";
 import AnimatedView from "./AnimatedView";
 import TouchableOpacity from "./TouchableOpacityView";
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import {
   ScrollView,
   Linking,
@@ -14,34 +18,76 @@ import {
 import {
   useUpdate,
   useTimer,
-  useDbHook
+  useDbHook,
+  useAnimate
 } from "../hooks";
-import {
-  ifSelector
-} from "../Methods";
+import { ifSelector } from "../Methods";
 
 export default ({
   procent,
   children,
   ifTrue
 }: any) => {
-  if(ifSelector(ifTrue) === false)
-     return null;
+  if (ifSelector(ifTrue) === false) return null;
+  const [size, setSize] = useState();
+  const { animate, animateX } = useAnimate({
+    speed: 50,
+  });
+  const applyProc = () => {
+    if (size)
+      animateX(
+        Math.round(
+          methods.proc(
+            Math.round(procent),
+            size.width
+          )
+        )
+      );
+  };
+  useEffect(() => {
+    applyProc();
+  }, [procent]);
+  useEffect(() => {
+    applyProc();
+  }, [size]);
+
+  let bound = [];
+  for (let i = 0; i <= 100; i++) {
+    bound.push(
+      Math.round(
+        methods.proc(i, size?.width ?? 100)
+      )
+    );
+  }
+
   return (
-    <View css="flex clearboth to:0 le:0 absolute zi:5 juc:center overflow ali:center bow:0 boc:#000">
+    <View
+      onLayout={e => {
+        setSize(e.nativeEvent.layout);
+      }}
+      css="flex clearboth to:0 le:0 absolute zi:5 juc:center overflow ali:center bow:0 boc:#000">
       <View css="clearboth blur zi:1 absolute" />
       <View css="zi:3">
         {children || (
           <Text css="fos:18 bold co:red">
-            {procent.readAble()}%
+            {procent?.readAble()}%
           </Text>
         )}
       </View>
-      <View
-        css="bac:green zi:2 absolute to:0 le:0 clearboth op:0.8"
+      <AnimatedView
+        css="bac:green zi:2 absolute to:0 le:-100% clearboth op:0.8"
         style={{
-          width: `${procent}%`
-        }}></View>
+          transform: [
+            {
+              translateX: animate.x.interpolate({
+                inputRange: bound,
+                outputRange: bound,
+                extrapolate: "clamp"
+              })
+            }
+          ]
+        }}
+      />
     </View>
   );
 };

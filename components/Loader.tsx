@@ -13,12 +13,10 @@ export default (
   );
   const [progressValue, setProgressValue] =
     useState();
-  const [size, setSize] = useState({
-    x: 0,
-    y: 0,
-    height: 0,
-    width: 0
-  });
+
+  useEffect(() => {
+    setLoading(initValue ?? false);
+  }, [initValue]);
 
   const show = (progress?: number) => {
     setProgressValue(progress);
@@ -31,19 +29,12 @@ export default (
   };
 
   let elem = !loading ? null : (
-    <View
-      css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center"
-      onLayout={event => {
-        setSize(event.nativeEvent.layout);
-      }}>
+    <View css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center">
       <View css="clearboth blur absolute zi:1" />
       <ActivityIndicator
         size="large"
         style={{
-          zIndex: 2,
-          position: "absolute",
-          left: size.width / 2 - 25,
-          top: size.height / 2 - 25
+          zIndex: 2
         }}
       />
       <ProgressBar

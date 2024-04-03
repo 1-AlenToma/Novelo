@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import View from "./ThemeView";
+import useLoader from "./Loader";
 import * as Icons from "@expo/vector-icons";
 import {
   useState,
@@ -25,7 +26,11 @@ import {
   ifSelector
 } from "../Methods";
 import GlobalData from "../GlobalContext";
-import { useUpdate, useTimer } from "../hooks";
+import {
+  useUpdate,
+  useTimer,
+  useAnimate
+} from "../hooks";
 import Text from "./ThemeText";
 import { TabIcon, TabChild } from "../Types";
 
@@ -39,6 +44,7 @@ const Menu = ({
 }: any) => {
   let use;
   let [cIndex, setCIndex] = useState(index ?? 0);
+
   useEffect(() => {
     setCIndex(index);
   }, [index]);
@@ -168,6 +174,7 @@ const TabBar = ({
   rootView?: boolean;
   scrollableHeader?: boolean;
 }) => {
+  const loader = useLoader(true);
   const [size, setSize] = useState(undefined);
   const update = useUpdate();
   GlobalData.hook("theme.settings");
@@ -196,13 +203,13 @@ const TabBar = ({
     children.map(x => {})
   );
   const panResponse = useRef();
-  const animLeft = useRef(
-    new Animated.ValueXY({ x: 0, y: 0 })
-  ).current;
+  const { animateX, animate } = useAnimate({
+    
+  });
+
   const [index, setIndex] = useState(
     selectedIndex ?? 0
   );
-  const isAnimating = useRef();
 
   const tAnimate = (
     index: number,
@@ -213,23 +220,8 @@ const TabBar = ({
       interpolate.current.find(
         x => x.index == index
       )?.value ?? 0;
-    isAnimating.current?.stop();
-    isAnimating.current = Animated.timing(
-      animLeft.x,
-      {
-        toValue: value,
-        duration: (300).sureValue(speed, true),
-        useNativeDriver: true
-      }
-    );
-    isAnimating.current.start(() => {
-      fn?.();
-      animLeft.setValue({
-        y: 0,
-        x: value
-      });
-      animLeft.flattenOffset();
-    });
+
+    animateX(value, fn, speed);
   };
 
   const animateLeft = async (index: number) => {
@@ -286,7 +278,7 @@ const TabBar = ({
     }
     return child;
   };
-interpolate.current = getInputRange();
+  interpolate.current = getInputRange();
   // animTop.extractOffset();
 
   panResponse.current = PanResponder.create({
@@ -306,21 +298,20 @@ interpolate.current = getInputRange();
       );
     },
     onPanResponderGrant: (e, gestureState) => {
-      
       startValue.current = gestureState.dx;
       //alert(interpolate.outputRange[index]);
-      animLeft.setValue({
+      animate.setValue({
         x:
           interpolate.current.find(
             x => x.index == (index ?? 0)
           )?.value ?? 0,
         y: 0
       });
-      animLeft.extractOffset();
+      animate.extractOffset();
       return true;
     },
     onPanResponderMove: Animated.event(
-      [null, { dx: animLeft.x, dy: animLeft.y }],
+      [null, { dx: animate.x, dy: animate.y }],
       { useNativeDriver: false }
     ),
     onPanResponderRelease: (
@@ -332,7 +323,7 @@ interpolate.current = getInputRange();
       let width = size?.width ?? 0;
       let i = index == undefined ? 0 : index;
       //console.warn(diff, i);
-      animLeft.flattenOffset();
+      animate.flattenOffset();
       let speed = 200;
       if (Math.abs(diff) > width / 3) {
         //  animLeft.flattenOffset();
@@ -388,8 +379,8 @@ interpolate.current = getInputRange();
             backgroundColor: "transparent",
             transform: [
               {
-                translateX:
-                  animLeft.x.interpolate({
+                translateX: animate.x.interpolate(
+                  {
                     inputRange:
                       interpolate.current.map(
                         x => x.value
@@ -400,7 +391,8 @@ interpolate.current = getInputRange();
                       ),
                     extrapolateLeft: "extend",
                     extrapolate: "clamp"
-                  })
+                  }
+                )
               }
             ],
             /* height: (0).sureValue(
@@ -430,10 +422,10 @@ interpolate.current = getInputRange();
                   width: size?.width,
                   maxWidth: "100%"
                 }}>
-                {rItems[i]?.child ?? null}
+                {rItems[i]?.child ?? loader.elem}
               </ScrollView>
             ) : (
-              rItems[i]?.child
+              rItems[i]?.child ?? loader.elem
             )}
           </View>
         ))}

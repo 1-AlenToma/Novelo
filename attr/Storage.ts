@@ -19,7 +19,7 @@ class Storage implements IStorage {
   }
 
   async has(file: string) {
-    return this.handler.exists(file);
+    return await this.handler.exists(file);
   }
 
   async delete(...files: string[]) {

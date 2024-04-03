@@ -22,22 +22,37 @@ export default ({
   const animLeft = useRef(
     new Animated.ValueXY()
   ).current;
-  const tAnimate = (value: number) => {
-    Animated.timing(animLeft.x, {
+  const anim = useRef();
+  const loaded = useRef();
+  const tAnimate = (value: number, fn: any) => {
+    anim.current?.stop();
+    anim.current = Animated.timing(animLeft.x, {
       toValue: value,
-      duration: (100).sureValue(100),
+      duration: loaded.current ? 100 : 1,
       easing: Easing.linear,
       useNativeDriver: true
-    }).start(() => {});
+    });
+    anim.current.start(() => {
+      let ch = value == 1 ? true : false;
+      setIsChecked(ch);
+      if (
+        ch !== checked &&
+        onChange &&
+        loaded.current
+      )
+        onChange(ch);
+      fn?.();
+    });
   };
   useEffect(() => {
-    setIsChecked(checked);
+    tAnimate(
+      checked ? 1 : 0,
+      () => (loaded.current = true)
+    );
   }, [checked]);
 
   useEffect(() => {
     tAnimate(isChecked ? 1 : 0);
-    if (isChecked !== checked && onChange)
-      onChange(isChecked);
   }, [isChecked]);
   let Container = onChange
     ? TouchableOpacity

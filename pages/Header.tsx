@@ -50,8 +50,7 @@ export default ({
     {
       text: "",
       inputAnimator: {
-        width: context.size.screen?.width,
-        state: false
+        state: undefined
       }
     },
     "inputAnimator"
@@ -89,14 +88,6 @@ export default ({
   );
   return (
     <>
-      {state.inputAnimator.state &&
-      context.KeyboardState ? (
-        <TouchableOpacity
-          ifTrue={ifTrue}
-          onPress={() => input.current.blur()}
-          css="absolute to:0 le:0 clearboth zi:100 blur"
-        />
-      ) : null}
       <View
         ifTrue={ifTrue}
         css="clearwidth zi:101 he:40 row juc:center ali:center di:flex"
@@ -119,7 +110,7 @@ export default ({
         {inputEnabled && onInputChange ? (
           <SizeAnimator
             blur={true}
-            css="wi:50% clearheight juc:center maw:80%"
+            css="wi:50% mat:4 zi:101 clearheight juc:center maw:80%"
             refItem={state.inputAnimator}>
             <TextInput
               ref={x => {
@@ -232,6 +223,14 @@ export default ({
           </>
         </View>
       </View>
+      {state.inputAnimator.state &&
+      context.KeyboardState ? (
+        <TouchableOpacity
+          ifTrue={ifTrue}
+          onPress={() => input.current.blur()}
+          css="absolute to:0 le:0 flex clearboth zi:100 blur"
+        />
+      ) : null}
     </>
   );
 };

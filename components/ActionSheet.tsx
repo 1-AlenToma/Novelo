@@ -17,7 +17,7 @@ import {
   Easing,
   PanResponder
 } from "react-native";
-import { useUpdate } from "../hooks";
+import { useUpdate, useAnimate } from "../hooks";
 export default ({
   title,
   height,
@@ -32,8 +32,8 @@ export default ({
   speed?: number;
   children?: any;
   title?: any;
-  height: string;
-  visible: boolean;
+  height: any;
+  visible: any;
   onHide?: () => void;
   toTop?: boolean;
 }) => {
@@ -61,42 +61,17 @@ export default ({
     context.size.window.height - getHeight() + 80,
     context.size.window.height + 50
   ]);
+  const { animateY, animate } = useAnimate({
+    y: -getHeight(),
+    speed
+  });
 
-  const animTop = useRef(
-    new Animated.ValueXY({
-      y: -getHeight(),
-      x: 0
-    })
-  ).current;
-  const animating = useRef();
   let id = useRef(newId());
-
-  const tAnimate = (
-    value: number,
-    fn: any,
-    sp?: number
-  ) => {
-    animating.current?.stop?.();
-    animating.current = Animated.timing(
-      animTop.y,
-      {
-        toValue: value,
-        duration: sp ?? speed ?? sp ?? 300,
-        easing: Easing.linear,
-        useNativeDriver: true
-      }
-    );
-    animating.current.start(() => {
-      fn?.();
-      animTop.setValue({ y: value, x: 0 });
-      animTop.flattenOffset();
-    });
-  };
 
   let toggle = async (show: boolean) => {
     if (!isVisible.current && show)
       renderUpdate();
-    tAnimate(
+    animateY(
       interpolate.current[!show ? 1 : 0],
       () => {
         panResponse.current = undefined;
@@ -120,8 +95,8 @@ export default ({
     if (isVisible.current) {
       renderUpdate();
       panResponse.current = undefined;
-      animTop.flattenOffset();
-      tAnimate(
+      animate.flattenOffset();
+      animateY(
         interpolate.current[0],
         () => renderUpdate(),
         1
@@ -147,10 +122,10 @@ export default ({
   }, []);
 
   const renderUpdate = () => {
-    if (typeof visible !== "function")
-      isVisible.current = visible;
-    else isVisible.current = visible();
-    if (!panResponse.current && animTop) {
+    if (typeof visible == "function")
+      isVisible.current = visible();
+    else isVisible.current = visible;
+    if (!panResponse.current) {
       let startValue = 0;
       panResponse.current = PanResponder.create({
         onMoveShouldSetPanResponder: (
@@ -171,17 +146,17 @@ export default ({
           gestureState
         ) => {
           startValue = gestureState.dy;
-          animTop.setValue({
+          animate.setValue({
             x: 0,
             y: interpolate.current[0]
           });
-          animTop.extractOffset();
+          animate.extractOffset();
           return true;
         },
         onPanResponderMove: Animated.event(
           [
             null,
-            { dx: animTop.x, dy: animTop.y }
+            { dx: animate.x, dy: animate.y }
           ],
           { useNativeDriver: false }
         ),
@@ -196,8 +171,8 @@ export default ({
           if (Math.abs(diff) > getHeight() / 3) {
             toggle(false);
           } else {
-            animTop.flattenOffset();
-            tAnimate(old); // reset to start value
+            animate.flattenOffset();
+            animateY(old); // reset to start value
           }
           return false;
         }
@@ -225,7 +200,7 @@ export default ({
               transform: [
                 {
                   translateY:
-                    animTop.y.interpolate({
+                    animate.y.interpolate({
                       inputRange:
                         interpolate.current,
                       outputRange:
@@ -286,7 +261,6 @@ export default ({
   };
 
   useEffect(() => {
-    //panResponse.current = undefined;
     renderUpdate();
   });
 

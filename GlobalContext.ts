@@ -54,6 +54,7 @@ const data = GlobalState(
       title: "Action",
       confirm: (answer: boolean) => {}
     },
+    novelFavoritInfo: {},
     alert: (msg: string, title?: string) => {
       return {
         show: () => {
@@ -198,6 +199,8 @@ const data = GlobalState(
     }
   },
   "nav",
+  "selection.downloadSelectedItem",
+  "selection.favoritItem",
   "player.currentChapterSettings.scrollProgress"
 );
 export default data;

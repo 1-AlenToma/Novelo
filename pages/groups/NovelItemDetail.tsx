@@ -468,8 +468,7 @@ export default ({ ...props }: any) => {
                 loader.show();
                 let book =
                   state.book ||
-                  (await g
-                    .db()
+                  (await context.db()
                     .querySelector<Book>("Books")
                     .Where.Column(x => x.url)
                     .EqualTo(url)
@@ -481,8 +480,7 @@ export default ({ ...props }: any) => {
                         .Name(state.novel.name)
                         .ParserName(parserName)
                         .ImageBase64(
-                          await g
-                            .http()
+                          await context.http()
                             .imageUrlToBase64(
                               state.novel.image
                             )

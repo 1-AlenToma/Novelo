@@ -16,11 +16,11 @@ import {
 
 export default memo(
   ({
-    item,
+    itemIndex,
     vMode,
     ...props
   }: {
-    item: Value;
+    itemIndex: number;
     vMode?: boolean;
   }) => {
     const [params, option, navs] =
@@ -28,6 +28,10 @@ export default memo(
     const loader = useLoader(true);
     const [items, setItems] = useState([]);
     const page = useRef(0);
+    const item =
+      context.parser.current().settings.group[
+        itemIndex
+      ];
     const getItems = async () => {
       loader.show();
       try {
@@ -64,7 +68,9 @@ export default memo(
         }>
         {loader.elem}
         <View
-          css={`pal:5 clearwidth par:5 row juc:space-between ${!vMode ? "pal:0 par:0" : ""}
+          css={`pal:5 clearwidth par:5 row juc:space-between ${
+            !vMode ? "pal:0 par:0" : ""
+          }
           `}>
           {!vMode ? (
             <Text
@@ -79,11 +85,7 @@ export default memo(
                 option
                   .nav("GroupDetail")
                   .add({
-                    groupIndex: context.parser
-                      .current()
-                      .settings.group.findIndex(
-                        x => x === item
-                      )
+                    groupIndex: itemIndex
                   })
                   .push();
               }}>

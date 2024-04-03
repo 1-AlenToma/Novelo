@@ -47,14 +47,18 @@ export default (props: any) => {
         .Where.Column(x => x.favorit)
         .EqualTo(true)
     );
-  const state = useState({
-    procent: 0,
-    downloadShow: false,
-    all: false,
-    appSettings: false,
-    epubs: false,
-    items: []
-  });
+  const state = useState(
+    {
+      procent: 0,
+      downloadShow: false,
+      all: false,
+      appSettings: false,
+      epubs: false,
+      items: [],
+      added: {}
+    },
+    "items"
+  );
 
   const download = async () => {
     state.downloadShow = false;
@@ -91,7 +95,7 @@ export default (props: any) => {
             )
             .map(x => x.id);
           if (ids.length > 0)
-            await g
+            await context
               .db()
               .querySelector<Chapter>("Chapters")
               .Where.Column(x => x.parent_Id)
@@ -137,14 +141,16 @@ export default (props: any) => {
           x.parserName == item.parserName
       )
     ) {
-      state.items = [
-        ...state.items.filter(
-          x =>
-            x.url !== item.url &&
-            x.parserName != item.parserName
-        )
-      ];
+      state.items = state.items.filter(
+        x =>
+          x.url !== item.url &&
+          x.parserName === item.parserName
+      );
     } else state.items = [...state.items, item];
+    state.added = state.items.reduce((c, v) => {
+      c[v.url + v.parserName] = true;
+      return c;
+    }, {});
   };
 
   return (
@@ -197,31 +203,25 @@ export default (props: any) => {
             }
           />
           <Form
-            ifTrue={!state.all}
+            ifTrue={() => !state.all}
             text="Favorit Novels"
             root={true}
             css="mat:20 mih:100 mah:70%">
-            <ItemList
-              updater={[state.items]}
-              onPress={item => {
-                itemPress(item);
-                //state.all = false;
-              }}
-              items={books}
-              container={({ item }) => (
+            <ScrollView>
+              {books.map((item, i) => (
                 <CheckBox
+                  key={i}
+                  onChange={() => itemPress(item)}
                   text={item.name + ":"}
                   invertColor={true}
-                  checked={state.items.find(
-                    x =>
-                      x.url === item.url &&
-                      x.parserName ==
-                        item.parserName
-                  )}
+                  checked={
+                    state.added[
+                      item.url + item.parserName
+                    ] ?? false
+                  }
                 />
-              )}
-              vMode={true}
-            />
+              ))}
+            </ScrollView>
           </Form>
         </View>
       </Modal>
@@ -331,7 +331,7 @@ export default (props: any) => {
               //Updates.reloadAsync();
             }}
             selectedValue={(
-              context.appSettings.theme ?? "light"
+              context.appSettings.theme ?? "dark"
             ).displayName()}
           />
         </View>

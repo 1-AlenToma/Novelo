@@ -1,6 +1,7 @@
 import Html from "./Html";
 import g from "../GlobalContext";
 const tempData = new Map<string, HttpTemp>();
+let lock = false;
 
 const createKey = (...args) => {
   return JSON.stringify(args).replace(
@@ -9,13 +10,15 @@ const createKey = (...args) => {
   );
 };
 
-const validateSize = () => {
-  if (tempData.size <= 400) return;
-  while (tempData.size > 200) {
+const validateSize = async () => {
+  if (tempData.size <= 300) return;
+  lock = true;
+  while (tempData.size > 100) {
     tempData.delete(
       tempData.entries().next().key
     );
   }
+  lock = false;
 };
 
 const getFetch = async (
@@ -23,7 +26,8 @@ const getFetch = async (
   options: any,
   ignoreAlert: boolean
 ) => {
-  validateSize();
+  while (lock) await methods.sleep(100);
+  await validateSize();
   let key = createKey({ url, options });
   try {
     if (tempData.has(key))
@@ -47,7 +51,9 @@ const getFetch = async (
         data.status === 408 ||
         data.status == 429
       )
-        throw new Error(`${data.status} Request Timeout`);
+        throw new Error(
+          `${data.status} Request Timeout`
+        );
       // For any other server error
       throw new Error(data.status);
     }

@@ -39,26 +39,36 @@ export default ({
   hooks?: any[];
   selectedIndex?: number;
 }) => {
-  
-  context.hook("theme.settings", ...(hooks ?? []));
+  context.hook(
+    "theme.settings",
+    ...(hooks ?? [])
+  );
   const time = useTimer(100);
   const onEndReachedCalledDuringMomentum =
     useRef(true);
   const ref = useRef();
   const selected = useRef();
-  const render = useCallback((item, index) => {
+  const render = (item, index) => {
     let d = { item, vMode, index };
     if (props) d = { ...d, ...props };
     let VR = container;
+    let CN =
+      onPress || onLongPress
+        ? TouchableOpacity
+        : View;
     return (
-      <TouchableOpacity
+      <CN
         css={itemCss}
         onLongPress={() => onLongPress?.(item)}
-        onPress={() => onPress?.(item)}>
+        onPress={e => {
+           e.stopPropagation();
+          onPress?.(item);
+         
+        }}>
         <VR {...d} />
-      </TouchableOpacity>
+      </CN>
     );
-  });
+  };
 
   const scrollTo = () => {
     if (

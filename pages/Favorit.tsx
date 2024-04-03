@@ -33,7 +33,7 @@ export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
   const updater = useUpdate();
-  const loader = useLoader();
+
   const state = useState({
     text: "",
     json: "",
@@ -59,7 +59,7 @@ export default ({ ...props }: any) => {
         .Where.Column(x => x.favorit)
         .EqualTo(true)
     );
-
+  const loader = useLoader(dataIsLoading);
   useEffect(() => {
     (async () => {
       for (let b of books) {
@@ -68,10 +68,12 @@ export default ({ ...props }: any) => {
             .find(b.parserName)
             .detail(b.url);
           if (novel) {
-            state.infoNovel[b.url] = `(${
+            context.novelFavoritInfo[b.url] = `(${
               b.selectedChapterIndex + 1
             }/${novel.chapters.length})`;
-            updater();
+            context.novelFavoritInfo = {
+              ...context.novelFavoritInfo
+            };
           }
         }
         await sleep(500);
@@ -199,6 +201,7 @@ export default ({ ...props }: any) => {
       />
 
       <ItemList
+        hooks={["novelFavoritInfo"]}
         css="flex"
         onPress={x =>
           (context.selection.favoritItem = x)
@@ -209,7 +212,7 @@ export default ({ ...props }: any) => {
         container={({ item }) => (
           <View
             invertColor={true}
-            css="clearboth pal:5 par:5 he:60 row di:flex juc:flex-start">
+            css="wi:98% bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start">
             <Image
               url={item.imageBase64}
               css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
@@ -220,15 +223,16 @@ export default ({ ...props }: any) => {
               {item.name}
             </Text>
             <Text css="desc co:red absolute bo:5 right:10">
-              {state.infoNovel[item.url] ||
-                "loading"}
+              {context.novelFavoritInfo[
+                item.url
+              ] || "loading"}
             </Text>
             <Text css="clearwidth desc co:red bottom bo:5 le:60">
               ({item.parserName})
             </Text>
           </View>
         )}
-        itemCss="clearwidth mab:5 overflow bor:5"
+        itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
         vMode={true}
       />
     </View>

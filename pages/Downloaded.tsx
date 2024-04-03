@@ -48,6 +48,10 @@ const ItemRender = ({ item, state }: any) => {
   const urls = context
     .downloadManager()
     .useDownload();
+  let urlObj = urls.reduce((c, v) => {
+    c[v.url] = v;
+    return c;
+  }, {});
   const itemState = useState({
     info: undefined
   });
@@ -76,7 +80,7 @@ const ItemRender = ({ item, state }: any) => {
   return (
     <View
       invertColor={true}
-      css="clearboth pal:5 he:60 row di:flex juc:flex-start">
+      css="wi:98% bor:5 pal:5 he:60 row di:flex juc:flex-start">
       {loader.elem ?? elem}
       <Image
         url={item.imageBase64}
@@ -96,11 +100,7 @@ const ItemRender = ({ item, state }: any) => {
           : " (Epub)"}
       </Text>
       <View
-        ifTrue={
-          urls.find(x => x.url == item.url)
-            ? true
-            : false
-        }
+        ifTrue={urlObj[item.url] ? true : false}
         css="clearboth absolute row juc:flex-end ali:center">
         <TouchableOpacity
           css="button zi:6 miw:30"
@@ -113,12 +113,11 @@ const ItemRender = ({ item, state }: any) => {
             invertColor={true}
             name="controller-stop"
             type="Entypo"
+            css="zi:7"
           />
         </TouchableOpacity>
         <ProgressBar
-          procent={
-            urls.find(x => x.url == item.url)?.p
-          }
+          procent={urlObj[item.url]?.p}
         />
       </View>
     </View>
@@ -134,7 +133,7 @@ export default ({ ...props }: any) => {
     selectedItem: undefined,
     skipImages: false
   });
-  const loader = useLoader();
+
   const { fileItems, elem } = context
     .files()
     .useFile("json", undefined, "NewDelete");
@@ -155,7 +154,7 @@ export default ({ ...props }: any) => {
         .Where.Column(x => x.url)
         .IN(fileItems.map(x => x.url))
     );
-
+  const loader = useLoader(dataIsLoading);
   useEffect(() => {
     reload();
   }, [fileItems]);
@@ -204,7 +203,7 @@ export default ({ ...props }: any) => {
             if (!state.skipImages) {
               for (let file of images) {
                 await calc();
-                file.content = await g
+                file.content = await context
                   .imageCache()
                   .write(file.url, file.content);
               }
@@ -235,7 +234,7 @@ export default ({ ...props }: any) => {
                 )?.content ?? ""
               )
               .ParserName("epub");
-            await g
+            await context
               .files()
               .write(bk.url, JSON.stringify(bk));
             await context.db().save(book);
@@ -298,7 +297,11 @@ export default ({ ...props }: any) => {
 
   return (
     <View css="flex mih:100">
-      {loader.elem ?? elem}
+      <View
+        ifTrue={() => (loader.elem ?? elem) ? true : false}
+        css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+        {loader.elem ?? elem}
+      </View>
       <ActionSheet
         title="Actions"
         onHide={() =>
@@ -395,7 +398,7 @@ export default ({ ...props }: any) => {
                             .downloadSelectedItem
                             .favorit
                         ) {
-                          await g
+                          await context
                             .dbContext()
                             .deleteBook(
                               context.selection
@@ -426,7 +429,7 @@ export default ({ ...props }: any) => {
               context.selection
                 .downloadSelectedItem
                 ?.parserName !== "epub" &&
-              !g
+              !context
                 .downloadManager()
                 .items.has(
                   context.selection
@@ -501,7 +504,7 @@ export default ({ ...props }: any) => {
             item={item}
           />
         )}
-        itemCss="clearwidth mab:5 overflow bor:5"
+        itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
         vMode={true}
       />
     </View>

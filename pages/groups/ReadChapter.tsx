@@ -1087,6 +1087,7 @@ const InternalWeb = ({
             .scrollProgress
       }}
       menuItems={{
+        selector:"#novel",
         rows: [
           {
             cols: [

@@ -10,7 +10,8 @@ import {
   CheckBox,
   AnimatedView,
   ActionSheet,
-  Form
+  Form,
+  ProgressBar
 } from "../components";
 import {
   useState,
@@ -272,7 +273,7 @@ export default ({ ...props }: any) => {
             }>
             <NovelGroup
               {...props}
-              item={x}
+              itemIndex={i}
               vMode={false}
             />
           </View>
