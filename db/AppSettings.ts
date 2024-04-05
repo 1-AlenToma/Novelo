@@ -23,7 +23,7 @@ class AppSettings extends IBaseModule<TableNames> {
     url: string;
     parserName: string;
     isEpub?: boolean;
-  } = {};
+  } = {} as any;
   navigationType?: "Scroll" | "Snap" = "Snap";
   use3D?: boolean = false;
   shadowLength?: number = 1;

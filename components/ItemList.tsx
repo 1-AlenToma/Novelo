@@ -61,9 +61,9 @@ export default ({
         css={itemCss}
         onLongPress={() => onLongPress?.(item)}
         onPress={e => {
-           e.stopPropagation();
-          onPress?.(item);
          
+          onPress?.(item);
+           e.stopPropagation();
         }}>
         <VR {...d} />
       </CN>
@@ -118,10 +118,7 @@ export default ({
         horizontal={vMode !== true}
         data={items}
         estimatedItemSize={200}
-        initialNumToRender={Math.max(
-          30,
-          (0).sureValue()
-        )}
+        initialNumToRender={Math.max(30, 0)}
         onEndReachedThreshold={0.5}
         onMomentumScrollBegin={() => {
           onEndReachedCalledDuringMomentum.current =

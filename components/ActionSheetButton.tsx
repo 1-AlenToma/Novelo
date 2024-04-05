@@ -8,6 +8,7 @@ export default ({
   css,
   onPress,
   ifTrue,
+  refItem,
   ...props
 }: {
   css?: string;
@@ -20,6 +21,14 @@ export default ({
   let tprops = {
     onPress: () => setVisible(true)
   };
+  
+  if(refItem)
+    {
+      refItem.current = {
+        close:()=> setVisible(false),
+        show:()=> setVisible(true)
+      }
+    }
 
   if (onPress) {
     tprops.onPress = onPress;

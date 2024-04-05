@@ -6,6 +6,15 @@ import {
 import { newId } from "../Methods";
 import { useTimer } from "../hooks";
 
+const toObject = (...keys: string[]) => {
+  if (keys.length == 0) return { all: true };
+
+  return keys.reduce((c, v) => {
+    c[v] = true;
+    return c;
+  }, {});
+};
+
 const keys = (item: any) => {
   let prototype = Object.getPrototypeOf(item);
   let ks = [
@@ -25,7 +34,7 @@ const keys = (item: any) => {
     x => !obp.includes(x) && !cbp.includes(x)
   );
 };
-const speed = 100;
+const speed = 10;
 const getValueByPath = (
   value: any,
   path: string
@@ -45,12 +54,21 @@ const getValueByPath = (
   return current;
 };
 
-const valid = (item: any) => {
+const valid = (
+  item: any,
+  validArray?: boolean
+) => {
   if (!item || item === null) return false;
   if (item instanceof Set) return false;
   if (item instanceof Map) return false;
   if (typeof item === "function") return false;
   if (typeof item === "string") return false;
+  if (
+    validArray &&
+    Array.isArray(item) &&
+    item.length > 0
+  )
+    return valid(item[0]);
   return typeof item === "object";
 };
 
@@ -70,6 +88,7 @@ abstract class ICreate {
   abstract ___events: any;
 }
 class Create<T extends object> extends ICreate {
+  ___events: any = {};
   ___onChange(key: string) {
     try {
       let global = key
@@ -80,13 +99,9 @@ class Create<T extends object> extends ICreate {
 
       for (let item in this.___events) {
         if (
-          this.___events[item].keys.length == 0 ||
-          this.___events[item].keys.includes(
-            key
-          ) ||
-          this.___events[item].keys.includes(
-            global
-          )
+          this.___events[item].keys.all ||
+          this.___events[item].keys[key] ||
+          this.___events[item].keys[global]
         ) {
           this.___events[item].fn();
         }
@@ -96,14 +111,14 @@ class Create<T extends object> extends ICreate {
     }
   }
 
-  hook(...keys: NestedKeyOf<T>) {
+  hook(...keys: NestedKeyOf<T>[]) {
     let id = useRef(newId()).current;
     let [update, setUpdate] = useState();
     const timer = useTimer(speed);
     this.___events[id] = {
       fn: async () =>
         timer(() => setUpdate(newId())),
-      keys: keys
+      keys: toObject(...keys)
     };
 
     useEffect(() => {
@@ -112,14 +127,14 @@ class Create<T extends object> extends ICreate {
   }
 
   subscribe(
-    fn: Funtion,
-    ...keys: NestedKeyOf<T>
+    fn: Function,
+    ...keys: NestedKeyOf<T>[]
   ) {
     let id = useRef(newId()).current;
     const timer = useTimer(speed);
     this.___events[id] = {
       fn: () => timer(() => fn(this)),
-      keys: keys
+      keys: toObject(...keys)
     };
 
     useEffect(() => {
@@ -131,13 +146,12 @@ class Create<T extends object> extends ICreate {
     item: any,
     parent: any,
     parentItem: any,
-    ...ignoreKeys: string[]
+    ignoreKeys: any
   ) {
     super();
-    if (!parentItem) parentItem = this;
-    Object.defineProperty(this, "___events", {
-      value: {}
-    });
+    if (!parentItem) {
+      parentItem = this;
+    }else delete this.___events;
     let parentKeys = (key: string) => {
       if (parent && parent.length > 0)
         return `${parent}.${key}`;
@@ -150,7 +164,7 @@ class Create<T extends object> extends ICreate {
     ) => {
       try {
         if (
-          !ignoreKeys.includes(parentKey) &&
+          !ignoreKeys[parentKey] &&
           valid(value) &&
           !Array.isArray(value)
         ) {
@@ -158,10 +172,10 @@ class Create<T extends object> extends ICreate {
             value,
             parentKey,
             parentItem,
-            ...ignoreKeys
+            ignoreKeys
           );
         } else if (
-          !ignoreKeys.includes(parentKey) &&
+          !ignoreKeys[parentKey] &&
           value &&
           Array.isArray(value) &&
           value.length > 0
@@ -172,7 +186,7 @@ class Create<T extends object> extends ICreate {
                 x,
                 parentKey,
                 parentItem,
-                ...ignoreKeys
+                ignoreKeys
               );
             } else return x;
           });
@@ -206,18 +220,19 @@ const UseState = function <T>(
   item: T,
   ...ignoreKeys: NestedKeyOf<T>[]
 ) {
-  let refItem = useRef();
-  if (!valid(item)) return useState(item);
+  let refItem = useRef<any>();
+  if (!valid(item, true))
+    return useState<any>(item);
   else if (refItem.current === undefined) {
     refItem.current = new Create(
       item,
       undefined,
       undefined,
-      ...ignoreKeys
+      toObject(...ignoreKeys)
     );
   }
   refItem.current.hook();
-  return (refItem.current as any as T);
+  return refItem.current as any as T;
 };
 
 const GlobalState = function <T extends object>(
@@ -229,7 +244,7 @@ const GlobalState = function <T extends object>(
     tm,
     undefined,
     undefined,
-    ...ignoreKeys
+    toObject(...ignoreKeys)
   ) as any as T;
 };
 

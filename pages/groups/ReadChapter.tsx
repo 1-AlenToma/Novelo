@@ -19,7 +19,8 @@ import {
   Modal,
   DropdownList,
   ColorPicker,
-  Form
+  Form,
+  ChapterView
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -244,101 +245,19 @@ const Controller = ({ state, ...props }) => {
                     name="menu"
                   />
                 }>
-                <View css="clearboth juc:flex-start mah:90%">
-                  <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
-                    <TextInput
-                      onChangeText={x =>
-                        (thisState.cText = x)
-                      }
-                      invertColor={false}
-                      css="wi:90% pa:5 bor:2"
-                      defaultValue={
-                        thisState.cText
-                      }
-                      placeholder="Search for chapter"
-                    />
-                  </View>
-                  <ItemList
-                    css="flex"
-                    onPress={item => {
-                      context.player.jumpTo(
-                        item.url
-                      );
-                    }}
-                    selectedIndex={state.novel.chapters?.findIndex(
-                      x =>
-                        x.url ==
-                        context.player
-                          .currentChapter.url
-                    )}
-                    items={state.novel.chapters?.filter(
-                      x =>
-                        thisState.cText == "" ||
-                        x.name
-                          .toLowerCase()
-                          .indexOf(
-                            thisState.cText.toLowerCase()
-                          ) !== -1
-                    )}
-                    container={({
-                      item,
-                      index
-                    }) => (
-                      <View
-                        css={`flex mih:20 row juc:space-between di:flex ali:center pal:5 bor:2 ${
-                          context.player
-                            .currentChapter.url ==
-                          item.url
-                            ? "selectedRow"
-                            : ""
-                        }`}>
-                        <Text
-                          css="desc maw:90%"
-                          invertColor={true}>
-                          {item.name.safeSplit(
-                            "/",
-                            -1
-                          )}
-                        </Text>
-                        <View css="row">
-                          <Icon
-                            invertColor={true}
-                            color={
-                              context.player.book.chapterSettings.find(
-                                x =>
-                                  x.url ==
-                                  item.url
-                              )?.scrollProgress >=
-                              200
-                                ? "green"
-                                : undefined
-                            }
-                            size={16}
-                            type="MaterialIcons"
-                            name="preview"
-                          />
-                          <Icon
-                            invertColor={true}
-                            color={
-                              context.player.book.chapterSettings.find(
-                                x =>
-                                  x.url ==
-                                  item.url
-                              )?.isFinished
-                                ? "green"
-                                : undefined
-                            }
-                            size={16}
-                            type="AntDesign"
-                            name="checkcircle"
-                          />
-                        </View>
-                      </View>
-                    )}
-                    itemCss="pa:5 clearwidth bobw:1 boc:gray"
-                    vMode={true}
-                  />
-                </View>
+                <ChapterView
+                  book={state.book}
+                  novel={state.novel}
+                  onPress={item => {
+                    context.player.jumpTo(
+                      item.url
+                    );
+                  }}
+                  current={
+                    context.player.currentChapter
+                      .url
+                  }
+                />
               </ActionSheetButton>
             )
           },
@@ -1087,7 +1006,7 @@ const InternalWeb = ({
             .scrollProgress
       }}
       menuItems={{
-        selector:"#novel",
+        selector: "#novel",
         rows: [
           {
             cols: [
@@ -1130,8 +1049,10 @@ const InternalWeb = ({
 };
 
 export default (props: any) => {
-  const [{ url, parserName, epub }, nav] =
-    useNavigation(props);
+  const [
+    { url, parserName, epub, chapter },
+    nav
+  ] = useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
   useKeepAwake();
@@ -1159,7 +1080,8 @@ export default (props: any) => {
       comment: undefined,
       define: undefined
     },
-    "book"
+    "book",
+    "parser","novel"
   );
 
   useDbHook(
@@ -1176,20 +1098,18 @@ export default (props: any) => {
         loader.hide();
         return;
       }
+
+      state.novel =
+        parserName == "epub" || epub
+          ? files.fileItems.find(
+              x => x.url === url
+            )
+          : await state.parser.detail(url, true);
       if (
         !context.player.novel ||
         context.player.novel.url !== url ||
         context.player.isEpup != (epub === true)
       ) {
-        state.novel =
-          parserName == "epub" || epub
-            ? files.fileItems.find(
-                x => x.url === url
-              )
-            : await state.parser.detail(
-                url,
-                true
-              );
         let book = await context
           .db()
           .querySelector<Book>("Books")
@@ -1231,9 +1151,10 @@ export default (props: any) => {
           },
           epub === true
         );
-        await context.player.jumpTo();
+        await context.player.jumpTo(chapter);
       } else {
-        state.novel = context.player.novel;
+        context.player.novel = state.novel =
+          state.novel;
         state.book = context.player.book;
         context.player.loader = {
           show: () => loader.show(),
@@ -1241,7 +1162,7 @@ export default (props: any) => {
         };
         context.player.hooked = true;
         context.player.viewState = "Default";
-        await context.player.jumpTo();
+        await context.player.jumpTo(chapter);
         loader.hide();
       }
     } catch (e) {
@@ -1368,8 +1289,7 @@ export default (props: any) => {
                 }
               />
             </Form>
-            <Form
-              text="BackgroundColor">
+            <Form text="BackgroundColor">
               <ColorPicker
                 value={
                   state.textEdit?.bgColor ??

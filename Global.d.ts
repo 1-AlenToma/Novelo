@@ -18,6 +18,7 @@ declare global {
       fn: (item: T, index: number) => Promise<T[]>
     );
     distinct: (key: keyof T, itemsB: T[]) => T[];
+    at: (index: number) => T;
     firstOrDefault: (
       key?: keyof T
     ) => T | undefined;
@@ -139,6 +140,12 @@ Array.prototype.skip = function (
   );
 };
 
+Array.prototype.at = function(index:number){
+  if(index ===undefined)
+     return undefined
+  return this.length > index ? this[index]: undefined;
+}
+
 Array.prototype.lastOrDefault = function (
   key?: string
 ) {
@@ -254,7 +261,9 @@ String.prototype.cleanHtml = function () {
 
 String.prototype.html = function () {
   let str = new String(this).toString();
-  let html = cheerio.load(str,{decodeEntities: false});
+  let html = cheerio.load(str, {
+    decodeEntities: false
+  });
   return html;
 };
 

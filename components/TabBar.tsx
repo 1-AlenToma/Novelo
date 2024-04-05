@@ -25,7 +25,7 @@ import {
   proc,
   ifSelector
 } from "../Methods";
-import GlobalData from "../GlobalContext";
+
 import {
   useUpdate,
   useTimer,
@@ -51,8 +51,8 @@ const Menu = ({
 
   const getIcon = (
     icon?: TabIcon,
-    iconSize,
-    style
+    iconSize?: number,
+    style?: any
   ) => {
     if (!icon) return null;
     let Type = Icons[icon.type];
@@ -84,7 +84,7 @@ const Menu = ({
   let prop = {
     style: [
       styles.menu,
-      GlobalData.theme.invertSettings()
+      context.theme.invertSettings()
     ]
   };
   let menuItems = children.filter(
@@ -112,7 +112,7 @@ const Menu = ({
           style={[
             styles.menuBtn,
             i == cIndex
-              ? GlobalData.theme.settings
+              ? context.theme.settings
               : undefined,
             i == cIndex
               ? selectedStyle
@@ -128,9 +128,9 @@ const Menu = ({
             i == cIndex ? 15 : 18,
             [
               styles.menuText,
-              GlobalData.theme.invertSettings(),
+              context.theme.invertSettings(),
               i == cIndex
-                ? GlobalData.theme.settings
+                ? context.theme.settings
                 : undefined
             ]
           )}
@@ -140,7 +140,7 @@ const Menu = ({
               style={[
                 styles.menuText,
                 i == cIndex
-                  ? GlobalData.theme.settings
+                  ? context.theme.settings
                   : undefined
               ]}
               css={`desc fos:${fontSize ?? 9}`}>
@@ -177,7 +177,7 @@ const TabBar = ({
   const loader = useLoader(true);
   const [size, setSize] = useState(undefined);
   const update = useUpdate();
-  GlobalData.hook("theme.settings");
+  context.hook("theme.settings");
   const getWidth = (index: number) => {
     let v = index * size?.width;
     if (isNaN(v)) return 0;
@@ -203,9 +203,7 @@ const TabBar = ({
     children.map(x => {})
   );
   const panResponse = useRef();
-  const { animateX, animate } = useAnimate({
-    
-  });
+  const { animateX, animate } = useAnimate({});
 
   const [index, setIndex] = useState(
     selectedIndex ?? 0
@@ -214,14 +212,20 @@ const TabBar = ({
   const tAnimate = (
     index: number,
     speed?: number,
-    fn: any
+    fn?: any
   ) => {
     let value =
       interpolate.current.find(
         x => x.index == index
       )?.value ?? 0;
 
-    animateX(value, fn, speed);
+    animateX(
+      value,
+      () => {
+        fn?.();
+      },
+      speed
+    );
   };
 
   const animateLeft = async (index: number) => {
@@ -279,71 +283,70 @@ const TabBar = ({
     return child;
   };
   interpolate.current = getInputRange();
-  // animTop.extractOffset();
+  const assign = () => {
+    panResponse.current = PanResponder.create({
+      onMoveShouldSetPanResponder: (
+        evt,
+        gestureState
+      ) => {
+        //return true if user is swiping, return false if it's a single click
+        const { dx, dy } = gestureState;
+        let lng = 5;
 
-  panResponse.current = PanResponder.create({
-    onMoveShouldSetPanResponder: (
-      evt,
-      gestureState
-    ) => {
-      //return true if user is swiping, return false if it's a single click
-      const { dx, dy } = gestureState;
-      let lng = 5;
-
-      return (
-        dx > lng ||
-        dx < -lng ||
-        dy > lng ||
-        dy < -lng
-      );
-    },
-    onPanResponderGrant: (e, gestureState) => {
-      startValue.current = gestureState.dx;
-      //alert(interpolate.outputRange[index]);
-      animate.setValue({
-        x:
-          interpolate.current.find(
-            x => x.index == (index ?? 0)
-          )?.value ?? 0,
-        y: 0
-      });
-      animate.extractOffset();
-      return true;
-    },
-    onPanResponderMove: Animated.event(
-      [null, { dx: animate.x, dy: animate.y }],
-      { useNativeDriver: false }
-    ),
-    onPanResponderRelease: (
-      evt,
-      gestureState
-    ) => {
-      let newValue = gestureState.dx;
-      let diff = newValue - startValue.current;
-      let width = size?.width ?? 0;
-      let i = index == undefined ? 0 : index;
-      //console.warn(diff, i);
-      animate.flattenOffset();
-      let speed = 200;
-      if (Math.abs(diff) > width / 3) {
-        //  animLeft.flattenOffset();
-        // alert("animating" + index + 1);
+        return (
+          dx > lng ||
+          dx < -lng ||
+          dy > lng ||
+          dy < -lng
+        );
+      },
+      onPanResponderGrant: (e, gestureState) => {
+        startValue.current = gestureState.dx;
+        
+        //alert(interpolate.outputRange[index]);
+        animate.setValue({
+          x:
+            interpolate.current.find(
+              x => x.index == index
+            )?.value ?? 0,
+          y: 0
+        });
+        animate.extractOffset();
+        return true;
+      },
+      onPanResponderMove: Animated.event(
+        [null, { dx: animate.x, dy: animate.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: (
+        evt,
+        gestureState
+      ) => {
+        let newValue = gestureState.dx;
+        let diff = newValue - startValue.current;
+        let width = size?.width ?? 0;
+        let i = index == undefined ? 0 : index;
         //console.warn(diff, i);
-        if (diff < 0) {
-          if (i + 1 < children.length)
-            loadChildren(i + 1);
-          else tAnimate(i, speed);
+        animate.flattenOffset();
+        let speed = 200;
+        if (Math.abs(diff) > width / 3) {
+          if (diff < 0) {
+            if (i + 1 < children.length)
+              loadChildren(i + 1);
+            else tAnimate(i, speed);
+          } else {
+            if (i - 1 >= 0) loadChildren(i - 1);
+            else tAnimate(i, speed);
+          }
+          //  onHide(!visible);
         } else {
-          if (i - 1 >= 0) loadChildren(i - 1);
-          else tAnimate(i, speed);
+          tAnimate(i, speed); // reset to start value
         }
-        //  onHide(!visible);
-      } else {
-        tAnimate(i, speed); // reset to start value
+        //return false;
       }
-      //return false;
-    }
-  });
+    });
+  };
+  assign();
 
   return (
     <View

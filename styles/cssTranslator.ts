@@ -268,6 +268,7 @@ const css_translator = (
   id?: any
 ) => {
   if (!css || css.length <= 0) return {};
+  css = css.replace(/\: /gmi, ":")
   let shortk = buildShortCss();
   let CSS = {};
   if (

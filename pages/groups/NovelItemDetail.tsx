@@ -12,7 +12,8 @@ import {
   SizeAnimator,
   ActionSheet,
   ActionSheetButton,
-  TabBar
+  TabBar,
+  ChapterView
 } from "../../components/";
 import WebView from "react-native-webview";
 import { useEffect, useRef } from "react";
@@ -29,6 +30,7 @@ export default ({ ...props }: any) => {
   const [{ url, parserName }, options, navop] =
     useNavigation(props);
   const loader = useLoader(true);
+  const chapterRef = useRef();
   const state = useState({
     novel: {},
     viewChapters: false,
@@ -50,6 +52,13 @@ export default ({ ...props }: any) => {
           state.book = await context
             .db()
             .querySelector<Book>("Books")
+            .LoadChildren<Chapter>(
+              "Chapters",
+              "parent_Id",
+              "id",
+              "chapterSettings",
+              true
+            )
             .Where.Column(x => x.url)
             .EqualTo(url)
             .AND.Column(x => x.parserName)
@@ -316,6 +325,7 @@ export default ({ ...props }: any) => {
                         : "Updated"}
                     </Text>
                     <ActionSheetButton
+                      refItem={chapterRef}
                       btn={
                         <Icon
                           invertColor={true}
@@ -326,41 +336,29 @@ export default ({ ...props }: any) => {
                       }
                       title="Chapters"
                       height="80%">
-                      <View css="clearboth mah:100% juc:flex-start mah:90%">
-                        <View css="juc:flex-start clearboth ali:center he:30 mab:10 mat:10">
-                          <TextInput
-                            onChangeText={x =>
-                              (state.cText = x)
-                            }
-                            invertColor={false}
-                            css="wi:90% pa:5 bor:2"
-                            defaultValue={
-                              state.cText
-                            }
-                            placeholder="Search for chapter"
-                          />
-                        </View>
-                        <ItemList
-                          css="flex"
-                          items={state.novel.chapters?.filter(
-                            x =>
-                              x.name.has(
-                                state.cText
-                              )
-                          )}
-                          container={({
-                            item
-                          }) => (
-                            <Text
-                              css="bold desc"
-                              invertColor={true}>
-                              {item.name}
-                            </Text>
-                          )}
-                          itemCss="pa:5 clearwidth bobw:1 boc:gray"
-                          vMode={true}
-                        />
-                      </View>
+                      <ChapterView
+                        book={state.book}
+                        novel={state.novel}
+                        onPress={item => {
+                          chapterRef.current?.close();
+                          options
+                            .nav("ReadChapter")
+                            .add({
+                              chapter: item.url,
+                              url: state.novel
+                                .url,
+                              parserName:
+                                state.novel
+                                  .parserName
+                            })
+                            .push();
+                        }}
+                        current={
+                          state.novel?.chapters?.at(
+                            state.book?.selectedChapterIndex
+                          )?.url
+                        }
+                      />
                     </ActionSheetButton>
                   </View>
                 </View>
@@ -468,7 +466,8 @@ export default ({ ...props }: any) => {
                 loader.show();
                 let book =
                   state.book ||
-                  (await context.db()
+                  (await context
+                    .db()
                     .querySelector<Book>("Books")
                     .Where.Column(x => x.url)
                     .EqualTo(url)
@@ -480,7 +479,8 @@ export default ({ ...props }: any) => {
                         .Name(state.novel.name)
                         .ParserName(parserName)
                         .ImageBase64(
-                          await context.http()
+                          await context
+                            .http()
                             .imageUrlToBase64(
                               state.novel.image
                             )
