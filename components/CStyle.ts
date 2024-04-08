@@ -69,7 +69,7 @@ export default NestedStyleSheet.create({
   listButton:
     "di:flex bobw:1 bobc:#ccc pa:2 row ali:center mih:40",
 
-  "listButton.Icon": "fos:15 bold co:red mar:5",
+  "listButton.Icon": "fos:15 bold mar:5",
 
   "listButton.Text": "desc fos:13",
 

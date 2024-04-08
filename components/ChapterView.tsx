@@ -45,7 +45,7 @@ export default ({
           x => x.url == current
         );
         if (i !== -1) {
-          state.index = i;
+          state.index = item.index;
           setPage(item.index);
           break;
         }
@@ -83,65 +83,76 @@ export default ({
                   : "1 - "}
                 {(item.index + 1) * size}
               </Text>
+              <Icon
+                ifTrue={item.index == state.index}
+                color="yellow"
+                flash="green"
+                css="absolute le:0 to:0"
+                size={16}
+                type="MaterialIcons"
+                name="star"
+              />
             </View>
           )}
           itemCss="pa:5  clearwidth bobw:1 boc:gray"
           vMode={false}
         />
       </View>
-      <ItemList
-        css="flex"
-        updater={[page, id]}
-        onPress={item => {
-          onPress(item);
-        }}
-        selectedIndex={state.index}
-        items={state.chArray[page].items}
-        container={({ item, index }) => (
-          <View
-            css={`flex mih:20 row juc:space-between di:flex ali:center pal:5 par:5 bor:2 ${
-              current == item.url
-                ? "selectedRow"
-                : ""
-            }`}>
-            <Text
-              css="desc maw:90%"
-              invertColor={true}>
-              {item.name.safeSplit("/", -1)}
-            </Text>
-            <View css="row">
-              <Icon
-                invertColor={true}
-                color={
-                  book?.chapterSettings?.find(
-                    x => x.url == item.url
-                  )?.scrollProgress >= 200
-                    ? "green"
-                    : undefined
-                }
-                size={16}
-                type="MaterialIcons"
-                name="preview"
-              />
-              <Icon
-                invertColor={true}
-                color={
-                  book?.chapterSettings?.find(
-                    x => x.url == item.url
-                  )?.isFinished
-                    ? "green"
-                    : undefined
-                }
-                size={16}
-                type="AntDesign"
-                name="checkcircle"
-              />
+      <View css="clearwidth mih:50 flex">
+        <ItemList
+          css="flex"
+          updater={[page, id]}
+          onPress={item => {
+            onPress(item);
+          }}
+          selectedIndex={state.index}
+          items={state.chArray[page].items}
+          container={({ item, index }) => (
+            <View
+              css={`flex mih:20 row juc:space-between di:flex ali:center pal:5 par:5 bor:2 ${
+                current == item.url
+                  ? "selectedRow"
+                  : ""
+              }`}>
+              <Text
+                css="desc maw:90%"
+                invertColor={true}>
+                {item.name.safeSplit("/", -1)}
+              </Text>
+              <View css="row">
+                <Icon
+                  invertColor={true}
+                  color={
+                    book?.chapterSettings?.find(
+                      x => x.url == item.url
+                    )?.scrollProgress >= 200
+                      ? "green"
+                      : undefined
+                  }
+                  size={16}
+                  type="MaterialIcons"
+                  name="preview"
+                />
+                <Icon
+                  invertColor={true}
+                  color={
+                    book?.chapterSettings?.find(
+                      x => x.url == item.url
+                    )?.isFinished
+                      ? "green"
+                      : undefined
+                  }
+                  size={16}
+                  type="AntDesign"
+                  name="checkcircle"
+                />
+              </View>
             </View>
-          </View>
-        )}
-        itemCss="pa:5 clearwidth bobw:1 boc:gray"
-        vMode={true}
-      />
+          )}
+          itemCss="pa:5 clearwidth bobw:1 boc:gray"
+          vMode={true}
+        />
+      </View>
     </View>
   );
 };

@@ -61,6 +61,16 @@ export default ({
     context.size.window.height - getHeight() + 80,
     context.size.window.height + 50
   ]);
+
+  const setSize = () => {
+    interpolate.current = [
+      context.size.screen.height -
+        getHeight() +
+        50,
+      context.size.window.height + 50
+    ];
+  };
+  setSize();
   const { animateY, animate } = useAnimate({
     y: -getHeight(),
     speed
@@ -85,12 +95,7 @@ export default ({
   };
 
   context.subscribe(() => {
-    interpolate.current = [
-      context.size.window.height -
-        getHeight() +
-        80,
-      context.size.window.height + 50
-    ];
+    setSize();
 
     if (isVisible.current) {
       renderUpdate();
@@ -246,7 +251,7 @@ export default ({
                 {title}
               </Text>
             </View>
-            <View css="flex fg:1 zi:5 mah:95% maw:99% overflow">
+            <View css="flex fg:1 zi:5 maw:99% overflow">
               {children}
             </View>
           </View>
