@@ -298,7 +298,9 @@ export default ({ ...props }: any) => {
   return (
     <View css="flex mih:100">
       <View
-        ifTrue={() => (loader.elem ?? elem) ? true : false}
+        ifTrue={() =>
+          loader.elem ?? elem ? true : false
+        }
         css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
         {loader.elem ?? elem}
       </View>
@@ -489,24 +491,27 @@ export default ({ ...props }: any) => {
         css="header pa:10 clearwidth">
         Downloaded and Added Epubs
       </Text>
-      <ItemList
-        css="flex"
-        onPress={x =>
-          (context.selection.downloadSelectedItem =
-            x)
-        }
-        items={books?.filter(x =>
-          x.name.has(state.text)
-        )}
-        container={({ item }) => (
-          <ItemRender
-            state={state}
-            item={item}
-          />
-        )}
-        itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
-        vMode={true}
-      />
+
+      <View css="flex mih:100">
+        <ItemList
+          css="flex"
+          onPress={x =>
+            (context.selection.downloadSelectedItem =
+              x)
+          }
+          items={books?.filter(x =>
+            x.name.has(state.text)
+          )}
+          container={({ item }) => (
+            <ItemRender
+              state={state}
+              item={item}
+            />
+          )}
+          itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
+          vMode={true}
+        />
+      </View>
     </View>
   );
 };

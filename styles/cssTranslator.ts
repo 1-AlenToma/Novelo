@@ -229,7 +229,7 @@ const cleanKey = (k, string) => {
 };
 let serilizedCssStyle = new Map();
 
-const serilizeCssStyle = (style: any) => {
+export const serilizeCssStyle = (style: any) => {
   if (serilizedCssStyle.has(style))
     return serilizedCssStyle.get(style);
   let sItem = {};
@@ -268,7 +268,7 @@ const css_translator = (
   id?: any
 ) => {
   if (!css || css.length <= 0) return {};
-  css = css.replace(/\: /gmi, ":")
+  css = css.replace(/\: /gim, ":");
   let shortk = buildShortCss();
   let CSS = {};
   if (
@@ -327,10 +327,9 @@ const css_translator = (
   return cssItem;
 };
 
-export const clearStyles = (id:any) => {
-  if(id=== undefined)
-  cachedCSS.clear();
-  else cachedCSS.delete(id)
+export const clearStyles = (id: any) => {
+  if (id === undefined) cachedCSS.clear();
+  else cachedCSS.delete(id);
 };
 
 export default css_translator;

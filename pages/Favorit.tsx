@@ -199,42 +199,43 @@ export default ({ ...props }: any) => {
           state.text = txt;
         }}
       />
-
-      <ItemList
-        hooks={["novelFavoritInfo"]}
-        css="flex"
-        onPress={x =>
-          (context.selection.favoritItem = x)
-        }
-        items={books?.filter(x =>
-          x.name.has(state.text)
-        )}
-        container={({ item }) => (
-          <View
-            invertColor={true}
-            css="wi:98% bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start">
-            <Image
-              url={item.imageBase64}
-              css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
-            />
-            <Text
-              css="bold header pa:5"
-              invertColor={true}>
-              {item.name}
-            </Text>
-            <Text css="desc co:red absolute bo:5 right:10">
-              {context.novelFavoritInfo[
-                item.url
-              ] || "loading"}
-            </Text>
-            <Text css="clearwidth desc co:red bottom bo:5 le:60">
-              ({item.parserName})
-            </Text>
-          </View>
-        )}
-        itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
-        vMode={true}
-      />
+      <View css="flex mih:100">
+        <ItemList
+          hooks={["novelFavoritInfo"]}
+          css="flex"
+          onPress={x =>
+            (context.selection.favoritItem = x)
+          }
+          items={books?.filter(x =>
+            x.name.has(state.text)
+          )}
+          container={({ item }) => (
+            <View
+              invertColor={true}
+              css="wi:98% bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start">
+              <Image
+                url={item.imageBase64}
+                css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
+              />
+              <Text
+                css="bold header pa:5"
+                invertColor={true}>
+                {item.name}
+              </Text>
+              <Text css="desc co:red absolute bo:5 right:10">
+                {context.novelFavoritInfo[
+                  item.url
+                ] || "loading"}
+              </Text>
+              <Text css="clearwidth desc co:red bottom bo:5 le:60">
+                ({item.parserName})
+              </Text>
+            </View>
+          )}
+          itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
+          vMode={true}
+        />
+      </View>
     </View>
   );
 };

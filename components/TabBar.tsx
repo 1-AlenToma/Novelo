@@ -25,6 +25,7 @@ import {
   proc,
   ifSelector
 } from "../Methods";
+import { useView } from "../hooks";
 
 import {
   useUpdate,
@@ -174,12 +175,35 @@ const TabBar = ({
   rootView?: boolean;
   scrollableHeader?: boolean;
 }) => {
-  const loader = useLoader(true);
-  const [size, setSize] = useState(undefined);
-  const update = useUpdate();
+  const [render, state, loader, timer] = useView({
+    loader: { value: true },
+    state: {
+      rItems: children.map(x => {}),
+      index: selectedIndex ?? 0
+    },
+    refItem: {
+      startValue: undefined,
+      handled: false,
+      interpolate: [],
+      panResponse: undefined
+    },
+    rootView: rootView,
+    style: [
+      style,
+      {
+        flex: 1,
+        width: "100%",
+        height: "100%",
+        overflow: "hidden"
+      }
+    ]
+  });
+
+  const { animateX, animate } = useAnimate({});
+
   context.hook("theme.settings");
   const getWidth = (index: number) => {
-    let v = index * size?.width;
+    let v = index * state.size.width;
     if (isNaN(v)) return 0;
     return v;
   };
@@ -196,18 +220,8 @@ const TabBar = ({
 
     return item;
   };
-  const startValue = useRef();
-  const interpolate = useRef(getInputRange());
 
-  const [rItems, setrItems] = useState(
-    children.map(x => {})
-  );
-  const panResponse = useRef();
-  const { animateX, animate } = useAnimate({});
-
-  const [index, setIndex] = useState(
-    selectedIndex ?? 0
-  );
+  state.refItem.interpolate = getInputRange();
 
   const tAnimate = (
     index: number,
@@ -215,7 +229,7 @@ const TabBar = ({
     fn?: any
   ) => {
     let value =
-      interpolate.current.find(
+      state.refItem.interpolate.find(
         x => x.index == index
       )?.value ?? 0;
 
@@ -230,10 +244,9 @@ const TabBar = ({
 
   const animateLeft = async (index: number) => {
     //while (isAnimating.current) await sleep(100);
-    if (!size) return;
     //setIndex(index);
     tAnimate(index, undefined, () => {
-      setIndex(index);
+      state.index = index;
     });
   };
 
@@ -241,8 +254,8 @@ const TabBar = ({
     if (i >= 0 && i < children.length) {
       animateLeft(i);
     }
-    if (!rItems[i] && children[i]) {
-      rItems[i] = {
+    if (!state.rItems[i] && children[i]) {
+      state.rItems[i] = {
         child: childPrep(children[i])
       };
     }
@@ -251,11 +264,11 @@ const TabBar = ({
   useEffect(
     () => {
       children.forEach((x, i) => {
-        if (rItems[i]) {
-          rItems[i].child = childPrep(x);
+        if (state.rItems[i]) {
+          state.rItems[i].child = childPrep(x);
         }
       });
-      loadChildren(index);
+      loadChildren(state.index);
     },
     children.map(x => x)
   );
@@ -264,14 +277,20 @@ const TabBar = ({
     loadChildren(selectedIndex);
   }, [selectedIndex]);
 
-  useEffect(() => {
-    if (index !== undefined) change?.(index);
-  }, [index]);
+  state.subscribe(() => {
+    if (state.index !== undefined)
+      change?.(state.index);
+  }, "index");
+
+  state.subscribe(() => {
+    state.refItem.interpolate = getInputRange();
+    tAnimate(state.index, 0);
+  }, "size");
 
   useEffect(() => {
-    interpolate.current = getInputRange();
-    tAnimate(index, 0);
-  }, [children, size]);
+    state.refItem.interpolate = getInputRange();
+    tAnimate(state.index, 0);
+  }, [children]);
 
   const childPrep = child => {
     if (child) {
@@ -282,90 +301,95 @@ const TabBar = ({
     }
     return child;
   };
-  interpolate.current = getInputRange();
-  const assign = () => {
-    panResponse.current = PanResponder.create({
-      onMoveShouldSetPanResponder: (
-        evt,
-        gestureState
-      ) => {
-        //return true if user is swiping, return false if it's a single click
-        const { dx, dy } = gestureState;
-        let lng = 5;
 
-        return (
-          dx > lng ||
-          dx < -lng ||
-          dy > lng ||
-          dy < -lng
-        );
-      },
-      onPanResponderGrant: (e, gestureState) => {
-        startValue.current = gestureState.dx;
-        
-        //alert(interpolate.outputRange[index]);
-        animate.setValue({
-          x:
-            interpolate.current.find(
-              x => x.index == index
-            )?.value ?? 0,
-          y: 0
-        });
-        animate.extractOffset();
-        return true;
-      },
-      onPanResponderMove: Animated.event(
-        [null, { dx: animate.x, dy: animate.y }],
-        { useNativeDriver: false }
-      ),
-      onPanResponderRelease: (
-        evt,
-        gestureState
-      ) => {
-        let newValue = gestureState.dx;
-        let diff = newValue - startValue.current;
-        let width = size?.width ?? 0;
-        let i = index == undefined ? 0 : index;
-        //console.warn(diff, i);
-        animate.flattenOffset();
-        let speed = 200;
-        if (Math.abs(diff) > width / 3) {
-          if (diff < 0) {
-            if (i + 1 < children.length)
-              loadChildren(i + 1);
-            else tAnimate(i, speed);
-          } else {
-            if (i - 1 >= 0) loadChildren(i - 1);
-            else tAnimate(i, speed);
-          }
-          //  onHide(!visible);
+  const assign = () => {
+    const onRelease = (
+      evt: any,
+      gestureState: any
+    ) => {
+      if(state.refItem.handled)
+         return
+      let newValue = gestureState.dx;
+      let diff =
+        newValue - state.refItem.startValue;
+      let width = state.size.width;
+      let i =
+        state.index == undefined
+          ? 0
+          : state.index;
+
+      animate.flattenOffset();
+      let speed = 200;
+      if (Math.abs(diff) > width / 3) {
+        if (diff < 0) {
+          if (i + 1 < children.length)
+            loadChildren(i + 1);
+          else tAnimate(i, speed);
         } else {
-          tAnimate(i, speed); // reset to start value
+          if (i - 1 >= 0) loadChildren(i - 1);
+          else tAnimate(i, speed);
         }
-        //return false;
+        //  onHide(!visible);
+      } else {
+        tAnimate(i, speed); // reset to start value
       }
-    });
+      state.refItem.handled =true;
+    };
+    state.refItem.panResponse =
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (
+          evt,
+          gestureState
+        ) => {
+          //return true if user is swiping, return false if it's a single click
+          const { dx, dy } = gestureState;
+          let lng = 5;
+
+          return (
+            dx > lng ||
+            dx < -lng ||
+            dy > lng ||
+            dy < -lng
+          );
+        },
+        onPanResponderGrant: (
+          e,
+          gestureState
+        ) => {
+          state.refItem.startValue =
+            gestureState.dx;
+state.refItem.handled = false;
+          //alert(interpolate.outputRange[index]);
+          animate.setValue({
+            x:
+              state.refItem.interpolate.find(
+                x => x.index == state.index
+              )?.value ?? 0,
+            y: 0
+          });
+          animate.extractOffset();
+          return true;
+        },
+        onPanResponderTerminationRequest: () =>
+          true,
+        onPanResponderMove: Animated.event(
+          [
+            null,
+            { dx: animate.x, dy: animate.y }
+          ],
+          { useNativeDriver: false }
+        ),
+        onPanResponderEnd: onRelease,
+        onPanResponderRelease: onRelease
+      });
   };
   assign();
 
-  return (
-    <View
-      rootView={rootView}
-      style={[
-        style,
-        {
-          flex: 1,
-          width: "100%",
-          height: "100%",
-          overflow: "hidden"
-        }
-      ]}
-      onLayout={event => {
-        setSize(event.nativeEvent.layout);
-      }}>
+  return render(
+    <>
       {position === "Top" ? (
         <Menu
-          index={index}
+          index={state.index}
           children={children}
           loadChildren={loadChildren}
           scrollableHeader={scrollableHeader}
@@ -385,11 +409,11 @@ const TabBar = ({
                 translateX: animate.x.interpolate(
                   {
                     inputRange:
-                      interpolate.current.map(
+                      state.refItem.interpolate.map(
                         x => x.value
                       ),
                     outputRange:
-                      interpolate.current.map(
+                      state.refItem.interpolate.map(
                         x => x.value
                       ),
                     extrapolateLeft: "extend",
@@ -403,10 +427,11 @@ const TabBar = ({
                 (menu ? styles.menu.height : 0)
             ),*/
             width:
-              (size?.width ?? 0) * children.length
+              state.size.width * children.length
           }
         ]}
-        {...panResponse.current.panHandlers}>
+        {...state.refItem.panResponse
+          .panHandlers}>
         {children.map((x, i) => (
           <View
             css="flex fg:1 bac:transparent"
@@ -416,26 +441,28 @@ const TabBar = ({
             !x.props.disableScrolling ? (
               <ScrollView
                 style={{
-                  width: size?.width,
+                  width: state.size.width,
                   maxHeight: scrollHeight
                 }}
                 contentContainerStyle={{
                   flexGrow: 1,
                   padding: 5,
-                  width: size?.width,
+                  width: state.size.width,
                   maxWidth: "100%"
                 }}>
-                {rItems[i]?.child ?? loader.elem}
+                {state.rItems[i]?.child ??
+                  loader.elem}
               </ScrollView>
             ) : (
-              rItems[i]?.child ?? loader.elem
+              state.rItems[i]?.child ??
+              loader.elem
             )}
           </View>
         ))}
       </Animated.View>
       {position !== "Top" ? (
         <Menu
-          index={index}
+          index={state.index}
           children={children}
           loadChildren={loadChildren}
           scrollableHeader={scrollableHeader}
@@ -443,7 +470,7 @@ const TabBar = ({
           position={position}
         />
       ) : null}
-    </View>
+    </>
   );
 };
 

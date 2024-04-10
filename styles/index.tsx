@@ -1,5 +1,6 @@
 import cssTranslator, {
-  clearStyles
+  clearStyles,
+  serilizeCssStyle
 } from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as allowedKeys from "./ValidViewStylesAttributes";

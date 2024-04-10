@@ -135,7 +135,7 @@ export default ({ ...props }: any) => {
             name: "info-circle",
             type: "FontAwesome"
           }}>
-          <View css="flex mat:10">
+          <View css="flex mat:10 clearboth">
             <ScrollView>
               <View css="flex ali:center">
                 <View
@@ -355,7 +355,8 @@ export default ({ ...props }: any) => {
                         }}
                         current={
                           state.novel?.chapters?.at(
-                            state.book?.selectedChapterIndex
+                            state.book
+                              ?.selectedChapterIndex
                           )?.url
                         }
                       />
@@ -411,7 +412,7 @@ export default ({ ...props }: any) => {
             </ScrollView>
           </View>
           <View
-            css="box row bottom mih:50 juc:center ali:center clearwidth"
+            css="box flex row bottom mih:70 juc:center ali:center clearwidth"
             ifTrue={
               state.novel.url?.has() ?? false
             }>
