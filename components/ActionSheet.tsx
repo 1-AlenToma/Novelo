@@ -17,7 +17,11 @@ import {
   Easing,
   PanResponder
 } from "react-native";
-import { useUpdate, useAnimate } from "../hooks";
+import {
+  useUpdate,
+  useAnimate,
+  useView
+} from "../hooks";
 export default ({
   title,
   height,
@@ -53,17 +57,33 @@ export default ({
   };
 
   let elContext = useContext(ElementsContext);
-  const [started, setStarted] = useState(false);
-  const isVisible = useRef(false);
-  const panResponse = useRef();
-  const isTouched = useRef(false);
-  const interpolate = useRef([
-    context.size.window.height - getHeight() + 80,
-    context.size.window.height + 50
-  ]);
+  const { animateY, animate } = useAnimate({
+    y: -getHeight(),
+    speed
+  });
+  const [render, state, loader] = useView({
+    component: Animated.View,
+    onTouchEnd: () =>
+      (state.refItem.isTouched = false),
+    state: {
+      started: false,
+      refItem: {
+        startValue: 0,
+        isVisible: false,
+        panResponse: undefined,
+        isTouched: false,
+        interpolate: [
+          context.size.window.height -
+            getHeight() +
+            80,
+          context.size.window.height + 50
+        ]
+      }
+    }
+  });
 
   const setSize = () => {
-    interpolate.current = [
+    state.refItem.interpolate = [
       context.size.screen.height -
         getHeight() +
         50,
@@ -71,21 +91,15 @@ export default ({
     ];
   };
   setSize();
-  const { animateY, animate } = useAnimate({
-    y: -getHeight(),
-    speed
-  });
-
-  let id = useRef(newId());
 
   let toggle = async (show: boolean) => {
-    if (!isVisible.current && show)
+    if (!state.refItem.isVisible && show)
       renderUpdate();
     animateY(
-      interpolate.current[!show ? 1 : 0],
+      state.refItem.interpolate[!show ? 1 : 0],
       () => {
-        panResponse.current = undefined;
-        if (isVisible.current && !show) {
+        state.refItem.panResponse = undefined;
+        if (state.refItem.isVisible && !show) {
           onHide(false);
           renderUpdate();
         }
@@ -96,13 +110,12 @@ export default ({
 
   context.subscribe(() => {
     setSize();
-
-    if (isVisible.current) {
+    if (state.refItem.isVisible) {
       renderUpdate();
-      panResponse.current = undefined;
+      state.refItem.panResponse = undefined;
       animate.flattenOffset();
       animateY(
-        interpolate.current[0],
+        state.refItem.interpolate[0],
         () => renderUpdate(),
         1
       );
@@ -119,113 +132,96 @@ export default ({
     }, [visible]);
 
   useEffect(() => {
-    setStarted(true);
+    state.started = true;
     return () => {
-      elContext.remove(id.current);
+      elContext.remove(state.id);
       elContext.update();
     };
   }, []);
 
   const renderUpdate = () => {
     if (typeof visible == "function")
-      isVisible.current = visible();
-    else isVisible.current = visible;
-    if (!panResponse.current) {
-      let startValue = 0;
-      panResponse.current = PanResponder.create({
-        onMoveShouldSetPanResponder: (
-          evt,
-          gestureState
-        ) => {
-          const { dx, dy } = gestureState;
-          return (
-            isTouched.current &&
-            (dx > 2 ||
-              dx < -2 ||
-              dy > 2 ||
-              dy < -2)
-          );
-        },
-        onPanResponderGrant: (
-          e,
-          gestureState
-        ) => {
-          startValue = gestureState.dy;
-          animate.setValue({
-            x: 0,
-            y: interpolate.current[0]
-          });
-          animate.extractOffset();
-          return true;
-        },
-        onPanResponderMove: Animated.event(
-          [
-            null,
-            { dx: animate.x, dy: animate.y }
-          ],
-          { useNativeDriver: false }
-        ),
-        onPanResponderRelease: (
-          evt,
-          gestureState
-        ) => {
-          let old = interpolate.current[0];
-          let newValue = gestureState.dy;
-          let diff = newValue - startValue;
+      state.refItem.isVisible = visible();
+    else state.refItem.isVisible = visible;
+    if (!state.refItem.panResponse) {
+      state.refItem.panResponse =
+        PanResponder.create({
+          onMoveShouldSetPanResponder: (
+            evt,
+            gestureState
+          ) => {
+            const { dx, dy } = gestureState;
+            return (
+              state.refItem.isTouched &&
+              (dx > 2 ||
+                dx < -2 ||
+                dy > 2 ||
+                dy < -2)
+            );
+          },
+          onPanResponderGrant: (
+            e,
+            gestureState
+          ) => {
+            state.refItem.startValue =
+              gestureState.dy;
+            animate.setValue({
+              x: 0,
+              y: state.refItem.interpolate[0]
+            });
+            animate.extractOffset();
+            return true;
+          },
+          onPanResponderMove: Animated.event(
+            [
+              null,
+              { dx: animate.x, dy: animate.y }
+            ],
+            { useNativeDriver: false }
+          ),
+          onPanResponderRelease: (
+            evt,
+            gestureState
+          ) => {
+            let old =
+              state.refItem.interpolate[0];
+            let newValue = gestureState.dy;
+            let diff =
+              newValue - state.refItem.startValue;
 
-          if (Math.abs(diff) > getHeight() / 3) {
-            toggle(false);
-          } else {
-            animate.flattenOffset();
-            animateY(old); // reset to start value
+            if (
+              Math.abs(diff) >
+              getHeight() / 3
+            ) {
+              toggle(false);
+            } else {
+              animate.flattenOffset();
+              animateY(old); // reset to start value
+            }
+            return false;
           }
-          return false;
-        }
-      });
+        });
     }
-    let op = !elContext.has(id.current)
+    let op = !elContext.has(state.id)
       ? elContext.push.bind(elContext)
       : elContext.updateProps.bind(elContext);
     op(
       <>
         <TouchableOpacity
-          ifTrue={() => isVisible.current}
+          ifTrue={() => state.refItem.isVisible}
           onPress={() => {
             toggle(false);
           }}
           css="blur flex"
         />
-        <Animated.View
-          onTouchEnd={() =>
-            (isTouched.current = false)
-          }
-          style={[
-            {
-              height: getHeight(),
-              transform: [
-                {
-                  translateY:
-                    animate.y.interpolate({
-                      inputRange:
-                        interpolate.current,
-                      outputRange:
-                        interpolate.current,
-                      extrapolate: "clamp"
-                    })
-                }
-              ]
-            },
-            "absolute mah:95% overflow clearwidth juc:flex-start boTLR:25 botrr:25".css()
-          ]}
-          {...(panResponse.current?.panHandlers ??
-            {})}>
+        {render(
           <View
             invertColor={true}
             css="clearboth pa:10 flex">
             <View
               css="he:30 zi:1 fg:1 overflow"
               onTouchStart={() => {
-                isTouched.current = true;
+                state.refItem.isTouched = true;
               }}>
               <View
                 invertColor={false}
@@ -254,12 +250,36 @@ export default ({
             <View css="flex fg:1 zi:5 maw:99% overflow">
               {children}
             </View>
-          </View>
-        </Animated.View>
+          </View>,
+          {
+            style: [
+              {
+                height: getHeight(),
+                transform: [
+                  {
+                    translateY:
+                      animate.y.interpolate({
+                        inputRange:
+                          state.refItem
+                            .interpolate,
+                        outputRange:
+                          state.refItem
+                            .interpolate,
+                        extrapolate: "clamp"
+                      })
+                  }
+                ]
+              },
+              "absolute mah:95% le:1% overflow wi:98% juc:flex-start boTLR:25 botrr:25".css()
+            ],
+            ...state.refItem.panResponse
+              .panHandlers
+          }
+        )}
       </>,
-      id.current,
+      state.id,
       {
-        visible: isVisible.current,
+        visible: state.refItem.isVisible,
         toTop
       }
     );

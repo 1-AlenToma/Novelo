@@ -6,7 +6,7 @@ import {
   useRef,
   useState
 } from "react";
-import { useTimer } from "../hooks";
+import { useTimer, useView } from "../hooks";
 import {
   arrayBuffer,
   newId,
@@ -183,19 +183,78 @@ export default ({
   navigationType
 }: any) => {
   // g.hook("size");
-  const loading = useRef(true);
-  const timer = useTimer(200);
-  const webView = useRef();
+
+  const [render, state, _, timer] = useView({
+    timer: 200,
+    component: WebView,
+    ref: r => {
+      if (r) {
+        state.refItem.webView = r;
+      }
+    },
+    nestedScrollEnabled: true,
+    cacheEnabled: false,
+    allowFileAccess: true,
+    allowFileAccessFromFileURLs: true,
+    allowUniversalAccessFromFileURLs: true,
+    javaScriptEnabled: true,
+    injectedJavaScriptBeforeContentLoaded:
+      jsScript,
+    onScroll: syntheticEvent => {
+      const {
+        contentOffset,
+        layoutMeasurement,
+        contentSize
+      } = syntheticEvent.nativeEvent;
+
+      const offset = Math.round(
+        contentOffset.y + layoutMeasurement.height
+      );
+      const contentHeight = Math.round(
+        contentSize.height
+      );
+      context.player.scrollProcent =
+        (100 * offset) /
+        (contentHeight -
+          context.player.paddingTop());
+      if (scrollDisabled) return;
+      if (state.refItem.loading) {
+        timer(
+          () => (state.refItem.loading = false)
+        );
+        return;
+      }
+
+      timer(() => {
+        if (offset == contentHeight) {
+          if (navigationType == "Scroll")
+            bottomReched?.();
+        } else if (contentOffset.y <= 10) {
+          if (navigationType == "Scroll")
+            topReched?.();
+        } else onScroll?.(contentOffset.y);
+      });
+    },
+    contentMode: "mobile",
+    scalesPageToFit: true,
+    originWhitelist: ["*"],
+    scrollEnabled: true,
+    refItem: {
+      loading: false,
+      webView: undefined,
+      assets: {}
+    }
+  });
 
   const postMessage = async (
     type: string,
     data: any,
     method?: string
   ) => {
-    while (webView.current === undefined)
+    while (state.refItem.webView === undefined)
       await sleep(100);
     let item = { type, data };
-    webView.current.injectJavaScript(`
+    state.refItem.webView.injectJavaScript(`
         ${
           !method ? "window.loadData" : method
         }(${JSON.stringify(item)});
@@ -205,25 +264,31 @@ export default ({
 
   const loadFonts = async () => {
     try {
-      let asset = Asset.fromModule(
-        require("../assets/gfont.ttf")
-      );
-      await asset.downloadAsync();
-      let fontUri = asset.localUri;
-      asset = Asset.fromModule(Fonts[fontName]);
-      await asset.downloadAsync();
-
+      if (!state.refItem.assets[fontName]) {
+        state.refItem.assets = {};
+        let asset = Asset.fromModule(
+          require("../assets/gfont.ttf")
+        );
+        await asset.downloadAsync();
+        let fontUri = asset.localUri;
+        asset = Asset.fromModule(Fonts[fontName]);
+        await asset.downloadAsync();
+        state.refItem.assets[fontName] = {
+          icons: fontUri,
+          font: asset.localUri
+        };
+      }
       let css = `
       @font-face {
       font-family: 'Material Symbols Outlined';
       font-style: normal;
       font-weight: 400;
-      src: url("${fontUri}") format('woff2');
+      src: url("${state.refItem.assets[fontName].icons}") format('woff2');
       }
       
       @font-face {
       font-family: '${fontName}';
-      src: url("${asset.localUri}") format('truetype')
+      src: url("${state.refItem.assets[fontName].font}") format('truetype')
       }
 
 .material-symbols-outlined {
@@ -267,13 +332,14 @@ export default ({
   };
   let injectData = async () => {
     try {
-      while (!webView.current) await sleep(100);
+      while (!state.refItem.webView)
+        await sleep(100);
       let font = await loadFonts();
       let js = `
       ${getJs("font", font)}
       true;
       `;
-      webView.current.injectJavaScript(js);
+      state.refItem.webView.injectJavaScript(js);
     } catch (e) {
       console.error(e);
     }
@@ -283,7 +349,7 @@ export default ({
     let data = JSON.parse(nativeEvent.data);
     switch (data.type) {
       case "scrollValue":
-        alert(data.data);
+        // alert(data.data);
         onScroll?.(data.data);
         break;
       case "bottomReched":
@@ -313,7 +379,7 @@ export default ({
         onComments?.(data.data);
         break;
       case "enable":
-        loading.current = false;
+        state.refItem.loading = false;
         break;
       case "Image":
         postMessage(
@@ -326,7 +392,7 @@ export default ({
         break;
     }
   };
-  loading.current = true;
+  state.refItem.loading = true;
 
   return (
     <>
@@ -343,16 +409,8 @@ export default ({
           }
         />
       </View>
-      <WebView
-        ref={r => {
-          if (r) {
-            webView.current = r;
-          }
-        }}
-        nestedScrollEnabled={true}
-        scrollEnabled={false}
-        cacheEnabled={false}
-        source={{
+      {render(null, {
+        source: {
           html: `
         <!DOCTYPE html>
         <html>
@@ -446,49 +504,9 @@ export default ({
         </html>
         `,
           basUrl: ""
-        }}
-        onScroll={syntheticEvent => {
-          const {
-            contentOffset,
-            layoutMeasurement,
-            contentSize
-          } = syntheticEvent.nativeEvent;
-
-          const offset = Math.round(
-            contentOffset.y +
-              layoutMeasurement.height
-          );
-          const contentHeight = Math.round(
-            contentSize.height
-          );
-           context.player.scrollProcent =
-            (100 * offset) /
-            (contentHeight -
-              context.player.paddingTop());
-          if (scrollDisabled) return;
-          if (loading.current) {
-            timer(
-              () => (loading.current = false)
-            );
-            return;
-          }
-
-          timer(() => {
-            if (offset == contentHeight) {
-              if (navigationType == "Scroll")
-                bottomReched?.();
-            } else if (contentOffset.y <= 10) {
-              if (navigationType == "Scroll")
-                topReched?.();
-            } else onScroll?.(contentOffset.y);
-          });
-        }}
-        contentMode="mobile"
-        scalesPageToFit={true}
-        originWhitelist={["*"]}
-        scrollEnabled={true}
-        style={style}
-        containerStyle={[
+        },
+        style: style,
+        containerStyle: [
           {
             backgroundColor:
               context.appSettings.backgroundColor,
@@ -497,16 +515,9 @@ export default ({
             flexGrow: 1
           },
           style
-        ]}
-        allowFileAccess={true}
-        allowFileAccessFromFileURLs={true}
-        allowUniversalAccessFromFileURLs={true}
-        javaScriptEnabled={true}
-        onMessage={onMessage}
-        injectedJavaScriptBeforeContentLoaded={
-          jsScript
-        }
-      />
+        ],
+        onMessage: onMessage
+      })}
     </>
   );
 };

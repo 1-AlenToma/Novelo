@@ -9,6 +9,7 @@ interface ViewState<T> {
   size: { width: number; height: number };
   update: () => void;
   refItem: any;
+  id: string;
 }
 
 export default function <T>({
@@ -30,16 +31,18 @@ export default function <T>({
       ...(state ?? {}),
       size: { width: 0, height: 0 },
       update: () => update(),
-      refItem: props.refItem ?? {}
+      refItem: props.refItem ?? {},
+      id: methods.newId()
     },
     "refItem"
   );
 
-  let render = children => {
+  let render = (children, prs) => {
     const Component = component ?? View;
     return (
       <Component
         {...props}
+        {...(prs??{})}
         onLayout={event => {
           itemState.size =
             event.nativeEvent.layout;
@@ -50,5 +53,10 @@ export default function <T>({
     );
   };
 
-  return [render, itemState, loader, timer] as const;
+  return [
+    render,
+    itemState,
+    loader,
+    timer
+  ] as const;
 }
