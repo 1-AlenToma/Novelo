@@ -20,7 +20,7 @@ export default ({
   let state = useState(
     {
       chArray: [] as any[],
-      index: 0,
+      index: { page: 0, index: 0 },
       current: ""
     },
     "chArray"
@@ -45,7 +45,10 @@ export default ({
           x => x.url == current
         );
         if (i !== -1) {
-          state.index = item.index;
+          state.index = {
+            page: item.index,
+            index: i
+          };
           setPage(item.index);
           break;
         }
@@ -84,7 +87,7 @@ export default ({
                 {(item.index + 1) * size}
               </Text>
               <Icon
-                ifTrue={item.index == state.index}
+                ifTrue={item.index == state.index.page}
                 color="yellow"
                 flash="green"
                 css="absolute le:0 to:0"
@@ -105,7 +108,11 @@ export default ({
           onPress={item => {
             onPress(item);
           }}
-          selectedIndex={state.index}
+          selectedIndex={
+            state.index.page == page
+              ? state.index.index
+              : 0
+          }
           items={state.chArray[page].items}
           container={({ item, index }) => (
             <View
