@@ -36,6 +36,7 @@ export default ({ color }: any) => {
   }, []);
   let height = 24;
   let level = batteryLevel * 100;
+  //level=100;
   return (
     <View css="wi:26 mal:5 overflow juc:center ali:center">
       <View
@@ -57,7 +58,7 @@ export default ({ color }: any) => {
       <Text
         style={{ color: invertColor(color) }}
         css="desc fos:8 zi:3 absolute">
-        {parseInt(level)}%
+        {parseInt(Math.min(level,99).toString())}%
       </Text>
     </View>
   );

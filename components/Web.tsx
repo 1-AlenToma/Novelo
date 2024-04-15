@@ -371,6 +371,7 @@ export default ({
         body img {
           max-width: 98%;
         }
+        
         body .novel {
           max-width: 100%;
           min-height: ${
@@ -378,6 +379,7 @@ export default ({
               ? "100%"
               : "50%"
           };
+          
           top: ${
             context.player.showPlayer
               ? "45px"
@@ -404,7 +406,31 @@ export default ({
             context.appSettings.textAlign
           };
         }
+        
       `;
+    if (context.player.showPlayer) {
+      cssStyle += `
+      .novel >p {
+        display:block;
+        position:relative;
+        overflow:hidden;
+        overflow-y:auto;
+        min-height:100%;
+        max-height:100%;
+        width:100%;
+        margin-top:40px;
+      }
+      
+      body .novel {
+        min-height:auto !important;
+        max-height:auto !important;
+        height:85vh;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      `;
+    }
     await postMessage("style", cssStyle);
     await loadFonts();
   };
@@ -479,11 +505,11 @@ export default ({
     if(${context.player.showPlayer
       .toString()
       .toLowerCase()}){
-      let parag = document.querySelector(".novel p")
+      let parag = document.querySelector(".novel po")
       if(parag)
          {
            parag.scrollIntoView({
-            block: "center",
+            block: "start",
             inline: "center"
            });
          }
@@ -586,15 +612,16 @@ export default ({
         !context.player.highlightedText.text
       )
         return;
-      //  console.warn(context.player.highlightedText)
       let json = JSON.stringify({
+        block:"nearest",
+        inline:"start",
         all: !(
           context.appSettings
             .voiceWordSelectionsSettings
             ?.appendSelection ?? false
         ),
-        scroll: false,
-        selector: "#novel",
+        scroll: true,
+        selector: "#novel >p",
         text: context.player.highlightedText.text,
         index:
           context.player.highlightedText.index,

@@ -358,7 +358,11 @@ class Player {
     this.stop();
     let text =
       this.currentPlaying()?.cleanText() ?? "";
-
+  if(!/[a-zA-Z0-9]/gmi.test(text))
+    {
+      this.playNext();
+      return;
+    }
     context.speech.speak(text, {
       onBoundary: boundaries => {
         let { charIndex, charLength } =

@@ -164,7 +164,8 @@ const TabBar = ({
   rootView,
   scrollHeight,
   fontSize,
-  scrollableHeader
+  scrollableHeader,
+  css
 }: {
   children: TabChild[];
   style?: any;
@@ -443,12 +444,12 @@ const TabBar = ({
                   width: state.size.width,
                   maxHeight: scrollHeight
                 }}
-                contentContainerStyle={{
+                contentContainerStyle={[css?.css(),{
                   flexGrow: 1,
                   padding: 5,
                   width: state.size.width,
                   maxWidth: "100%"
-                }}>
+                }]}>
                 {state.rItems[i]?.child ??
                   loader.elem}
               </ScrollView>

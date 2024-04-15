@@ -572,7 +572,7 @@ const Controller = ({ state, ...props }) => {
                     position="Top">
                     <View
                       title="Settings"
-                      css="flex">
+                      css="flex wi:90%">
                       <Form text="NavigationMethod">
                         <DropdownList
                           height={200}
@@ -914,7 +914,7 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
                     </View>
-                    <View title="Voice">
+                    <View css="wi:90%" title="Voice">
                       <Form text="Voices">
                         <DropdownList
                           height="80"
@@ -1065,7 +1065,7 @@ const Controller = ({ state, ...props }) => {
                         text="Words Highlight Settings">
                         <Form
                           root={true}
-                          css="he:80"
+                          css="he:80 clearwidth"
                           text="Color">
                           <ColorPicker
                             value={
