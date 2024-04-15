@@ -17,11 +17,15 @@ export default ({
   x,
   speed,
   useNativeDriver = true
-}: any) => {
+}: any={}) => {
+  const currentValue = useRef({
+    x: undefined,
+    y: undefined
+  }).current;
   const animate = useRef(
     new Animated.ValueXY({
       y: y ?? 0,
-      x: x ??0 
+      x: x ?? 0
     })
   ).current;
 
@@ -37,6 +41,7 @@ export default ({
       () => {
         animate.setValue({ y: value, x: 0 });
         animate.flattenOffset();
+        currentValue.y = value;
         onFinished?.();
       },
       sp
@@ -48,13 +53,13 @@ export default ({
     onFinished?: Function,
     sp?: any
   ) => {
-    
     run(
       value,
       animate.x,
       () => {
         animate.setValue({ y: 0, x: value });
         animate.flattenOffset();
+        currentValue.x = value;
         onFinished?.();
       },
       sp
@@ -82,5 +87,11 @@ export default ({
     });
   };
 
-  return { animateY, animateX, run, animate };
+  return {
+    animateY,
+    animateX,
+    run,
+    animate,
+    currentValue
+  };
 };

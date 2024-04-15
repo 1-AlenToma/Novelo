@@ -12,6 +12,7 @@ type ViewState =
   | "Default"
   | "Folded"
   | "Unfolded";
+
 class Player {
   book: Book;
   novel: DetailInfo;
@@ -30,6 +31,19 @@ class Player {
   isEpup: boolean;
   testVoice: string = "";
   networkError: boolean = false;
+  highlightedText: {
+    text: string;
+    index: number;
+    length: number;
+  } = undefined;
+  menuOptions: any = {
+    textToTranslate: undefined,
+    translationLanguage: "English",
+    textEdit: undefined,
+    comment: undefined,
+    define: undefined
+  };
+  isloading: boolean = false;
   constructor(
     novel: DetailInfo,
     book: Book,
@@ -40,6 +54,13 @@ class Player {
     this.novel = novel;
     this.loader = loader;
     this.isEpup = isEpup;
+  }
+
+  show() {
+    this.loader?.show();
+  }
+  hide() {
+    this.loader?.hide();
   }
 
   procent(tempValue?: number) {
@@ -53,14 +74,15 @@ class Player {
       html ??
       this.currentChapter.content ??
       this.html;
-      txt=txt.html().html()
+
+    txt = txt.html().html();
     try {
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(
           t.edit.escapeRegExp(),
           "gim"
         );
-        
+
         let className = t.comments?.has()
           ? "comments"
           : "";
@@ -83,12 +105,13 @@ class Player {
 
     this.chapterArray = txt.htmlArray();
     this.html = txt;
+
     return txt;
   }
 
   async getChapterContent(url: string) {
     try {
-      this.loader?.show();
+      this.show();
       if (!this.currentChapterSettings) return;
       if (
         this.currentChapter.content?.length >= 10
@@ -119,7 +142,7 @@ class Player {
       this.html = e.message;
       return "could not connect";
     } finally {
-      this.loader?.hide();
+      this.hide();
     }
   }
 
@@ -127,6 +150,12 @@ class Player {
     let imgs = [];
     if (this.novel.files && href.length > 0) {
       for (let h of href) {
+        while (
+          h.startsWith(".") ||
+          h.startsWith("/")
+        ) {
+          h = h.substring(1);
+        }
         let img = this.novel.files.find(
           x =>
             x.fileName.indexOf(h) !== -1 &&
@@ -166,6 +195,7 @@ class Player {
   }
 
   async jumpTo(index?: number | string) {
+    this.show();
     if (index === undefined)
       index = this.book.selectedChapterIndex;
     if (
@@ -190,7 +220,7 @@ class Player {
       index = this.novel.chapters.findIndex(
         x => x.url === index
       );
-    this.loader?.show();
+
     this.currentChapterIndex = index;
     this.book.selectedChapterIndex = index;
     this.currentChapter =
@@ -200,10 +230,15 @@ class Player {
         x => x.name === this.currentChapter.name
       )
     ) {
-      this.currentChapterSettings =
-        this.book.chapterSettings.find(
-          x => x.name === this.currentChapter.name
-        );
+      let ch = this.book.chapterSettings.find(
+        x => x.name === this.currentChapter.name
+      );
+      if (
+        ch.audioProgress === undefined ||
+        ch.audioProgress === null
+      )
+        ch.audioProgress = 0;
+      this.currentChapterSettings = ch;
     } else {
       let chSettings = Chapter.n()
         .Url(this.currentChapter.url)
@@ -215,11 +250,13 @@ class Player {
             ? 100
             : 10
         )
+        .AudioProgress(0)
         .Parent_Id(this.book.id);
       await context
         .db()
         .save<Chapter>(chSettings);
-      this.currentChapterSettings = await context.db()
+      this.currentChapterSettings = await context
+        .db()
         .asQueryable<Chapter>(chSettings);
       this.book.chapterSettings.push(
         this.currentChapterSettings
@@ -231,7 +268,7 @@ class Player {
       this.currentChapter.url
     );
     if (this.playing()) this.speak();
-    this.loader?.hide();
+    this.hide();
   }
 
   hasPrev() {
@@ -251,6 +288,7 @@ class Player {
         finished &&
         this.currentChapterSettings
       ) {
+        this.show();
         this.currentChapterSettings.isFinished =
           finished;
         await this.currentChapterSettings.saveChanges();
@@ -320,7 +358,22 @@ class Player {
     this.stop();
     let text =
       this.currentPlaying()?.cleanText() ?? "";
+
     context.speech.speak(text, {
+      onBoundary: boundaries => {
+        let { charIndex, charLength } =
+          boundaries;
+        let char = "";
+        let length = charLength;
+
+        // if (length + 1 < text.length) length++;
+
+        this.highlightedText = {
+          text: text,
+          index: charIndex,
+          length: length
+        };
+      },
       language: undefined,
       pitch: context.appSettings.pitch,
       rate: context.appSettings.rate,

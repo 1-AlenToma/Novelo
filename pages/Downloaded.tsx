@@ -19,7 +19,8 @@ import { Buffer } from "buffer";
 import {
   useNavigation,
   useUpdate,
-  useDbHook
+  useDbHook,
+  useView
 } from "../hooks";
 import * as DocumentPicker from "expo-document-picker";
 import { Book, Chapter } from "../db";
@@ -30,6 +31,147 @@ import {
   EpubBuilder
 } from "../native";
 import { sleep } from "../Methods";
+const EpubHanlder = ({
+  navop,
+  parentState
+}: any) => {
+  const [render, state, loader] = useView({
+    component: false,
+    state: {
+      skipImages: false
+    }
+  });
+  const loadEpub = async () => {
+    try {
+      let { assets } =
+        await DocumentPicker.getDocumentAsync({
+          copyToCacheDirectory: true,
+          type: "application/epub+zip"
+        });
+      if (!assets || assets.length <= 0) return;
+      context
+        .alert(
+          `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip them?`,
+          "Please Confirm"
+        )
+        .confirm(async answer => {
+          state.skipImages = answer;
+          try {
+            loader.show();
+            await context.db().disableHooks();
+            await context.db().disableWatchers();
+            context.files().disable();
+            let uri =
+              assets?.firstOrDefault("uri");
+            let name =
+              assets?.firstOrDefault("name");
+            let bk = await ZipBook.load(
+              uri,
+              name,
+              p => {
+                loader.show(p);
+              },
+              state.skipImages
+            );
+            let images = bk.files.filter(
+              x => x.type === "Image"
+            );
+            let total = images.length;
+            let count = 0;
+            const calc = async () => {
+              count++;
+              loader.show((100 * count) / total);
+            };
+            if (!state.skipImages) {
+              for (let file of images) {
+                await calc();
+                file.content = await context
+                  .imageCache()
+                  .write(file.url, file.content);
+              }
+
+              let chImage =
+                ZipBook.createImageChapter(
+                  images
+                );
+              if (chImage)
+                bk.chapters = [
+                  chImage,
+                  ...bk.chapters
+                ];
+            }
+            let book = Book.n()
+              .Name(bk.name)
+              .Url(bk.url)
+              .Favorit(false)
+              .InlineStyle(
+                bk.files
+                  .filter(x => x.type === "CSS")
+                  .map(x => x.content)
+                  .join("\n")
+              )
+              .ImageBase64(
+                bk.files.find(
+                  x => x.type === "Image"
+                )?.content ?? ""
+              )
+              .ParserName("epub");
+            await context
+              .files()
+              .write(bk.url, JSON.stringify(bk));
+            await context.db().save(book);
+          } catch (e) {
+            context.alert(e.message).show();
+            console.error(e);
+          } finally {
+            context.db().enableWatchers();
+            context.db().enableHooks();
+            context.files().enable();
+            loader.hide();
+          }
+        });
+    } catch (e) {
+      context.alert(e.message).show();
+      console.error(e);
+    }
+  };
+
+  return render(
+    <>
+      <View ifTrue={() =>
+            loader.elem ? true : false
+          } css="absolute clearboth zi:500">
+        <View
+          css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+          {loader.elem}
+        </View>
+      </View>
+      <Header
+        {...navop}
+        buttons={[
+          {
+            text: () => (
+              <Icon
+                invertColor={true}
+                size={35}
+                name="file-zip"
+                type="Octicons"
+              />
+            ),
+            press: () => {
+              loadEpub();
+            }
+          }
+        ]}
+        value={parentState.text}
+        inputEnabled={true}
+        onInputChange={txt => {
+          parentState.text = txt;
+        }}
+      />
+    </>
+  );
+};
 const ItemRender = ({ item, state }: any) => {
   if (!item) return null;
   const { fileItems, elem } = context
@@ -158,101 +300,6 @@ export default ({ ...props }: any) => {
   useEffect(() => {
     reload();
   }, [fileItems]);
-
-  const loadEpub = async () => {
-    try {
-      let { assets } =
-        await DocumentPicker.getDocumentAsync({
-          copyToCacheDirectory: true,
-          type: "application/epub+zip"
-        });
-      if (!assets || assets.length <= 0) return;
-      context
-        .alert(
-          `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip theme?`,
-          "Please Confirm"
-        )
-        .confirm(async answer => {
-          state.skipImages = answer;
-          try {
-            loader.show();
-            await context.db().disableHooks();
-            await context.db().disableWatchers();
-            context.files().disable();
-            let uri =
-              assets?.firstOrDefault("uri");
-            let name =
-              assets?.firstOrDefault("name");
-            let bk = await ZipBook.load(
-              uri,
-              name,
-              p => {
-                loader.show(p);
-              },
-              state.skipImages
-            );
-            let images = bk.files.filter(
-              x => x.type === "Image"
-            );
-            let total = images.length;
-            let count = 0;
-            const calc = async () => {
-              count++;
-              loader.show((100 * count) / total);
-            };
-            if (!state.skipImages) {
-              for (let file of images) {
-                await calc();
-                file.content = await context
-                  .imageCache()
-                  .write(file.url, file.content);
-              }
-
-              let chImage =
-                ZipBook.createImageChapter(
-                  images
-                );
-              if (chImage)
-                bk.chapters = [
-                  chImage,
-                  ...bk.chapters
-                ];
-            }
-            let book = Book.n()
-              .Name(bk.name)
-              .Url(bk.url)
-              .Favorit(false)
-              .InlineStyle(
-                bk.files
-                  .filter(x => x.type === "CSS")
-                  .map(x => x.content)
-                  .join("\n")
-              )
-              .ImageBase64(
-                bk.files.find(
-                  x => x.type === "Image"
-                )?.content ?? ""
-              )
-              .ParserName("epub");
-            await context
-              .files()
-              .write(bk.url, JSON.stringify(bk));
-            await context.db().save(book);
-          } catch (e) {
-            context.alert(e.message).show();
-            console.error(e);
-          } finally {
-            context.db().enableWatchers();
-            context.db().enableHooks();
-            context.files().enable();
-            loader.hide();
-          }
-        });
-    } catch (e) {
-      context.alert(e.message).show();
-      console.error(e);
-    }
-  };
 
   const downloadEpub = async (book: any) => {
     let file = fileItems.find(
@@ -463,28 +510,9 @@ export default ({ ...props }: any) => {
         </View>
       </ActionSheet>
 
-      <Header
-        {...navop}
-        buttons={[
-          {
-            text: () => (
-              <Icon
-                invertColor={true}
-                size={35}
-                name="file-zip"
-                type="Octicons"
-              />
-            ),
-            press: () => {
-              loadEpub();
-            }
-          }
-        ]}
-        value={state.text}
-        inputEnabled={true}
-        onInputChange={txt => {
-          state.text = txt;
-        }}
+      <EpubHanlder
+        navop={navop}
+        parentState={state}
       />
       <Text
         invertColor={false}

@@ -34,22 +34,25 @@ export default ({ color }: any) => {
   useEffect(() => {
     setLvl();
   }, []);
+  let height = 24;
   let level = batteryLevel * 100;
   return (
-    <View css="wi:30 overflow juc:center ali:center">
+    <View css="wi:26 mal:5 overflow juc:center ali:center">
       <View
         style={{
-          width: level + "%",
+          height: height - 14,
+          width:
+            level - (level > 30 ? 15 : 0) + "%",
           backgroundColor: "#3b5998"
         }}
-        css="absolute le:0 flex he:18 bac:#fff zi:1"
+        css="absolute le:1 bor:2 flex he:11 bac:#fff zi:1"
       />
       <Icon
         css="zi:2"
         name="battery-empty"
-        type="FontAwesome"
+        type="Fontisto"
         color={invertColor(color)}
-        size={25}
+        size={height}
       />
       <Text
         style={{ color: invertColor(color) }}

@@ -13,6 +13,7 @@ import {
   Form,
   ProgressBar
 } from "../components";
+import BattariView from "../components/BattariView";
 import {
   useState,
   useEffect,

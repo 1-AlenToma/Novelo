@@ -30,6 +30,10 @@ class AppSettings extends IBaseModule<TableNames> {
   fontStyle?: string = "normal";
   theme?: string = "light";
   lang?: string = "English";
+  voiceWordSelectionsSettings?: {
+    color?: string;
+    appendSelection?: boolean;
+  } = {};
   constructor() {
     super("AppSettings");
   }
@@ -51,7 +55,8 @@ class AppSettings extends IBaseModule<TableNames> {
       .boolean.column("fontName")
       .column("lockScreen")
       .boolean.column("currentNovel")
-      .nullable.json.column("navigationType")
+      .nullable.json
+      .column("voiceWordSelectionsSettings").nullable.json.column("navigationType")
       .nullable.column("use3D")
       .nullable.boolean.column("fontStyle")
       .nullable.column("lang")

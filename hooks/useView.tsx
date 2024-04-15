@@ -38,19 +38,26 @@ export default function <T>({
   );
 
   let render = (children, prs) => {
-    const Component = component ?? View;
+    if (component !== false) {
+      prs = { ...props, ...(prs ?? {}) };
+      const Component = component ?? View;
+      return (
+        <Component
+          {...prs}
+          onLayout={event => {
+            itemState.size =
+              event.nativeEvent.layout;
+            props.onLayout?.(event);
+          }}>
+          {children}
+        </Component>
+      );
+    } 
     return (
-      <Component
-        {...props}
-        {...(prs??{})}
-        onLayout={event => {
-          itemState.size =
-            event.nativeEvent.layout;
-          props.onLayout?.(event);
-        }}>
-        {children}
-      </Component>
-    );
+      <>
+      {children}
+      </>
+      )
   };
 
   return [

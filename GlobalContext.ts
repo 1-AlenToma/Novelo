@@ -23,7 +23,8 @@ LogBox.ignoreLogs([
   "require cycles",
   "Require cycle",
   "new NativeEventEmitter",
-  "Internal React error"
+  "Internal React error",
+  "xmldom warning"
 ]);
 
 import * as ScreenOrientation from "expo-screen-orientation";
@@ -158,6 +159,13 @@ const data = GlobalState(
             "AppSettings"
           )
           .findOrSave(data.appSettings);
+        let appSettingWatcher =
+          globalDb.database.watch("AppSettings");
+        appSettingWatcher.onSave =
+          async items => {
+            let item = items?.firstOrDefault();
+            if (item) data.appSettings = item;
+          };
         data.theme.themeMode =
           data.appSettings.theme;
         loadVoices();
@@ -191,7 +199,10 @@ const data = GlobalState(
           hideSubscription,
           showSubscription,
           windowEvent,
-          { remove: () => BGService.stop() }
+          { remove: () => BGService.stop() },
+          {
+            remove: () => appSettingWatcher.removeWatch()
+          }
         ];
       } catch (e) {
         console.error(e);

@@ -26,12 +26,15 @@ import { ifSelector } from "../Methods";
 export default ({
   procent,
   children,
-  ifTrue
+  ifTrue,
+  text,
+  color,
+  speed
 }: any) => {
   if (ifSelector(ifTrue) === false) return null;
   const [size, setSize] = useState();
   const { animate, animateX } = useAnimate({
-    speed: 50,
+    speed:speed ?? 50
   });
   const applyProc = () => {
     if (size)
@@ -67,7 +70,9 @@ export default ({
       }}
       css="flex clearboth to:0 le:0 absolute zi:5 juc:center overflow ali:center bow:0 boc:#000">
       <View css="clearboth blur zi:1 absolute" />
-      <View css="zi:3">
+      <View
+        css="zi:3"
+        ifTrue={text}>
         {children || (
           <Text css="fos:18 bold co:red">
             {procent?.readAble()}%
@@ -75,8 +80,9 @@ export default ({
         )}
       </View>
       <AnimatedView
-        css="bac:green zi:2 absolute to:0 le:-100% clearboth op:0.8"
+        css="zi:2 absolute to:0 le:-100% clearboth op:0.8"
         style={{
+          backgroundColor: color ?? "green",
           transform: [
             {
               translateX: animate.x.interpolate({

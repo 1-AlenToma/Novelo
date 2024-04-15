@@ -307,8 +307,7 @@ const TabBar = ({
       evt: any,
       gestureState: any
     ) => {
-      if(state.refItem.handled)
-         return
+      if (state.refItem.handled) return;
       let newValue = gestureState.dx;
       let diff =
         newValue - state.refItem.startValue;
@@ -333,7 +332,7 @@ const TabBar = ({
       } else {
         tAnimate(i, speed); // reset to start value
       }
-      state.refItem.handled =true;
+      state.refItem.handled = true;
     };
     state.refItem.panResponse =
       PanResponder.create({
@@ -358,7 +357,7 @@ const TabBar = ({
         ) => {
           state.refItem.startValue =
             gestureState.dx;
-state.refItem.handled = false;
+          state.refItem.handled = false;
           //alert(interpolate.outputRange[index]);
           animate.setValue({
             x:

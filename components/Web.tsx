@@ -20,6 +20,7 @@ import { Player, DetailInfo } from "../../native";
 import View from "./ThemeView";
 import TextView from "./ThemeText";
 import BattariView from "./BattariView";
+import ProgressBar from "./ProgressBar";
 import Svg, {
   Circle,
   Rect,
@@ -32,20 +33,20 @@ document.addEventListener("DOMContentLoaded", (event) => {
   try{
 ${script}
 }catch(e){
-  alert(e)
+  
 }
 });
 }else {
   try{
 ${script}
 }catch(e){
-  alert(e)
+  
 }
 }
 true;
 `;
 
-const Clock = () => {
+const Clock = ({ secondEnabled }: any) => {
   const Timer = useTimer(1000);
   const [time, setTime] = useState("");
   function startTime() {
@@ -56,7 +57,9 @@ const Clock = () => {
     h = checkTime(h);
     m = checkTime(m);
     s = checkTime(s);
-    setTime(h + ":" + m + ":" + s);
+    if (secondEnabled)
+      setTime(h + ":" + m + ":" + s);
+    else setTime(h + ":" + m);
     Timer(() => startTime());
   }
 
@@ -92,77 +95,21 @@ const Scroller = ({ ...props }: any) => {
     "appSettings",
     "player.showPlayer"
   );
-  const { size, strokeWidth, text, css } = props;
-  const radius = (size - strokeWidth) / 2;
-  const circum = radius * 2 * Math.PI;
-  let svgProgress =
-    100 - context.player.scrollProcent;
+
+  let svgProgress = context.player.scrollProcent;
   if (svgProgress < 0) svgProgress = 0;
   if (svgProgress > 100) svgProgress = 100;
-  const textColor = invertColor(
-    context.appSettings.backgroundColor
-  );
-  const textSize = 10;
+
   return (
-    <View
-      css={css}
-      ifTrue={!context.player.showPlayer}>
-      <Svg
-        width={size}
-        height={size}>
-        {/* Background Circle */}
-        <Circle
-          stroke={
-            props.bgColor
-              ? props.bgColor
-              : "#f2f2f2"
-          }
-          fill="none"
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          {...{ strokeWidth }}
-        />
-
-        {/* Progress Circle */}
-        <Circle
-          stroke={
-            props.pgColor
-              ? props.pgColor
-              : "#3b5998"
-          }
-          fill="none"
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          strokeDasharray={`${circum} ${circum}`}
-          strokeDashoffset={
-            radius *
-            Math.PI *
-            2 *
-            (svgProgress / 100)
-          }
-          strokeLinecap="round"
-          transform={`rotate(-90, ${size / 2}, ${
-            size / 2
-          })`}
-          {...{ strokeWidth }}
-        />
-
-        {/* Text */}
-        <Text
-          fontSize={textSize}
-          x={size / 2}
-          y={size / 2 + (textSize / 2 - 1)}
-          textAnchor="middle"
-          fill={textColor}>
-          {(context.player.scrollProcent > 100
-            ? 100
-            : context.player.scrollProcent
-          ).toFixed(0)}
-        </Text>
-      </Svg>
-    </View>
+    <ProgressBar
+      ifTrue={() =>
+        context.player.showPlayer != true
+      }
+      speed={200}
+      color="#3b5998"
+      procent={svgProgress}
+      text={false}
+    />
   );
 };
 
@@ -172,17 +119,11 @@ export default ({
   onMenu,
   onComments,
   menuItems,
-  content,
-  css,
-  inlineStyle,
   style,
-  fontName,
   bottomReched,
-  topReched,
-  scrollDisabled,
-  navigationType
+  topReched
 }: any) => {
-  // g.hook("size");
+  context.hook("appSettings.backgroundColor");
 
   const [render, state, _, timer] = useView({
     timer: 200,
@@ -217,7 +158,7 @@ export default ({
         (100 * offset) /
         (contentHeight -
           context.player.paddingTop());
-      if (scrollDisabled) return;
+      if (context.player.showPlayer) return;
       if (state.refItem.loading) {
         timer(
           () => (state.refItem.loading = false)
@@ -227,10 +168,16 @@ export default ({
 
       timer(() => {
         if (offset == contentHeight) {
-          if (navigationType == "Scroll")
+          if (
+            context.appSettings.navigationType ==
+            "Scroll"
+          )
             bottomReched?.();
         } else if (contentOffset.y <= 10) {
-          if (navigationType == "Scroll")
+          if (
+            context.appSettings.navigationType ==
+            "Scroll"
+          )
             topReched?.();
         } else onScroll?.(contentOffset.y);
       });
@@ -245,6 +192,18 @@ export default ({
       assets: {}
     }
   });
+
+  let getJs = (type, data) => {
+    let item = { type, data };
+    if (type == "content")
+      item.data = { menuItems: data };
+    return `
+    try{
+    window.loadData(${JSON.stringify(item)});
+    }catch(e){
+    }
+    `;
+  };
 
   const postMessage = async (
     type: string,
@@ -264,16 +223,24 @@ export default ({
 
   const loadFonts = async () => {
     try {
-      if (!state.refItem.assets[fontName]) {
+      if (
+        !state.refItem.assets[
+          context.appSettings.fontName
+        ]
+      ) {
         state.refItem.assets = {};
         let asset = Asset.fromModule(
           require("../assets/gfont.ttf")
         );
         await asset.downloadAsync();
         let fontUri = asset.localUri;
-        asset = Asset.fromModule(Fonts[fontName]);
+        asset = Asset.fromModule(
+          Fonts[context.appSettings.fontName]
+        );
         await asset.downloadAsync();
-        state.refItem.assets[fontName] = {
+        state.refItem.assets[
+          context.appSettings.fontName
+        ] = {
           icons: fontUri,
           font: asset.localUri
         };
@@ -283,12 +250,22 @@ export default ({
       font-family: 'Material Symbols Outlined';
       font-style: normal;
       font-weight: 400;
-      src: url("${state.refItem.assets[fontName].icons}") format('woff2');
+      src: url("${
+        state.refItem.assets[
+          context.appSettings.fontName
+        ].icons
+      }") format('woff2');
       }
       
       @font-face {
-      font-family: '${fontName}';
-      src: url("${state.refItem.assets[fontName].font}") format('truetype')
+      font-family: '${
+        context.appSettings.fontName
+      }';
+      src: url("${
+        state.refItem.assets[
+          context.appSettings.fontName
+        ].font
+      }") format('truetype')
       }
 
 .material-symbols-outlined {
@@ -306,50 +283,250 @@ export default ({
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }`;
-      return css;
       await postMessage("font", css);
-      if (!scrollDisabled)
-        await postMessage(
-          "scrollTop",
-          content.scroll
-        );
     } catch (e) {
       return "";
       console.error(e);
     }
   };
-  let getJs = (type, data) => {
-    let item = { type, data };
-    if (type == "content")
-      item.data = { menuItems: data };
-    return `
-    try{
-    window.loadData(${JSON.stringify(item)});
-    }catch(e){
-      
-    }
-    `;
-  };
-  let injectData = async () => {
-    try {
-      while (!state.refItem.webView)
-        await sleep(100);
-      let font = await loadFonts();
-      let js = `
-      ${getJs("font", font)}
-      true;
+
+  const loadCss = async () => {
+    let color =
+      context.appSettings.backgroundColor;
+    let inverted = invertColor(color);
+    let shadow = inverted.has("white")
+      ? "#4e4d4d"
+      : "#919191";
+    let shadowLength = (1).sureValue(
+      context.appSettings.shadowLength,
+      true
+    );
+
+    let cssStyle = `
+        .highlight {
+          border-radius: 5px;
+          display: inline;
+          color: ${
+            context.appSettings
+              .voiceWordSelectionsSettings?.color
+              ? invertColor(
+                  context.appSettings
+                    .voiceWordSelectionsSettings
+                    ?.color
+                )
+              : color
+          } !important;
+          background-color: ${
+            context.appSettings
+              .voiceWordSelectionsSettings
+              ?.color ?? inverted
+          } !important;
+        }
+        *:not(context):not(context *) {
+          font-family: "${
+            context.appSettings.fontName
+          }";
+          font-size-adjust: 1;
+          font-style: ${
+            context.appSettings.fontStyle ??
+            "normal"
+          };
+          ${
+            context.appSettings.use3D
+              ? `
+            text-shadow: 1px ${shadowLength}px 1px ${shadow};
+            `
+              : ""
+          }
+        }
+        parameter {
+          display: none;
+        }
+        blur p {
+          color: ${color};
+          background-color: ${inverted};
+          padding: 5px;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        *:not(context):not(context *):not(
+            .custom
+          ):not(blur):not(blur *):not(
+            .highlight
+          ) {
+          background-color: transparent;
+          color: ${inverted} !important;
+        }
+        body {
+          background-color: ${color} !important;
+        }
+        .comments {
+          text-decoration: underline;
+          display: inline-block;
+          position: relative;
+        }
+        context > div > a {
+          width: 100%;
+        }
+        body img {
+          max-width: 98%;
+        }
+        body .novel {
+          max-width: 100%;
+          min-height: ${
+            !context.player.showPlayer
+              ? "100%"
+              : "50%"
+          };
+          top: ${
+            context.player.showPlayer
+              ? "45px"
+              : "0px"
+          };
+          position: relative;
+          overflow: hidden;
+          text-align-vertical: top;
+          padding-bottom: ${context.player.paddingBottom()}px;
+          padding-top: ${context.player.paddingTop()}px;
+          padding-left: ${(5).sureValue(
+            context.appSettings.margin
+          )}px;
+          padding-right: ${(5).sureValue(
+            context.appSettings.margin
+          )}px;
+          font-size: ${
+            context.appSettings.fontSize
+          }px;
+          line-height: ${
+            context.appSettings.fontSize * 1.7
+          }px;
+          text-align: ${
+            context.appSettings.textAlign
+          };
+        }
       `;
-      state.refItem.webView.injectJavaScript(js);
-    } catch (e) {
-      console.error(e);
-    }
+    await postMessage("style", cssStyle);
+    await loadFonts();
   };
+
+  const loadHtmlContent = async () => {
+    if (context.player.isloading) return;
+    state.refItem.loading = true;
+    let content = {
+      inlineStyle:
+        context.player.book.inlineStyle,
+      content: context.player.showPlayer
+        ? `<p>${
+            context.player
+              .currentPlaying()
+              ?.cleanText() ?? ""
+          }</p>`
+        : context.player.html,
+      scroll:
+        context.player.currentChapterSettings
+          .scrollProgress
+    };
+
+    state.refItem.webView.injectJavaScript(`
+     // clear body
+     try{
+       if(window.postmsg){
+     document.body.innerHTML = "";
+    const loadBody = (content)=>{
+    let div = document.createElement("div");
+    div.id= "novel";
+    div.className = "novel";
+    div.innerHTML = content.content;
+    document.body.appendChild(div);
+    let st = document.getElementById(
+          "inlineStyle"
+        );
+        if (st) st.remove();
+        st = document.createElement("style");
+        st.id = "inlineStyle";
+        st.appendChild(
+          document.createTextNode(content.inlineStyle)
+        );
+        document.head.appendChild(st);
+    window.cleanStyle("novel");
+    let images = document.querySelectorAll("img");
+    [...images].forEach((x,i)=> {
+      if(!window.isValidUrl(x.src)){
+      x.id = "img"+i;
+      window.renderImage(x.id)
+      }
+      });
+    
+    if("${
+      context.appSettings.navigationType || "Snap"
+    }" === "Snap"){
+            window.bookSlider= new window.slider({
+             id: "novel",
+             hasNext: ${context.player
+               .hasNext()
+               .toString()
+               .toLowerCase()},
+             hasPrev: ${context.player
+               .hasPrev()
+               .toString()
+               .toLowerCase()},
+             prevText: "Previous Chapter",
+             nextText: "Next Chapter"
+             });
+            }
+    
+             
+    if(${context.player.showPlayer
+      .toString()
+      .toLowerCase()}){
+      let parag = document.querySelector(".novel p")
+      if(parag)
+         {
+           parag.scrollIntoView({
+            block: "center",
+            inline: "center"
+           });
+         }
+    }else {
+      window.scroll(0, ${content.scroll});
+    }
+    }
+    
+    loadBody(${JSON.stringify(content)});
+    ${getJs("content", menuItems)}
+    window.binder();
+   // window.postmsg("enable",false);
+       }
+     }catch(e) {}
+    true;
+    `);
+    state.refItem.loading = true;
+  };
+
+  context.subscribe(
+    () => {
+      loadCss();
+    },
+    "appSettings",
+    "player.showPlayer"
+  );
+
+  context.subscribe(
+    () => {
+      loadHtmlContent();
+    },
+    "appSettings",
+    "player.html",
+    "player.book.inlineStyle",
+    "player.showPlayer",
+    "player.currentChapterSettings.audioProgress",
+    "player.isloading"
+  );
 
   const onMessage = async ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
     switch (data.type) {
       case "scrollValue":
-        // alert(data.data);
         onScroll?.(data.data);
         break;
       case "bottomReched":
@@ -364,10 +541,14 @@ export default ({
         click?.(data.data);
         break;
       case "data":
-        injectData();
+        loadCss();
+        loadHtmlContent();
         break;
       case "menu":
         onMenu?.(data.data);
+        break;
+      case "warn":
+        console.warn(data);
         break;
       case "log":
         console.log(data);
@@ -384,24 +565,60 @@ export default ({
       case "Image":
         postMessage(
           "images",
-          await context.player.getImage(
-            ...data.data
-          ),
-          "window.loadImages"
+          {
+            id: data.data.id,
+            src: await context.player.getImage(
+              data.data.src
+            )
+          },
+          "window.renderImage"
         );
         break;
     }
   };
   state.refItem.loading = true;
 
+  context.subscribe(
+    () => {
+      if (
+        !context.player.showPlayer ||
+        !context.player.highlightedText ||
+        !context.player.highlightedText.text
+      )
+        return;
+      //  console.warn(context.player.highlightedText)
+      let json = JSON.stringify({
+        all: !(
+          context.appSettings
+            .voiceWordSelectionsSettings
+            ?.appendSelection ?? false
+        ),
+        scroll: false,
+        selector: "#novel",
+        text: context.player.highlightedText.text,
+        index:
+          context.player.highlightedText.index,
+        length:
+          context.player.highlightedText.length
+      });
+      state.refItem.webView?.injectJavaScript(`
+    try{
+    window.highlight(${json});
+    }catch(e){
+    }
+      true;
+    `);
+    },
+    "player.highlightedText",
+    "appSettings"
+  );
+
   return (
     <>
-      <View css="absolute ri:10 bo:10 zi:99 juc:space-between ali:center">
-        <Scroller
-          css="mal:5"
-          size={30}
-          strokeWidth={4}
-        />
+      <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center">
+        <Scroller />
+      </View>
+      <View css="row absolute bo:1 ri:10 zi:99 juc:center ali:center">
         <Clock />
         <BattariView
           color={
@@ -417,44 +634,37 @@ export default ({
         <head>
         <meta name="viewport" content="width=device-width,  initial-scale=1" />
         <style>
+        
           br{
             display:none;
           }
         </style>
-        <style>
-          ${inlineStyle}
-        </style>
-        </head>
-        <body>
-        ${content?.content}
         <script>
         try{
-          window.scrollPage = (alertdata)=>{
-            if(${
-              scrollDisabled ? "1==0" : "1 == 1"
-            }){
-               window.scroll(0, ${
-                 content.scroll
-               });
-             }
-             if(alertdata!== false)
-             window.postmsg("enable",true);
+          window.isValidUrl = urlString=> {
+            return urlString.indexOf("https") != -1 || urlString.indexOf("http") != -1 ||urlString.indexOf("www.") != -1
           }
-          
-          window.loadImages=(imgs)=>{
-            imgs= imgs.data;
-            let images = [...document.querySelectorAll("img")];
-            for(let img of images){
-              let src = img.getAttribute("src");
-              let m = imgs.find(x=> x.h==src)
-              if (m)
-               img.setAttribute("src", m.cn);
-              else img.remove();
+          window.renderImage= (item)=>{
+            try{
+            let img = undefined;
+            if(!item)
+              return;
+            if(typeof item === "string"){
+              img =document.getElementById(item);
+               window.postmsg("Image",{src:img.src, id:item});
             }
-            window.scrollPage();
+             else {
+               img = document.getElementById(item.data.id);
+               if(!img || item.data.src.length<=0){
+                 if(img)
+                  img.remove();
+                  return;
+               }
+                  
+              img.setAttribute("src", item.data.src[0].cn);
+             }
+            }catch(e){}
           }
-          let images = document.querySelectorAll("img");
-          let hrefs = [...images].map(x=> x.getAttribute("src"))
           
           function sleep(ms){
             return new Promise((r)=> setTimeout(r,ms))
@@ -462,50 +672,25 @@ export default ({
           async function psg(){
           while(window.postmsg === undefined || !window.ctx)
              await sleep(200);
-            
-            window.binder();
-            ${getJs("style", css)}
-             ${getJs("content", menuItems)}
-            window.events["font"]=()=>{
-                 window.scrollPage();
-            }
-            if(hrefs.length >0)
-              window.postmsg("Image",hrefs);
-           
-            document.getElementById("novel").style.visibility="visible";
-            window.cleanStyle("novel");
-            if("${
-              navigationType || "Snap"
-            }" === "Snap"){
-             new window.slider({
-             id: "novel",
-             hasNext: ${context.player
-               .hasNext()
-               .toString()
-               .toLowerCase()},
-             hasPrev: ${context.player
-               .hasPrev()
-               .toString()
-               .toLowerCase()},
-             prevText: "Previous Chapter",
-             nextText: "Next Chapter"
-             });
-            }
             window.postmsg("data",true);
-            window.scrollPage();
           }
-          
           psg();
         }catch(e){
-          alert(e)
+          
         }
         </script>
+        </head>
+        <body>
+        
         </body>
         </html>
         `,
           basUrl: ""
         },
-        style: style,
+        style: {
+          backgroundColor:
+            context.appSettings.backgroundColor
+        },
         containerStyle: [
           {
             backgroundColor:

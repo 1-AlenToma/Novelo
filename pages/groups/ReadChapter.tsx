@@ -64,6 +64,293 @@ for (let l in LANGUAGE_TABLE) {
   }
 }
 
+const Modoles = () => {
+  const loader = useLoader();
+  context.hook(
+    "player.menuOptions",
+    "player.menuOptions.textToTranslate",
+    "player.menuOptions.textEdit",
+    "player.menuOptions.comment",
+    "player.menuOptions.define",
+    "appSettings"
+  );
+
+  useEffect(() => {
+    context.player.hide();
+    context.player.loader = {
+      show: () => {
+        loader.show();
+        context.player.isloading = true;
+      },
+      hide: () => {
+        loader.hide();
+        context.player.isloading = false;
+      }
+    };
+  }, []);
+
+  return (
+    <>
+      {loader.elem}
+      <Modal
+        blur={false}
+        visible={
+          context.player.menuOptions.comment !=
+          undefined
+        }
+        onHide={() =>
+          (context.player.menuOptions.comment =
+            undefined)
+        }
+        height={200}>
+        <View css="flex mat:20">
+          <TextInput
+            onChangeText={x =>
+              (context.player.menuOptions.comment =
+                x)
+            }
+            readOnly={true}
+            invertColor={false}
+            css="pa:5 bor:2 flg:1 clearboth"
+            multiline={true}
+            defaultValue={
+              context.player.menuOptions.comment
+            }
+          />
+        </View>
+      </Modal>
+      <Modal
+        blur={false}
+        visible={
+          context.player.menuOptions.textEdit !=
+          undefined
+        }
+        onHide={() =>
+          (context.player.menuOptions.textEdit =
+            undefined)
+        }
+        height="90">
+        <ScrollView>
+          <View css="flex mat:20">
+            <Form
+              root={true}
+              text="TextToEdit"
+              css="formRow he:100">
+              <TextInput
+                onChangeText={x =>
+                  (context.player.menuOptions.textEdit.edit =
+                    x)
+                }
+                invertColor={false}
+                css="pa:5 bor:2 flg:1"
+                multiline={true}
+                defaultValue={
+                  context.player.menuOptions
+                    .textEdit?.edit
+                }
+              />
+            </Form>
+            <Form
+              root={true}
+              text="EditWith"
+              css="formRow he:100">
+              <TextInput
+                onChangeText={x =>
+                  (context.player.menuOptions.textEdit.editWith =
+                    x)
+                }
+                invertColor={false}
+                css="pa:5 bor:2 flg:1"
+                multiline={true}
+                defaultValue={
+                  context.player.menuOptions
+                    .textEdit?.editWith
+                }
+              />
+            </Form>
+            <Form
+              root={true}
+              text="Comment"
+              css="formRow he:100">
+              <TextInput
+                onChangeText={x =>
+                  (context.player.menuOptions.textEdit.comments =
+                    x)
+                }
+                invertColor={false}
+                css="pa:5 bor:2 flg:1"
+                multiline={true}
+                defaultValue={
+                  context.player.menuOptions
+                    .textEdit?.comments
+                }
+              />
+            </Form>
+            <Form text="BackgroundColor">
+              <ColorPicker
+                value={
+                  context.player.menuOptions
+                    .textEdit?.bgColor ??
+                  "#ffffff"
+                }
+                onComplete={({ hex }) =>
+                  (context.player.menuOptions.textEdit =
+                    {
+                      ...context.player
+                        .menuOptions.textEdit,
+                      bgColor: hex
+                    })
+                }
+              />
+            </Form>
+            <TouchableOpacity
+              onPress={async () => {
+                context.player.book.textReplacements.push(
+                  context.player.menuOptions
+                    .textEdit
+                );
+                await context.player.book.saveChanges();
+                await context.player.clean();
+                context.player.menuOptions.textEdit =
+                  undefined;
+              }}
+              css="button clearwidth bow:1 boc:#ccc bor:5 juc:center">
+              <Text invertColor={true}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </Modal>
+      <Modal
+        blur={false}
+        visible={
+          context.player.menuOptions
+            .textToTranslate != undefined
+        }
+        onHide={() =>
+          (context.player.menuOptions.textToTranslate =
+            undefined)
+        }
+        height="100">
+        <View css="flex mat:20">
+          <View css="form">
+            <Text invertColor={true}>
+              TranslateTo:
+            </Text>
+            <DropdownList
+              height="80"
+              toTop={true}
+              items={Object.keys(LANGUAGE_TABLE)}
+              render={item => {
+                return (
+                  <Text
+                    css="desc fos:13"
+                    invertColor={true}>
+                    {item}
+                  </Text>
+                );
+              }}
+              onSelect={language => {
+                context.appSettings.lang =
+                  language;
+                context.appSettings.saveChanges();
+              }}
+              selectedValue={
+                context.appSettings.lang ??
+                "English"
+              }
+            />
+          </View>
+          <View css="form flex">
+            <WebView
+              injectedJavaScript={`
+               let items =[... document.querySelectorAll("header, .header, .translate-button-container, .languages-container, .links-container")]
+               items.forEach(x=> x.remove())
+               //alert(items.length)
+              `}
+              nestedScrollEnabled={true}
+              cacheEnabled={true}
+              source={{
+                uri: `https://translate.google.com/m?hl=en&sl=en&tl=${
+                  LANGUAGE_TABLE[
+                    context.appSettings.lang ??
+                      "English"
+                  ].google
+                }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
+                  context.player.menuOptions
+                    .textToTranslate
+                )}`
+              }}
+              contentMode="mobile"
+              scalesPageToFit={true}
+              originWhitelist={["*"]}
+              scrollEnabled={true}
+              userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+              setSupportMultipleWindows={false}
+              style={[
+                {
+                  flexGrow: 1,
+                  zIndex: 70,
+                  flex: 1
+                }
+              ]}
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={
+                true
+              }
+              javaScriptEnabled={true}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        blur={false}
+        visible={
+          context.player.menuOptions.define !=
+          undefined
+        }
+        onHide={() =>
+          (context.player.menuOptions.define =
+            undefined)
+        }
+        height="100">
+        <View css="flex mat:20">
+          <View css="form flex">
+            <WebView
+              nestedScrollEnabled={true}
+              cacheEnabled={true}
+              source={{
+                uri: context.player.menuOptions
+                  .define
+              }}
+              contentMode="mobile"
+              scalesPageToFit={true}
+              originWhitelist={["*"]}
+              scrollEnabled={true}
+              userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+              setSupportMultipleWindows={false}
+              style={[
+                {
+                  flexGrow: 1,
+                  zIndex: 70,
+                  flex: 1
+                }
+              ]}
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={
+                true
+              }
+              javaScriptEnabled={true}
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+};
+
 const Controller = ({ state, ...props }) => {
   useDbHook(
     "Chapters",
@@ -78,7 +365,8 @@ const Controller = ({ state, ...props }) => {
     "player.chapterArray",
     "player.currentChapter",
     "player._playing",
-    "size"
+    "size",
+    "appSettings"
   );
 
   const Timer = useTimer(100);
@@ -111,7 +399,8 @@ const Controller = ({ state, ...props }) => {
     navigationType,
     use3D,
     fontStyle,
-    shadowLength
+    shadowLength,
+    voiceWordSelectionsSettings
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined)
@@ -151,6 +440,9 @@ const Controller = ({ state, ...props }) => {
       if (shadowLength != undefined)
         context.appSettings.shadowLength =
           shadowLength;
+      if (voiceWordSelectionsSettings)
+        context.appSettings.voiceWordSelectionsSettings =
+          voiceWordSelectionsSettings;
 
       await context.appSettings.saveChanges();
     });
@@ -276,6 +568,7 @@ const Controller = ({ state, ...props }) => {
                   <TabBar
                     fontSize={14}
                     scrollableHeader={true}
+                    scrollHeight="90%"
                     position="Top">
                     <View
                       title="Settings"
@@ -766,6 +1059,69 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={3}
                         />
                       </Form>
+                      <Form
+                        css="mah:200"
+                        root={true}
+                        text="Words Highlight Settings">
+                        <Form
+                          root={true}
+                          css="he:80"
+                          text="Color">
+                          <ColorPicker
+                            value={
+                              context.appSettings
+                                .voiceWordSelectionsSettings
+                                ?.color
+                            }
+                            onComplete={({
+                              hex
+                            }) =>
+                              editSettings({
+                                voiceWordSelectionsSettings:
+                                  {
+                                    color: hex,
+                                    appendSelection:
+                                      context
+                                        .appSettings
+                                        .voiceWordSelectionsSettings
+                                        ?.appendSelection
+                                  }
+                              })
+                            }
+                          />
+                        </Form>
+                        <CheckBox
+                          text="Only Word:"
+                          css="pal:1"
+                          invertColor={true}
+                          checked={
+                            context.appSettings
+                              .voiceWordSelectionsSettings
+                              ?.appendSelection ??
+                            false
+                          }
+                          onChange={() => {
+                            editSettings({
+                              voiceWordSelectionsSettings:
+                                {
+                                  color:
+                                    context
+                                      .appSettings
+                                      .voiceWordSelectionsSettings
+                                      ?.color,
+                                  appendSelection:
+                                    !(
+                                      context
+                                        .appSettings
+                                        .voiceWordSelectionsSettings
+                                        ?.appendSelection ??
+                                      false
+                                    )
+                                }
+                            });
+                          }}
+                        />
+                      </Form>
                     </View>
                     <View title="Text Replacements">
                       <View
@@ -847,121 +1203,14 @@ const InternalWeb = ({
   state,
   ...props
 }: any) => {
-  const updater = useUpdate();
-  useDbHook(
-    "Chapters",
-    item => item.parent_Id === state.book.id,
-    () => context.player.currentChapterSettings,
-    "audioProgress"
-  );
-  context.subscribe(
-    () => {
-      updater();
-    },
-    "player.html",
-    "player.book.inlineStyle",
-    "player.showPlayer"
-  );
-  let color = context.appSettings.backgroundColor;
-
-  let inverted = invertColor(color);
-  let shadow = inverted.has("white")
-    ? "#4e4d4d"
-    : "#919191";
-  let shadowLength = (1).sureValue(
-    context.appSettings.shadowLength,
-    true
-  );
-
   return (
     <Web
-      style={{
-        backgroundColor: color
-      }}
-      navigationType={
-        context.appSettings.navigationType
-      }
-      scrollDisabled={context.player.showPlayer}
-      fontName={context.appSettings.fontName}
-      inlineStyle={
-        context.player.book.inlineStyle
-      }
-      css={`
-        *:not(context):not(context *) {
-          font-family: "${context.appSettings
-            .fontName}";
-          font-size-adjust: 1;
-          font-style: ${context.appSettings
-            .fontStyle ?? "normal"};
-          ${context.appSettings.use3D
-            ? `
-            text-shadow: 1px ${shadowLength}px 1px ${shadow};
-            `
-            : ""}
-        }
-        parameter {
-          display: none;
-        }
-        blur p {
-          color: ${color};
-          background-color: ${inverted};
-          padding: 5px;
-          border-radius: 10px;
-          overflow: hidden;
-        }
-        *:not(context):not(context *):not(
-            .custom
-          ):not(blur):not(blur *) {
-          background-color: transparent;
-          color: ${inverted} !important;
-        }
-        body {
-          background-color: ${color} !important;
-        }
-        .comments {
-          text-decoration: underline;
-          display: inline-block;
-          position: relative;
-        }
-        context > div > a {
-          width: 100%;
-        }
-        body img {
-          max-width: 98%;
-        }
-        body .novel {
-          max-width: 100%;
-          min-height: ${!context.player.showPlayer
-            ? "100%"
-            : "50%"};
-          top: ${context.player.showPlayer
-            ? "45px"
-            : "0px"};
-          position: relative;
-          overflow: hidden;
-          text-align-vertical: top;
-          padding-bottom: ${context.player.paddingBottom()}px;
-          padding-top: ${context.player.paddingTop()}px;
-          padding-left: ${(5).sureValue(
-            context.appSettings.margin
-          )}px;
-          padding-right: ${(5).sureValue(
-            context.appSettings.margin
-          )}px;
-          font-size: ${context.appSettings
-            .fontSize}px;
-          line-height: ${context.appSettings
-            .fontSize * 1.7}px;
-          text-align: ${context.appSettings
-            .textAlign};
-        }
-      `}
       click={() => {
         context.player.showController =
           !context.player.showController;
       }}
       onComments={index => {
-        state.comment =
+        context.player.menuOptions.comment =
           context.player.book.textReplacements[
             index
           ].comments;
@@ -969,41 +1218,25 @@ const InternalWeb = ({
       onMenu={(item: any) => {
         // handle later
         if (item.item.text == "Translate")
-          state.textToTranslate = item.selection;
+          context.player.menuOptions.textToTranslate =
+            item.selection;
         else if (item.item.text === "Copy") {
           Clipboard.setStringAsync(
             item.selection
           );
         } else if (item.item.text === "Define") {
-          state.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
+          context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
             / /g,
             "+"
           )}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
         } else {
-          state.textEdit = {
+          context.player.menuOptions.textEdit = {
             edit: item.selection,
             bgColor: undefined,
             comments: undefined,
             editWith: item.selection
           };
         }
-      }}
-      content={{
-        content: `
-          <div id="novel" style="visibility:hidden" class="novel">
-          ${
-            context.player.showPlayer
-              ? `<p>${
-                  context.player
-                    .currentPlaying()
-                    ?.cleanText() ?? ""
-                }</p>`
-              : context.player.html
-          }
-          </div>`,
-        scroll:
-          context.player.currentChapterSettings
-            .scrollProgress
       }}
       menuItems={{
         selector: "#novel",
@@ -1072,24 +1305,14 @@ export default (props: any) => {
     {
       novel: {} as DetailInfo,
       parser: context.parser.find(parserName),
-      book: {} as Book,
-      textToTranslate: undefined,
-      translationLanguage: "English",
-      translationResult: "",
-      textEdit: undefined,
-      comment: undefined,
-      define: undefined
+      book: {} as Book
     },
     "book",
-    "parser","novel"
+    "parser",
+    "novel"
   );
 
-  useDbHook(
-    "AppSettings",
-    item => true,
-    () => context.appSettings,
-    "*"
-  );
+  context.hook("appSettings.backgroundColor");
 
   const loadData = async () => {
     try {
@@ -1146,8 +1369,14 @@ export default (props: any) => {
           state.novel,
           state.book,
           {
-            show: () => loader.show(),
-            hide: () => loader.hide()
+            show: () => {
+              loader.show();
+              context.player.isloading = true;
+            },
+            hide: () => {
+              loader.hide();
+              context.player.isloading = false;
+            }
           },
           epub === true
         );
@@ -1157,8 +1386,14 @@ export default (props: any) => {
           state.novel;
         state.book = context.player.book;
         context.player.loader = {
-          show: () => loader.show(),
-          hide: () => loader.hide()
+          show: () => {
+            loader.show();
+            context.player.isloading = true;
+          },
+          hide: () => {
+            loader.hide();
+            context.player.isloading = false;
+          }
         };
         context.player.hooked = true;
         context.player.viewState = "Default";
@@ -1181,6 +1416,7 @@ export default (props: any) => {
     context.isFullScreen = true;
     if (parserName != "epub" && !epub) loadData();
     return () => {
+      context.player.loader = undefined;
       context.isFullScreen = false;
       context.player.hooked = false;
       if (
@@ -1214,233 +1450,13 @@ export default (props: any) => {
   return (
     <>
       {loader.elem}
-      <Modal
-        blur={false}
-        visible={state.comment != undefined}
-        onHide={() => (state.comment = undefined)}
-        height={200}>
-        <View css="flex mat:20">
-          <TextInput
-            onChangeText={x =>
-              (state.comment = x)
-            }
-            readOnly={true}
-            invertColor={false}
-            css="pa:5 bor:2 flg:1 clearboth"
-            multiline={true}
-            defaultValue={state.comment}
-          />
-        </View>
-      </Modal>
-      <Modal
-        blur={false}
-        visible={state.textEdit != undefined}
-        onHide={() =>
-          (state.textEdit = undefined)
-        }
-        height="90">
-        <ScrollView>
-          <View css="flex mat:20">
-            <Form
-              root={true}
-              text="TextToEdit"
-              css="formRow he:100">
-              <TextInput
-                onChangeText={x =>
-                  (state.textEdit.edit = x)
-                }
-                invertColor={false}
-                css="pa:5 bor:2 flg:1"
-                multiline={true}
-                defaultValue={
-                  state.textEdit?.edit
-                }
-              />
-            </Form>
-            <Form
-              root={true}
-              text="EditWith"
-              css="formRow he:100">
-              <TextInput
-                onChangeText={x =>
-                  (state.textEdit.editWith = x)
-                }
-                invertColor={false}
-                css="pa:5 bor:2 flg:1"
-                multiline={true}
-                defaultValue={
-                  state.textEdit?.editWith
-                }
-              />
-            </Form>
-            <Form
-              root={true}
-              text="Comment"
-              css="formRow he:100">
-              <TextInput
-                onChangeText={x =>
-                  (state.textEdit.comments = x)
-                }
-                invertColor={false}
-                css="pa:5 bor:2 flg:1"
-                multiline={true}
-                defaultValue={
-                  state.textEdit?.comments
-                }
-              />
-            </Form>
-            <Form text="BackgroundColor">
-              <ColorPicker
-                value={
-                  state.textEdit?.bgColor ??
-                  "#ffffff"
-                }
-                onComplete={({ hex }) =>
-                  (state.textEdit = {
-                    ...state.textEdit,
-                    bgColor: hex
-                  })
-                }
-              />
-            </Form>
-            <TouchableOpacity
-              onPress={async () => {
-                context.player.book.textReplacements.push(
-                  state.textEdit
-                );
-                await context.player.book.saveChanges();
-                await context.player.clean();
-                state.textEdit = undefined;
-              }}
-              css="button clearwidth bow:1 boc:#ccc bor:5 juc:center">
-              <Text invertColor={true}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </Modal>
-      <Modal
-        blur={false}
-        visible={
-          state.textToTranslate != undefined
-        }
-        onHide={() =>
-          (state.textToTranslate = undefined)
-        }
-        height="100">
-        <View css="flex mat:20">
-          <View css="form">
-            <Text invertColor={true}>
-              TranslateTo:
-            </Text>
-            <DropdownList
-              height="80"
-              toTop={true}
-              items={Object.keys(LANGUAGE_TABLE)}
-              render={item => {
-                return (
-                  <Text
-                    css="desc fos:13"
-                    invertColor={true}>
-                    {item}
-                  </Text>
-                );
-              }}
-              onSelect={language => {
-                context.appSettings.lang =
-                  language;
-                context.appSettings.saveChanges();
-              }}
-              selectedValue={
-                context.appSettings.lang ??
-                "English"
-              }
-            />
-          </View>
-          <View css="form flex">
-            <WebView
-              injectedJavaScript={`
-               let items =[... document.querySelectorAll("header, .header, .translate-button-container, .languages-container, .links-container")]
-               items.forEach(x=> x.remove())
-               //alert(items.length)
-              `}
-              nestedScrollEnabled={true}
-              cacheEnabled={true}
-              source={{
-                uri: `https://translate.google.com/m?hl=en&sl=en&tl=${
-                  LANGUAGE_TABLE[
-                    context.appSettings.lang ??
-                      "English"
-                  ].google
-                }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
-                  state.textToTranslate
-                )}`
-              }}
-              contentMode="mobile"
-              scalesPageToFit={true}
-              originWhitelist={["*"]}
-              scrollEnabled={true}
-              userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
-              setSupportMultipleWindows={false}
-              style={[
-                {
-                  flexGrow: 1,
-                  zIndex: 70,
-                  flex: 1
-                }
-              ]}
-              allowFileAccess={true}
-              allowFileAccessFromFileURLs={true}
-              allowUniversalAccessFromFileURLs={
-                true
-              }
-              javaScriptEnabled={true}
-            />
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        blur={false}
-        visible={state.define != undefined}
-        onHide={() => (state.define = undefined)}
-        height="100">
-        <View css="flex mat:20">
-          <View css="form flex">
-            <WebView
-              nestedScrollEnabled={true}
-              cacheEnabled={true}
-              source={{
-                uri: state.define
-              }}
-              contentMode="mobile"
-              scalesPageToFit={true}
-              originWhitelist={["*"]}
-              scrollEnabled={true}
-              userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
-              setSupportMultipleWindows={false}
-              style={[
-                {
-                  flexGrow: 1,
-                  zIndex: 70,
-                  flex: 1
-                }
-              ]}
-              allowFileAccess={true}
-              allowFileAccessFromFileURLs={true}
-              allowUniversalAccessFromFileURLs={
-                true
-              }
-              javaScriptEnabled={true}
-            />
-          </View>
-        </View>
-      </Modal>
       <View
         css="flex"
         style={{
           backgroundColor:
             context.appSettings.backgroundColor
         }}>
+        <Modoles />
         <Controller
           state={state}
           {...props}

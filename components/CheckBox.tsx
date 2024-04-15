@@ -9,6 +9,7 @@ import {
 import { Animated, Easing } from "react-native";
 import TouchableOpacity from "./TouchableOpacityView";
 import AnimatedView from "./AnimatedView";
+import { useAnimate } from "../hooks";
 export default ({
   checked,
   text,
@@ -17,32 +18,29 @@ export default ({
   children,
   ...props
 }) => {
+  const { animateX, animate, currentValue } =
+    useAnimate({speed:100});
   const [isChecked, setIsChecked] =
     useState(checked);
-  const animLeft = useRef(
-    new Animated.ValueXY()
-  ).current;
-  const anim = useRef();
+
   const loaded = useRef();
   const tAnimate = (value: number, fn: any) => {
-    anim.current?.stop();
-    anim.current = Animated.timing(animLeft.x, {
-      toValue: value,
-      duration: loaded.current ? 100 : 1,
-      easing: Easing.linear,
-      useNativeDriver: true
-    });
-    anim.current.start(() => {
-      let ch = value == 1 ? true : false;
-      setIsChecked(ch);
-      if (
-        ch !== checked &&
-        onChange &&
-        loaded.current
-      )
-        onChange(ch);
-      fn?.();
-    });
+    if (currentValue.x == value) return;
+    animateX(
+      value,
+      () => {
+        let ch = value == 1 ? true : false;
+        if (ch !== isChecked) setIsChecked(ch);
+        if (
+          ch !== checked &&
+          onChange &&
+          loaded.current
+        )
+          onChange(ch);
+        fn?.();
+      },
+      !loaded.current ? 1 : undefined
+    );
   };
   useEffect(() => {
     tAnimate(
@@ -84,7 +82,7 @@ export default ({
               transform: [
                 {
                   translateX:
-                    animLeft.x.interpolate({
+                    animate.x.interpolate({
                       inputRange: [0, 1],
                       outputRange: [5, 28],
                       extrapolate: "clamp"
