@@ -46,6 +46,7 @@ const files = new FileHandler(
 
 const data = GlobalState(
   {
+    panEnabled:true,
     selection: {
       downloadSelectedItem: undefined,
       favoritItem: undefined

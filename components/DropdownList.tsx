@@ -36,7 +36,7 @@ export default ({
   };
   return (
     <>
-      <View css="flex bow:1 boc:#ccc he:24">
+      <View css="flex bow:1 boc:#ccc he:24 overflow">
         <TouchableOpacity
           css="flex juc:space-between row ali:center par:5"
           onPress={() => {
@@ -97,7 +97,7 @@ export default ({
           selectedIndex={selectedIndex}
           css="flex"
           onPress={async item => {
-           await setVisible(false);
+            await setVisible(false);
             onSelect(item);
           }}
           items={items?.filter(

@@ -20,7 +20,8 @@ import {
   DropdownList,
   ColorPicker,
   Form,
-  ChapterView
+  ChapterView,
+  ButtonList
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -566,66 +567,107 @@ const Controller = ({ state, ...props }) => {
                 }>
                 <View css="flex">
                   <TabBar
+                  loadAll={false}
                     fontSize={14}
                     scrollableHeader={true}
                     scrollHeight="90%"
                     position="Top">
                     <View
-                      title="Settings"
-                      css="flex wi:90%">
+                      icon={{
+                        name: "format-font",
+                        type: "MaterialCommunityIcons"
+                      }}
+                      css="flex">
                       <Form text="NavigationMethod">
-                        <DropdownList
-                          height={200}
-                          toTop={true}
-                          selectedIndex={
-                            context.appSettings
-                              .navigationType
-                          }
-                          updater={[
-                            context.appSettings
-                              .navigationType
-                          ]}
-                          hooks={[
-                            "appSettings.navigationType"
-                          ]}
+                        <ButtonList
                           items={[
                             "Scroll",
                             "Snap"
                           ]}
-                          render={item => {
-                            return (
-                              <View
-                                css={`
-                                  ${item ==
-                                  context
-                                    .appSettings
-                                    .navigationType
-                                    ? "selectedRow"
-                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
-                                `}>
-                                <Text
-                                  css={`desc fos:13`}
-                                  invertColor={
-                                    true
-                                  }>
-                                  {item}
-                                </Text>
-                              </View>
-                            );
-                          }}
-                          onSelect={navigationType => {
+                          onPress={navigationType => {
                             editSettings({
                               navigationType
                             });
                           }}
-                          selectedValue={
+                          value={
                             context.appSettings
-                              .navigationType ||
-                            "Snap"
+                              .navigationType
                           }
                         />
                       </Form>
-
+                      <Form text="FontStyle">
+                        <ButtonList
+                          items={[
+                            "normal",
+                            "italic",
+                            "oblique"
+                          ]}
+                          onPress={fontStyle => {
+                            editSettings({
+                              fontStyle
+                            });
+                          }}
+                          value={(
+                            context.appSettings
+                              .fontStyle ||
+                            "normal"
+                          ).displayName()}
+                        />
+                      </Form>
+                      <Form text="Background">
+                        <ColorPicker
+                          value={
+                            context.appSettings
+                              .backgroundColor
+                          }
+                          onComplete={({ hex }) =>
+                            editSettings({
+                              backgroundColor: hex
+                            })
+                          }
+                        />
+                      </Form>
+                      <Form
+                        css="row"
+                        text="TextAlign">
+                        {[
+                          "align-left",
+                          "align-center",
+                          "align-justify",
+                          "align-right"
+                        ].map((x, i) => (
+                          <TouchableOpacity
+                            key={i}
+                            onPress={() => {
+                              editSettings({
+                                textAlign:
+                                  x.safeSplit(
+                                    "-",
+                                    1
+                                  )
+                              });
+                            }}
+                            css="mar:5">
+                            <Icon
+                              type="Feather"
+                              name={x}
+                              size={30}
+                              style={{
+                                ...(x.has(
+                                  context
+                                    .appSettings
+                                    .textAlign
+                                )
+                                  ? {
+                                      color: "red"
+                                    }
+                                  : {})
+                              }}
+                              invertColor={true}
+                            />
+                          </TouchableOpacity>
+                        ))}
+                      </Form>
                       <Form text="Font">
                         <DropdownList
                           height="80"
@@ -707,60 +749,6 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
 
-                      <Form text="FontStyle">
-                        <DropdownList
-                          height={200}
-                          toTop={true}
-                          selectedIndex={
-                            context.appSettings
-                              .fontStyle
-                          }
-                          updater={[
-                            context.appSettings
-                              .fontStyle
-                          ]}
-                          hooks={[
-                            "appSettings.fontStyle"
-                          ]}
-                          items={[
-                            "normal",
-                            "italic",
-                            "oblique"
-                          ]}
-                          render={item => {
-                            return (
-                              <View
-                                css={`
-                                  ${item ==
-                                  (context
-                                    .appSettings
-                                    .fontStyle ??
-                                    "normal")
-                                    ? "selectedRow"
-                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
-                                `}>
-                                <Text
-                                  css={`desc fos:13`}
-                                  invertColor={
-                                    true
-                                  }>
-                                  {item.displayName()}
-                                </Text>
-                              </View>
-                            );
-                          }}
-                          onSelect={fontStyle => {
-                            editSettings({
-                              fontStyle
-                            });
-                          }}
-                          selectedValue={(
-                            context.appSettings
-                              .fontStyle ||
-                            "normal"
-                          ).displayName()}
-                        />
-                      </Form>
                       <Form text="Padding">
                         <Slider
                           css="flex"
@@ -799,7 +787,7 @@ const Controller = ({ state, ...props }) => {
                       />
 
                       <CheckBox
-                        text="3D Font:"
+                        text="Add Shadow:"
                         css="pal:1"
                         invertColor={true}
                         checked={
@@ -840,60 +828,6 @@ const Controller = ({ state, ...props }) => {
                         </Form>
                       </CheckBox>
 
-                      <Form text="Background">
-                        <ColorPicker
-                          value={
-                            context.appSettings
-                              .backgroundColor
-                          }
-                          onComplete={({ hex }) =>
-                            editSettings({
-                              backgroundColor: hex
-                            })
-                          }
-                        />
-                      </Form>
-                      <Form
-                        css="row"
-                        text="TextAlign">
-                        {[
-                          "align-left",
-                          "align-center",
-                          "align-justify",
-                          "align-right"
-                        ].map((x, i) => (
-                          <TouchableOpacity
-                            key={i}
-                            onPress={() => {
-                              editSettings({
-                                textAlign:
-                                  x.safeSplit(
-                                    "-",
-                                    1
-                                  )
-                              });
-                            }}
-                            css="mar:5">
-                            <Icon
-                              type="Feather"
-                              name={x}
-                              size={30}
-                              style={{
-                                ...(x.has(
-                                  context
-                                    .appSettings
-                                    .textAlign
-                                )
-                                  ? {
-                                      color: "red"
-                                    }
-                                  : {})
-                              }}
-                              invertColor={true}
-                            />
-                          </TouchableOpacity>
-                        ))}
-                      </Form>
                       <Form
                         css="form he:200"
                         text="InlineStyle">
@@ -914,7 +848,12 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
                     </View>
-                    <View css="wi:90%" title="Voice">
+                    <View
+                      css="flex"
+                      icon={{
+                        name: "settings-voice",
+                        type: "MaterialIcons"
+                      }}>
                       <Form text="Voices">
                         <DropdownList
                           height="80"
@@ -1123,16 +1062,18 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
                     </View>
-                    <View title="Text Replacements">
-                      <View
-                        style={{
-                          height: proc(
-                            95,
-                            context.size.window
-                              .height
-                          )
-                        }}
-                        css="clearboth juc:flex-start mih:100%">
+                    <View
+                      css="flex"
+                      icon={{
+                        name: "format-color-highlight",
+                        type: "MaterialCommunityIcons"
+                      }}>
+                      <View css="flex clearboth juc:flex-start mih:100">
+                        <Text
+                          invertColor={true}
+                          css="header fos:18">
+                          Text Replacements
+                        </Text>
                         <ItemList
                           css="flex"
                           items={
@@ -1148,20 +1089,23 @@ const Controller = ({ state, ...props }) => {
                                   item.bgColor
                               }}
                               css="flex di:flex row juc:space-between ali:center pal:10 bor:2">
-                              <Text
-                                css="desc fos:13"
-                                invertColor={
-                                  true
-                                }>
-                                {item.edit}
-                              </Text>
-                              <Text
-                                css="desc fos:13"
-                                invertColor={
-                                  true
-                                }>
-                                {item.editWith}
-                              </Text>
+                              <View css="flex overflow maw:80%">
+                                <Text
+                                  css="desc fos:13"
+                                  invertColor={
+                                    true
+                                  }>
+                                  {item.edit}
+                                  {"\n=>"}
+                                </Text>
+                                <Text
+                                  css="desc fos:13"
+                                  invertColor={
+                                    true
+                                  }>
+                                  {item.editWith}
+                                </Text>
+                              </View>
                               <TouchableOpacity
                                 onPress={async () => {
                                   context.player.book.textReplacements =

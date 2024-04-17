@@ -27,6 +27,7 @@ import ColorPicker from "./ColorPicker";
 import Form from "./Form";
 import Toast from "./Toast";
 import ChapterView from "./ChapterView";
+import ButtonList from "./ButtonList";
 
 import {
   AppContainer,
@@ -64,5 +65,6 @@ export {
   ColorPicker,
   Form,
   Toast,
-  ChapterView
+  ChapterView,
+  ButtonList
 };

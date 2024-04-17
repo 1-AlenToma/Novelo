@@ -341,7 +341,7 @@ String.prototype.css = function (id?: string) {
     styleText,
     CStyle,
     undefined,
-    id
+    id ?? styleText
   );
 };
 

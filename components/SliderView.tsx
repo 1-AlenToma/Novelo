@@ -15,6 +15,7 @@ import Icon from "./Icons";
 import TouchableOpacity from "./TouchableOpacityView";
 import View from "./ThemeView";
 import Text from "./ThemeText";
+import { TouchableWithoutFeedback } from "react-native";
 const Slider = StyledView(SliderRange, "Slider");
 
 export default ({
@@ -36,7 +37,7 @@ export default ({
     undefined,
     invertColor
   );
-  
+
   useEffect(() => {
     setValue(props.value);
   }, [props.value]);
@@ -55,70 +56,85 @@ export default ({
   return (
     <View
       css={`clearwidth mah:40 row ali:center juc:space-between ${css}`}>
-      {buttons ? (
-        <TouchableOpacity
-          css="flex maw:24 mal:10"
-          onPress={() => {
-            let step = (1).sureValue(props.step);
-            if (
-              props.value - step >=
-              props.minimumValue
-            ) {
-              let v = props.value - step;
-              props.onValueChange?.(v) ??
-                props.onSlidingComplete?.(v);
-            }
-          }}>
-          <Icon
-            invertColor={invertColor}
-            name="minus-square"
-            type="FontAwesome"
-            size={24}
-          />
-        </TouchableOpacity>
-      ) : null}
-      <View
-        invertColor={!invertColor}
-        css="wi:35 he:20 pal:5 par:5 juc:center ali:center"
-        ifTrue={() => renderValue == true}>
-        <Text
+      <>
+        {buttons ? (
+          <TouchableOpacity
+            css="flex maw:24 mal:10"
+            onPress={() => {
+              let step = (1).sureValue(
+                props.step
+              );
+              if (
+                props.value - step >=
+                props.minimumValue
+              ) {
+                let v = props.value - step;
+                props.onValueChange?.(v) ??
+                  props.onSlidingComplete?.(v);
+              }
+            }}>
+            <Icon
+              invertColor={invertColor}
+              name="minus-square"
+              type="FontAwesome"
+              size={24}
+            />
+          </TouchableOpacity>
+        ) : null}
+        <View
           invertColor={!invertColor}
-          css="desc fos:10 tea:center">
-          {(0).sureValue(value).readAble()}
-        </Text>
-      </View>
-      <View css={`flex`}>
-        <Slider
-          minimumTrackTintColor="#f17c7c"
-          maximumTrackTintColor="#000000"
-          step={1}
-          {...props}
-          onValueChange={change}
-          style={st}
-        />
-      </View>
-      {buttons ? (
-        <TouchableOpacity
-          css="flex maw:24"
-          onPress={() => {
-            let step = (1).sureValue(props.step);
-            if (
-              props.value + step <=
-              props.maximumValue
-            ) {
-              let v = props.value + step;
-              props.onValueChange?.(v) ??
-                props.onSlidingComplete?.(v);
+          css="wi:35 he:20 pal:5 par:5 juc:center ali:center"
+          ifTrue={() => renderValue == true}>
+          <Text
+            invertColor={!invertColor}
+            css="desc fos:10 tea:center">
+            {(0).sureValue(value).readAble()}
+          </Text>
+        </View>
+        <View css={`flex`}>
+          <Slider
+            onStartShouldSetResponder={event =>
+              false
             }
-          }}>
-          <Icon
-            invertColor={invertColor}
-            name="plus-square"
-            type="FontAwesome"
-            size={24}
+            onTouchStart={e => {
+              context.panEnabled = false;
+            }}
+            onTouchEnd={e => {
+              context.panEnabled = true;
+            }}
+            minimumTrackTintColor="#f17c7c"
+            maximumTrackTintColor="#000000"
+            step={1}
+            {...props}
+            onValueChange={change}
+            style={st}
           />
-        </TouchableOpacity>
-      ) : null}
+        </View>
+        {buttons ? (
+          <TouchableOpacity
+            css="flex maw:24"
+            onPress={() => {
+              let step = (1).sureValue(
+                props.step
+              );
+              if (
+                props.value + step <=
+                props.maximumValue
+              ) {
+                let v = props.value + step;
+                props.onValueChange?.(v) ??
+                  props.onSlidingComplete?.(v);
+              }
+            }}>
+            <Icon
+              invertColor={invertColor}
+              name="plus-square"
+              type="FontAwesome"
+              size={24}
+            />
+          </TouchableOpacity>
+        ) : null}
+      </>
     </View>
   );
 };

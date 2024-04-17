@@ -28,7 +28,7 @@ export default ({
   return (
     <View
       {...props}
-      css={`bor:1 pa:5 pal:0 pat:10 par:2 clearwidth ${
+      css={`bor:1 pa:5 pal:0 mih:50 pat:10 par:2 clearwidth ${
         css ?? ""
       }`}>
       <Container

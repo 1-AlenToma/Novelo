@@ -202,6 +202,10 @@ export default ({
           }
         });
     }
+    let inputRange =
+     [... state.refItem.interpolate].sort(
+        (a, b) => a - b
+      );
     let op = !elContext.has(state.id)
       ? elContext.push.bind(elContext)
       : elContext.updateProps.bind(elContext);
@@ -259,9 +263,7 @@ export default ({
                   {
                     translateY:
                       animate.y.interpolate({
-                        inputRange:
-                          state.refItem
-                            .interpolate,
+                        inputRange: inputRange,
                         outputRange:
                           state.refItem
                             .interpolate,

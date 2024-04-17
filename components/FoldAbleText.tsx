@@ -60,7 +60,7 @@ export default ({
           "backgroundColor"
         )}>
         {txt === text || fState === true ? (
-          <Text onPress={()=> setFState(false)}>
+          <Text >
           {text}
           </Text>
         ) : (

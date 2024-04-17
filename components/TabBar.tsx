@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import View from "./ThemeView";
+import AnimatedView from "./AnimatedView";
 import useLoader from "./Loader";
 import * as Icons from "@expo/vector-icons";
 import {
@@ -41,14 +42,24 @@ const Menu = ({
   loadChildren,
   scrollableHeader,
   fontSize,
-  position
+  position,
+  onSize,
+  minuWidth,
+  animated
 }: any) => {
   let use;
   let [cIndex, setCIndex] = useState(index ?? 0);
-
+  const [size, setSize] = useState([]);
+  let interpolate = size.map(x => x.x);
+  if (interpolate.length <= 1)
+    interpolate = [0, 1];
   useEffect(() => {
     setCIndex(index);
   }, [index]);
+
+  useEffect(() => {
+    onSize?.(interpolate, size[0]?.width);
+  }, [size]);
 
   const getIcon = (
     icon?: TabIcon,
@@ -69,8 +80,8 @@ const Menu = ({
         />
       );
   };
-
-  const selectedStyle =
+  scrollableHeader = false;
+  let selectedStyle =
     position != "Top"
       ? {
           borderTopWidth: 2,
@@ -80,7 +91,8 @@ const Menu = ({
           borderBottomWidth: 2,
           borderBottomColor: "#ffff2d"
         };
-
+  //if (!scrollableHeader)
+  selectedStyle = {};
   let MContainer = View;
   let prop = {
     style: [
@@ -97,6 +109,7 @@ const Menu = ({
     prop = {
       contentContainerStyle: prop.style,
       style: {
+        zIndex: 99,
         minHeight: 40,
         height: 40,
         flex: 0,
@@ -106,51 +119,109 @@ const Menu = ({
     };
   }
   if (menuItems.length <= 1) return null;
+
+  let border = (
+    <AnimatedView
+      style={{
+        zIndex: 100,
+        overflow: "visible",
+        borderRadius: 2,
+        height: 3,
+        backgroundColor: "#e5313a",
+        width: size[index]?.width ?? 0,
+        transform: [
+          {
+            translateX: animated.x.interpolate({
+              inputRange: interpolate.sort(
+                (a, b) => a - b
+              ),
+              outputRange: interpolate,
+              extrapolateLeft: "extend",
+              extrapolate: "clamp"
+            })
+          }
+        ]
+      }}>
+      <View
+        onStartShouldSetResponder={event => false}
+        onTouchStart={e => {
+          loadChildren(index);
+        }}
+        style={[
+          {
+            width: size[0]?.width,
+            height: size[0]?.height
+          },
+          position != "Top"
+            ? { bottom: -(size[0]?.height ?? 0) }
+            : { top: -(size[0]?.height ?? 0) }
+        ]}
+        css="bac:yellow bow:1 boc:red bor:1 overflow op:0.1 absolute"
+      />
+    </AnimatedView>
+  );
   return (
-    <MContainer {...prop}>
-      {menuItems.map((x, i) => (
-        <TouchableOpacity
-          style={[
-            styles.menuBtn,
-            i == cIndex
-              ? context.theme.settings
-              : undefined,
-            i == cIndex
-              ? selectedStyle
-              : undefined
-          ]}
-          key={i}
-          onPress={() => {
-            loadChildren(i);
-            setCIndex(i);
-          }}>
-          {getIcon(
-            x.props.icon,
-            i == cIndex ? 15 : 18,
-            [
-              styles.menuText,
-              context.theme.invertSettings(),
+    <View css="clearwidth">
+      {position != "Top" ? border : null}
+      <MContainer {...prop}>
+        {menuItems.map((x, i) => (
+          <TouchableOpacity
+            onLayout={event => {
+              let item = {
+                ...event.nativeEvent.layout
+              };
+              if (
+                !item.width ||
+                isNaN(item.width)
+              )
+                return;
+              if (size[i]) size[i] = item;
+              else size.push(item);
+              setSize([...size]);
+            }}
+            style={[
+              styles.menuBtn,
               i == cIndex
                 ? context.theme.settings
+                : undefined,
+              i == cIndex
+                ? selectedStyle
                 : undefined
-            ]
-          )}
-          {!(x.props.title || "").empty() ? (
-            <Text
-              invertColor={true}
-              style={[
+            ]}
+            key={i}
+            onPress={() => {
+              loadChildren(i);
+              setCIndex(i);
+            }}>
+            {getIcon(
+              x.props.icon,
+              i == cIndex ? 15 : 18,
+              [
                 styles.menuText,
+                context.theme.invertSettings(),
                 i == cIndex
                   ? context.theme.settings
                   : undefined
-              ]}
-              css={`desc fos:${fontSize ?? 9}`}>
-              {x.props.title}
-            </Text>
-          ) : null}
-        </TouchableOpacity>
-      ))}
-    </MContainer>
+              ]
+            )}
+            {!(x.props.title || "").empty() ? (
+              <Text
+                invertColor={true}
+                style={[
+                  styles.menuText,
+                  i == cIndex
+                    ? context.theme.settings
+                    : undefined
+                ]}
+                css={`desc fos:${fontSize ?? 9}`}>
+                {x.props.title}
+              </Text>
+            ) : null}
+          </TouchableOpacity>
+        ))}
+      </MContainer>
+      {position == "Top" ? border : null}
+    </View>
   );
 };
 
@@ -165,7 +236,8 @@ const TabBar = ({
   scrollHeight,
   fontSize,
   scrollableHeader,
-  css
+  css,
+  loadAll
 }: {
   children: TabChild[];
   style?: any;
@@ -178,11 +250,14 @@ const TabBar = ({
 }) => {
   const [render, state, loader, timer] = useView({
     loader: { value: true },
+    component: View,
     state: {
       rItems: children.map(x => {}),
       index: selectedIndex ?? 0
     },
     refItem: {
+      menuInterpolate: undefined,
+      menuItemWidth: undefined,
       startValue: undefined,
       handled: false,
       interpolate: [],
@@ -200,7 +275,8 @@ const TabBar = ({
     ]
   });
 
-  const { animateX, animate } = useAnimate({});
+  const { animateX, animate } = useAnimate();
+  const menuAnimate = useAnimate();
 
   context.hook("theme.settings");
   const getWidth = (index: number) => {
@@ -233,7 +309,11 @@ const TabBar = ({
       state.refItem.interpolate.find(
         x => x.index == index
       )?.value ?? 0;
-
+    menuAnimate.animateX(
+      state.refItem.menuInterpolate[index],
+      undefined,
+      speed
+    );
     animateX(
       value,
       () => {
@@ -251,8 +331,15 @@ const TabBar = ({
     });
   };
 
-  let loadChildren = async (i: number) => {
-    if (i >= 0 && i < children.length) {
+  let loadChildren = async (
+    i: number,
+    notAnimated?: boolean
+  ) => {
+    if (
+      i >= 0 &&
+      i < children.length &&
+      notAnimated != true
+    ) {
       animateLeft(i);
     }
     if (!state.rItems[i] && children[i]) {
@@ -293,6 +380,15 @@ const TabBar = ({
     tAnimate(state.index, 0);
   }, [children]);
 
+  useEffect(() => {
+    if (loadAll) {
+      children.forEach((x, i) =>
+        loadChildren(i, true)
+      );
+      // state.rItems = [...state.rItems];
+    }
+  }, []);
+
   const childPrep = child => {
     if (child) {
       if (!child.props.style) return child;
@@ -317,7 +413,7 @@ const TabBar = ({
         state.index == undefined
           ? 0
           : state.index;
-
+      menuAnimate.animate.flattenOffset();
       animate.flattenOffset();
       let speed = 200;
       if (Math.abs(diff) > width / 3) {
@@ -341,15 +437,15 @@ const TabBar = ({
           evt,
           gestureState
         ) => {
-          //return true if user is swiping, return false if it's a single click
           const { dx, dy } = gestureState;
           let lng = 5;
 
           return (
-            dx > lng ||
-            dx < -lng ||
-            dy > lng ||
-            dy < -lng
+            context.panEnabled &&
+            (dx > lng ||
+              dx < -lng ||
+              dy > lng ||
+              dy < -lng)
           );
         },
         onPanResponderGrant: (
@@ -368,16 +464,65 @@ const TabBar = ({
             y: 0
           });
           animate.extractOffset();
+          menuAnimate.animate.setValue({
+            x:
+              state.refItem.menuInterpolate[
+                state.index
+              ] ?? 0,
+            y: 0
+          });
+          menuAnimate.animate.extractOffset();
           return true;
         },
-        onPanResponderTerminationRequest: () =>
-          true,
+        onPanResponderTerminationRequest: (
+          ev,
+          gus
+        ) => {
+          // onRelease(ev, gus);
+          return true;
+        },
+        onPanResponderTerminate: () => {
+          //tAnimate(state.index ?? 0, 1);
+          return true;
+        },
         onPanResponderMove: Animated.event(
           [
             null,
             { dx: animate.x, dy: animate.y }
           ],
-          { useNativeDriver: false }
+          {
+            useNativeDriver: false,
+            listener: (
+              event: GestureResponderEvent,
+              gestureState: PanResponderGestureState
+            ) => {
+              let newValue = gestureState.dx;
+              let diff =
+                newValue -
+                state.refItem.startValue;
+              let isng = diff < 0;
+              let c =
+                state.refItem.menuInterpolate[
+                  state.index > 0 || isng
+                    ? state.index
+                    : 1
+                ];
+              diff =
+                Math.abs(diff) / children.length;
+              diff = Math.min(
+                diff,
+                state.refItem.menuItemWidth
+              );
+
+              // console.warn(b - diff);
+
+              menuAnimate.animate.setValue({
+                x: isng ? diff : -diff,
+                y: 0
+              });
+              //  menuAnimate.animate.extractOffset();
+            }
+          }
         ),
         onPanResponderEnd: onRelease,
         onPanResponderRelease: onRelease
@@ -385,10 +530,30 @@ const TabBar = ({
   };
   assign();
 
+  let loadItem = (
+    <View
+      ifTrue={() => (loader.elem ? true : false)}
+      css="absolute clearboth zi:500">
+      <View css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+        {loader.elem}
+      </View>
+    </View>
+  );
+
   return render(
     <>
       {position === "Top" ? (
         <Menu
+          onSize={(
+            menuInterpolate,
+            menuItemWidth
+          ) => {
+            state.refItem.menuInterpolate =
+              menuInterpolate;
+            state.refItem.menuItemWidth =
+              menuItemWidth;
+          }}
+          animated={menuAnimate.animate}
           index={state.index}
           children={children}
           loadChildren={loadChildren}
@@ -422,10 +587,6 @@ const TabBar = ({
                 )
               }
             ],
-            /* height: (0).sureValue(
-              size?.height -
-                (menu ? styles.menu.height : 0)
-            ),*/
             width:
               state.size.width * children.length
           }
@@ -444,24 +605,35 @@ const TabBar = ({
                   width: state.size.width,
                   maxHeight: scrollHeight
                 }}
-                contentContainerStyle={[css?.css(),{
-                  flexGrow: 1,
-                  padding: 5,
-                  width: state.size.width,
-                  maxWidth: "100%"
-                }]}>
-                {state.rItems[i]?.child ??
-                  loader.elem}
+                contentContainerStyle={[
+                  css?.css(),
+                  {
+                    flexGrow: 1,
+                    padding: 5,
+                    width: state.size.width,
+                    maxWidth: "100%"
+                  }
+                ]}>
+                {state.rItems[i]?.child ?? null}
               </ScrollView>
             ) : (
-              state.rItems[i]?.child ??
-              loader.elem
+              state.rItems[i]?.child ?? loadItem
             )}
           </View>
         ))}
       </Animated.View>
       {position !== "Top" ? (
         <Menu
+          onSize={(
+            menuInterpolate,
+            menuItemWidth
+          ) => {
+            state.refItem.menuInterpolate =
+              menuInterpolate;
+            state.refItem.menuItemWidth =
+              menuItemWidth;
+          }}
+          animated={menuAnimate.animate}
           index={state.index}
           children={children}
           loadChildren={loadChildren}
