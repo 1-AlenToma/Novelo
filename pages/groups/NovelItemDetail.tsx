@@ -37,7 +37,7 @@ export default ({ ...props }: any) => {
     cText: "",
     infoLoading: false,
     book: {}
-  });
+  },"book","novel");
   let fetchData = async () => {
     loader.show();
     let parser = context.parser.find(parserName);

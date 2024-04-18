@@ -28,6 +28,7 @@ import Form from "./Form";
 import Toast from "./Toast";
 import ChapterView from "./ChapterView";
 import ButtonList from "./ButtonList";
+import FoldableItem from "./FoldableItem";
 
 import {
   AppContainer,
@@ -66,5 +67,6 @@ export {
   Form,
   Toast,
   ChapterView,
-  ButtonList
+  ButtonList,
+  FoldableItem
 };

@@ -1,4 +1,3 @@
-import g from "../GlobalContext";
 import { useEffect, useRef } from "react";
 import useUpdate from "./UseUpdate";
 
@@ -35,7 +34,7 @@ export default (
 
   useEffect(() => {
     setValues(currentItem());
-    var watcher = g.db().watch<any>(tbName);
+    var watcher = context.db().watch<any>(tbName);
     watcher.onSave = async (items, operation) => {
       for (let item of items) {
         if (hasChange(item)) {

@@ -46,7 +46,8 @@ const files = new FileHandler(
 
 const data = GlobalState(
   {
-    panEnabled:true,
+    selectedFoldItem:"",
+    panEnabled: true,
     selection: {
       downloadSelectedItem: undefined,
       favoritItem: undefined
@@ -202,7 +203,8 @@ const data = GlobalState(
           windowEvent,
           { remove: () => BGService.stop() },
           {
-            remove: () => appSettingWatcher.removeWatch()
+            remove: () =>
+              appSettingWatcher.removeWatch()
           }
         ];
       } catch (e) {
@@ -211,8 +213,11 @@ const data = GlobalState(
     }
   },
   "nav",
+  "voices",
   "selection.downloadSelectedItem",
   "selection.favoritItem",
-  "player.currentChapterSettings.scrollProgress"
+  "player.currentChapterSettings.scrollProgress",
+  "player.book.chapterSettings",
+  "player.novel"
 );
 export default data;

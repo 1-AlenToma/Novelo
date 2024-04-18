@@ -127,7 +127,7 @@ export default ({ ...props }: any) => {
       ),
     currentPage: 0,
     parser: parser
-  });
+  },"parser","items");
 
   const fetchData = async (page?: number) => {
     loader.show();

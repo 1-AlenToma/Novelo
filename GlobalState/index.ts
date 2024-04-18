@@ -43,14 +43,7 @@ const getValueByPath = (
   for (let item of path.split(".")) {
     current = current[item];
   }
-  if (current == undefined || current == null)
-    current = {};
-  else if (
-    typeof current !== "object" ||
-    Array.isArray(current)
-  ) {
-    current = { item: current };
-  }
+
   return current;
 };
 
@@ -84,13 +77,33 @@ type NestedKeyOf<
     }[keyof T & (string | number)]
   : never;
 
-abstract class ICreate {
-  abstract ___events: any;
-}
-class Create<T extends object> extends ICreate {
+type EventItem = {
+  keys: any;
+  fn?: Function;
+  fs?: Function;
+  item?: any;
+};
+
+class EventTrigger {
   ___events: any = {};
-  ___onChange(key: string) {
+  ___timer: any = undefined;
+  ___waitingEvents: any = {};
+  speed:number = speed;
+
+  add(id: string, item: EventItem) {
+    this.___events[id] = item;
+  }
+
+  remove(id: string) {
+    delete this.___events[id];
+  }
+
+  async ___onChange(
+    key: string,
+    parentItem: any
+  ) {
     try {
+      clearTimeout(this.___timer);
       let global = key
         .split(".")
         .reverse()
@@ -103,26 +116,89 @@ class Create<T extends object> extends ICreate {
           this.___events[item].keys[key] ||
           this.___events[item].keys[global]
         ) {
-          this.___events[item].fn();
+          let k = this.___events[item].keys.all
+            ? "all"
+            : this.___events[item].keys[key]
+            ? key
+            : "all";
+          if (!this.___events[item].fs) {
+            if (!this.___waitingEvents[item]) {
+              this.___waitingEvents[item] = {
+                event: this.___events[item],
+                items: new Map()
+              };
+            }
+            this.___waitingEvents[item].items.set(
+              k,
+              {
+                key: k,
+                item: parentItem
+              }
+            );
+          } else this.___events[item].fs();
         }
       }
+
+      this.___timer = setTimeout(() => {
+        let items = { ...this.___waitingEvents };
+        this.___waitingEvents = {};
+        for (let item in items) {
+          items[item].event.fn(items[item].items);
+        }
+      }, speed);
     } catch (e) {
       console.error(e);
     }
   }
+}
+
+abstract class ICreate {
+  abstract ___events: EventTrigger;
+}
+class Create<T extends object> extends ICreate {
+  ___events: EventTrigger = new EventTrigger();
 
   hook(...keys: NestedKeyOf<T>[]) {
     let id = useRef(newId()).current;
+    let ks = useRef();
+    if (!ks.current)
+      ks.current = toObject(...keys);
     let [update, setUpdate] = useState();
-    const timer = useTimer(speed);
-    this.___events[id] = {
-      fn: async () =>
-        timer(() => setUpdate(newId())),
-      keys: toObject(...keys)
-    };
+    this.___events.add(id, {
+      fn: items => {
+        if (!update) {
+          setUpdate(
+            Object.keys(ks.current).reduce(
+              (c, v) => {
+                c[v] = items.get(v)?.item;
+                return c;
+              },
+              {}
+            )
+          );
+        } else {
+          let a = { ...update };
+          let refresh = false;
+          for (let item of [...items.values()]) {
+            if (a[item.key] !== item.item) {
+              refresh = true;
+              a[item.key] = item.item;
+            }
+          }
+         /* console.warn(
+            [
+              { ks: ks.current, a, update }
+            ].niceJson()
+          );*/
+          if (refresh) setUpdate(a);
+        }
+        //setUpdate(newId());
+      },
+      keys: ks.current
+    });
 
     useEffect(() => {
-      return () => delete this.___events[id];
+      return () => this.___events.remove(id);
     }, []);
   }
 
@@ -131,14 +207,16 @@ class Create<T extends object> extends ICreate {
     ...keys: NestedKeyOf<T>[]
   ) {
     let id = useRef(newId()).current;
-    const timer = useTimer(speed);
-    this.___events[id] = {
-      fn: () => timer(() => fn(this)),
-      keys: toObject(...keys)
-    };
+    let ks = useRef();
+    if (!ks.current)
+      ks.current = toObject(...keys);
+    this.___events.add(id, {
+      fs: () => fn(this),
+      keys: ks.current
+    });
 
     useEffect(() => {
-      return () => delete this.___events[id];
+      return () => this.___events.remove(id);
     }, []);
   }
 
@@ -151,7 +229,7 @@ class Create<T extends object> extends ICreate {
     super();
     if (!parentItem) {
       parentItem = this;
-    }else delete this.___events;
+    } else delete this.___events;
     let parentKeys = (key: string) => {
       if (parent && parent.length > 0)
         return `${parent}.${key}`;
@@ -206,7 +284,10 @@ class Create<T extends object> extends ICreate {
           get: () => item[k],
           set: (value: any) => {
             item[k] = parse(value, parentKey);
-            parentItem.___onChange(parentKey);
+            parentItem.___events.___onChange(
+              parentKey,
+              item[k]
+            );
           }
         });
       }

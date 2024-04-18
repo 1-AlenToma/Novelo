@@ -11,7 +11,8 @@ import {
   AnimatedView,
   ActionSheet,
   Form,
-  ProgressBar
+  ProgressBar,
+  FoldableItem
 } from "../components";
 import BattariView from "../components/BattariView";
 import {
@@ -265,6 +266,7 @@ export default ({ ...props }: any) => {
             inputEnabled={true}
           />
         </CurrentItem>
+      
         {groups.map((x, i) => (
           <View
             invertColor={true}

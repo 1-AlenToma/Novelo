@@ -11,7 +11,8 @@ import {
   TextInput,
   ActionSheet,
   ProgressBar,
-  Modal
+  Modal,
+  FoldableItem
 } from "../components";
 import { useEffect, useRef, memo } from "react";
 import Header from "./Header";
@@ -138,11 +139,12 @@ const EpubHanlder = ({
 
   return render(
     <>
-      <View ifTrue={() =>
-            loader.elem ? true : false
-          } css="absolute clearboth zi:500">
-        <View
-          css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+      <View
+        ifTrue={() =>
+          loader.elem ? true : false
+        }
+        css="absolute clearboth zi:500">
+        <View css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
           {loader.elem}
         </View>
       </View>
@@ -172,8 +174,36 @@ const EpubHanlder = ({
     </>
   );
 };
-const ItemRender = ({ item, state }: any) => {
+const ItemRender = ({
+  item,
+  state,
+  options
+}: any) => {
   if (!item) return null;
+  const [books, dataIsLoading] = context
+    .db()
+    .useQuery(
+      "Books",
+      context
+        .db()
+        .querySelector<Book>("Books")
+        .LoadChildren<Chapter>(
+          "Chapters",
+          "parent_Id",
+          "id",
+          "chapterSettings",
+          true
+        )
+        .Where.Column(x => x.url)
+        .EqualTo(item.url),
+      undefined,
+      (items, op) => {
+        return (
+          items.find(x => x.url == item.url) !=
+          undefined
+        );
+      }
+    );
   const { fileItems, elem } = context
     .files()
     .useFile("json", x => {
@@ -199,8 +229,10 @@ const ItemRender = ({ item, state }: any) => {
   });
 
   useEffect(() => {
-    getInfo(item);
-  }, [fileItems]);
+    getInfo(
+      books.find(x => x.url === item.url) ?? item
+    );
+  }, [books, fileItems]);
 
   let getInfo = async (b: any) => {
     loader.show();
@@ -218,51 +250,169 @@ const ItemRender = ({ item, state }: any) => {
     }
     loader.hide();
   };
-
+  item =
+    books.find(x => x.url === item.url) ?? item;
   return (
-    <View
-      invertColor={true}
-      css="wi:98% bor:5 pal:5 he:60 row di:flex juc:flex-start">
-      {loader.elem ?? elem}
-      <Image
-        url={item.imageBase64}
-        css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
-      />
-      <Text
-        css="bold header pa:5 maw:80% overflow"
-        invertColor={true}>
-        {item.name}
-      </Text>
-      <Text css="desc co:red absolute bo:5 right:10 zi:6">
-        {itemState.info || "loading"}
-      </Text>
-      <Text css="clearwidth desc co:red bottom bo:5 le:60">
-        {item.parserName != "epub"
-          ? ` (${item.parserName})`
-          : " (Epub)"}
-      </Text>
-      <View
-        ifTrue={urlObj[item.url] ? true : false}
-        css="clearboth absolute row juc:flex-end ali:center">
-        <TouchableOpacity
-          css="button zi:6 miw:30"
-          onPress={() =>
+    <FoldableItem
+      single={true}
+      css="wi:98% overflow"
+      buttons={[
+        {
+          ifTrue: () =>
+            item.parserName !== "epub" &&
+            !context
+              .downloadManager()
+              .items.has(item.url ?? ""),
+          icon: (
+            <Icon
+              invertColor={true}
+              name="update"
+              type="MaterialIcons"
+            />
+          ),
+          text: "Update",
+          onPress: () => {
             context
               .downloadManager()
-              .stop(item.url)
-          }>
-          <Icon
-            invertColor={true}
-            name="controller-stop"
-            type="Entypo"
-            css="zi:7"
-          />
-        </TouchableOpacity>
-        <ProgressBar
-          procent={urlObj[item.url]?.p}
+              .download(
+                item.url,
+                item.parserName
+              );
+            return true;
+          }
+        },
+        {
+          text: "Delete",
+          icon: (
+            <Icon
+              size={15}
+              invertColor={true}
+              name="delete"
+              type="MaterialIcons"
+            />
+          ),
+          onPress: () => {
+            context
+              .alert(
+                `You will be deleting this novel.\nAre you sure?`,
+                "Please Confirm"
+              )
+              .confirm(async answer => {
+                loader.show();
+                if (answer) {
+                  try {
+                    let file = fileItems.find(
+                      x => x.url == item.url
+                    );
+
+                    if (file) {
+                      if (
+                        item.parserName ==
+                          "epub" ||
+                        !item.favorit
+                      ) {
+                        await context
+                          .dbContext()
+                          .deleteBook(item.id);
+                      }
+                      await file.deleteFile();
+                    }
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+                loader.hide();
+              });
+          }
+        },
+        {
+          icon: (
+            <Icon
+              size={15}
+              invertColor={true}
+              name="book-reader"
+              type="FontAwesome5"
+            />
+          ),
+          text: "Read",
+          onPress: () => {
+            options
+              .nav("ReadChapter")
+              .add({
+                url: item.url,
+                parserName: item.parserName
+              })
+              .push();
+            return true;
+          }
+        },
+        {
+          onPress: () => {
+            options
+              .nav("NovelItemDetail")
+              .add({
+                url: item.url,
+                parserName: item.parserName
+              })
+              .push();
+            return true;
+          },
+          icon: (
+            <Icon
+              size={15}
+              invertColor={true}
+              name="info-circle"
+              type="FontAwesome5"
+            />
+          ),
+          text: "Info",
+          ifTrue: () => item.parserName != "epub"
+        }
+      ]}>
+      <View
+        invertColor={true}
+        css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start">
+        {loader.elem ?? elem}
+        <Image
+          url={item.imageBase64}
+          css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
         />
+        <Text
+          css="header pa:5 maw:80% overflow"
+          invertColor={true}>
+          {item.name}
+        </Text>
+        <Text css="desc co:red absolute bo:5 right:10 zi:6">
+          {itemState.info || "loading"}
+        </Text>
+        <Text css="clearwidth desc co:red bottom bo:5 le:60">
+          {item.parserName != "epub"
+            ? ` (${item.parserName})`
+            : " (Epub)"}
+        </Text>
+        <View
+          ifTrue={urlObj[item.url] ? true : false}
+          css="clearboth absolute row juc:flex-end ali:center">
+          <TouchableOpacity
+            css="button zi:6 miw:30"
+            onPress={() =>
+              context
+                .downloadManager()
+                .stop(item.url)
+            }>
+            <Icon
+              invertColor={true}
+              name="controller-stop"
+              type="Entypo"
+              css="zi:7"
+            />
+          </TouchableOpacity>
+          <ProgressBar
+            procent={urlObj[item.url]?.p}
+          />
+        </View>
       </View>
-    </View>
+    </FoldableItem>
   );
 };
 
@@ -294,7 +444,12 @@ export default ({ ...props }: any) => {
           true
         )
         .Where.Column(x => x.url)
-        .IN(fileItems.map(x => x.url))
+        .IN(fileItems.map(x => x.url)),
+      undefined,
+      (items, op) => {
+        if (books.length <= 0) return true;
+        return false;
+      }
     );
   const loader = useLoader(dataIsLoading);
   useEffect(() => {
@@ -351,164 +506,6 @@ export default ({ ...props }: any) => {
         css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
         {loader.elem ?? elem}
       </View>
-      <ActionSheet
-        title="Actions"
-        onHide={() =>
-          (context.selection.downloadSelectedItem =
-            undefined)
-        }
-        visible={() =>
-          context.selection
-            .downloadSelectedItem !== undefined
-        }
-        height={300}>
-        <View>
-          <TouchableOpacity
-            css="listButton"
-            ifTrue={() =>
-              context.selection
-                .downloadSelectedItem
-                ?.parserName != "epub"
-            }
-            onPress={() => {
-              options
-                .nav("NovelItemDetail")
-                .add({
-                  url: context.selection
-                    .downloadSelectedItem.url,
-                  parserName:
-                    context.selection
-                      .downloadSelectedItem
-                      .parserName
-                })
-                .push();
-              context.selection.downloadSelectedItem =
-                undefined;
-            }}>
-            <Icon
-              invertColor={true}
-              name="info-circle"
-              type="FontAwesome5"
-            />
-            <Text invertColor={true}>Info</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            css="listButton"
-            onPress={() => {
-              options
-                .nav("ReadChapter")
-                .add({
-                  url: context.selection
-                    .downloadSelectedItem.url,
-                  parserName:
-                    context.selection
-                      .downloadSelectedItem
-                      .parserName,
-                  epub: true
-                })
-                .push();
-              context.selection.downloadSelectedItem =
-                undefined;
-            }}>
-            <Icon
-              invertColor={true}
-              name="book-reader"
-              type="FontAwesome5"
-            />
-            <Text invertColor={true}>Read</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            css="listButton"
-            onPress={() => {
-              context
-                .alert(
-                  `You will be deleting this novel.\nAre you sure?`,
-                  "Please Confirm"
-                )
-                .confirm(async answer => {
-                  loader.show();
-                  if (answer) {
-                    try {
-                      let file = fileItems.find(
-                        x =>
-                          x.url ==
-                          context.selection
-                            .downloadSelectedItem
-                            .url
-                      );
-
-                      if (file) {
-                        if (
-                          context.selection
-                            .downloadSelectedItem
-                            .parserName ==
-                            "epub" ||
-                          !context.selection
-                            .downloadSelectedItem
-                            .favorit
-                        ) {
-                          await context
-                            .dbContext()
-                            .deleteBook(
-                              context.selection
-                                .downloadSelectedItem
-                                .id
-                            );
-                        }
-                        await file.deleteFile();
-                      }
-                    } catch (e) {
-                      console.error(e);
-                    }
-                    context.selection.downloadSelectedItem =
-                      undefined;
-                  }
-                  loader.hide();
-                });
-            }}>
-            <Icon
-              invertColor={true}
-              name="delete"
-              type="MaterialIcons"
-            />
-            <Text invertColor={true}>Delete</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            ifTrue={() =>
-              context.selection
-                .downloadSelectedItem
-                ?.parserName !== "epub" &&
-              !context
-                .downloadManager()
-                .items.has(
-                  context.selection
-                    .downloadSelectedItem?.url ??
-                    ""
-                )
-            }
-            css="listButton"
-            onPress={() => {
-              context
-                .downloadManager()
-                .download(
-                  context.selection
-                    .downloadSelectedItem.url,
-                  context.selection
-                    .downloadSelectedItem
-                    .parserName
-                );
-              context.selection.downloadSelectedItem =
-                undefined;
-            }}>
-            <Icon
-              invertColor={true}
-              name="update"
-              type="MaterialIcons"
-            />
-            <Text invertColor={true}>Update</Text>
-          </TouchableOpacity>
-        </View>
-      </ActionSheet>
 
       <EpubHanlder
         navop={navop}
@@ -523,15 +520,12 @@ export default ({ ...props }: any) => {
       <View css="flex mih:100">
         <ItemList
           css="flex"
-          onPress={x =>
-            (context.selection.downloadSelectedItem =
-              x)
-          }
           items={books?.filter(x =>
             x.name.has(state.text)
           )}
           container={({ item }) => (
             <ItemRender
+              options={options}
               state={state}
               item={item}
             />
