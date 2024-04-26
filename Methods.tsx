@@ -182,11 +182,13 @@ function generateText(html, minLength) {
       ) {
         if (
           charMapValue.length <= 0 ||
+          (
+            charMapValue.length == 1&&
           charMapValue.filter(
             x =>
               start.includes(x.start) ||
               end.includes(x.end)
-          ).length == 1
+          ).length == 1)
         ) {
           return true;
         }
