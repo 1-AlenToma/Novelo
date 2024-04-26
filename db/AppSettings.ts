@@ -30,6 +30,10 @@ class AppSettings extends IBaseModule<TableNames> {
   fontStyle?: string = "normal";
   theme?: string = "light";
   lang?: string = "English";
+  useSentenceBuilder?: {
+    enabled: boolean;
+    minLength: number;
+  } = { enabled: false, minLength: 100 };
   voiceWordSelectionsSettings?: {
     color?: string;
     appendSelection?: boolean;
@@ -55,9 +59,14 @@ class AppSettings extends IBaseModule<TableNames> {
       .boolean.column("fontName")
       .column("lockScreen")
       .boolean.column("currentNovel")
-      .nullable.json
-      .column("voiceWordSelectionsSettings").nullable.json.column("navigationType")
+      .nullable.json.column(
+        "voiceWordSelectionsSettings"
+      )
+      .nullable.json.column("navigationType")
       .nullable.column("use3D")
+      .nullable.json.column(
+        "useSentenceBuilder"
+      )
       .nullable.boolean.column("fontStyle")
       .nullable.column("lang")
       .nullable.column("shadowLength")

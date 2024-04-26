@@ -2,6 +2,7 @@ import View from "./ThemeView";
 import TextInput from "./TextInputView";
 import Text from "./ThemeText";
 import Icon from "./Icons";
+import useLoader from "./Loader";
 import ItemList from "./ItemList";
 import { useState } from "../native";
 import { ScrollView } from "react-native";
@@ -9,7 +10,7 @@ import {
   useState as uss,
   useEffect
 } from "react";
-import { useUpdate } from "../hooks";
+import { useUpdate, useTimer } from "../hooks";
 import TouchableOpacity from "./TouchableOpacityView";
 export default ({
   book,
@@ -25,7 +26,12 @@ export default ({
     },
     "chArray"
   );
+  const loader = useLoader(
+    current && current.has(),
+    "Loading Chapter"
+  );
   let [id, setId] = useState();
+  let timer = useTimer(100);
   let size = 100;
   const [page, setPage] = uss(0);
   if (!state.chArray.has())
@@ -39,23 +45,27 @@ export default ({
     });
 
   useEffect(() => {
-    if (current && current.has()) {
-      for (let item of state.chArray) {
-        let i = item.items.findIndex(
-          x => x.url == current
-        );
-        if (i !== -1) {
-          state.index = {
-            page: item.index,
-            index: i
-          };
-          setPage(item.index);
-          break;
+    timer(() => {
+      if (current && current.has()) {
+        loader.show();
+        for (let item of state.chArray) {
+          let i = item.items.findIndex(
+            x => x.url == current
+          );
+          if (i !== -1) {
+            state.index = {
+              page: item.index,
+              index: i
+            };
+            setPage(item.index);
+            break;
+          }
         }
+        state.current = current;
       }
-      state.current = current;
-    }
-    setId(methods.newId());
+      setId(methods.newId());
+      loader.hide();
+    });
   }, [book, novel, current]);
 
   return (
@@ -87,7 +97,9 @@ export default ({
                 {(item.index + 1) * size}
               </Text>
               <Icon
-                ifTrue={item.index == state.index.page}
+                ifTrue={
+                  item.index == state.index.page
+                }
                 color="yellow"
                 flash="green"
                 css="absolute le:0 to:0"
@@ -106,6 +118,7 @@ export default ({
           css="flex"
           updater={[page, id]}
           onPress={item => {
+            loader.show();
             onPress(item);
           }}
           selectedIndex={
@@ -160,6 +173,7 @@ export default ({
           vMode={true}
         />
       </View>
+      {loader.elem}
     </View>
   );
 };

@@ -4,6 +4,304 @@ import * as MediaLibrary from "expo-media-library";
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { useRef, useEffect } from "react";
+import IDOMParser from "advanced-html-parser";
+
+function generateText(html, minLength) {
+  try {
+    html = html.replace(
+      /\<( )?(\/)?strong( )?>/gim,
+      ""
+    );
+    //console.warn(html)
+    const doc = IDOMParser.parse(
+      `<div>${html}</div>`
+    ).documentElement;
+    while (true) {
+      let breakIt = true;
+      let headers = [
+        ...doc.querySelectorAll(
+          "h1,h2,h3,h4,h5,h6"
+        )
+      ];
+
+      for (let h of headers) {
+        if (
+          h.textContent.indexOf("#{h0}") == -1
+        ) {
+          h.textContent = `#{h0}${
+            h.textContent
+          }#{h${h.tagName
+            .replace(/([^1-6])/g, "")
+            .trim()}}`;
+          breakIt = false;
+          break;
+        }
+      }
+      if (breakIt) break;
+    }
+
+    const text = doc.text().replace(/\;/gim, ",");
+    // console.warn(text);
+    let charMap = [];
+
+    const nextNewLine = "[(“‘".split("");
+    const prevNewLine = "])”’".split("");
+    const specChars = `",:?.';!()[]{}…_-`.split(
+      ""
+    );
+    const possibleNewLine = [
+      "level",
+      " hp",
+      "chapter",
+      ...":-*+/%".split("")
+    ];
+    const meningEnd = ".!".split("");
+    const invertChar = char => {
+      if (nextNewLine.includes(char)) {
+        return prevNewLine[
+          nextNewLine.indexOf(char)
+        ];
+      }
+      if (prevNewLine.includes(char)) {
+        return nextNewLine[
+          prevNewLine.indexOf(char)
+        ];
+      }
+      return "";
+    };
+    const createMap = () => {
+      for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        let next = text[i + 1];
+        let token = invertChar(char);
+        if (nextNewLine.includes(char)) {
+          charMap.push({
+            start: i,
+            charStart: char,
+            charEnd: token
+          });
+        } else if (
+          prevNewLine.includes(char) &&
+          (specChars.includes(next) ||
+            [
+              " ",
+              "",
+              "\n",
+              "\r",
+              "\n\r"
+            ].includes(next))
+        ) {
+          let item = charMap.find(
+            x =>
+              x.charEnd === char &&
+              x.end === undefined &&
+              i - x.start <= 500 &&
+              i - x.start >= 5
+          );
+
+          if (item) {
+            item.end = i;
+            item.content = text.substring(
+              item.start,
+              item.end + 1
+            );
+          }
+        }
+      }
+
+      charMap = charMap.filter(
+        x =>
+          x.start != undefined &&
+          x.end != undefined
+      );
+    };
+
+    createMap();
+    // console.warn(charMap.niceJson());
+    let result = [];
+    let current = "";
+    let index = -1;
+    let currentChar = "";
+    let nextChar = "";
+    let prevChar = "";
+    let charMapValue = [];
+    let hStart = false;
+    const getNextChar = () => {
+      index++;
+      let start = index + 1;
+      let end = index;
+      if (charMap.find(x => start == x.start)) {
+        charMapValue = [
+          ...charMapValue,
+          ...charMap.filter(x => start == x.start)
+        ];
+      } else {
+        charMapValue = charMapValue.filter(
+          x => x.end != end
+        );
+      }
+      prevChar = text[index - 1];
+      nextChar = text[index + 1];
+      return (currentChar = text[index]);
+    };
+
+    const isNumber = () => {
+      if (
+        ["."].includes(currentChar) &&
+        prevChar != undefined &&
+        nextChar != undefined
+      ) {
+        let nr = prevChar + "." + nextChar;
+        return /[\w]\.[\w]/gim.test(nr);
+      }
+      return false;
+    };
+
+    const isNewLine = () => {
+      let start = [index + 1];
+      let end = [index, index + 1];
+      if (
+        charMapValue.find(x =>
+          start.includes(x.start)
+        ) ||
+        (current.length > 2 &&
+          charMapValue.find(x =>
+            end.includes(x.end)
+          )) ||
+        (meningEnd.includes(currentChar) &&
+          current.length >= minLength &&
+          !isNumber()) ||
+        (possibleNewLine.find(
+          x =>
+            current
+              .toLowerCase()
+              .indexOf(x.toLowerCase()) != -1
+        ) &&
+          (currentChar == "\r" ||
+            currentChar == "\n"))
+      ) {
+        if (
+          charMapValue.length <= 0 ||
+          charMapValue.filter(
+            x =>
+              start.includes(x.start) ||
+              end.includes(x.end)
+          ).length == 1
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const repeatedChar = () => {
+      while (
+        meningEnd.includes(nextChar) ||
+        prevNewLine.includes(nextChar)
+      ) {
+        current += getNextChar();
+      }
+    };
+
+    let addLine = () => {
+      repeatedChar();
+      result.push(current.trim());
+      current = "";
+      hStart = false;
+      // charMapValue = [];
+    };
+
+    const isHeader = () => {
+      let length = 4;
+      if (index + length >= text.length)
+        return false;
+      let h = text.substring(
+        index,
+        index + length
+      );
+      if (h == "#{h0}" && !hStart) {
+        hStart = true;
+      } else if (
+        hStart &&
+        /\#\{h([1-6])\}/gim.test(h)
+      ) {
+        index += length;
+        current += h;
+        addLine();
+      }
+    };
+
+    while (text.length - 1 !== index) {
+      isHeader();
+      getNextChar();
+
+      if (
+        currentChar !== "\n" &&
+        currentChar !== "\r" &&
+        currentChar !== "\r\n" &&
+        (current.trim().length > 0 ||
+          !".,!?…"
+            .split("")
+            .includes(currentChar))
+      ) {
+        if (meningEnd.includes(currentChar))
+          current = current.trim() + currentChar;
+        else if (
+          currentChar != " " ||
+          !current.endsWith(" ")
+        ) {
+          current += currentChar;
+        }
+      } else if (
+        ["\n", "\r"].includes(currentChar) &&
+        current.trim().length > 0
+      ) {
+        current = current.trim() + " ";
+      }
+
+      if (!hStart && isNewLine()) addLine();
+    }
+
+    result.push(current);
+    let item = result
+      .filter(x =>
+        /\w/gim.test(
+          x
+            .replace(/\#\{h([0-6])\}/gim, "")
+            .replace(/\_/gim, "")
+        )
+      )
+      .map(x => {
+        if (!/\#\{h([0-6])\}/gim.test(x)) {
+          let addClass =
+            nextNewLine.find(f => f == x[0]) &&
+            prevNewLine.find(
+              f => f == x[x.length - 1]
+            );
+          let className = addClass
+            ? `class="italic"`
+            : "";
+
+          return `<p ${className}>${x}</p>`;
+        } else {
+          let tag = `h${x
+            .match(/\#\{h([1-6])\}/gim)[0]
+            .replace(/([^1-6])/g, "")
+            .trim()}`;
+          return `<${tag}>${x.replace(
+            /\#\{h([0-6])\}/gim,
+            ""
+          )}</${tag}>`;
+        }
+      })
+      .join("\n");
+    //console.warn(item);
+    return item;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
 
 let downloadsFolder = null;
 const getDirectoryPermissions = async () => {
@@ -153,7 +451,6 @@ const parseThemeStyle = (
 ) => {
   const id = useRef(newId());
 
-  
   let themeSettings = {
     ...(!(invertColor ?? false)
       ? context.theme.settings
@@ -170,7 +467,6 @@ const parseThemeStyle = (
       : [style || {}];
 
   st = [themeSettings, ...st];
-  
 
   if (css) st.push(css.css(id));
   if (isRootView)
@@ -291,7 +587,6 @@ const ifSelector = (
   return value;
 };
 
-
 export {
   public_m,
   sleep,
@@ -306,5 +601,6 @@ export {
   invertColor,
   ifSelector,
   writeFile,
-  getDirectoryPermissions
+  getDirectoryPermissions,
+  generateText
 };

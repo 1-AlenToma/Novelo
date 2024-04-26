@@ -61,9 +61,7 @@ export default ({
           <TouchableOpacity
             css="flex maw:24 mal:10"
             onPress={() => {
-              let step = (1).sureValue(
-                props.step
-              );
+              let step = props.step ?? 1;
               if (
                 props.value - step >=
                 props.minimumValue
@@ -114,9 +112,7 @@ export default ({
           <TouchableOpacity
             css="flex maw:24"
             onPress={() => {
-              let step = (1).sureValue(
-                props.step
-              );
+              let step = props.step ?? 1;
               if (
                 props.value + step <=
                 props.maximumValue

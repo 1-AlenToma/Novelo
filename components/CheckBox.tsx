@@ -15,9 +15,12 @@ export default ({
   text,
   onChange,
   css,
+  ifTrue,
   children,
   ...props
 }) => {
+  if (methods.ifSelector(ifTrue) === false)
+    return null;
   const { animateX, animate, currentValue } =
     useAnimate({speed:100});
   const [isChecked, setIsChecked] =

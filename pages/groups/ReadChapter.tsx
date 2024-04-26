@@ -401,7 +401,8 @@ const Controller = ({ state, ...props }) => {
     use3D,
     fontStyle,
     shadowLength,
-    voiceWordSelectionsSettings
+    voiceWordSelectionsSettings,
+    useSentenceBuilder
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined)
@@ -444,8 +445,14 @@ const Controller = ({ state, ...props }) => {
       if (voiceWordSelectionsSettings)
         context.appSettings.voiceWordSelectionsSettings =
           voiceWordSelectionsSettings;
-
+      if (useSentenceBuilder) {
+        context.appSettings.useSentenceBuilder =
+          useSentenceBuilder;
+      }
       await context.appSettings.saveChanges();
+
+      if (useSentenceBuilder)
+        context.player.clean();
     });
   };
 
@@ -567,7 +574,7 @@ const Controller = ({ state, ...props }) => {
                 }>
                 <View css="flex">
                   <TabBar
-                  loadAll={false}
+                    loadAll={false}
                     fontSize={14}
                     scrollableHeader={true}
                     scrollHeight="90%"
@@ -578,6 +585,22 @@ const Controller = ({ state, ...props }) => {
                         type: "MaterialCommunityIcons"
                       }}
                       css="flex">
+                      <CheckBox
+                        text="LockScreen:"
+                        css="pal:1"
+                        invertColor={true}
+                        checked={
+                          context.appSettings
+                            .lockScreen
+                        }
+                        onChange={() => {
+                          editSettings({
+                            lockScreen:
+                              !context.appSettings
+                                .lockScreen
+                          });
+                        }}
+                      />
                       <Form text="NavigationMethod">
                         <ButtonList
                           items={[
@@ -768,24 +791,97 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={40}
                         />
                       </Form>
-
+                    </View>
+                    <View
+                      css="flex"
+                      icon={{
+                        name: "text-fields",
+                        type: "MaterialIcons"
+                      }}>
+                      <Text
+                        ifTrue={() =>
+                          context.player.book
+                            .parserName !== "epub"
+                        }
+                        invertColor={true}
+                        css="desc fos:10">
+                        Enabling This Option Will
+                         Make Novelo Try and
+                         Reorder the Sentences of
+                         The Chapter Too Follow A
+                         Specific novelo Rules,
+                         Making the Chapter More
+                         Readiable. Offcourse this
+                         COULD ALSO MAKE SMALL
+                         Mistakes Depending on How
+                         The Auther wrote it.
+                      </Text>
                       <CheckBox
-                        text="LockScreen:"
+                        ifTrue={() =>
+                          context.player.book
+                            .parserName !== "epub"
+                        }
+                        text="UseSentenceBuilder:"
                         css="pal:1"
                         invertColor={true}
                         checked={
                           context.appSettings
-                            .lockScreen
+                            .useSentenceBuilder
+                            ?.enabled ?? false
                         }
                         onChange={() => {
                           editSettings({
-                            lockScreen:
-                              !context.appSettings
-                                .lockScreen
+                            useSentenceBuilder: {
+                              ...(context
+                                .appSettings
+                                .useSentenceBuilder ??
+                                {}),
+                              enabled: !(
+                                context
+                                  .appSettings
+                                  .useSentenceBuilder
+                                  ?.enabled ??
+                                false
+                              )
+                            }
                           });
-                        }}
-                      />
-
+                        }}>
+                        <Form
+                          text="MinLength"
+                          ifTrue={() =>
+                            context.appSettings
+                              .useSentenceBuilder
+                              ?.enabled == true
+                          }>
+                          <Slider
+                            step={10}
+                            css="flex"
+                            renderValue={true}
+                            invertColor={true}
+                            buttons={true}
+                            value={
+                              context.appSettings
+                                .useSentenceBuilder
+                                ?.minLength ?? 100
+                            }
+                            onSlidingComplete={length => {
+                              editSettings({
+                                useSentenceBuilder:
+                                  {
+                                    ...(context
+                                      .appSettings
+                                      .useSentenceBuilder ??
+                                      {}),
+                                    minLength:
+                                      length
+                                  }
+                              });
+                            }}
+                            minimumValue={100}
+                            maximumValue={400}
+                          />
+                        </Form>
+                      </CheckBox>
                       <CheckBox
                         text="Add Shadow:"
                         css="pal:1"
@@ -827,7 +923,6 @@ const Controller = ({ state, ...props }) => {
                           />
                         </Form>
                       </CheckBox>
-
                       <Form
                         css="form he:200"
                         text="InlineStyle">

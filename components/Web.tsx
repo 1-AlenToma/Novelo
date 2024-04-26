@@ -303,6 +303,12 @@ export default ({
     );
 
     let cssStyle = `
+         .italic {
+           font-style: italic !important;
+           font-size: ${
+             context.appSettings.fontSize - 4
+           }px !important;
+         }
         .highlight {
           border-radius: 5px;
           display: inline;
@@ -322,15 +328,19 @@ export default ({
               ?.color ?? inverted
           } !important;
         }
+        
+        *:not(context):not(context *):not(.italic) {
+          font-style:${
+            (context.appSettings.fontStyle ??
+            "normal").toLowerCase()
+          };
+        }
+        
         *:not(context):not(context *) {
           font-family: "${
             context.appSettings.fontName
           }";
           font-size-adjust: 1;
-          font-style: ${
-            context.appSettings.fontStyle ??
-            "normal"
-          };
           ${
             context.appSettings.use3D
               ? `
@@ -339,6 +349,7 @@ export default ({
               : ""
           }
         }
+
         parameter {
           display: none;
         }
@@ -613,8 +624,8 @@ export default ({
       )
         return;
       let json = JSON.stringify({
-        block:"nearest",
-        inline:"start",
+        block: "nearest",
+        inline: "start",
         all: !(
           context.appSettings
             .voiceWordSelectionsSettings

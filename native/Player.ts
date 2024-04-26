@@ -75,7 +75,16 @@ class Player {
       this.currentChapter.content ??
       this.html;
 
-    txt = txt.html().html();
+    txt =
+      context.appSettings.useSentenceBuilder
+        ?.enabled &&
+      this.book.parserName != "epub"
+        ? methods.generateText(
+            txt,
+            context.appSettings.useSentenceBuilder
+              ?.minLength ?? 100
+          )
+        : txt.html().html();
     try {
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(
@@ -104,6 +113,7 @@ class Player {
     }
 
     this.chapterArray = txt.htmlArray();
+   // console.warn(this.chapterArray.niceJson());
     this.html = txt;
 
     return txt;
@@ -358,8 +368,7 @@ class Player {
     this.stop();
     let text =
       this.currentPlaying()?.cleanText() ?? "";
-  if(!/[a-zA-Z0-9]/gmi.test(text))
-    {
+    if (!/[a-zA-Z0-9]/gim.test(text)) {
       this.playNext();
       return;
     }

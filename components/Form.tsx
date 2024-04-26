@@ -34,7 +34,7 @@ export default ({
       <Container
         onPress={onPress}
         style={{ borderColor: st[0].color }}
-        css={`bow:1 bor:2 clearwidth juc:center ali:flex-end
+        css={`bow:0.1 bor:2 clearwidth juc:center ali:flex-end
       }`}>
         <View
           ifTrue={root != true}

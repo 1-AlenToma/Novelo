@@ -3,7 +3,8 @@ import {
   useRef,
   useEffect,
   useCallback,
-  useState
+  useState,
+  memo
 } from "react";
 import { FlashList } from "@shopify/flash-list";
 import TouchableOpacity from "./TouchableOpacityView";
@@ -48,7 +49,7 @@ export default ({
     useRef(true);
   const ref = useRef();
   const selected = useRef();
-  const render = (item, index) => {
+  const Render = memo(({ item, index }) => {
     let d = { item, vMode, index };
     if (props) d = { ...d, ...props };
     let VR = container;
@@ -61,14 +62,13 @@ export default ({
         css={itemCss}
         onLongPress={() => onLongPress?.(item)}
         onPress={e => {
-         
           onPress?.(item);
-           e.stopPropagation();
+          e.stopPropagation();
         }}>
         <VR {...d} />
       </CN>
     );
-  };
+  });
 
   const scrollTo = () => {
     if (
@@ -118,7 +118,10 @@ export default ({
         horizontal={vMode !== true}
         data={items}
         estimatedItemSize={200}
-        initialNumToRender={Math.max(30, 0)}
+        initialNumToRender={Math.max(
+          Math.min(100, items.length),
+          selectedIndex ?? 0
+        )}
         onEndReachedThreshold={0.5}
         onMomentumScrollBegin={() => {
           onEndReachedCalledDuringMomentum.current =
@@ -139,7 +142,7 @@ export default ({
           }
         }}
         renderItem={({ item, index }) =>
-          render(item, index)
+        <Render item={item} index={index} />
         }
         keyExtractor={(item, index) =>
           index.toString()

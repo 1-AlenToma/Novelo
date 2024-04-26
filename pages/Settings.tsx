@@ -324,10 +324,11 @@ export default (props: any) => {
                 </View>
               );
             }}
-            onSelect={async theme => {
+            onSelect={ theme => {
               context.appSettings.theme = theme;
-              await context.appSettings.saveChanges();
+
               context.theme.themeMode = theme;
+              context.appSettings.saveChanges();
               //Updates.reloadAsync();
             }}
             selectedValue={(
