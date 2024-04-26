@@ -122,6 +122,39 @@ export default class ReadNovelFull extends Parser {
     );
   }
 
+  async getByAuthor(url: string) {
+    let html = (
+      await this.http.get_html(url, this.url)
+    ).html;
+    return html
+      .$(".list-novel > .row")
+      .map(x => {
+        return x.map(f => {
+          if (f.find(".cover").attr("src").has())
+            return LightInfo.n()
+              .Name(f.find(".novel-title").text)
+              .Url(
+                f
+                  .find(".novel-title a")
+                  .url("href")
+              )
+              .Image(
+                f
+                  .find(".cover")
+                  .url("src")
+                  .imageUrlSize("200x250")
+              )
+              .Info(f.find(".chr-text").text)
+              .Decription(f.find(".author").text)
+              .IsNew(
+                f.find(".label-new").hasValue
+              )
+              .ParserName(this.name);
+        });
+      })
+      .flatMap(x => x);
+  }
+
   async chapter(url: string) {
     let html = (await this.http.get_html(url))
       .html;
@@ -155,6 +188,11 @@ export default class ReadNovelFull extends Parser {
       .Author(
         body.find('.info-meta a[href*="authors"]')
           .text
+      )
+      .AuthorUrl(
+        body
+          .find('.info-meta a[href*="authors"]')
+          .url("href")
       )
       .Genre(
         body

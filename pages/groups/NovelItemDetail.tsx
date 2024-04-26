@@ -13,7 +13,8 @@ import {
   ActionSheet,
   ActionSheetButton,
   TabBar,
-  ChapterView
+  ChapterView,
+  HomeNovelItem
 } from "../../components/";
 import WebView from "react-native-webview";
 import { useEffect, useRef } from "react";
@@ -31,13 +32,37 @@ export default ({ ...props }: any) => {
     useNavigation(props);
   const loader = useLoader(true);
   const chapterRef = useRef();
-  const state = useState({
-    novel: {},
-    viewChapters: false,
-    cText: "",
-    infoLoading: false,
-    book: {}
-  },"book","novel");
+  const state = useState(
+    {
+      novel: {},
+      viewChapters: false,
+      cText: "",
+      infoLoading: false,
+      book: {},
+      authorNovels: []
+    },
+    "book",
+    "novel",
+    "authorNovels"
+  );
+
+  let fetchAuthorNovels = async () => {
+    //alert(state.novel.authorUrl);
+    if (
+      !state.authorNovels?.has() &&
+      state.novel.authorUrl?.has()
+    ) {
+      loader.show();
+      let parser =
+        context.parser.find(parserName);
+      state.authorNovels =
+        await parser.getByAuthor(
+          state.novel.authorUrl
+        );
+      loader.hide();
+    }
+  };
+
   let fetchData = async () => {
     loader.show();
     let parser = context.parser.find(parserName);
@@ -65,7 +90,9 @@ export default ({ ...props }: any) => {
             .EqualTo(parserName)
             .firstOrDefault();
         }
+
         if (parser.infoEnabled) loadInfo(novel);
+        await fetchAuthorNovels();
       }
     } catch (e) {
       console.error(e);
@@ -129,13 +156,13 @@ export default ({ ...props }: any) => {
         position="Top"
         fontSize={9}>
         <View
-          css="flex pab:70"
+          css="flex mah:99% juc:flex-end"
           disableScrolling={true}
           icon={{
             name: "info-circle",
             type: "FontAwesome"
           }}>
-          <View css="flex mat:10 clearboth">
+          <View css="flex mat:10">
             <ScrollView>
               <View css="flex ali:center">
                 <View
@@ -366,6 +393,46 @@ export default ({ ...props }: any) => {
                 <View
                   invertColor={true}
                   ifTrue={
+                    state.authorNovels?.has() ??
+                    false
+                  }
+                  css="box he:265 pal:10 par:10 juc:flex-start">
+                  <Text
+                    invertColor={true}
+                    css="header fos:18 pab:5">
+                    Authors Novels
+                  </Text>
+                  <ItemList
+                    onPress={item => {
+                      if (
+                        item.url ==
+                        state.novel.url
+                      )
+                        return;
+                      options
+                        .nav("NovelItemDetail")
+                        .add({
+                          url: item.url,
+                          parserName:
+                            item.parserName
+                        })
+                        .push();
+                    }}
+                    vMode={false}
+                    itemCss={
+                      !false
+                        ? "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"
+                        : "boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
+                    }
+                    items={
+                      state.authorNovels ?? []
+                    }
+                    container={HomeNovelItem}
+                  />
+                </View>
+                <View
+                  invertColor={true}
+                  ifTrue={
                     state.novel.novelUpdateRecommendations?.has() ??
                     false
                   }
@@ -411,107 +478,114 @@ export default ({ ...props }: any) => {
               </View>
             </ScrollView>
           </View>
-          <View
-            css="box flex row bottom mih:70 juc:center ali:center clearwidth"
-            ifTrue={
-              state.novel.url?.has() ?? false
-            }>
-            <TouchableOpacity
-              css="button mar:5 clearheight juc:center"
-              invertColor={true}
-              onPress={async () => {
-                context
-                  .downloadManager()
-                  .download(
-                    state.novel.url,
-                    state.novel.parserName
-                  );
-                context
-                  .alert(
-                    "novel is downloading",
-                    "attantion"
-                  )
-                  .show();
-              }}>
-              <View css="blur" />
-              <Icon
-                type="Feather"
-                name="download"
+          <View css=" juc:flex-start bor:5 mab:10 mat:1 height:60 pab:2">
+            <View
+              css="row flex he:90% juc:center ali:center"
+              ifTrue={
+                state.novel.url?.has() ?? false
+              }>
+              <TouchableOpacity
+                css="button mar:5 clearheight juc:center"
                 invertColor={true}
-                css="mar:0"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              css="mar:5 button pa:5 wi:65% clearheight"
-              invertColor={true}
-              onPress={() => {
-                options
-                  .nav("ReadChapter")
-                  .add({
-                    url: state.novel.url,
-                    parserName:
+                onPress={async () => {
+                  context
+                    .downloadManager()
+                    .download(
+                      state.novel.url,
                       state.novel.parserName
-                  })
-                  .push();
-              }}>
-              <Text
+                    );
+                  context
+                    .alert(
+                      "novel is downloading",
+                      "attantion"
+                    )
+                    .show();
+                }}>
+                <View css="blur" />
+                <Icon
+                  type="Feather"
+                  name="download"
+                  invertColor={true}
+                  css="mar:0"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                css="mar:5 button pa:5 wi:65% clearheight"
                 invertColor={true}
-                css="fos:30">
-                READ
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              css="button clearheight juc:center mar:0"
-              invertColor={true}
-              onPress={async () => {
-                loader.show();
-                let book =
-                  state.book ||
-                  (await context
-                    .db()
-                    .querySelector<Book>("Books")
-                    .Where.Column(x => x.url)
-                    .EqualTo(url)
-                    .AND.Column(x => x.parserName)
-                    .EqualTo(parserName)
-                    .findOrSave(
-                      Book.n()
-                        .Url(state.novel.url)
-                        .Name(state.novel.name)
-                        .ParserName(parserName)
-                        .ImageBase64(
-                          await context
-                            .http()
-                            .imageUrlToBase64(
-                              state.novel.image
-                            )
-                        )
-                    ));
-                await book
-                  .Favorit(!book.favorit)
-                  .saveChanges();
-                state.book = book;
-                loader.hide();
-              }}>
-              <View css="blur" />
-              <Icon
-                type="Fontisto"
-                name="favorite"
-                invertColor={
-                  state.book?.favorit
-                    ? undefined
-                    : true
-                }
-                css="mar:0"
-                style={{
-                  color: state.book?.favorit
-                    ? "red"
-                    : undefined
-                }}
-              />
-            </TouchableOpacity>
+                onPress={() => {
+                  options
+                    .nav("ReadChapter")
+                    .add({
+                      url: state.novel.url,
+                      parserName:
+                        state.novel.parserName
+                    })
+                    .push();
+                }}>
+                <Text
+                  invertColor={true}
+                  css="fos:30">
+                  READ
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                css="button clearheight juc:center mar:0"
+                invertColor={true}
+                onPress={async () => {
+                  loader.show();
+                  let book =
+                    state.book ||
+                    (await context
+                      .db()
+                      .querySelector<Book>(
+                        "Books"
+                      )
+                      .Where.Column(x => x.url)
+                      .EqualTo(url)
+                      .AND.Column(
+                        x => x.parserName
+                      )
+                      .EqualTo(parserName)
+                      .findOrSave(
+                        Book.n()
+                          .Url(state.novel.url)
+                          .Name(state.novel.name)
+                          .ParserName(parserName)
+                          .ImageBase64(
+                            await context
+                              .http()
+                              .imageUrlToBase64(
+                                state.novel.image
+                              )
+                          )
+                      ));
+                  await book
+                    .Favorit(!book.favorit)
+                    .saveChanges();
+                  state.book = book;
+                  loader.hide();
+                }}>
+                <View css="blur" />
+                <Icon
+                  type="Fontisto"
+                  name="favorite"
+                  invertColor={
+                    state.book?.favorit
+                      ? undefined
+                      : true
+                  }
+                  css="mar:0"
+                  style={{
+                    color: state.book?.favorit
+                      ? "red"
+                      : undefined
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
+
         <View
           css="flex"
           disableScrolling={true}

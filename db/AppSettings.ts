@@ -64,10 +64,10 @@ class AppSettings extends IBaseModule<TableNames> {
       )
       .nullable.json.column("navigationType")
       .nullable.column("use3D")
-      .nullable.json.column(
+      .nullable.boolean.column(
         "useSentenceBuilder"
       )
-      .nullable.boolean.column("fontStyle")
+      .nullable.json.column("fontStyle")
       .nullable.column("lang")
       .nullable.column("shadowLength")
       .nullable.number.objectPrototype(

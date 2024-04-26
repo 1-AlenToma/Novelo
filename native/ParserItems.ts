@@ -30,6 +30,7 @@ class DetailInfo extends LightInfo {
   genre: string[] = [];
   tags: string[] = [];
   author: string = "";
+  authorUrl: string = "";
   status: string = "";
   chapters: ChapterInfo[] = [];
   lastUpdated: string = "";
@@ -74,7 +75,7 @@ abstract class NovelInfo {
     this.http = new HttpHandler();
   }
 
-  abstract async search(
+  abstract search(
     item: DetailInfo
   ): Promise<DetailInfo>;
 }
@@ -97,24 +98,26 @@ abstract class Parser {
     this.settings = new ParserDetail();
   }
 
-  abstract async search(
+  abstract search(
     options: SearchDetail
   ): Promise<LightInfo[]>;
 
-  abstract async detail(
+  abstract detail(
     url: string
   ): Promise<DetailInfo>;
 
-  abstract async load(): Promise<ParserDetail>;
+  abstract load(): Promise<ParserDetail>;
 
-  abstract async group(
+  abstract group(
     value: Value,
     page: number
   ): Promise<LightInfo[]>;
 
-  abstract async chapter(
+  abstract getByAuthor(
     url: string
-  ): Promise<string>;
+  ): Promise<LightInfo[]>;
+
+  abstract chapter(url: string): Promise<string>;
 }
 public_m(
   DetailInfo,

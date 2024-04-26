@@ -114,6 +114,20 @@ export default class ParserWrapper extends Parser {
     return novel;
   }
 
+  @Memo({
+    daysToSave: 5,
+    keyModifier: (target, key) =>
+      `${key}${target.name}`,
+    validator: (data: any) =>
+      data &&
+      data.has() &&
+      !data[0].name.empty() &&
+      !data[0].url.empty()
+  })
+  async getByAuthor(url: string) {
+    return await this.parser.getByAuthor(url)
+  }
+
   async fetchSelectorImage(selector: string) {
     try {
       let baseUrl = selector

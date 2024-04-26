@@ -10,7 +10,8 @@
     "build": "eas build -p android --profile preview",
     "dev": "eas build -p android --profile development",
     "prod": "eas build -p android --profile production",
-    "local": "turtle build:android"
+    "local": "turtle build:android",
+    "js": "jsjoiner join -o /data/data/com.termux/files/home/Novelo/assets/index.ts -f '/storage/emulated/0/Documents/Projects/ContextMenu/*.js.css'"
   },
   "dependencies": {
     "@react-native-community/slider": "4.4.2",

@@ -346,6 +346,8 @@ const TabBar = ({
       state.rItems[i] = {
         child: childPrep(children[i])
       };
+      if(children[i].props.onLoad)
+        children[i].props.onLoad();
     }
   };
 

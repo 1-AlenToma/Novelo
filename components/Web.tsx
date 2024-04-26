@@ -1,5 +1,5 @@
 import WebView from "react-native-webview";
-import script from "../assets/readerjs";
+import script from "../assets/index";
 import Fonts from "../assets/Fonts";
 import {
   useEffect,
