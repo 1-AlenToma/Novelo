@@ -38,24 +38,33 @@ import { TabIcon, TabChild } from "../Types";
 
 const Menu = ({
   children,
-  index,
   loadChildren,
   scrollableHeader,
   fontSize,
   position,
   onSize,
   minuWidth,
-  animated
+  animated,
+  parentState
 }: any) => {
-  let use;
-  let [cIndex, setCIndex] = useState(index ?? 0);
+  let menuItems = children.filter(
+    x => ifSelector(x.props.ifTrue) !== false
+  );
+  let timer = useTimer(10);
+  let [cIndex, setCIndex] = useState(
+    parentState.refItem.index ?? 0
+  );
   const [size, setSize] = useState([]);
-  let interpolate = size.map(x => x.x);
+  let interpolate = menuItems.map(
+    (_, i) => (size[0]?.width ?? i) * i
+  );
+  
   if (interpolate.length <= 1)
     interpolate = [0, 1];
-  useEffect(() => {
-    setCIndex(index);
-  }, [index]);
+
+  parentState.subscribe(() => {
+    setCIndex(parentState.refItem.index);
+  }, "refItem.index");
 
   useEffect(() => {
     onSize?.(interpolate, size[0]?.width);
@@ -81,7 +90,7 @@ const Menu = ({
       );
   };
   scrollableHeader = false;
-  let selectedStyle =
+  let selectedStyle: any =
     position != "Top"
       ? {
           borderTopWidth: 2,
@@ -94,15 +103,12 @@ const Menu = ({
   //if (!scrollableHeader)
   selectedStyle = {};
   let MContainer = View;
-  let prop = {
+  let prop: any = {
     style: [
       styles.menu,
       context.theme.invertSettings()
     ]
   };
-  let menuItems = children.filter(
-    x => ifSelector(x.props.ifTrue) !== false
-  );
 
   if (scrollableHeader) {
     MContainer = ScrollView;
@@ -128,7 +134,7 @@ const Menu = ({
         borderRadius: 2,
         height: 3,
         backgroundColor: "#e5313a",
-        width: size[index]?.width ?? 0,
+        width: size[0]?.width ?? 0,
         transform: [
           {
             translateX: animated.x.interpolate({
@@ -145,7 +151,7 @@ const Menu = ({
       <View
         onStartShouldSetResponder={event => false}
         onTouchStart={e => {
-          loadChildren(index);
+          loadChildren(cIndex);
         }}
         style={[
           {
@@ -170,7 +176,9 @@ const Menu = ({
               let item = {
                 ...event.nativeEvent.layout
               };
+
               if (
+                i != 0 ||
                 !item.width ||
                 isNaN(item.width)
               )
@@ -225,6 +233,49 @@ const Menu = ({
   );
 };
 
+const childPrep = child => {
+  if (child) {
+    if (!child.props.style) return child;
+    if (Array.isArray(child.props.style))
+      child.props.style.push({ flex: 1 });
+    else child.props.style.flex = 1;
+  }
+  return child;
+};
+
+const Child = ({
+  state,
+  index,
+  loadItem,
+  item
+}: any) => {
+  let update = useUpdate();
+  let child: any =
+    state.refItem.rItems[index]?.child ?? null;
+
+  let load = isUpdate => {
+    if (
+      (index == state.refItem.index ||
+        (isUpdate && child != null)) &&
+      (child == null || isUpdate)
+    ) {
+      state.refItem.rItems[index] = {
+        child: childPrep(item)
+      };
+      update();
+    }
+  };
+  state.subscribe(() => {
+    load();
+  }, "refItem.index");
+
+  useEffect(() => {
+    load(true);
+  }, [item]);
+
+  return child ?? loadItem ?? null;
+};
+
 const TabBar = ({
   children,
   selectedIndex,
@@ -251,11 +302,10 @@ const TabBar = ({
   const [render, state, loader, timer] = useView({
     loader: { value: true },
     component: View,
-    state: {
-      rItems: children.map(x => {}),
-      index: selectedIndex ?? 0
-    },
+    state: {},
     refItem: {
+      rItems: children.map(x => {}),
+      index: selectedIndex ?? 0,
       menuInterpolate: undefined,
       menuItemWidth: undefined,
       startValue: undefined,
@@ -274,6 +324,8 @@ const TabBar = ({
       }
     ]
   });
+
+  state.addStaticPath("refItem.index");
 
   const { animateX, animate } = useAnimate();
   const menuAnimate = useAnimate();
@@ -327,7 +379,7 @@ const TabBar = ({
     //while (isAnimating.current) await sleep(100);
     //setIndex(index);
     tAnimate(index, undefined, () => {
-      state.index = index;
+      state.refItem.index = index;
     });
   };
 
@@ -342,64 +394,31 @@ const TabBar = ({
     ) {
       animateLeft(i);
     }
-    if (!state.rItems[i] && children[i]) {
-      state.rItems[i] = {
-        child: childPrep(children[i])
-      };
-      if(children[i].props.onLoad)
+    if (!state.refItem.rItems[i] && children[i]) {
+      if (children[i].props.onLoad)
         children[i].props.onLoad();
     }
   };
-
-  useEffect(
-    () => {
-      children.forEach((x, i) => {
-        if (state.rItems[i]) {
-          state.rItems[i].child = childPrep(x);
-        }
-      });
-      loadChildren(state.index);
-    },
-    children.map(x => x)
-  );
 
   useEffect(() => {
     loadChildren(selectedIndex);
   }, [selectedIndex]);
 
   state.subscribe(() => {
-    if (state.index !== undefined)
-      change?.(state.index);
-  }, "index");
+    if (state.refItem.index !== undefined)
+      change?.(state.refItem.index);
+    //assign();
+  }, "refItem.index");
 
   state.subscribe(() => {
     state.refItem.interpolate = getInputRange();
-    tAnimate(state.index, 0);
+    tAnimate(state.refItem.index, 0);
   }, "size");
 
   useEffect(() => {
     state.refItem.interpolate = getInputRange();
-    tAnimate(state.index, 0);
+    // tAnimate(state.refItem.index, 0);
   }, [children]);
-
-  useEffect(() => {
-    if (loadAll) {
-      children.forEach((x, i) =>
-        loadChildren(i, true)
-      );
-      // state.rItems = [...state.rItems];
-    }
-  }, []);
-
-  const childPrep = child => {
-    if (child) {
-      if (!child.props.style) return child;
-      if (Array.isArray(child.props.style))
-        child.props.style.push({ flex: 1 });
-      else child.props.style.flex = 1;
-    }
-    return child;
-  };
 
   const assign = () => {
     const onRelease = (
@@ -411,10 +430,7 @@ const TabBar = ({
       let diff =
         newValue - state.refItem.startValue;
       let width = state.size.width;
-      let i =
-        state.index == undefined
-          ? 0
-          : state.index;
+      let i = state.refItem.index ?? 0;
       menuAnimate.animate.flattenOffset();
       animate.flattenOffset();
       let speed = 200;
@@ -461,7 +477,8 @@ const TabBar = ({
           animate.setValue({
             x:
               state.refItem.interpolate.find(
-                x => x.index == state.index
+                x =>
+                  x.index == state.refItem.index
               )?.value ?? 0,
             y: 0
           });
@@ -469,7 +486,7 @@ const TabBar = ({
           menuAnimate.animate.setValue({
             x:
               state.refItem.menuInterpolate[
-                state.index
+                state.refItem.index
               ] ?? 0,
             y: 0
           });
@@ -484,7 +501,7 @@ const TabBar = ({
           return true;
         },
         onPanResponderTerminate: () => {
-          //tAnimate(state.index ?? 0, 1);
+          //tAnimate(state.refItem.index ?? 0, 1);
           return true;
         },
         onPanResponderMove: Animated.event(
@@ -505,8 +522,8 @@ const TabBar = ({
               let isng = diff < 0;
               let c =
                 state.refItem.menuInterpolate[
-                  state.index > 0 || isng
-                    ? state.index
+                  state.refItem.index > 0 || isng
+                    ? state.refItem.index
                     : 1
                 ];
               diff =
@@ -554,9 +571,16 @@ const TabBar = ({
               menuInterpolate;
             state.refItem.menuItemWidth =
               menuItemWidth;
+            menuAnimate.animateX(
+              state.refItem.menuInterpolate[
+                state.refItem.index
+              ],
+              undefined,
+              0
+            );
           }}
           animated={menuAnimate.animate}
-          index={state.index}
+          parentState={state}
           children={children}
           loadChildren={loadChildren}
           scrollableHeader={scrollableHeader}
@@ -589,8 +613,7 @@ const TabBar = ({
                 )
               }
             ],
-            width:
-              state.size.width * children.length
+            width: 100 * children.length + "%"
           }
         ]}
         {...state.refItem.panResponse
@@ -604,7 +627,7 @@ const TabBar = ({
             !x.props.disableScrolling ? (
               <ScrollView
                 style={{
-                  width: state.size.width,
+                  width: "100%",
                   maxHeight: scrollHeight
                 }}
                 contentContainerStyle={[
@@ -612,14 +635,24 @@ const TabBar = ({
                   {
                     flexGrow: 1,
                     padding: 5,
-                    width: state.size.width,
+                    width: "100%",
                     maxWidth: "100%"
                   }
                 ]}>
-                {state.rItems[i]?.child ?? null}
+                <Child
+                
+                  item={x}
+                  state={state}
+                  index={i}
+                />
               </ScrollView>
             ) : (
-              state.rItems[i]?.child ?? loadItem
+              <Child
+                item={x}
+                state={state}
+                index={i}
+                loadItem={loadItem}
+              />
             )}
           </View>
         ))}
@@ -634,9 +667,16 @@ const TabBar = ({
               menuInterpolate;
             state.refItem.menuItemWidth =
               menuItemWidth;
+            menuAnimate.animateX(
+              state.refItem.menuInterpolate[
+                state.refItem.index
+              ],
+              undefined,
+              0
+            );
           }}
           animated={menuAnimate.animate}
-          index={state.index}
+          parentState={state}
           children={children}
           loadChildren={loadChildren}
           scrollableHeader={scrollableHeader}

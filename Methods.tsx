@@ -6,6 +6,7 @@ import * as FileSystem from "expo-file-system";
 import { useRef, useEffect } from "react";
 import IDOMParser from "advanced-html-parser";
 
+
 function generateText(html, minLength) {
   try {
     html = html.replace(
@@ -182,13 +183,12 @@ function generateText(html, minLength) {
       ) {
         if (
           charMapValue.length <= 0 ||
-          (
-            charMapValue.length == 1&&
-          charMapValue.filter(
-            x =>
-              start.includes(x.start) ||
-              end.includes(x.end)
-          ).length == 1)
+          (charMapValue.length == 1 &&
+            charMapValue.filter(
+              x =>
+                start.includes(x.start) ||
+                end.includes(x.end)
+            ).length == 1)
         ) {
           return true;
         }

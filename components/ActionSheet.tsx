@@ -66,19 +66,14 @@ export default ({
     onTouchEnd: () =>
       (state.refItem.isTouched = false),
     state: {
-      started: false,
-      refItem: {
-        startValue: 0,
-        isVisible: false,
-        panResponse: undefined,
-        isTouched: false,
-        interpolate: [
-          context.size.window.height -
-            getHeight() +
-            80,
-          context.size.window.height + 50
-        ]
-      }
+      
+    },
+    refItem: {
+      startValue: 0,
+      isVisible: false,
+      panResponse: undefined,
+      isTouched: false,
+      interpolate: []
     }
   });
 
@@ -111,13 +106,13 @@ export default ({
   context.subscribe(() => {
     setSize();
     if (state.refItem.isVisible) {
-      renderUpdate();
       state.refItem.panResponse = undefined;
-      animate.flattenOffset();
+      renderUpdate();
+      //animate.flattenOffset();
       animateY(
         state.refItem.interpolate[0],
-        () => renderUpdate(),
-        1
+        () => {},
+        0
       );
     }
   }, "size");
@@ -132,7 +127,6 @@ export default ({
     }, [visible]);
 
   useEffect(() => {
-    state.started = true;
     return () => {
       elContext.remove(state.id);
       elContext.update();
@@ -202,10 +196,9 @@ export default ({
           }
         });
     }
-    let inputRange =
-     [... state.refItem.interpolate].sort(
-        (a, b) => a - b
-      );
+    let inputRange = [
+      ...state.refItem.interpolate
+    ].sort((a, b) => a - b);
     let op = !elContext.has(state.id)
       ? elContext.push.bind(elContext)
       : elContext.updateProps.bind(elContext);

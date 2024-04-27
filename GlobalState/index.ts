@@ -88,7 +88,7 @@ class EventTrigger {
   ___events: any = {};
   ___timer: any = undefined;
   ___waitingEvents: any = {};
-  speed:number = speed;
+  speed: number = speed;
 
   add(id: string, item: EventItem) {
     this.___events[id] = item;
@@ -157,6 +157,7 @@ abstract class ICreate {
 }
 class Create<T extends object> extends ICreate {
   ___events: EventTrigger = new EventTrigger();
+  ___addedPaths: string[] = [];
 
   hook(...keys: NestedKeyOf<T>[]) {
     let id = useRef(newId()).current;
@@ -185,7 +186,7 @@ class Create<T extends object> extends ICreate {
               a[item.key] = item.item;
             }
           }
-         /* console.warn(
+          /* console.warn(
             [
               { ks: ks.current, a, update }
             ].niceJson()
@@ -218,6 +219,30 @@ class Create<T extends object> extends ICreate {
     useEffect(() => {
       return () => this.___events.remove(id);
     }, []);
+  }
+
+  addStaticPath(path: string) {
+    if (this.___addedPaths.includes(path)) return;
+    this.___addedPaths.push(path);
+    let item = this;
+    let key = path.split(".").reverse()[0];
+    for (let p of path.split(".")) {
+      if (typeof item[p] == "object") {
+        item = item[p];
+      } else break;
+    }
+    let v = item[key];
+    Object.defineProperty(item, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => v,
+      set: (value: any) => {
+        if (value !== v) {
+          v  = value;
+           this.___events.___onChange(path, v);
+        }
+      }
+    });
   }
 
   constructor(

@@ -34,7 +34,7 @@ export default function <T>({
       refItem: props.refItem ?? {},
       id: methods.newId()
     },
-    "refItem"
+    ...["refItem",...(props.ignore ?? [])]
   );
 
   let render = (children, prs) => {
@@ -52,12 +52,8 @@ export default function <T>({
           {children}
         </Component>
       );
-    } 
-    return (
-      <>
-      {children}
-      </>
-      )
+    }
+    return <>{children}</>;
   };
 
   return [
