@@ -304,14 +304,16 @@ export default ({
 
     let cssStyle = `
          .italic {
+           display:inline !important;
            font-style: italic !important;
            font-size: ${
              context.appSettings.fontSize - 4
            }px !important;
          }
+         
         .highlight {
           border-radius: 5px;
-          display: inline;
+          display: inline-block;
           color: ${
             context.appSettings
               .voiceWordSelectionsSettings?.color
@@ -330,10 +332,10 @@ export default ({
         }
         
         *:not(context):not(context *):not(.italic) {
-          font-style:${
-            (context.appSettings.fontStyle ??
-            "normal").toLowerCase()
-          };
+          font-style:${(
+            context.appSettings.fontStyle ??
+            "normal"
+          ).toLowerCase()};
         }
         
         *:not(context):not(context *) {

@@ -6,7 +6,6 @@ import * as FileSystem from "expo-file-system";
 import { useRef, useEffect } from "react";
 import IDOMParser from "advanced-html-parser";
 
-
 function generateText(html, minLength) {
   try {
     html = html.replace(
@@ -96,7 +95,7 @@ function generateText(html, minLength) {
             x =>
               x.charEnd === char &&
               x.end === undefined &&
-              i - x.start <= 500 &&
+              i - x.start <= 310 &&
               i - x.start >= 5
           );
 
@@ -265,7 +264,7 @@ function generateText(html, minLength) {
     }
 
     result.push(current);
-    let item = result
+    result = result
       .filter(x =>
         /\w/gim.test(
           x
@@ -281,10 +280,10 @@ function generateText(html, minLength) {
               f => f == x[x.length - 1]
             );
           let className = addClass
-            ? `class="italic"`
+            ? ` class="italic"`
             : "";
 
-          return `<p ${className}>${x}</p>`;
+          return `<p${className}>${x}</p>`;
         } else {
           let tag = `h${x
             .match(/\#\{h([1-6])\}/gim)[0]
@@ -295,9 +294,40 @@ function generateText(html, minLength) {
             ""
           )}</${tag}>`;
         }
-      })
-      .join("\n");
-    //console.warn(item);
+      });
+    let item = "";
+    index = 0;
+    while (result[index]) {
+      let c = result[index];
+      let isItali = /class\=\"italic\"/gim.test(
+        c
+      );
+      let length = c.length - 20;
+      let n = result[index + 1];
+      let prev = item.split("\n").lastOrDefault();
+      let pIsItali = /class\=\"italic\"/gim.test(
+        prev
+      );
+
+      if (
+        !isItali ||
+        pIsItali ||
+        !/\<p/gim.test(c) ||
+        length <= 1
+      ) {
+        item += `\n${c}`;
+      } else if (isItali && length < 60) {
+        // console.warn(length, prev);
+        item = `${item.substring(
+          0,
+          item.length - 4
+        )} ${c
+          .replace(/\<p /gim, "<span ")
+          .replace(/\<\/p\>/gim, "</span>")}</p>`;
+      } else item += `\n${c}`;
+      index++;
+    }
+
     return item;
   } catch (e) {
     console.error(e);

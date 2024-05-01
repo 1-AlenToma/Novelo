@@ -88,6 +88,7 @@ class EventTrigger {
   ___events: any = {};
   ___timer: any = undefined;
   ___waitingEvents: any = {};
+  ___addedPaths: string[] = [];
   speed: number = speed;
 
   add(id: string, item: EventItem) {
@@ -157,7 +158,6 @@ abstract class ICreate {
 }
 class Create<T extends object> extends ICreate {
   ___events: EventTrigger = new EventTrigger();
-  ___addedPaths: string[] = [];
 
   hook(...keys: NestedKeyOf<T>[]) {
     let id = useRef(newId()).current;
@@ -222,8 +222,11 @@ class Create<T extends object> extends ICreate {
   }
 
   addStaticPath(path: string) {
-    if (this.___addedPaths.includes(path)) return;
-    this.___addedPaths.push(path);
+    if (
+      this.___events.___addedPaths.includes(path)
+    )
+      return;
+    this.___events.___addedPaths.push(path);
     let item = this;
     let key = path.split(".").reverse()[0];
     for (let p of path.split(".")) {
@@ -238,8 +241,8 @@ class Create<T extends object> extends ICreate {
       get: () => v,
       set: (value: any) => {
         if (value !== v) {
-          v  = value;
-           this.___events.___onChange(path, v);
+          v = value;
+          this.___events.___onChange(path, v);
         }
       }
     });
