@@ -35,6 +35,7 @@ declare global {
       handler: Function
     ) => string;
   }
+  
   interface String {
     fileName(...url: string[]): string;
     escapeRegExp(): String;

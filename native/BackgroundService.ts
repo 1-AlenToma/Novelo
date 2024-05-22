@@ -4,18 +4,14 @@ import { Book } from "../db";
 
 const sleep = time =>
   new Promise(resolve =>
-    setTimeout(() => resolve(), time)
+    setTimeout(resolve, time || 0)
   );
 
-// You can do anything in your task such as network requests, timers and so on,
-// as long as it doesn't touch UI. Once your task completes (i.e. the promise is resolved),
-// React Native will go into "paused" mode (unless there are other tasks running,
-// or there is a foreground app).
 const veryIntensiveTask =
   async taskDataArguments => {
     // Example of an infinite loop task
     const { delay } = taskDataArguments;
-    let g = require("../GlobalContext").default
+    let g = require("../GlobalContext").default;
     let tasks = [];
     let getDate = (days: number) => {
       date = new Date();
@@ -23,7 +19,7 @@ const veryIntensiveTask =
       return date;
     };
     tasks.push(
-      new EventEmitter(10, async () => {
+      new EventEmitter(10, async function () {
         this.extra =
           !this.extra || this.extra.length <= 0
             ? await g.cache().allFiles()
@@ -42,7 +38,7 @@ const veryIntensiveTask =
               .Where.Column(x => x.url)
               .EqualTo(data.data.url)
               .firstOrDefault();
-            if (book)
+            if (book && !book.favorit)
               await g
                 .dbContext()
                 .deleteBook(book.id);

@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   try{
 ${script}
 }catch(e){
-  
 }
 });
 }else {
@@ -303,7 +302,10 @@ export default ({
     );
 
     let cssStyle = `
-         .italic {
+         strong{
+           font-weight:bold !important;
+         }
+         .italic, i {
            display:inline !important;
            font-style: italic !important;
            font-size: ${
@@ -331,7 +333,7 @@ export default ({
           } !important;
         }
         
-        *:not(context):not(context *):not(.italic) {
+        *:not(context):not(context *):not(.italic):not(i) {
           font-style:${(
             context.appSettings.fontStyle ??
             "normal"

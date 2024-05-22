@@ -30,7 +30,12 @@ import {
 } from "../native";
 import { sleep } from "../Methods";
 
-const ItemRender = ({ options, item, state }) => {
+const ItemRender = ({
+  options,
+  item,
+  state,
+  loader
+}) => {
   context.hook("novelFavoritInfo");
   const [books, dataIsLoading] = context
     .db()
@@ -107,19 +112,9 @@ const ItemRender = ({ options, item, state }) => {
                 loader.show();
                 if (answer) {
                   try {
-                    let file = fileItems.find(
-                      x => x.url == item.url
-                    );
-
-                    if (file) {
-                      item
-                        .Favorit(false)
-                        .saveChanges();
-                    } else {
-                      await context
-                        .dbContext()
-                        .deleteBook(item.id);
-                    }
+                    await item
+                      .Favorit(false)
+                      .saveChanges();
                   } catch (e) {
                     console.error(e);
                   }
@@ -208,7 +203,7 @@ export default ({ ...props }: any) => {
   const { fileItems } = context
     .files()
     .useFile("json");
-  const [books, dataIsLoading] = context
+  const [books, dataIsLoading, reload] = context
     .db()
     .useQuery(
       "Books",
@@ -269,6 +264,7 @@ export default ({ ...props }: any) => {
           )}
           container={({ item }) => (
             <ItemRender
+              loader={loader}
               options={options}
               state={state}
               item={item}

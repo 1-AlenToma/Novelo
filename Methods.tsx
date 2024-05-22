@@ -299,25 +299,37 @@ function generateText(html, minLength) {
     index = 0;
     while (result[index]) {
       let c = result[index];
+      let cleaned = c.replace(
+        /(\<p.*?>)|(<\/p>)/gim,
+        ""
+      );
       let isItali = /class\=\"italic\"/gim.test(
         c
       );
       let length = c.length - 20;
       let n = result[index + 1];
       let prev = item.split("\n").lastOrDefault();
+
       let pIsItali = /class\=\"italic\"/gim.test(
         prev
       );
-
+      
       if (
         !isItali ||
         pIsItali ||
         !/\<p/gim.test(c) ||
-        length <= 1
+        !/\<p/gim.test(prev) ||
+        length <= 1 ||
+        index < 2 ||
+        possibleNewLine.find(
+          x =>
+            x
+              .toLowerCase()
+              .indexOf(prev.toLowerCase()) != -1
+        )
       ) {
         item += `\n${c}`;
       } else if (isItali && length < 60) {
-        // console.warn(length, prev);
         item = `${item.substring(
           0,
           item.length - 4

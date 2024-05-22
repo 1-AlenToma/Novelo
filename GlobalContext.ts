@@ -33,7 +33,7 @@ const globalDb = new dbContext();
 const globalHttp = new HttpHandler();
 type ThemeMode = "light" | "dark";
 const parsers = ParserWrapper.getAllParsers();
-const currentParser = parsers[0];
+let currentParser = parsers[0];
 const downloadManager = new DownloadManager(
   () => data
 );

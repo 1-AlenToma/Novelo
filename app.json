@@ -2,7 +2,7 @@
   "expo": {
     "name": "Novelo",
     "slug": "Novelo",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "default",
     "icon": "./assets/ic_launcher_round.png",
     "scheme": "novels",
@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alentoma.Novelo"
@@ -34,7 +36,9 @@
       "favicon": "./assets/ic_launcher.png"
     },
     "plugins": [
-      ["./backgroundPlugin.js"],
+      [
+        "./backgroundPlugin.js"
+      ],
       [
         "expo-updates",
         {
@@ -55,7 +59,8 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "extra": {
       "eas": {

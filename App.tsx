@@ -1,4 +1,5 @@
 import "./Global.d";
+//import RNExitApp from "react-native-exit-app";
 import {
   StatusBar,
   setStatusBarHidden
@@ -118,6 +119,8 @@ export default function App() {
     })();
 
     return () => {
+      const RNExitApp = require("react-native-exit-app")?.default;
+      RNExitApp.exitApp?.();
       itemToRemove?.forEach(x => x.remove());
     };
   }, []);
@@ -128,7 +131,6 @@ export default function App() {
   return (
     <AppContainer>
       <NavigationContainer>
-       
         <AppStack />
         <PlayerView />
       </NavigationContainer>
