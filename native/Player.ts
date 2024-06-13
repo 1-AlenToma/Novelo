@@ -113,7 +113,7 @@ class Player {
     }
 
     this.chapterArray = txt.htmlArray();
-   // console.warn(this.chapterArray.niceJson());
+    // console.warn(this.chapterArray.niceJson());
     this.html = txt;
 
     return txt;
@@ -215,7 +215,7 @@ class Player {
       context.appSettings.currentNovel
         .parserName != this.book.parserName ||
       context.appSettings.currentNovel.isEpub !=
-        this.isEpub
+        this.isEpup
     ) {
       context.appSettings.currentNovel = {
         url: this.book.url,
@@ -231,7 +231,7 @@ class Player {
         x => x.url === index
       );
 
-    this.currentChapterIndex = index;
+    this.currentChapterIndex = index as number
     this.book.selectedChapterIndex = index;
     this.currentChapter =
       this.novel.chapters[index];
