@@ -340,7 +340,8 @@ const ItemRender = ({
               .nav("ReadChapter")
               .add({
                 url: item.url,
-                parserName: item.parserName
+                parserName: item.parserName,
+                epub:true
               })
               .push();
             return true;

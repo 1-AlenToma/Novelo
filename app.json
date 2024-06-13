@@ -2,7 +2,7 @@
   "expo": {
     "name": "Novelo",
     "slug": "Novelo",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "default",
     "icon": "./assets/ic_launcher_round.png",
     "scheme": "novels",
