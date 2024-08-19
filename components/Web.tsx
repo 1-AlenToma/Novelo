@@ -181,7 +181,7 @@ export default ({
         } else onScroll?.(contentOffset.y);
       });
     },
-    contentMode: "mobile",
+    contentMode:"mobile",
     scalesPageToFit: true,
     originWhitelist: ["*"],
     scrollEnabled: true,
@@ -213,9 +213,8 @@ export default ({
       await sleep(100);
     let item = { type, data };
     state.refItem.webView.injectJavaScript(`
-        ${
-          !method ? "window.loadData" : method
-        }(${JSON.stringify(item)});
+        ${!method ? "window.loadData" : method
+      }(${JSON.stringify(item)});
         true;
      `);
   };
@@ -224,7 +223,7 @@ export default ({
     try {
       if (
         !state.refItem.assets[
-          context.appSettings.fontName
+        context.appSettings.fontName
         ]
       ) {
         state.refItem.assets = {};
@@ -249,22 +248,19 @@ export default ({
       font-family: 'Material Symbols Outlined';
       font-style: normal;
       font-weight: 400;
-      src: url("${
-        state.refItem.assets[
+      src: url("${state.refItem.assets[
           context.appSettings.fontName
         ].icons
-      }") format('woff2');
+        }") format('woff2');
       }
       
       @font-face {
-      font-family: '${
-        context.appSettings.fontName
-      }';
-      src: url("${
-        state.refItem.assets[
+      font-family: '${context.appSettings.fontName
+        }';
+      src: url("${state.refItem.assets[
           context.appSettings.fontName
         ].font
-      }") format('truetype')
+        }") format('truetype')
       }
 
 .material-symbols-outlined {
@@ -308,50 +304,45 @@ export default ({
          .italic, i {
            display:inline !important;
            font-style: italic !important;
-           font-size: ${
-             context.appSettings.fontSize - 4
-           }px !important;
+           font-size: ${context.appSettings.fontSize - 4
+      }px !important;
          }
          
         .highlight {
           border-radius: 5px;
           display: inline-block;
-          color: ${
-            context.appSettings
-              .voiceWordSelectionsSettings?.color
-              ? invertColor(
-                  context.appSettings
-                    .voiceWordSelectionsSettings
-                    ?.color
-                )
-              : color
-          } !important;
-          background-color: ${
-            context.appSettings
-              .voiceWordSelectionsSettings
-              ?.color ?? inverted
-          } !important;
+          color: ${context.appSettings
+        .voiceWordSelectionsSettings?.color
+        ? invertColor(
+          context.appSettings
+            .voiceWordSelectionsSettings
+            ?.color
+        )
+        : color
+      } !important;
+          background-color: ${context.appSettings
+        .voiceWordSelectionsSettings
+        ?.color ?? inverted
+      } !important;
         }
         
         *:not(context):not(context *):not(.italic):not(i) {
           font-style:${(
-            context.appSettings.fontStyle ??
-            "normal"
-          ).toLowerCase()};
+        context.appSettings.fontStyle ??
+        "normal"
+      ).toLowerCase()};
         }
         
         *:not(context):not(context *) {
-          font-family: "${
-            context.appSettings.fontName
-          }";
+          font-family: "${context.appSettings.fontName
+      }";
           font-size-adjust: 1;
-          ${
-            context.appSettings.use3D
-              ? `
+          ${context.appSettings.use3D
+        ? `
             text-shadow: 1px ${shadowLength}px 1px ${shadow};
             `
-              : ""
-          }
+        : ""
+      }
         }
 
         parameter {
@@ -387,39 +378,39 @@ export default ({
           max-width: 98%;
         }
         
+        h1,h2,h3,h4,h5,h6{
+          line-height: ${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)
+      )+5}px !important;
+        }
+        
         body .novel {
           max-width: 100%;
-          min-height: ${
-            !context.player.showPlayer
-              ? "100%"
-              : "50%"
-          };
+          min-height: ${!context.player.showPlayer
+        ? "100%"
+        : "50%"
+      };
           
-          top: ${
-            context.player.showPlayer
-              ? "45px"
-              : "0px"
-          };
+          top: ${context.player.showPlayer
+        ? "45px"
+        : "0px"
+      };
           position: relative;
           overflow: hidden;
           text-align-vertical: top;
           padding-bottom: ${context.player.paddingBottom()}px;
           padding-top: ${context.player.paddingTop()}px;
           padding-left: ${(5).sureValue(
-            context.appSettings.margin
-          )}px;
+        context.appSettings.margin
+      )}px;
           padding-right: ${(5).sureValue(
-            context.appSettings.margin
-          )}px;
-          font-size: ${
-            context.appSettings.fontSize
-          }px;
-          line-height: ${
-            context.appSettings.fontSize * 1.7
-          }px;
-          text-align: ${
-            context.appSettings.textAlign
-          };
+        context.appSettings.margin
+      )}px;
+          font-size: ${context.appSettings.fontSize
+      }px;
+          line-height: ${context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)
+      }px;
+          text-align: ${context.appSettings.textAlign
+      };
         }
         
       `;
@@ -457,11 +448,10 @@ export default ({
       inlineStyle:
         context.player.book.inlineStyle,
       content: context.player.showPlayer
-        ? `<p>${
-            context.player
-              .currentPlaying()
-              ?.cleanText() ?? ""
-          }</p>`
+        ? `<p>${context.player
+          .currentPlaying()
+          ?.cleanText() ?? ""
+        }</p>`
         : context.player.html,
       scroll:
         context.player.currentChapterSettings
@@ -498,19 +488,18 @@ export default ({
       }
       });
     
-    if("${
-      context.appSettings.navigationType || "Snap"
-    }" === "Snap"){
+    if("${context.appSettings.navigationType || "Snap"
+      }" === "Snap"){
             window.bookSlider= new window.slider({
              id: "novel",
              hasNext: ${context.player
-               .hasNext()
-               .toString()
-               .toLowerCase()},
+        .hasNext()
+        .toString()
+        .toLowerCase()},
              hasPrev: ${context.player
-               .hasPrev()
-               .toString()
-               .toLowerCase()},
+        .hasPrev()
+        .toString()
+        .toLowerCase()},
              prevText: "Previous Chapter",
              nextText: "Next Chapter"
              });
@@ -518,8 +507,8 @@ export default ({
     
              
     if(${context.player.showPlayer
-      .toString()
-      .toLowerCase()}){
+        .toString()
+        .toLowerCase()}){
       let parag = document.querySelector(".novel po")
       if(parag)
          {

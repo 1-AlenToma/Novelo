@@ -24,6 +24,7 @@ import { useState } from "../native";
 import { getDirectoryPermissions } from "../Methods";
 import * as DocumentPicker from "expo-document-picker";
 
+
 export default (props: any) => {
   let loader = useLoader();
   context.hook("theme.themeMode");
@@ -153,36 +154,28 @@ export default (props: any) => {
     }, {});
   };
 
+
+
   return (
     <View css="flex">
       {loader.elem ?? elem}
       <Modal
         height="90"
-        onHide={() =>
-          (state.downloadShow =
-            !state.downloadShow)
-        }
+        onHide={(v) => {
+          state.downloadShow = false;
+          //alert(state.downloadShow)
+        }}
         visible={state.downloadShow}
         title="Backup options">
-        <View css="clearwidth ali:center bottom bo:10 zi:10">
-          <TouchableOpacity
-            css="button"
-            onPress={download}>
-            <Text
-              invertColor={true}
-              css="fos:15 bold">
-              DOWNLOAD
-            </Text>
-          </TouchableOpacity>
-        </View>
         <View css="pat:10">
           <CheckBox
             text="Include FontSettings:"
             invertColor={true}
             checked={state.appSettings}
-            onChange={() =>
-              (state.appSettings =
-                !state.appSettings)
+            onChange={c => {
+              //alert(c)
+              state.appSettings = c;
+            }
             }
           />
 
@@ -216,13 +209,25 @@ export default (props: any) => {
                   invertColor={true}
                   checked={
                     state.added[
-                      item.url + item.parserName
+                    item.url + item.parserName
                     ] ?? false
                   }
                 />
               ))}
             </ScrollView>
           </Form>
+
+        </View>
+        <View css="clearwidth ali:center bottom bo:10 zi:10">
+          <TouchableOpacity
+            css="button"
+            onPress={download}>
+            <Text
+              invertColor={true}
+              css="fos:15 bold">
+              DOWNLOAD
+            </Text>
+          </TouchableOpacity>
         </View>
       </Modal>
       <View
@@ -312,7 +317,7 @@ export default (props: any) => {
                 <View
                   css={`
                     ${item ==
-                    context.appSettings.theme
+                      context.appSettings.theme
                       ? "selectedRow"
                       : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
                   `}>
@@ -324,7 +329,7 @@ export default (props: any) => {
                 </View>
               );
             }}
-            onSelect={ theme => {
+            onSelect={theme => {
               context.appSettings.theme = theme;
 
               context.theme.themeMode = theme;
@@ -337,6 +342,6 @@ export default (props: any) => {
           />
         </View>
       </View>
-    </View>
+    </View >
   );
 };

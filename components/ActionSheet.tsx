@@ -51,7 +51,7 @@ export default ({
         context.size.window.height
       );
     }
-    if (h < 400) h = 400;
+    if (typeof h === "number" && h < 400) h = 400;
 
     return h;
   };
@@ -66,7 +66,7 @@ export default ({
     onTouchEnd: () =>
       (state.refItem.isTouched = false),
     state: {
-      
+
     },
     refItem: {
       startValue: 0,
@@ -80,8 +80,8 @@ export default ({
   const setSize = () => {
     state.refItem.interpolate = [
       context.size.screen.height -
-        getHeight() +
-        50,
+      getHeight() +
+      50,
       context.size.window.height + 50
     ];
   };
@@ -111,7 +111,7 @@ export default ({
       //animate.flattenOffset();
       animateY(
         state.refItem.interpolate[0],
-        () => {},
+        () => { },
         0
       );
     }

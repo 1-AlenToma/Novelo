@@ -8,6 +8,5 @@
     "resolveJsonModule": true,
     "baseUrl": "."
   },
-  "extends": "expo/tsconfig.base",
   "include": []
 }

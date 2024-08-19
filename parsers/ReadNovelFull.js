@@ -1,4 +1,4 @@
-import {
+const {
   HttpHandler,
   html,
   Value,
@@ -8,7 +8,7 @@ import {
   ParserDetail,
   SearchDetail,
   Parser
-} from "../native";
+} = require("../native");
 
 export default class ReadNovelFull extends Parser {
   constructor() {
@@ -65,7 +65,7 @@ export default class ReadNovelFull extends Parser {
     return this.settings;
   }
 
-  async search(options: SearchDetail) {
+  async search(options) {
     let url = this.url.join(
       `novel-list/search?keyword=${options.text}`
     );
@@ -116,13 +116,13 @@ export default class ReadNovelFull extends Parser {
       .flatMap(x => x);
   }
 
-  async group(value: Value, page: number) {
+  async group(value, page) {
     return await this.search(
       SearchDetail.n().Group([value]).Page(page)
     );
   }
 
-  async getByAuthor(url: string) {
+  async getByAuthor(url) {
     let html = (
       await this.http.get_html(url, this.url)
     ).html;
@@ -155,13 +155,13 @@ export default class ReadNovelFull extends Parser {
       .flatMap(x => x);
   }
 
-  async chapter(url: string) {
+  async chapter(url) {
     let html = (await this.http.get_html(url))
       .html;
     return html.$(".chr-c").html;
   }
 
-  async detail(url: string) {
+  async detail(url) {
     let html = (
       await this.http.get_html(url, this.url)
     ).html;

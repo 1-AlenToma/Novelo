@@ -98,8 +98,9 @@ export default ({
         <TouchableOpacity
           ifTrue={() => isV}
           onPress={() => {
-            if (props.blur !== false)
+            if (props.blur !== false) {
               (onHide || setIsV)(false);
+            }
           }}
           css="blur flex"
         />
@@ -117,9 +118,9 @@ export default ({
                         (context.size.window
                           .height /
                           100) *
-                          50 +
-                          (-getHeight() / 100) *
-                            50
+                        50 +
+                        (-getHeight() / 100) *
+                        50
                       ]
                     }
                   )
@@ -165,7 +166,7 @@ export default ({
         toTop
       }
     );
-    elContext.update();
+    //elContext.update();
   });
 
   return null;

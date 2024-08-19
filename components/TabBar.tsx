@@ -332,7 +332,7 @@ const TabBar = ({
 
   context.hook("theme.settings");
   const getWidth = (index: number) => {
-    let v = index * state.size.width;
+    let v = index * (state.size.width ?? context.size.window.width);
     if (isNaN(v)) return 0;
     return v;
   };

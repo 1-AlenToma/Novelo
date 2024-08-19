@@ -8,6 +8,7 @@ import IDOMParser from "advanced-html-parser";
 
 function generateText(html, minLength) {
   try {
+
     html = html.replace(
       /\<( )?(\/)?strong( )?>/gim,
       ""
@@ -28,11 +29,10 @@ function generateText(html, minLength) {
         if (
           h.textContent.indexOf("#{h0}") == -1
         ) {
-          h.textContent = `#{h0}${
-            h.textContent
-          }#{h${h.tagName
-            .replace(/([^1-6])/g, "")
-            .trim()}}`;
+          h.textContent = `#{h0}${h.textContent
+            }#{h${h.tagName
+              .replace(/([^1-6])/g, "")
+              .trim()}}`;
           breakIt = false;
           break;
         }
@@ -205,6 +205,7 @@ function generateText(html, minLength) {
     };
 
     let addLine = () => {
+      if(!hStart)
       repeatedChar();
       result.push(current.trim());
       current = "";
@@ -213,13 +214,14 @@ function generateText(html, minLength) {
     };
 
     const isHeader = () => {
-      let length = 4;
+      let length = "#{h0}".length;
       if (index + length >= text.length)
-        return false;
+        return;
       let h = text.substring(
         index,
         index + length
       );
+
       if (h == "#{h0}" && !hStart) {
         hStart = true;
       } else if (
@@ -227,11 +229,13 @@ function generateText(html, minLength) {
         /\#\{h([1-6])\}/gim.test(h)
       ) {
         index += length;
-        current += h;
+        
+        current = current.trimEnd("#")+h;
+        
         addLine();
       }
     };
-
+    //console.warn(text)
     while (text.length - 1 !== index) {
       isHeader();
       getNextChar();
@@ -264,6 +268,7 @@ function generateText(html, minLength) {
     }
 
     result.push(current);
+    
     result = result
       .filter(x =>
         /\w/gim.test(
@@ -298,9 +303,11 @@ function generateText(html, minLength) {
     let item = "";
     index = 0;
     while (result[index]) {
+
       let c = result[index];
+
       let cleaned = c.replace(
-        /(\<p.*?>)|(<\/p>)/gim,
+        /(\<p.*?\>)|(\<\/p\>)/gim,
         ""
       );
       let isItali = /class\=\"italic\"/gim.test(
@@ -313,7 +320,7 @@ function generateText(html, minLength) {
       let pIsItali = /class\=\"italic\"/gim.test(
         prev
       );
-      
+
       if (
         !isItali ||
         pIsItali ||

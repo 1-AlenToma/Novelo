@@ -22,47 +22,51 @@ export default ({
   if (methods.ifSelector(ifTrue) === false)
     return null;
   const { animateX, animate, currentValue } =
-    useAnimate({speed:100});
+    useAnimate({ speed: 100 });
   const [isChecked, setIsChecked] =
     useState(checked);
+  const prev = useRef(checked);
+
 
   const loaded = useRef();
   const tAnimate = (value: number, fn: any) => {
-    if (currentValue.x == value) return;
+    //if (currentValue.x == value) return;
+    let ch = value == 1 ? true : false;
+    //setIsChecked(ch);
+
     animateX(
       value,
       () => {
-        let ch = value == 1 ? true : false;
-        if (ch !== isChecked) setIsChecked(ch);
         if (
-          ch !== checked &&
-          onChange &&
-          loaded.current
-        )
-          onChange(ch);
+          prev.current !== isChecked &&
+          onChange && loaded.current
+        ) {
+          onChange(isChecked);
+        }
+        prev.current = isChecked;
         fn?.();
+        loaded.current = true;
       },
       !loaded.current ? 1 : undefined
     );
   };
+
   useEffect(() => {
-    tAnimate(
-      checked ? 1 : 0,
-      () => (loaded.current = true)
-    );
-  }, [checked]);
+    setIsChecked(checked);
+  }, [checked])
 
   useEffect(() => {
     tAnimate(isChecked ? 1 : 0);
+
   }, [isChecked]);
+
   let Container = onChange
     ? TouchableOpacity
     : View;
   return (
     <View
-      css={`bor:1 pa:5 pal:10 par:2 clearwidth ${
-        css ?? ""
-      }`}>
+      css={`bor:1 pa:5 pal:10 par:2 clearwidth ${css ?? ""
+        }`}>
       <Container
         onPress={() => {
           setIsChecked(!isChecked);

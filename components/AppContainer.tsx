@@ -38,8 +38,8 @@ const AppContainer = ({
       zIndex?: number
     ) => {
       items.set(id, {
-        props,
-        elem
+        elem,
+        props
       });
       data.update();
     },

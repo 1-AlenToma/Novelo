@@ -28,31 +28,13 @@ import Fonts from "../../assets/Fonts";
 import { useEffect, useRef } from "react";
 import translate from "translate-google-api";
 import { LANGUAGE_TABLE } from "react-native-translator/dist/utils/languageCodeConverter";
-import {
-  ScrollView,
-  Linking
-} from "react-native";
+import { ScrollView, Linking } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import {
-  useNavigation,
-  useUpdate,
-  useTimer,
-  useDbHook
-} from "../../hooks";
-import {
-  useState,
-  Player,
-  DetailInfo
-} from "../../native";
+import { useNavigation, useUpdate, useTimer, useDbHook } from "../../hooks";
+import { useState, Player, DetailInfo } from "../../native";
 import Header from "../../pages/Header";
 import { Book, Chapter } from "../../db";
-import {
-  arrayBuffer,
-  newId,
-  proc,
-  invertColor,
-  sleep
-} from "../../Methods";
+import { arrayBuffer, newId, proc, invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
 const lang = {};
 
@@ -60,8 +42,7 @@ for (let l in LANGUAGE_TABLE) {
   let item = LANGUAGE_TABLE[l].google;
   if (item) {
     lang[item.toLowerCase()] = l;
-    lang[item.safeSplit("-", -1).toLowerCase()] =
-      l;
+    lang[item.safeSplit("-", -1).toLowerCase()] = l;
   }
 }
 
@@ -95,127 +76,104 @@ const Modoles = () => {
       {loader.elem}
       <Modal
         blur={false}
-        visible={
-          context.player.menuOptions.comment !=
-          undefined
-        }
-        onHide={() =>
-          (context.player.menuOptions.comment =
-            undefined)
-        }
-        height={200}>
+        visible={context.player.menuOptions.comment != undefined}
+        onHide={() => (context.player.menuOptions.comment = undefined)}
+        height={200}
+      >
         <View css="flex mat:20">
           <TextInput
             onChangeText={x =>
-              (context.player.menuOptions.comment =
-                x)
+              (context.player.menuOptions.comment = x)
             }
             readOnly={true}
             invertColor={false}
             css="pa:5 bor:2 flg:1 clearboth"
             multiline={true}
-            defaultValue={
-              context.player.menuOptions.comment
-            }
+            defaultValue={context.player.menuOptions.comment}
           />
         </View>
       </Modal>
       <Modal
         blur={false}
-        visible={
-          context.player.menuOptions.textEdit !=
-          undefined
-        }
-        onHide={() =>
-          (context.player.menuOptions.textEdit =
-            undefined)
-        }
-        height="90">
+        visible={context.player.menuOptions.textEdit != undefined}
+        onHide={() => (context.player.menuOptions.textEdit = undefined)}
+        height="90"
+      >
         <ScrollView>
           <View css="flex mat:20">
             <Form
               root={true}
               text="TextToEdit"
-              css="formRow he:100">
+              css="formRow he:100"
+            >
               <TextInput
                 onChangeText={x =>
-                  (context.player.menuOptions.textEdit.edit =
-                    x)
+                (context.player.menuOptions.textEdit.edit =
+                  x)
                 }
                 invertColor={false}
                 css="pa:5 bor:2 flg:1"
                 multiline={true}
                 defaultValue={
-                  context.player.menuOptions
-                    .textEdit?.edit
+                  context.player.menuOptions.textEdit?.edit
                 }
               />
             </Form>
-            <Form
-              root={true}
-              text="EditWith"
-              css="formRow he:100">
+            <Form root={true} text="EditWith" css="formRow he:100">
               <TextInput
                 onChangeText={x =>
-                  (context.player.menuOptions.textEdit.editWith =
-                    x)
+                (context.player.menuOptions.textEdit.editWith =
+                  x)
                 }
                 invertColor={false}
                 css="pa:5 bor:2 flg:1"
                 multiline={true}
                 defaultValue={
-                  context.player.menuOptions
-                    .textEdit?.editWith
+                  context.player.menuOptions.textEdit
+                    ?.editWith
                 }
               />
             </Form>
-            <Form
-              root={true}
-              text="Comment"
-              css="formRow he:100">
+            <Form root={true} text="Comment" css="formRow he:100">
               <TextInput
                 onChangeText={x =>
-                  (context.player.menuOptions.textEdit.comments =
-                    x)
+                (context.player.menuOptions.textEdit.comments =
+                  x)
                 }
                 invertColor={false}
                 css="pa:5 bor:2 flg:1"
                 multiline={true}
                 defaultValue={
-                  context.player.menuOptions
-                    .textEdit?.comments
+                  context.player.menuOptions.textEdit
+                    ?.comments
                 }
               />
             </Form>
             <Form text="BackgroundColor">
               <ColorPicker
                 value={
-                  context.player.menuOptions
-                    .textEdit?.bgColor ??
-                  "#ffffff"
+                  context.player.menuOptions.textEdit
+                    ?.bgColor ?? "#ffffff"
                 }
                 onComplete={({ hex }) =>
-                  (context.player.menuOptions.textEdit =
-                    {
-                      ...context.player
-                        .menuOptions.textEdit,
-                      bgColor: hex
-                    })
+                (context.player.menuOptions.textEdit = {
+                  ...context.player.menuOptions.textEdit,
+                  bgColor: hex
+                })
                 }
               />
             </Form>
             <TouchableOpacity
               onPress={async () => {
                 context.player.book.textReplacements.push(
-                  context.player.menuOptions
-                    .textEdit
+                  context.player.menuOptions.textEdit
                 );
                 await context.player.book.saveChanges();
                 await context.player.clean();
-                context.player.menuOptions.textEdit =
-                  undefined;
+                context.player.menuOptions.textEdit = undefined;
               }}
-              css="button clearwidth bow:1 boc:#ccc bor:5 juc:center">
+              css="button clearwidth bow:1 boc:#ccc bor:5 juc:center"
+            >
               <Text invertColor={true}>Save</Text>
             </TouchableOpacity>
           </View>
@@ -224,40 +182,33 @@ const Modoles = () => {
       <Modal
         blur={false}
         visible={
-          context.player.menuOptions
-            .textToTranslate != undefined
+          context.player.menuOptions.textToTranslate != undefined
         }
         onHide={() =>
-          (context.player.menuOptions.textToTranslate =
-            undefined)
+          (context.player.menuOptions.textToTranslate = undefined)
         }
-        height="100">
+        height="100"
+      >
         <View css="flex mat:20">
           <View css="form">
-            <Text invertColor={true}>
-              TranslateTo:
-            </Text>
+            <Text invertColor={true}>TranslateTo:</Text>
             <DropdownList
               height="80"
               toTop={true}
               items={Object.keys(LANGUAGE_TABLE)}
               render={item => {
                 return (
-                  <Text
-                    css="desc fos:13"
-                    invertColor={true}>
+                  <Text css="desc fos:13" invertColor={true}>
                     {item}
                   </Text>
                 );
               }}
               onSelect={language => {
-                context.appSettings.lang =
-                  language;
+                context.appSettings.lang = language;
                 context.appSettings.saveChanges();
               }}
               selectedValue={
-                context.appSettings.lang ??
-                "English"
+                context.appSettings.lang ?? "English"
               }
             />
           </View>
@@ -271,15 +222,12 @@ const Modoles = () => {
               nestedScrollEnabled={true}
               cacheEnabled={true}
               source={{
-                uri: `https://translate.google.com/m?hl=en&sl=en&tl=${
-                  LANGUAGE_TABLE[
-                    context.appSettings.lang ??
-                      "English"
-                  ].google
-                }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
-                  context.player.menuOptions
-                    .textToTranslate
-                )}`
+                uri: `https://translate.google.com/m?hl=en&sl=en&tl=${LANGUAGE_TABLE[
+                  context.appSettings.lang ?? "English"
+                ].google
+                  }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
+                    context.player.menuOptions.textToTranslate
+                  )}`
               }}
               contentMode="mobile"
               scalesPageToFit={true}
@@ -296,9 +244,7 @@ const Modoles = () => {
               ]}
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
-              allowUniversalAccessFromFileURLs={
-                true
-              }
+              allowUniversalAccessFromFileURLs={true}
               javaScriptEnabled={true}
             />
           </View>
@@ -307,23 +253,17 @@ const Modoles = () => {
 
       <Modal
         blur={false}
-        visible={
-          context.player.menuOptions.define !=
-          undefined
-        }
-        onHide={() =>
-          (context.player.menuOptions.define =
-            undefined)
-        }
-        height="100">
+        visible={context.player.menuOptions.define != undefined}
+        onHide={() => (context.player.menuOptions.define = undefined)}
+        height="100"
+      >
         <View css="flex mat:20">
           <View css="form flex">
             <WebView
               nestedScrollEnabled={true}
               cacheEnabled={true}
               source={{
-                uri: context.player.menuOptions
-                  .define
+                uri: context.player.menuOptions.define
               }}
               contentMode="mobile"
               scalesPageToFit={true}
@@ -340,9 +280,7 @@ const Modoles = () => {
               ]}
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
-              allowUniversalAccessFromFileURLs={
-                true
-              }
+              allowUniversalAccessFromFileURLs={true}
               javaScriptEnabled={true}
             />
           </View>
@@ -378,8 +316,7 @@ const Controller = ({ state, ...props }) => {
   });
 
   useEffect(() => {
-    if (context.appSettings.lockScreen)
-      context.orientation("LANDSCAPE");
+    if (context.appSettings.lockScreen) context.orientation("LANDSCAPE");
 
     return () => {
       context.orientation("Default");
@@ -387,6 +324,7 @@ const Controller = ({ state, ...props }) => {
   }, []);
 
   const editSettings = ({
+    lineHeight,
     fontSize,
     fontName,
     isBold,
@@ -405,54 +343,49 @@ const Controller = ({ state, ...props }) => {
     useSentenceBuilder
   }: any) => {
     Timer(async () => {
-      if (fontSize != undefined)
+      if (fontSize != undefined) {
         context.appSettings.fontSize = fontSize;
+        context.appSettings.lineHeight = fontSize * context.lineHeight;
+      }
+
+      if (lineHeight !== undefined) {
+        context.appSettings.lineHeight = lineHeight;
+      }
+
       if (isBold != undefined) {
         context.appSettings.isBold = isBold;
       }
       if (backgroundColor !== undefined)
-        context.appSettings.backgroundColor =
-          backgroundColor;
+        context.appSettings.backgroundColor = backgroundColor;
       if (textAlign != undefined)
         context.appSettings.textAlign = textAlign;
       if (lockScreen != undefined) {
-        context.appSettings.lockScreen =
-          lockScreen;
+        context.appSettings.lockScreen = lockScreen;
         if (context.appSettings.lockScreen)
           context.orientation("LANDSCAPE");
         else context.orientation("Default");
       }
-      if (rate != undefined)
-        context.appSettings.rate = rate;
-      if (pitch != undefined)
-        context.appSettings.pitch = pitch;
-      if (fontName)
-        context.appSettings.fontName = fontName;
-      if (voice)
-        context.appSettings.voice = voice;
-      if (margin != undefined)
-        context.appSettings.margin = margin;
+      if (rate != undefined) context.appSettings.rate = rate;
+      if (pitch != undefined) context.appSettings.pitch = pitch;
+      if (fontName) context.appSettings.fontName = fontName;
+      if (voice) context.appSettings.voice = voice;
+      if (margin != undefined) context.appSettings.margin = margin;
       if (navigationType != undefined)
-        context.appSettings.navigationType =
-          navigationType;
-      if (use3D != undefined)
-        context.appSettings.use3D = use3D;
+        context.appSettings.navigationType = navigationType;
+      if (use3D != undefined) context.appSettings.use3D = use3D;
       if (fontStyle != undefined)
         context.appSettings.fontStyle = fontStyle;
       if (shadowLength != undefined)
-        context.appSettings.shadowLength =
-          shadowLength;
+        context.appSettings.shadowLength = shadowLength;
       if (voiceWordSelectionsSettings)
         context.appSettings.voiceWordSelectionsSettings =
           voiceWordSelectionsSettings;
       if (useSentenceBuilder) {
-        context.appSettings.useSentenceBuilder =
-          useSentenceBuilder;
+        context.appSettings.useSentenceBuilder = useSentenceBuilder;
       }
       await context.appSettings.saveChanges();
 
-      if (useSentenceBuilder)
-        context.player.clean();
+      if (useSentenceBuilder) context.player.clean();
     });
   };
 
@@ -463,53 +396,40 @@ const Controller = ({ state, ...props }) => {
         css={`band he:110 bottom juc:center ali:center pal:10 par:10 botw:1 boc:${invertColor(
           context.appSettings.backgroundColor
         )}`}
-        invertColor={true}>
-        <Text
-          invertColor={true}
-          css="desc fos:13">
-          {context.player.procent(
-            thisState.chapterSliderValue
-          )}
+        invertColor={true}
+      >
+        <Text invertColor={true} css="desc fos:13">
+          {context.player.procent(thisState.chapterSliderValue)}
         </Text>
         <View css="clearwidth juc:center ali:center">
           <Slider
             invertColor={true}
             buttons={true}
             disableTimer={true}
-            value={
-              context.player.currentChapterIndex
-            }
+            value={context.player.currentChapterIndex}
             onValueChange={v => {
               thisState.chapterSliderValue = v;
             }}
             onSlidingComplete={index => {
               Timer(() => {
                 context.player.jumpTo(index);
-                thisState.chapterSliderValue =
-                  undefined;
+                thisState.chapterSliderValue = undefined;
               });
             }}
             minimumValue={0}
-            maximumValue={
-              context.player.novel.chapters
-                .length - 1
-            }
+            maximumValue={context.player.novel.chapters.length - 1}
           />
         </View>
         <View css="clearwidth ali:center juc:center ">
           <Text
             numberOfLines={1}
             invertColor={true}
-            css="header bold fos:18 foso:italic">
+            css="header bold fos:18 foso:italic"
+          >
             {state.book.name}
           </Text>
-          <Text
-            numberOfLines={1}
-            css="desc color:red">
-            {
-              context.player
-                .currentChapterSettings?.name
-            }
+          <Text numberOfLines={1} css="desc color:red">
+            {context.player.currentChapterSettings?.name}
           </Text>
         </View>
       </View>
@@ -544,19 +464,15 @@ const Controller = ({ state, ...props }) => {
                     type="MaterialCommunityIcons"
                     name="menu"
                   />
-                }>
+                }
+              >
                 <ChapterView
                   book={state.book}
                   novel={state.novel}
                   onPress={item => {
-                    context.player.jumpTo(
-                      item.url
-                    );
+                    context.player.jumpTo(item.url);
                   }}
-                  current={
-                    context.player.currentChapter
-                      .url
-                  }
+                  current={context.player.currentChapter.url}
                 />
               </ActionSheetButton>
             )
@@ -571,20 +487,23 @@ const Controller = ({ state, ...props }) => {
                     type="Ionicons"
                     name="settings"
                   />
-                }>
+                }
+              >
                 <View css="flex">
                   <TabBar
                     loadAll={false}
                     fontSize={14}
                     scrollableHeader={true}
                     scrollHeight="90%"
-                    position="Top">
+                    position="Top"
+                  >
                     <View
                       icon={{
                         name: "format-font",
                         type: "MaterialCommunityIcons"
                       }}
-                      css="flex">
+                      css="flex"
+                    >
                       <CheckBox
                         text="LockScreen:"
                         css="pal:1"
@@ -603,10 +522,7 @@ const Controller = ({ state, ...props }) => {
                       />
                       <Form text="NavigationMethod">
                         <ButtonList
-                          items={[
-                            "Scroll",
-                            "Snap"
-                          ]}
+                          items={["Scroll", "Snap"]}
                           onPress={navigationType => {
                             editSettings({
                               navigationType
@@ -650,9 +566,7 @@ const Controller = ({ state, ...props }) => {
                           }
                         />
                       </Form>
-                      <Form
-                        css="row"
-                        text="TextAlign">
+                      <Form css="row" text="TextAlign">
                         {[
                           "align-left",
                           "align-center",
@@ -670,7 +584,8 @@ const Controller = ({ state, ...props }) => {
                                   )
                               });
                             }}
-                            css="mar:5">
+                            css="mar:5"
+                          >
                             <Icon
                               type="Feather"
                               name={x}
@@ -682,8 +597,8 @@ const Controller = ({ state, ...props }) => {
                                     .textAlign
                                 )
                                   ? {
-                                      color: "red"
-                                    }
+                                    color: "red"
+                                  }
                                   : {})
                               }}
                               invertColor={true}
@@ -710,20 +625,19 @@ const Controller = ({ state, ...props }) => {
                           hooks={[
                             "appSettings.fontName"
                           ]}
-                          items={Object.keys(
-                            Fonts
-                          )}
+                          items={Object.keys(Fonts)}
                           render={item => {
                             return (
                               <View
                                 css={`
-                                  ${item ==
-                                  context
-                                    .appSettings
-                                    .fontName
+                                                                    ${item ==
+                                    context
+                                      .appSettings
+                                      .fontName
                                     ? "selectedRow"
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
-                                `}>
+                                                                `}
+                              >
                                 <Text
                                   style={{
                                     fontFamily:
@@ -734,7 +648,8 @@ const Controller = ({ state, ...props }) => {
                                   `}
                                   invertColor={
                                     true
-                                  }>
+                                  }
+                                >
                                   {item}
                                 </Text>
                               </View>
@@ -767,8 +682,28 @@ const Controller = ({ state, ...props }) => {
                               fontSize
                             });
                           }}
-                          minimumValue={15}
+                          minimumValue={10}
                           maximumValue={40}
+                        />
+                      </Form>
+
+                      <Form text="LineHeight">
+                        <Slider
+                          css="flex"
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          value={
+                            context.appSettings
+                              .lineHeight
+                          }
+                          onSlidingComplete={lineHeight => {
+                            editSettings({
+                              lineHeight
+                            });
+                          }}
+                          minimumValue={(context.appSettings.fontSize * context.lineHeight) - 8}
+                          maximumValue={(context.appSettings.fontSize * context.lineHeight) + 20}
                         />
                       </Form>
 
@@ -797,24 +732,25 @@ const Controller = ({ state, ...props }) => {
                       icon={{
                         name: "text-fields",
                         type: "MaterialIcons"
-                      }}>
+                      }}
+                    >
                       <Text
                         ifTrue={() =>
                           context.player.book
                             .parserName !== "epub"
                         }
                         invertColor={true}
-                        css="desc fos:10">
-                        Enabling This Option Will
-                         Make Novelo Try and
-                         Reorder the Sentences of
-                         The Chapter Too Follow A
-                         Specific novelo Rules,
-                         Making the Chapter More
-                         Readiable. Offcourse this
-                         COULD ALSO MAKE SMALL
-                         Mistakes Depending on How
-                         The Auther wrote it.
+                        css="desc fos:10"
+                      >
+                        Enabling This Option Will Make
+                        Novelo Try and Reorder the
+                        Sentences of The Chapter Too
+                        Follow A Specific novelo Rules,
+                        Making the Chapter More
+                        Readiable. Offcourse this COULD
+                        ALSO MAKE SMALL Mistakes
+                        Depending on How The Auther
+                        wrote it.
                       </Text>
                       <CheckBox
                         ifTrue={() =>
@@ -845,14 +781,16 @@ const Controller = ({ state, ...props }) => {
                               )
                             }
                           });
-                        }}>
+                        }}
+                      >
                         <Form
                           text="MinLength"
                           ifTrue={() =>
                             context.appSettings
                               .useSentenceBuilder
                               ?.enabled == true
-                          }>
+                          }
+                        >
                           <Slider
                             step={10}
                             css="flex"
@@ -862,19 +800,20 @@ const Controller = ({ state, ...props }) => {
                             value={
                               context.appSettings
                                 .useSentenceBuilder
-                                ?.minLength ?? 100
+                                ?.minLength ??
+                              100
                             }
                             onSlidingComplete={length => {
                               editSettings({
                                 useSentenceBuilder:
-                                  {
-                                    ...(context
-                                      .appSettings
-                                      .useSentenceBuilder ??
-                                      {}),
-                                    minLength:
-                                      length
-                                  }
+                                {
+                                  ...(context
+                                    .appSettings
+                                    .useSentenceBuilder ??
+                                    {}),
+                                  minLength:
+                                    length
+                                }
                               });
                             }}
                             minimumValue={100}
@@ -887,22 +826,22 @@ const Controller = ({ state, ...props }) => {
                         css="pal:1"
                         invertColor={true}
                         checked={
-                          context.appSettings
-                            .use3D
+                          context.appSettings.use3D
                         }
                         onChange={() => {
                           editSettings({
-                            use3D:
-                              !context.appSettings
-                                .use3D
+                            use3D: !context
+                              .appSettings.use3D
                           });
-                        }}>
+                        }}
+                      >
                         <Form
                           text="Shadow Length"
                           ifTrue={() =>
                             context.appSettings
                               .use3D == true
-                          }>
+                          }
+                        >
                           <Slider
                             css="flex"
                             renderValue={true}
@@ -925,7 +864,8 @@ const Controller = ({ state, ...props }) => {
                       </CheckBox>
                       <Form
                         css="form he:200"
-                        text="InlineStyle">
+                        text="InlineStyle"
+                      >
                         <TextInput
                           isModole={true}
                           invertColor={false}
@@ -948,34 +888,29 @@ const Controller = ({ state, ...props }) => {
                       icon={{
                         name: "settings-voice",
                         type: "MaterialIcons"
-                      }}>
+                      }}
+                    >
                       <Form text="Voices">
                         <DropdownList
                           height="80"
                           toTop={true}
                           updater={[
-                            context.player
-                              .testVoice
+                            context.player.testVoice
                           ]}
-                          hooks={[
-                            "player.testVoice"
-                          ]}
+                          hooks={["player.testVoice"]}
                           items={context.voices}
-                          onSearch={(
-                            item,
-                            txt
-                          ) => {
+                          onSearch={(item, txt) => {
                             let l =
                               lang[
-                                item.language.toLowerCase()
+                              item.language.toLowerCase()
                               ] ||
                               lang[
-                                item.language
-                                  .safeSplit(
-                                    "-",
-                                    0
-                                  )
-                                  .toLowerCase()
+                              item.language
+                                .safeSplit(
+                                  "-",
+                                  0
+                                )
+                                .toLowerCase()
                               ] ||
                               item.language;
                             return l.has(txt);
@@ -990,31 +925,36 @@ const Controller = ({ state, ...props }) => {
                             return (
                               <View
                                 css={`
-                                  ${item.name ==
-                                  context
-                                    .appSettings
-                                    .voice
+                                                                    ${item.name ==
+                                    context
+                                      .appSettings
+                                      .voice
                                     ? "selectedRow"
                                     : ""} ali:center pal:10 bor:5 flex row juc:space-between
-                                `}>
+                                                                `}
+                              >
                                 <Text
                                   css={`desc fos:13`}
                                   invertColor={
                                     true
-                                  }>
+                                  }
+                                >
                                   {lang[
                                     item.language.toLowerCase()
                                   ] ||
                                     lang[
-                                      item.language
-                                        .safeSplit(
-                                          "-",
-                                          0
-                                        )
-                                        .toLowerCase()
+                                    item.language
+                                      .safeSplit(
+                                        "-",
+                                        0
+                                      )
+                                      .toLowerCase()
                                     ] ||
                                     item.language}
-                                  ({item.language}
+                                  (
+                                  {
+                                    item.language
+                                  }
                                   )
                                 </Text>
                                 <TouchableOpacity
@@ -1022,18 +962,21 @@ const Controller = ({ state, ...props }) => {
                                     context.player.testPlaying(
                                       item.name
                                     )
-                                  }>
+                                  }
+                                >
                                   <Icon
                                     name={
                                       context
                                         .player
                                         .testVoice ==
-                                      item.name
+                                        item.name
                                         ? "stop-circle"
                                         : "play-circle"
                                     }
                                     type="Ionicons"
-                                    size={35}
+                                    size={
+                                      35
+                                    }
                                     invertColor={
                                       true
                                     }
@@ -1081,8 +1024,7 @@ const Controller = ({ state, ...props }) => {
                           buttons={true}
                           step={0.1}
                           value={
-                            context.appSettings
-                              .rate
+                            context.appSettings.rate
                           }
                           onSlidingComplete={rate => {
                             editSettings({
@@ -1096,30 +1038,30 @@ const Controller = ({ state, ...props }) => {
                       <Form
                         css="mah:200"
                         root={true}
-                        text="Words Highlight Settings">
+                        text="Words Highlight Settings"
+                      >
                         <Form
                           root={true}
                           css="he:80 clearwidth"
-                          text="Color">
+                          text="Color"
+                        >
                           <ColorPicker
                             value={
                               context.appSettings
                                 .voiceWordSelectionsSettings
                                 ?.color
                             }
-                            onComplete={({
-                              hex
-                            }) =>
+                            onComplete={({ hex }) =>
                               editSettings({
                                 voiceWordSelectionsSettings:
-                                  {
-                                    color: hex,
-                                    appendSelection:
-                                      context
-                                        .appSettings
-                                        .voiceWordSelectionsSettings
-                                        ?.appendSelection
-                                  }
+                                {
+                                  color: hex,
+                                  appendSelection:
+                                    context
+                                      .appSettings
+                                      .voiceWordSelectionsSettings
+                                      ?.appendSelection
+                                }
                               })
                             }
                           />
@@ -1137,21 +1079,20 @@ const Controller = ({ state, ...props }) => {
                           onChange={() => {
                             editSettings({
                               voiceWordSelectionsSettings:
-                                {
-                                  color:
+                              {
+                                color: context
+                                  .appSettings
+                                  .voiceWordSelectionsSettings
+                                  ?.color,
+                                appendSelection:
+                                  !(
                                     context
                                       .appSettings
                                       .voiceWordSelectionsSettings
-                                      ?.color,
-                                  appendSelection:
-                                    !(
-                                      context
-                                        .appSettings
-                                        .voiceWordSelectionsSettings
-                                        ?.appendSelection ??
-                                      false
-                                    )
-                                }
+                                      ?.appendSelection ??
+                                    false
+                                  )
+                              }
                             });
                           }}
                         />
@@ -1162,11 +1103,13 @@ const Controller = ({ state, ...props }) => {
                       icon={{
                         name: "format-color-highlight",
                         type: "MaterialCommunityIcons"
-                      }}>
+                      }}
+                    >
                       <View css="flex clearboth juc:flex-start mih:100">
                         <Text
                           invertColor={true}
-                          css="header fos:18">
+                          css="header fos:18"
+                        >
                           Text Replacements
                         </Text>
                         <ItemList
@@ -1175,21 +1118,21 @@ const Controller = ({ state, ...props }) => {
                             context.player.book
                               .textReplacements
                           }
-                          container={({
-                            item
-                          }) => (
+                          container={({ item }) => (
                             <View
                               style={{
                                 backgroundColor:
                                   item.bgColor
                               }}
-                              css="flex di:flex row juc:space-between ali:center pal:10 bor:2">
+                              css="flex di:flex row juc:space-between ali:center pal:10 bor:2"
+                            >
                               <View css="flex overflow maw:80%">
                                 <Text
                                   css="desc fos:13"
                                   invertColor={
                                     true
-                                  }>
+                                  }
+                                >
                                   {item.edit}
                                   {"\n=>"}
                                 </Text>
@@ -1197,8 +1140,11 @@ const Controller = ({ state, ...props }) => {
                                   css="desc fos:13"
                                   invertColor={
                                     true
-                                  }>
-                                  {item.editWith}
+                                  }
+                                >
+                                  {
+                                    item.editWith
+                                  }
                                 </Text>
                               </View>
                               <TouchableOpacity
@@ -1206,17 +1152,20 @@ const Controller = ({ state, ...props }) => {
                                   context.player.book.textReplacements =
                                     context.player.book.textReplacements.filter(
                                       x =>
-                                        x != item
+                                        x !=
+                                        item
                                     );
 
                                   await context.player.book.saveChanges();
                                   await context.player.clean();
                                 }}
-                                css="button">
+                                css="button"
+                              >
                                 <Text
                                   invertColor={
                                     true
-                                  }>
+                                  }
+                                >
                                   Delete
                                 </Text>
                               </TouchableOpacity>
@@ -1238,31 +1187,22 @@ const Controller = ({ state, ...props }) => {
     </>
   );
 };
-const InternalWeb = ({
-  state,
-  ...props
-}: any) => {
+const InternalWeb = ({ state, ...props }: any) => {
   return (
     <Web
       click={() => {
-        context.player.showController =
-          !context.player.showController;
+        context.player.showController = !context.player.showController;
       }}
       onComments={index => {
         context.player.menuOptions.comment =
-          context.player.book.textReplacements[
-            index
-          ].comments;
+          context.player.book.textReplacements[index].comments;
       }}
       onMenu={(item: any) => {
         // handle later
         if (item.item.text == "Translate")
-          context.player.menuOptions.textToTranslate =
-            item.selection;
+          context.player.menuOptions.textToTranslate = item.selection;
         else if (item.item.text === "Copy") {
-          Clipboard.setStringAsync(
-            item.selection
-          );
+          Clipboard.setStringAsync(item.selection);
         } else if (item.item.text === "Define") {
           context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
             / /g,
@@ -1306,13 +1246,10 @@ const InternalWeb = ({
           }
         ]
       }}
-      bottomReched={() =>
-        context.player.next(true)
-      }
+      bottomReched={() => context.player.next(true)}
       topReched={() => context.player.prev()}
       onScroll={(y: number) => {
-        context.player.currentChapterSettings.scrollProgress =
-          y;
+        context.player.currentChapterSettings.scrollProgress = y;
 
         context.player.currentChapterSettings.saveChanges();
       }}
@@ -1321,10 +1258,7 @@ const InternalWeb = ({
 };
 
 export default (props: any) => {
-  const [
-    { url, parserName, epub, chapter },
-    nav
-  ] = useNavigation(props);
+  const [{ url, parserName, epub, chapter }, nav] = useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
   useKeepAwake();
@@ -1332,10 +1266,7 @@ export default (props: any) => {
     "json",
     x => {
       return x.has(
-        "".fileName(
-          url,
-          parserName == "epub" ? "" : parserName
-        )
+        "".fileName(url, parserName == "epub" ? "" : parserName)
       );
     },
     "New"
@@ -1363,9 +1294,7 @@ export default (props: any) => {
 
       state.novel =
         parserName == "epub" || epub
-          ? files.fileItems.find(
-              x => x.url === url
-            )
+          ? files.fileItems.find(x => x.url === url)
           : await state.parser.detail(url, true);
       if (
         !context.player.novel ||
@@ -1394,14 +1323,11 @@ export default (props: any) => {
               .ImageBase64(
                 await context
                   .http()
-                  .imageUrlToBase64(
-                    state.novel.image
-                  )
+                  .imageUrlToBase64(state.novel.image)
               )
           );
 
-        if (!book.textReplacements)
-          book.textReplacements = [];
+        if (!book.textReplacements) book.textReplacements = [];
         state.book = book;
 
         context.player = new Player(
@@ -1421,8 +1347,7 @@ export default (props: any) => {
         );
         await context.player.jumpTo(chapter);
       } else {
-        context.player.novel = state.novel =
-          state.novel;
+        context.player.novel = state.novel = state.novel;
         state.book = context.player.book;
         context.player.loader = {
           show: () => {
@@ -1458,10 +1383,7 @@ export default (props: any) => {
       context.player.loader = undefined;
       context.isFullScreen = false;
       context.player.hooked = false;
-      if (
-        context.player.showPlayer &&
-        context.player.playing()
-      )
+      if (context.player.showPlayer && context.player.playing())
         context.player.viewState = "Folded";
     };
   }, []);
@@ -1481,8 +1403,7 @@ export default (props: any) => {
 
   if (
     loader.loading &&
-    (!state.novel.name ||
-      !context.player?.currentChapterSettings)
+    (!state.novel.name || !context.player?.currentChapterSettings)
   ) {
     return loader.elem;
   }
@@ -1492,18 +1413,12 @@ export default (props: any) => {
       <View
         css="flex"
         style={{
-          backgroundColor:
-            context.appSettings.backgroundColor
-        }}>
+          backgroundColor: context.appSettings.backgroundColor
+        }}
+      >
         <Modoles />
-        <Controller
-          state={state}
-          {...props}
-        />
-        <InternalWeb
-          state={state}
-          {...props}
-        />
+        <Controller state={state} {...props} />
+        <InternalWeb state={state} {...props} />
       </View>
     </>
   );
