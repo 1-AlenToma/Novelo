@@ -384,6 +384,7 @@ export default ({
         }
         
         body .novel {
+          border: 0 !important;
           max-width: 100%;
           min-height: ${!context.player.showPlayer
         ? "100%"
@@ -668,6 +669,10 @@ export default ({
         
           br{
             display:none;
+          }
+          
+          context > div > a span{
+            top:5px;
           }
         </style>
         <script>

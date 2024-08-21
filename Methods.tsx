@@ -117,7 +117,6 @@ function generateText(html, minLength) {
     };
 
     createMap();
-    // console.warn(charMap.niceJson());
     let result = [];
     let current = "";
     let index = -1;
@@ -145,6 +144,17 @@ function generateText(html, minLength) {
       return (currentChar = text[index]);
     };
 
+    const isName = () => {
+      let t = '';
+      for (var i = index - 5; i <= text.length; i++) {
+        if (text.charAt(i)?.trim().length<=0) continue;
+        t += text.charAt(i);
+        if (t.length >= 5) break;
+      }
+      const r = /((mr|Mrs|Ms|Miss|dr)+( \.|\.)).*/gim.test(t);
+      return r;
+    }
+
     const isNumber = () => {
       if (
         ["."].includes(currentChar) &&
@@ -152,7 +162,7 @@ function generateText(html, minLength) {
         nextChar != undefined
       ) {
         let nr = prevChar + "." + nextChar;
-        return /[\w]\.[\w]/gim.test(nr);
+        return /[\w]\.( )?[\w]/gim.test(nr);
       }
       return false;
     };
@@ -170,7 +180,7 @@ function generateText(html, minLength) {
           )) ||
         (meningEnd.includes(currentChar) &&
           current.length >= minLength &&
-          !isNumber()) ||
+          !isNumber() && !isName()) ||
         (possibleNewLine.find(
           x =>
             current
@@ -205,8 +215,8 @@ function generateText(html, minLength) {
     };
 
     let addLine = () => {
-      if(!hStart)
-      repeatedChar();
+      if (!hStart)
+        repeatedChar();
       result.push(current.trim());
       current = "";
       hStart = false;
@@ -229,9 +239,9 @@ function generateText(html, minLength) {
         /\#\{h([1-6])\}/gim.test(h)
       ) {
         index += length;
-        
-        current = current.trimEnd("#")+h;
-        
+
+        current = current.trimEnd("#") + h;
+
         addLine();
       }
     };
@@ -268,7 +278,7 @@ function generateText(html, minLength) {
     }
 
     result.push(current);
-    
+
     result = result
       .filter(x =>
         /\w/gim.test(

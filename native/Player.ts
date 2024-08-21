@@ -100,11 +100,14 @@ class Player {
               x => x == t
             )})`
           : "";
-        let spn = `<span onclick="${click}" class="custom ${className}" style="background-color:${
-          t.bgColor
-        }; color:${invertColor(t.bgColor)}">${
+        let spn = `<span onclick="${click}" class="custom ${className}" {#style}>${
           t.editWith
         }</span>`;
+        if(t.bgColor){
+          spn= spn.replace("{#style}",`style="background-color:${
+          t.bgColor
+        }; color:${invertColor(t.bgColor)}"`)
+        }else spn = spn.replace("{#style}","")
         txt = txt.replace(rg, spn);
       }
     } catch (e) {
