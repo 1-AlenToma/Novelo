@@ -382,9 +382,10 @@ export default ({
           line-height: ${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)
       )+5}px !important;
         }
-        
+        * {
+          outline: none !important;
+        }
         body .novel {
-          border: 0 !important;
           max-width: 100%;
           min-height: ${!context.player.showPlayer
         ? "100%"
@@ -677,6 +678,7 @@ export default ({
         </style>
         <script>
         try{
+        
           window.isValidUrl = urlString=> {
             return urlString.indexOf("https") != -1 || urlString.indexOf("http") != -1 ||urlString.indexOf("www.") != -1
           }
