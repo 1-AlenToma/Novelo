@@ -92,9 +92,15 @@ const data = GlobalState(
         parser: {
             current: () => currentParser,
             find: (name: string) => parsers.find(x => x.name == name),
-            set: (p: any) => {
+            set: async (p: any) => {
+                p= data.parser.find(p.name)
+                p.settings = await p.load();
                 currentParser = p;
+                data.appSettings.selectedParser = p.name;
+              await data.appSettings.saveChanges();
+              
                 data.updater = newId();
+                //alert(p.name)
             },
             all: () => parsers
         },
@@ -143,6 +149,9 @@ const data = GlobalState(
                 data.appSettings = await globalDb.database
                     .querySelector<AppSettings>("AppSettings")
                     .findOrSave(data.appSettings);
+                if(data.parser.find(data.appSettings.selectedParser)){
+                  data.parser.set(data.parser.find(data.appSettings.selectedParser))
+                }
                 let appSettingWatcher = globalDb.database.watch("AppSettings");
                 appSettingWatcher.onSave = async items => {
                     let item = items?.firstOrDefault();

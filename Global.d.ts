@@ -23,6 +23,7 @@ declare global {
     }
 
     interface String {
+        isManga():boolean;
         fileName(...url: string[]): string;
         escapeRegExp(): String;
         join(...relative: String[]): String;
@@ -53,6 +54,12 @@ declare global {
         sureValue: (a: number, isInt?: boolean) => number;
         readAble: () => any;
     }
+}
+
+String.prototype.isManga = function(){
+  let mng = ["manhwa","manga","manhua"];
+  let str = new String(this).toString();
+  return mng.find(x=> str.toLowerCase() == x) != undefined;
 }
 
 String.prototype.fileName = function (...url: string[]) {

@@ -5,9 +5,11 @@ import {
   DetailInfo
 } from "../native";
 import ReadNovelFull from "./ReadNovelFull";
+import MangaFire from "./MangaFire.js";
 import NovelUpdate from "./infos/NovelUpdates";
 import Memo from "../attr/Memo";
 import { sleep } from "../Methods";
+const debugg = true;
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
@@ -17,6 +19,7 @@ export default class ParserWrapper extends Parser {
     this.parser = parser;
     this.settings = parser.settings;
     this.novelUpdate = new NovelUpdate();
+    this.protectedChapter = parser.protectedChapter;
   }
 
   getContext() {
@@ -44,7 +47,7 @@ export default class ParserWrapper extends Parser {
   }
 
   static getAllParsers(parserName?: string) {
-    let prs = [ReadNovelFull].map(
+    let prs = [ReadNovelFull,MangaFire].map(
       x => new ParserWrapper(new x())
     );
     if (parserName)
@@ -152,7 +155,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 20,
-    isDebug: false,
+    isDebug: debugg,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
     validator: (data: any) =>
@@ -167,6 +170,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 2,
+    isDebug:debugg,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
     validator: (data: any) =>

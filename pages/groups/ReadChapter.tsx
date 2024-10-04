@@ -30,7 +30,7 @@ import translate from "translate-google-api";
 import { LANGUAGE_TABLE } from "react-native-translator/dist/utils/languageCodeConverter";
 import { ScrollView, Linking } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { useNavigation, useUpdate, useTimer, useDbHook } from "../../hooks";
+import { useNavigation, useUpdate, useTimer, useDbHook, ChapterProcess } from "../../hooks";
 import { useState, Player, DetailInfo } from "../../native";
 import Header from "../../pages/Header";
 import { Book, Chapter } from "../../db";
@@ -1188,7 +1188,9 @@ const Controller = ({ state, ...props }) => {
   );
 };
 const InternalWeb = ({ state, ...props }: any) => {
-  return (
+  const chState = ChapterProcess();
+  
+  return chState.loading ? chState.web : (
     <Web
       click={() => {
         context.player.showController = !context.player.showController;

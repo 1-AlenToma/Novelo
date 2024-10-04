@@ -5,6 +5,7 @@ import useDbHook from "./useDbHook";
 import useFonts from "./useFonts";
 import useAnimate from "./useAnimate";
 import useView from "./useView";
+import ChapterProcess from "./ChapterProcess";
 export {
   useUpdate,
   useNavigation,
@@ -12,5 +13,6 @@ export {
   useDbHook,
   useFonts,
   useAnimate,
-  useView
+  useView,
+  ChapterProcess
 };

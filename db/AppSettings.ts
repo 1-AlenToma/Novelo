@@ -21,6 +21,7 @@ class AppSettings extends IBaseModule<TableNames> {
     isBold: boolean = false;
     lockScreen: boolean = false;
     margin?: number = 5;
+    selectedParser: string = "";
     currentNovel?: {
         url: string;
         parserName: string;
@@ -68,7 +69,8 @@ class AppSettings extends IBaseModule<TableNames> {
             .nullable.json.column("fontStyle")
             .nullable.column("lang")
             .nullable.column("shadowLength")
-            .nullable.number.objectPrototype(AppSettings.prototype);
+            .nullable.number
+            .column("selectedParser").objectPrototype(AppSettings.prototype);
     }
 }
 public_m(AppSettings);

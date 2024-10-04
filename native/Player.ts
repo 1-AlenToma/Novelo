@@ -70,6 +70,9 @@ class Player {
   }
 
   async clean(html?: string) {
+    if(this.novel.type && this.novel.type.isManga()){
+       return (this.html =html);
+    }
     let txt =
       html ??
       this.currentChapter.content ??
@@ -137,6 +140,10 @@ class Player {
         this.book.parserName
       );
       parser.clearError();
+      if(parser.protectedChapter){
+        return;
+      }
+      
       let str =
         this.novel.epub ||
         this.currentChapter.content?.length >= 10

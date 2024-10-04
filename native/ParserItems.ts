@@ -12,6 +12,7 @@ class LightInfo extends ChapterInfo {
   image: string = "";
   info: string = "";
   isNew: boolean = false;
+  type: string = "Novel";
 }
 
 class CommentScript {
@@ -86,6 +87,7 @@ abstract class Parser {
   name: string;
   icon: string;
   settings: ParserDetail;
+  protectedChapter: boolean = false;
   constructor(
     url: string,
     name: string,

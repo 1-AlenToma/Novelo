@@ -34,7 +34,7 @@ export default ({
             css="clearwidth wi:100% header co:#fff pa:4 teA:center">
             {item.name}
           </Text>
-          <View css="row wi:100% pal:5 par:5 di:flex ali:flex-start juc:center">
+          <View ifTrue={()=> item.decription?.length >1} css="row wi:100% pal:5 par:5 di:flex ali:flex-start juc:center">
             <Icon
               type="EvilIcons"
               name="pencil"
@@ -76,7 +76,7 @@ export default ({
             css="header">
             {item.name}
           </Text>
-          <View css="row clearwidth ali:center">
+          <View ifTrue={()=> item.decription?.length >1} css="row clearwidth ali:center">
             <Icon
               invertColor={true}
               type="EvilIcons"
