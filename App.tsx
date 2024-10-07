@@ -1,5 +1,5 @@
 import "./Global.d";
-//import RNExitApp from "react-native-exit-app";
+import RNExitApp from "react-native-exit-app";
 import { StatusBar, setStatusBarHidden } from "expo-status-bar";
 import { useState, useEffect } from "react";
 import {
@@ -107,7 +107,7 @@ export default function App() {
         })();
 
         return () => {
-            const RNExitApp = require("react-native-exit-app")?.default;
+            //const RNExitApp = require("react-native-exit-app").default;
             RNExitApp.exitApp?.();
             itemToRemove?.forEach(x => x.remove());
         };

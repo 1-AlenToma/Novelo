@@ -11,10 +11,10 @@ const veryIntensiveTask =
   async taskDataArguments => {
     // Example of an infinite loop task
     const { delay } = taskDataArguments;
-    let g = require("../GlobalContext").default;
-    let tasks = [];
+    let g : any = require("../GlobalContext").default;
+    let tasks : any = [];
     let getDate = (days: number) => {
-      date = new Date();
+      const date = new Date();
       date.setDate(date.getDate() + days);
       return date;
     };
@@ -32,9 +32,7 @@ const veryIntensiveTask =
           let data = JSON.parse(await f.read(f));
           if (data.date > date) {
             await g.cache().delete(f);
-            let book = await g
-              .db()
-              .querySelector<Book>("Books")
+            let book = await g.db().querySelector<Book>("Books")
               .Where.Column(x => x.url)
               .EqualTo(data.data.url)
               .firstOrDefault();
@@ -81,7 +79,7 @@ export default class BGService {
         veryIntensiveTask,
         options
       );
-    } catch (e) {}
+    } catch (e) {console.error(e)}
   }
 
   static async notify() {
