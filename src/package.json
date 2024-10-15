@@ -3,7 +3,7 @@
   "version": "1.0.8",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "gradlew": "cd android && gradlew bundleRelease",
+    "gradlew": "cd android && gradlew assembleRelease",
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start",
     "android:dev": "cross-env APP_ENV=development expo run:android --variant developmentDebug",

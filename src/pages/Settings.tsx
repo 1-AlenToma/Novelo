@@ -13,14 +13,9 @@ import {
   DropdownList,
   Form
 } from "../components/";
-import * as Updates from "expo-updates";
 import * as React from "react";
 import { Book, Chapter } from "../db";
-import {
-  Platform,
-  ScrollView
-} from "react-native";
-import { useLocationSelection } from "../hooks";
+import { useLocationSelection, AppUpdate } from "../hooks";
 import * as DocumentPicker from "expo-document-picker";
 
 
@@ -174,6 +169,7 @@ export default (props: any) => {
           />
         </View>
         {dataLocation.elem}
+        <AppUpdate />
         <TouchableOpacity
           css="settingButton"
           onPress={download}>

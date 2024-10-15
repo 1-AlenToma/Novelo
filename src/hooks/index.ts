@@ -7,7 +7,7 @@ import useAnimate from "./useAnimate";
 import useView from "./useView";
 import ChapterProcess from "./ChapterProcess";
 import useLocationSelection from "./useLocationSelection";
-import useAppUpdate from "./useAppUpdate";
+import AppUpdate from "./AppUpdate";
 export {
   useUpdate,
   useNavigation,
@@ -18,5 +18,5 @@ export {
   useView,
   ChapterProcess,
   useLocationSelection,
-  useAppUpdate
+  AppUpdate
 };
