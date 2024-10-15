@@ -1,5 +1,6 @@
 {
   "versionName":"1.0.9",
   "apkUrl":"https://github.com/1-AlenToma/Novelo/releases/download/1.0.9/app-production-release.apk",
-  "forceUpdate": false
+  "forceUpdate": false,
+  "whatsNew": "<< what changes the app update will bring >>"
 }
