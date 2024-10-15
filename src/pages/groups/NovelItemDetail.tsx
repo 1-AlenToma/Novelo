@@ -346,6 +346,7 @@ export default ({ ...props }: any) => {
                           options
                             .nav("ReadChapter")
                             .add({
+                              name: state.novel.name,
                               chapter: item.url,
                               url: state.novel
                                 .url,
@@ -358,7 +359,7 @@ export default ({ ...props }: any) => {
                         current={
                           state.novel?.chapters?.at(
                             state.book
-                              ?.selectedChapterIndex
+                              ?.selectedChapterIndex ?? 0
                           )?.url
                         }
                       />
@@ -466,7 +467,7 @@ export default ({ ...props }: any) => {
                   context
                     .alert(
                       "novel is downloading",
-                      "attantion"
+                      "Attantion"
                     )
                     .show();
                 }}>
@@ -485,6 +486,7 @@ export default ({ ...props }: any) => {
                   options
                     .nav("ReadChapter")
                     .add({
+                      name: state.novel.name,
                       url: state.novel.url,
                       parserName:
                         state.novel.parserName

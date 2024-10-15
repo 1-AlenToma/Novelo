@@ -99,6 +99,7 @@ const CurrentItem = ({
               options
                 .nav("ReadChapter")
                 .add({
+                  name: book.name,
                   url: book.url,
                   parserName: book.parserName,
                   epub:
@@ -134,6 +135,7 @@ const CurrentItem = ({
               options
                 .nav("ReadChapter")
                 .add({
+                  name: book.name,
                   url: book.url,
                   parserName: book.parserName
                 })
@@ -178,6 +180,7 @@ const CurrentItem = ({
             options
               .nav("ReadChapter")
               .add({
+                name: book.name,
                 url: book.url,
                 parserName: book.parserName,
                 epub:

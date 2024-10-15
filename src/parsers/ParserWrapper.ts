@@ -10,13 +10,13 @@ import MangaBerri from "./MangaBerri";
 
 import NovelUpdate from "./infos/NovelUpdates";
 import Memo from "../attr/Memo";
-const debugg = true;
+const debugg = false;
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
   infoEnabled: boolean = false;
   constructor(parser: Parser) {
-    super(parser.url, parser.name, parser.icon);
+    super(parser.url, parser.name, parser.icon, parser.type);
     this.parser = parser;
     this.settings = parser.settings;
     this.novelUpdate = new NovelUpdate();

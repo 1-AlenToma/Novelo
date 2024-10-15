@@ -1,23 +1,28 @@
 import { Book, Chapter } from "../db";
 import { newId, sleep } from "../Methods";
-import * as FileSystem from "expo-file-system";
+import RNFetchBlob from "rn-fetch-blob"
+import Html from "./Html";
 const JSZip = require("jszip");
-class ZipFile {
-  name: string;
-  fileName: string;
-  content: string;
-  url: string = newId();
-  type: "Image" | "CSS" | "HTML";
-}
-export default class ZipBook {
-  files: ZipFile[] = [];
-  chapters: ZipFile[] = [];
+class ZipBase {
   name: string = "";
   url: string = newId();
   fileName?: string; // used only in dbContext
   epub: boolean = true;
   isChapter: boolean = false;
   playOrder: number = 0;
+  id?: string;
+  text?: string;
+
+}
+class ZipFile extends ZipBase {
+  content: string;
+  type: "Image" | "CSS" | "HTML" | "None"
+}
+export default class ZipBook extends ZipBase {
+  files: ZipFile[] = [];
+  chapters: ZipFile[] = [];
+  epub: boolean = true;
+  imagePath?: string;
 
   static createImageChapter(images: ZipFile[]) {
     if (images.length == 0) return undefined;
@@ -29,8 +34,8 @@ export default class ZipBook {
     <div>
     <h1>Images Intro</h1>
     ${images
-      .map(x => `<img src="${x.fileName}" />`)
-      .join("\n")}
+        .map(x => `<img src="${x.fileName}" />`)
+        .join("\n")}
     </div>
     `;
 
@@ -60,12 +65,11 @@ export default class ZipBook {
       return n;
     };
     let book = new ZipBook();
-    let g = require("../GlobalContext").default;
     book.name = cleanNames(xname);
     try {
       let getContent = async (
         file: any,
-        navMap: []
+        navMap: ZipFile[]
       ) => {
         try {
           let cn = "";
@@ -121,14 +125,14 @@ export default class ZipBook {
 
           let zipFile = new ZipFile();
           zipFile.name = chapter?.text ?? name;
-          zipFile.type = type;
+          zipFile.type = type as any;
           zipFile.content = cn;
           zipFile.fileName = file.name;
           zipFile.isChapter =
             chapter != undefined;
           zipFile.playOrder = parseInt(
-            chapter?.playOrder ??
-              book.chapters.length.toString()
+            chapter?.playOrder?.toString() ??
+            book.chapters.length.toString()
           );
 
           return zipFile;
@@ -136,11 +140,8 @@ export default class ZipBook {
           console.error(file.name, e);
         }
       };
-      let base64 =
-        await FileSystem.readAsStringAsync(uri, {
-          encoding: "base64"
-        });
-
+      let base64 = await RNFetchBlob.fs.readFile(uri, "base64");
+        
       var zip = new JSZip();
       let content = await zip.loadAsync(base64, {
         base64: true
@@ -151,7 +152,7 @@ export default class ZipBook {
         x.endsWith(".opf")
       );
 
-      let navMap = [];
+      let navMap: ZipFile[] = [];
       const renderNavMap = async () => {
         let ncxs = keys.filter(x =>
           x.has(".ncx")
@@ -164,7 +165,6 @@ export default class ZipBook {
             .find("navPoint")
             .each((i, x) =>
               navMap.push({
-                id: $(x).attr("id"),
                 text: $(x).find("text").text(),
                 playOrder:
                   $(x).attr("playOrder") ??
@@ -172,7 +172,7 @@ export default class ZipBook {
                 name: $(x)
                   .find("content")
                   .attr("src")
-              })
+              } as any)
             );
         }
       };
@@ -181,7 +181,7 @@ export default class ZipBook {
         await content.file(opf).async("text")
       ).html();
 
-      let items = [];
+      let items: Html[] = [];
       $("manifest")
         .find("item")
         .each((i, x) => items.push(x));

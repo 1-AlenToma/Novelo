@@ -177,7 +177,7 @@ export default ({
         } else onScroll?.(contentOffset.y);
       });
     },
-    contentMode:"mobile",
+    contentMode: "mobile",
     scalesPageToFit: true,
     originWhitelist: ["*"],
     scrollEnabled: true,
@@ -282,8 +282,7 @@ export default ({
   };
 
   const loadCss = async () => {
-    let color =
-      context.appSettings.backgroundColor;
+    let color = context.appSettings.backgroundColor;
     let inverted = invertColor(color);
     let shadow = inverted.has("white")
       ? "#4e4d4d"
@@ -300,50 +299,30 @@ export default ({
          .italic, i {
            display:inline !important;
            font-style: italic !important;
-           font-size: ${context.appSettings.fontSize - 4
-      }px !important;
+           font-size: ${context.appSettings.fontSize - 4}px !important;
          }
          
         .highlight {
           border-radius: 5px;
           display: inline-block;
-          color: ${context.appSettings
-        .voiceWordSelectionsSettings?.color
-        ? invertColor(
-          context.appSettings
-            .voiceWordSelectionsSettings
-            ?.color
-        )
-        : color
-      } !important;
-          background-color: ${context.appSettings
-        .voiceWordSelectionsSettings
-        ?.color ?? inverted
-      } !important;
+          color: ${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color} !important;
+          background-color: ${context.appSettings.voiceWordSelectionsSettings?.color ?? inverted} !important;
         }
         
         *:not(context):not(context *):not(.italic):not(i) {
-          font-style:${(
-        context.appSettings.fontStyle ??
-        "normal"
-      ).toLowerCase()};
+          font-style:${(context.appSettings.fontStyle ?? "normal").toLowerCase()} !important;
         }
         
         *:not(context):not(context *) {
-          font-family: "${context.appSettings.fontName
-      }";
+          font-family: "${context.appSettings.fontName}" !important;
           font-size-adjust: 1;
-          ${context.appSettings.use3D
-        ? `
-            text-shadow: 1px ${shadowLength}px 1px ${shadow};
-            `
-        : ""
-      }
+          ${context.appSettings.use3D ? ` text-shadow: 1px ${shadowLength}px 1px ${shadow};` : ""}
         }
 
         parameter {
           display: none;
         }
+
         blur p {
           color: ${color};
           background-color: ${inverted};
@@ -351,14 +330,12 @@ export default ({
           border-radius: 10px;
           overflow: hidden;
         }
-        *:not(context):not(context *):not(
-            .custom
-          ):not(blur):not(blur *):not(
-            .highlight
-          ) {
+
+        *:not(context):not(context *):not(.custom):not(blur):not(blur *):not(.highlight) {
           background-color: transparent;
           color: ${inverted} !important;
         }
+
         body {
           background-color: ${color} !important;
         }
@@ -375,40 +352,39 @@ export default ({
         }
         
         h1,h2,h3,h4,h5,h6{
-          line-height: ${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)
-      )+5}px !important;
+          line-height: ${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5}px !important;
+          font-size: ${context.appSettings.fontSize + 5}px;
         }
+
+        br{
+          display:none;
+        }
+
+       .novel > p, .novel >div> p{
+           display:block !important;
+           position:relative !important;
+           clear:both !important;
+           margin-bottom: ${context.appSettings.sentenceMargin ?? 5}px !important;
+
+        }
+      
         * {
           outline: none !important;
         }
         body .novel {
           max-width: 100%;
-          min-height: ${!context.player.showPlayer
-        ? "100%"
-        : "50%"
-      };
-          
-          top: ${context.player.showPlayer
-        ? "45px"
-        : "0px"
-      };
+          min-height: ${!context.player.showPlayer ? "100%" : "50%"};
+          top: ${context.player.showPlayer ? "45px" : "0px"};
           position: relative;
           overflow: hidden;
           text-align-vertical: top;
           padding-bottom: ${context.player.paddingBottom()}px;
           padding-top: ${context.player.paddingTop()}px;
-          padding-left: ${(5).sureValue(
-        context.appSettings.margin
-      )}px;
-          padding-right: ${(5).sureValue(
-        context.appSettings.margin
-      )}px;
-          font-size: ${context.appSettings.fontSize
-      }px;
-          line-height: ${context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)
-      }px;
-          text-align: ${context.appSettings.textAlign
-      };
+          padding-left: ${(5).sureValue(context.appSettings.margin)}px;
+          padding-right: ${(5).sureValue(context.appSettings.margin)}px;
+          font-size: ${context.appSettings.fontSize}px;
+          text-align: ${context.appSettings.textAlign};
+          line-height: ${context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)}px !important;
         }
         
       `;
@@ -438,13 +414,30 @@ export default ({
     await postMessage("style", cssStyle);
     await loadFonts();
   };
+  /*
+
+
+
+        background: null,
+          backgroundColor: null,
+          fontFamily: null,
+          color: null,
+          fontSize: null,
+          lineHeight: null,
+          textAlign: null,
+          fontWeight: null
+
+          */
+  const cleanInlineStyle = () => {
+    let inlineStyle = context.player.book.inlineStyle;
+    return inlineStyle.replace(/(background-color|font-family|color|font-size|line-height|text-align|font-weight)\:.*\;/gmi, "");
+  }
 
   const loadHtmlContent = async () => {
     if (context.player.isloading) return;
     state.refItem.loading = true;
     let content = {
-      inlineStyle:
-        context.player.book.inlineStyle,
+      inlineStyle:cleanInlineStyle(),
       content: context.player.showPlayer
         ? `<p>${context.player
           .currentPlaying()
@@ -479,13 +472,27 @@ export default ({
         document.head.appendChild(st);
     window.cleanStyle("novel");
     let images = document.querySelectorAll("img");
-    [...images].forEach((x,i)=> {
-      if(!window.isValidUrl(x.src)){
-      x.id = "img"+i;
-      window.renderImage(x.id)
-      }
-      });
     
+    const imageLoader = async ()=> {
+     let items = [];
+     let i=1;
+      for(let x of images){
+        i++;
+        if(!window.isValidUrl(x.getAttribute("src"))){ 
+          x.id = "img"+i;
+          items.push({id: x.id});
+        }
+
+        if(items.length>= 2){
+            window.renderImage({data:items})
+            items = [];
+           await window.sleep(5)
+        }
+      }
+      if (items.length>0)
+         window.renderImage({data:items})
+    }
+    imageLoader();
     if("${context.appSettings.navigationType || "Snap"
       }" === "Snap"){
             window.bookSlider= new window.slider({
@@ -591,16 +598,16 @@ export default ({
         state.refItem.loading = false;
         break;
       case "Image":
+        let images = await context.player.getImage(
+          ...data.data
+        )
         postMessage(
           "images",
-          {
-            id: data.data.id,
-            src: await context.player.getImage(
-              data.data.src
-            )
-          },
+          images,
           "window.renderImage"
         );
+
+
         break;
     }
   };
@@ -676,27 +683,32 @@ export default ({
         try{
         
           window.isValidUrl = urlString=> {
-            return urlString.indexOf("https") != -1 || urlString.indexOf("http") != -1 ||urlString.indexOf("www.") != -1
+            return urlString.indexOf("https") != -1 || urlString.indexOf("http") != -1 || urlString.indexOf("www.") != -1
           }
-          window.renderImage= (item)=>{
+          window.renderImage= (items)=>{
             try{
+            let imagesToSend = [];
+            for(let item of items.data){
             let img = undefined;
             if(!item)
-              return;
-            if(typeof item === "string"){
-              img =document.getElementById(item);
-               window.postmsg("Image",{src:img.src, id:item});
+              continue;
+            if(!item.src){
+              img =document.getElementById(item.id);
+              if (img)
+                imagesToSend.push({src: img.getAttribute("src"), id:item.id})
             }
              else {
-               img = document.getElementById(item.data.id);
-               if(!img || item.data.src.length<=0){
-                 if(img)
+               img = document.getElementById(item.id);
+               if(!img || img.getAttribute("src").length<=0){
+                if(img)
                   img.remove();
-                  return;
+                  continue;
                }
-                  
-              img.setAttribute("src", item.data.src[0].cn);
+              img.setAttribute("src", item.cn);
              }
+            }
+             if(imagesToSend.length>0)
+                window.postmsg("Image",imagesToSend);
             }catch(e){}
           }
           

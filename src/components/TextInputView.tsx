@@ -18,13 +18,15 @@ export default React.forwardRef(
       invertColor,
       css,
       isModole,
+      inputVisible,
       ...props
     }: any,
     ref
   ) => {
+    if (methods.ifSelector(props.ifTrue) === false)
+        return null;
     const inputRef = React.useRef();
-    const [visible, setVisible] =
-      React.useState(false);
+    const [visible, setVisible] = React.useState(inputVisible || false);
     const [size, setSize] = React.useState();
     const [txt, setTxt] = React.useState(
       props.defaultValue
@@ -67,12 +69,13 @@ export default React.forwardRef(
                 onChangeText={t => setTxt(t)}
                 style={[
                   ...st,
-                  { flex:1 }
+                  { flex: 1 }
                 ]}
               />
             </View>
           </Modal>
           <TouchableOpacity
+            ifTrue={()=> inputVisible != true}
             onPress={() => setVisible(true)}>
             <Input
               disableFullscreenUI={true}

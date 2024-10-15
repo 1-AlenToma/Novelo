@@ -1,4 +1,3 @@
-//import GlobalState from "react-global-state-management";
 import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
 import { AppSettings } from "./db";
@@ -9,11 +8,13 @@ import {
     FileHandler,
     HttpHandler,
     DownloadManager,
-    ImageCache
+    ImageCache,
+    FilesZipper,
+    Notification
 } from "./native";
 import { Dimensions, Keyboard, LogBox } from "react-native";
 import StateBuilder from "react-smart-state";
-import { GlobalType, FilesPath } from "./Types"
+import { GlobalType, FilesPath } from "./Types";
 
 LogBox.ignoreLogs([
     "fontFamily",
@@ -34,10 +35,27 @@ let currentParser = parsers[0];
 const downloadManager = new DownloadManager();
 const cache = new FileHandler(FilesPath.Cache, "Cache");
 const imageCache = new ImageCache();
+const zip = new FilesZipper();
+const notification = new Notification();
 
 
 const data = StateBuilder<GlobalType>(
     {
+        notification,
+        zip,
+        browser: {
+            data: undefined,
+            pickFile: (ext, desc) => {
+                return new Promise<any | undefined>((success) => {
+                    data.browser.data = { desc, func: (f) => success(f), onCancel: success, props: { selectionType: "File", ext } }
+                })
+            },
+            pickFolder: (desc) => {
+                return new Promise<any | undefined>((success) => {
+                    data.browser.data = { func: (f) => success(f), onCancel: success, desc, props: { selectionType: "Folder" } }
+                });
+            },
+        },
         lineHeight: 2.5,
         selectedFoldItem: "",
         panEnabled: true,
@@ -57,11 +75,13 @@ const data = StateBuilder<GlobalType>(
                     data.alertMessage.msg = msg;
                     data.alertMessage.title = title;
                     data.alertMessage.confirm = undefined;
+                    data.alertMessage.toast = undefined;
                 },
                 confirm: (func: Function) => {
                     data.alertMessage.msg = msg;
                     data.alertMessage.title = title;
                     data.alertMessage.confirm = func;
+                    data.alertMessage.toast = undefined;
                 },
                 toast: () => {
                     data.alertMessage.msg = msg;
@@ -78,9 +98,9 @@ const data = StateBuilder<GlobalType>(
         isFullScreen: false,
         appSettings: new AppSettings(),
         voices: undefined,
-        cache: () => cache,
+        cache: cache,
         files: new FileHandler(FilesPath.File, "File"),
-        imageCache: () => imageCache,
+        imageCache: imageCache,
         speech: Speech,
         nav: undefined,
         orientation: (value: "Default" | "LANDSCAPE") => {
@@ -150,6 +170,10 @@ const data = StateBuilder<GlobalType>(
                 data.appSettings = await globalDb.database
                     .querySelector<AppSettings>("AppSettings")
                     .findOrSave(data.appSettings);
+                if (data.appSettings.filesDataLocation && !data.appSettings.filesDataLocation.empty()) {
+                    data.files = new FileHandler(data.appSettings.filesDataLocation.path(FilesPath.File));
+                    data.imageCache = new ImageCache(data.appSettings.filesDataLocation.path(FilesPath.Images))
+                }
                 if (data.parser.find(data.appSettings.selectedParser)) {
                     data.parser.set(data.parser.find(data.appSettings.selectedParser))
                 }
@@ -180,6 +204,8 @@ const data = StateBuilder<GlobalType>(
 
                 await BGService.start();
                 return [
+                    ...notification.event,
+                    zip.subscribeEvent,
                     hideSubscription,
                     showSubscription,
                     windowEvent,
@@ -205,6 +231,8 @@ const data = StateBuilder<GlobalType>(
         "selection.favoritItem",
         "player.currentChapterSettings.scrollProgress",
         "player.book.chapterSettings",
-        "player.novel"
+        "player.novel",
+        "zip",
+        "notification"
     ).globalBuild();
 export default data;

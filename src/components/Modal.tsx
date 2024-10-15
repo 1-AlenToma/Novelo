@@ -24,6 +24,7 @@ export default ({
   speed,
   toTop,
   blur,
+  disabled,
   ...props
 }: {
   speed?: number;
@@ -33,7 +34,8 @@ export default ({
   visible: boolean;
   onHide?: () => void;
   toTop?: boolean;
-  blur?: boolean,
+  blur?: boolean;
+  disabled?: boolean;
 }) => {
   let getHeight = () => {
     if (typeof height === "number") return height;
@@ -98,7 +100,7 @@ export default ({
         <TouchableOpacity
           ifTrue={() => isV}
           onPress={() => {
-            if (blur !== false) {
+            if (blur !== false && !disabled) {
               (onHide || setIsV)(false);
             }
           }}
@@ -136,7 +138,8 @@ export default ({
               <View css="zi:1 to:5 wi:40 he:26 juc:center ali:center absolute ri:5">
                 <TouchableOpacity
                   onPress={() => {
-                    (onHide || setIsV)(false);
+                    if (!disabled)
+                      (onHide || setIsV)(false);
                   }}
                   css="clearboth flex juc:center ali:center">
                   <Icon
@@ -150,7 +153,7 @@ export default ({
               <Text
                 ifTrue={title != undefined}
                 invertColor={true}
-                css="header fos:18 bold co:white clearwidth flex">
+                css="header fos:18 bold clearwidth flex">
                 {title}
               </Text>
             </View>

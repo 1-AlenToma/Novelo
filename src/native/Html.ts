@@ -68,7 +68,7 @@ class Html {
   }
 
   eq(index:number){
-     let item = this.filter((x,i)=> i== index);
+     let item = this.filter((x,i)=> i == index);
      return item;
   }
 

@@ -20,14 +20,15 @@ import {
   Platform,
   ScrollView
 } from "react-native";
-import { clearStyles } from "../styles";
-import { getDirectoryPermissions } from "../Methods";
+import { useLocationSelection } from "../hooks";
 import * as DocumentPicker from "expo-document-picker";
 
 
 export default (props: any) => {
   let loader = useLoader();
   context.hook("theme.themeMode");
+  const dataLocation = useLocationSelection();
+  context.zip.on("Loading")
   const { fileItems, elem } = context
     .files
     .useFile("json", undefined, "NewDelete");
@@ -50,24 +51,26 @@ export default (props: any) => {
     );
   const state = buildState(
     {
-      procent: 0,
-      downloadShow: false,
-      all: false,
-      appSettings: false,
-      epubs: false,
-      items: [],
+      all: true,
+      appSettings: true,
+      epubs: true,
+      items: [] as any[],
       added: {}
     }
   ).ignore("items").build();
 
   const download = async () => {
-    state.downloadShow = false;
+    const location = await context.browser.pickFolder("Select where to save the backup file");
+    if (!location)
+      return;
     loader.show();
-    await context.dbContext().downloadDatabase({
+    await context.dbContext().downloadDatabase(location.path, {
       ...state
     });
     loader.hide();
-    context.alert("File Downloded").show();
+    context.alert("File downloaded to " + context.zip._fullPath, "Success").show();
+    // context.notification.push("File Downloaded", context.zip._fullPath ?? "", { data: context.zip._fullPath, type: "File" })
+
   };
 
   const cleanData = () => {
@@ -102,12 +105,11 @@ export default (props: any) => {
               .IN(ids)
               .delete();
           await _books.delete();
-          let cacheFiles = await context
-            .cache()
-            .allFiles();
-          for (let f of cacheFiles) {
-            await context.cache().delete(f);
-          }
+          await context.cache.deleteDir();
+          await context.cache.checkDir();
+
+
+
         } catch (e) {
           console.error(e);
         }
@@ -117,18 +119,13 @@ export default (props: any) => {
   };
 
   const uploadBackup = async () => {
-    const { assets } =
-      await DocumentPicker.getDocumentAsync({
-        copyToCacheDirectory: true,
-        type: "application/json"
-      });
+    let uri = await context.browser.pickFile(["zip"], "Select the backup file");
+    if (!uri)
+      return;
     loader.show();
-    let uri = assets?.firstOrDefault("uri");
     let msg = await context
       .dbContext()
-      .uploadData(uri, p => {
-        state.procent = p;
-      });
+      .uploadData(uri.path);
     loader.hide();
     if (msg) context.alert(msg);
   };
@@ -157,85 +154,15 @@ export default (props: any) => {
 
   return (
     <View css="flex">
-      {loader.elem ?? elem}
-      <Modal
-        height="90"
-        onHide={(v) => {
-          state.downloadShow = false;
-          //alert(state.downloadShow)
-        }}
-        visible={state.downloadShow}
-        title="Backup options">
-        <View css="pat:10">
-          <CheckBox
-            text="Include FontSettings:"
-            invertColor={true}
-            checked={state.appSettings}
-            onChange={c => {
-              //alert(c)
-              state.appSettings = c;
-            }
-            }
-          />
-
-          <CheckBox
-            text="Include Epubs:"
-            invertColor={true}
-            checked={state.epubs}
-            onChange={() =>
-              (state.epubs = !state.epubs)
-            }
-          />
-          <CheckBox
-            text="Include All novels:"
-            invertColor={true}
-            checked={state.all}
-            onChange={() =>
-              (state.all = !state.all)
-            }
-          />
-          <Form
-            ifTrue={() => !state.all}
-            text="Favorit Novels"
-            root={true}
-            css="mat:20 mih:100 mah:70%">
-            <ScrollView>
-              {books.map((item, i) => (
-                <CheckBox
-                  key={i}
-                  onChange={() => itemPress(item)}
-                  text={item.name + ":"}
-                  invertColor={true}
-                  checked={
-                    state.added[
-                    item.url + item.parserName
-                    ] ?? false
-                  }
-                />
-              ))}
-            </ScrollView>
-          </Form>
-
-        </View>
-        <View css="clearwidth ali:center bottom bo:10 zi:10">
-          <TouchableOpacity
-            css="button"
-            onPress={download}>
-            <Text
-              invertColor={true}
-              css="fos:15 bold">
-              DOWNLOAD
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      
       <View
         ifTrue={
-          state.procent > 0 && state.procent < 100
+          context.zip._loading
         }
-        css="he:30 clearwidth">
-        <ProgressBar procent={state.procent} />
+        css="he:30 clearwidth zi:99999">
+        <context.zip.ProgressBar />
       </View>
+      {loader.elem ?? elem}
       <View
         invertColor={true}
         css="mih:99% ali:center bor:5 overflow">
@@ -246,11 +173,10 @@ export default (props: any) => {
             css="mat:2.5 clearwidth bor:2 miw:100 mih:100"
           />
         </View>
+        {dataLocation.elem}
         <TouchableOpacity
           css="settingButton"
-          onPress={() =>
-            (state.downloadShow = true)
-          }>
+          onPress={download}>
           <Icon
             invertColor={true}
             type="MaterialCommunityIcons"
@@ -282,7 +208,7 @@ export default (props: any) => {
             name="cleaning-services"
           />
           <Text
-            css="he:30"
+            css="he:40"
             invertColor={true}>
             Clean files
             {"\n"}

@@ -135,6 +135,7 @@ const ItemRender = ({
             options
               .nav("ReadChapter")
               .add({
+                name: item.name,
                 url: item.url,
                 parserName: item.parserName
               })

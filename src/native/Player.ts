@@ -8,6 +8,7 @@ import {
   invertColor,
   sleep
 } from "../Methods";
+import { IImage } from "../Types"
 type ViewState =
   | "Default"
   | "Folded"
@@ -163,33 +164,21 @@ class Player {
     }
   }
 
-  getImage = async (...href: string[]) => {
+  getImage = async (...href: IImage[]) => {
     let imgs: any[] = [];
-    if (this.novel.files && href.length > 0) {
-      for (let h of href) {
-        while (
-          h.startsWith(".") ||
-          h.startsWith("/")
-        ) {
-          h = h.substring(1);
-        }
-        let img = this.novel.files.find(
-          x =>
-            x.fileName.indexOf(h) !== -1 &&
-            x.type === "Image"
-        );
-        if (img) {
-          let imageData = img.content.startsWith(
-            "file"
-          )
-            ? await context
-              .imageCache()
-              .read(img.content)
-            : img.content;
-          imgs.push({ h, cn: imageData });
-        }
+    let path = this.novel.imagePath as string;
+    if (path) {
+      for (let image of href) {
+        let src = this.book.parserName != "epub" ? path.path(this.currentChapterIndex.toString(), image.src).trimEnd("/") :
+          path.path(getFileInfoFromUrl(image.src)).trimEnd("/");
+        let imageData = await context.imageCache.read(src);
+        if (!imageData || imageData.empty())
+          console.warn("could not find", src)
+        imgs.push({ ...image, path, cn: imageData });
+
       }
     }
+
 
     return imgs;
   };
@@ -237,6 +226,8 @@ class Player {
       index = this.novel.chapters.findIndex(
         x => x.url === index
       );
+    if (this.novel.chapters[index] == undefined)
+      index = this.novel.chapters.length - 1; // outside array
 
     this.currentChapterIndex = index as number
     this.book.selectedChapterIndex = index;
@@ -280,7 +271,7 @@ class Player {
         .db()
         .asQueryable<Chapter>(chSettings);
       this.book.chapterSettings.push(
-        this.currentChapterSettings  as any
+        this.currentChapterSettings as any
       );
     }
 

@@ -21,16 +21,16 @@ const veryIntensiveTask =
       new EventEmitter(10, async function () {
         this.extra =(
           !this.extra || this.extra.length <= 0
-            ? await context.cache().allFiles()
+            ? await context.cache.allFiles()
             : this.extra).filter(x=> x);
         let i = 10;
         while (i > 0 && this.extra.length > 0) {
           i--;
           let f = this.extra.shift();
           let date = getDate(30);
-          let data = JSON.parse(await context.cache().read(f));
+          let data = JSON.parse((await context.cache.read(f)) ?? "");
           if (data.date > date) {
-            await context.cache().delete(f);
+            await context.cache.delete(f);
             let book = await context.db().querySelector<Book>("Books")
               .Where.Column(x => x.url)
               .EqualTo(data.data.url)

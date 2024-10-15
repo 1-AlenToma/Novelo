@@ -340,7 +340,8 @@ const Controller = ({ state, ...props }) => {
     fontStyle,
     shadowLength,
     voiceWordSelectionsSettings,
-    useSentenceBuilder
+    useSentenceBuilder,
+    sentenceMargin
   }: any) => {
     Timer(async () => {
       if (fontSize != undefined) {
@@ -382,6 +383,10 @@ const Controller = ({ state, ...props }) => {
           voiceWordSelectionsSettings;
       if (useSentenceBuilder) {
         context.appSettings.useSentenceBuilder = useSentenceBuilder;
+      }
+
+      if (sentenceMargin){
+        context.appSettings.sentenceMargin = sentenceMargin;
       }
       await context.appSettings.saveChanges();
 
@@ -440,6 +445,7 @@ const Controller = ({ state, ...props }) => {
         )}`}
         buttons={[
           {
+            ifTrue: !(context.player.novel.type?.isManga() ?? false),
             text: (
               <Icon
                 invertColor={true}
@@ -534,7 +540,7 @@ const Controller = ({ state, ...props }) => {
                           }
                         />
                       </Form>
-                      <Form text="FontStyle" ifTrue={()=> !(state.novel.type?.isManga())}>
+                      <Form text="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
                         <ButtonList
                           items={[
                             "normal",
@@ -566,7 +572,7 @@ const Controller = ({ state, ...props }) => {
                           }
                         />
                       </Form>
-                      <Form css="row" text="TextAlign" ifTrue={()=> !(state.novel.type?.isManga())}>
+                      <Form css="row" text="TextAlign" ifTrue={() => !(state.novel.type?.isManga())}>
                         {[
                           "align-left",
                           "align-center",
@@ -606,7 +612,7 @@ const Controller = ({ state, ...props }) => {
                           </TouchableOpacity>
                         ))}
                       </Form>
-                      <Form text="Font" ifTrue={()=> !(state.novel.type?.isManga())}>
+                      <Form text="Font" ifTrue={() => !(state.novel.type?.isManga())}>
                         <DropdownList
                           height="80"
                           toTop={true}
@@ -667,7 +673,7 @@ const Controller = ({ state, ...props }) => {
                           }
                         />
                       </Form>
-                      <Form text="FontSize" ifTrue={()=> !(state.novel.type?.isManga())}>
+                      <Form text="FontSize" ifTrue={() => !(state.novel.type?.isManga())}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -687,7 +693,7 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
 
-                      <Form text="LineHeight" ifTrue={()=> !(state.novel.type?.isManga())}>
+                      <Form text="LineHeight" ifTrue={() => !(state.novel.type?.isManga())}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -707,7 +713,27 @@ const Controller = ({ state, ...props }) => {
                         />
                       </Form>
 
-                      <Form text="Padding" ifTrue={()=> !(state.novel.type?.isManga())}>
+                      <Form text="Sentence Margin" ifTrue={() => !(state.novel.type?.isManga())}>
+                        <Slider
+                          css="flex"
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          value={
+                            context.appSettings
+                              .sentenceMargin ?? 5
+                          }
+                          onSlidingComplete={sentenceMargin => {
+                            editSettings({
+                              sentenceMargin
+                            });
+                          }}
+                          minimumValue={5}
+                          maximumValue={15}
+                        />
+                      </Form>
+
+                      <Form text="Padding" ifTrue={() => !(state.novel.type?.isManga())}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -728,7 +754,7 @@ const Controller = ({ state, ...props }) => {
                       </Form>
                     </View>
                     <View
-                      ifTrue={()=> !(state.novel.type?.isManga())}
+                      ifTrue={() => !(state.novel.type?.isManga())}
                       css="flex"
                       icon={{
                         name: "text-fields",
@@ -885,7 +911,7 @@ const Controller = ({ state, ...props }) => {
                       </Form>
                     </View>
                     <View
-                      ifTrue={()=> !(state.novel.type?.isManga())}
+                      ifTrue={() => !(state.novel.type?.isManga())}
                       css="flex"
                       icon={{
                         name: "settings-voice",
@@ -1101,7 +1127,7 @@ const Controller = ({ state, ...props }) => {
                       </Form>
                     </View>
                     <View
-                      ifTrue={()=> !(state.novel.type?.isManga())}
+                      ifTrue={() => !(state.novel.type?.isManga())}
                       css="flex"
                       icon={{
                         name: "format-color-highlight",
@@ -1262,7 +1288,7 @@ const InternalWeb = ({ state, ...props }: any) => {
 };
 
 export default (props: any) => {
-  const [{ url, parserName, epub, chapter }, nav] = useNavigation(props);
+  const [{ name, url, parserName, epub, chapter }, nav] = useNavigation(props);
   const updater = useUpdate();
   const loader = useLoader(true);
   useKeepAwake();
@@ -1270,7 +1296,7 @@ export default (props: any) => {
     "json",
     x => {
       return x.has(
-        "".fileName(url, parserName == "epub" ? "" : parserName)
+        "".fileName(name, parserName)
       );
     },
     "New"
@@ -1289,7 +1315,7 @@ export default (props: any) => {
   context.hook("appSettings.backgroundColor");
 
   const loadData = async () => {
-    // console.warn({url, parserName, epub, chapter})
+    // console.warn({name,url, parserName, epub, chapter})
     try {
       loader.show();
       if (state.novel.url) {
@@ -1301,6 +1327,9 @@ export default (props: any) => {
         parserName == "epub" || epub
           ? files.fileItems.find(x => x.url === url)
           : await state.parser?.detail(url, true);
+      // console.warn([state.novel].niceJson("chapters"))
+      if (!state.novel || !state.novel.name)
+        return;
       if (
         !context.player.novel ||
         context.player.novel.url !== url ||

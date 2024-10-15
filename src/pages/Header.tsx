@@ -212,8 +212,8 @@ export default ({
                         ? "selectedRow bor:5"
                         : ""
                     }`}>
-                    <Text invertColor={true}>
-                      {x.name}
+                    <Text css="fow:bold" invertColor={true}>
+                      {x.name} ({x.type})
                     </Text>
                   </TouchableOpacity>
                 ))}

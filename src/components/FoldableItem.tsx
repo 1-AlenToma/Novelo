@@ -18,12 +18,14 @@ export default ({
   buttons,
   value,
   single,
+  enabled,
   ...props
 }: {
   buttons: Buttons[];
   children: any;
   value: any;
   single: any;
+  enabled?: boolean
 }) => {
   let btn = buttons.filter(
     x => methods.ifSelector(x.ifTrue) !== false
@@ -93,30 +95,29 @@ export default ({
           css="row zi:1 clearheight">
           {Array.isArray(buttons)
             ? buttons.map((x, i) => (
-                <TouchableOpacity
-                  invertColor={true}
-                  css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% ${
-                    i == value
-                      ? "selectedRow"
-                      : ""
+              <TouchableOpacity
+                invertColor={true}
+                css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% ${i == value
+                    ? "selectedRow"
+                    : ""
                   }`}
-                  ifTrue={x.ifTrue}
-                  onPress={() => {
-                    if (x.onPress())
-                      animateLeft(false);
-                  }}
-                  key={i}>
-                  {x.icon}
-                  <Text
-                    invertColor={true}
-                    css="desc"
-                    ifTrue={() =>
-                      x.text?.has() ?? false
-                    }>
-                    {x.text}
-                  </Text>
-                </TouchableOpacity>
-              ))
+                ifTrue={x.ifTrue}
+                onPress={() => {
+                  if (x.onPress())
+                    animateLeft(false);
+                }}
+                key={i}>
+                {x.icon}
+                <Text
+                  invertColor={true}
+                  css="desc"
+                  ifTrue={() =>
+                    x.text?.has() ?? false
+                  }>
+                  {x.text}
+                </Text>
+              </TouchableOpacity>
+            ))
             : buttons}
         </View>
       </View>
@@ -138,13 +139,13 @@ export default ({
         }}>
         <TouchableOpacity
           onLayout={event => {
-            state.childSize =
-              event.nativeEvent.layout;
+            state.childSize = event.nativeEvent.layout;
           }}
           activeOpacity={0.9}
-          onPress={() =>
-            animateLeft(!state.visible)
-          }>
+          onPress={() => {
+            if (enabled !== false)
+              animateLeft(!state.visible)
+          }}>
           {children}
         </TouchableOpacity>
       </AnimatedView>

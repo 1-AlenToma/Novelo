@@ -32,7 +32,7 @@ class CSS {
   }
 
   get classes() {
-    let items = [];
+    let items: any[] = [];
     for (let s of this.css
       .split(" ")
       .filter(x => x.trim().length > 0)) {
@@ -69,13 +69,19 @@ let StyledWrapper = React.forwardRef(
       style,
       css,
       ...props
+    }: {
+      View: any,
+      styleFile: any,
+      StyledXName: string,
+      style?: any,
+      css?: any,
     },
     ref
   ) => {
-    let ec = React.useContext(CSSContext);
+    let ec = React.useContext<any>(CSSContext);
     let id = React.useRef(newId()).current;
     let [_, setUpdater] = React.useState(0);
-    let parsedData = React.useRef({
+    let parsedData: any = React.useRef({
       style: undefined,
       pk: undefined
     }).current;
@@ -96,7 +102,7 @@ let StyledWrapper = React.forwardRef(
       styleFile &&
       parsedData.style == undefined
     ) {
-      let sArray = [];
+      let sArray: any[] = [];
       let pk = "";
       let cpyCss = new CSS(css);
       pk = ec.parentKey ? ec.parentKey() : "";
@@ -180,7 +186,7 @@ const Styleable = function <T>(
       />
     );
   });
-  return fn as any as T & T<Styled>;
+  return fn as any as T & Styled;
 };
 
 export {

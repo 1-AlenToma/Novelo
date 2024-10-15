@@ -114,7 +114,7 @@ class Database<D extends string>
       ) {
         this.db = await getDatabase();
         this.isClosed = false;
-        await this.onInit?.(this);
+        await this.onInit?.(this as any);
       }
       this.isOpen = true;
       return this.db ?? (await getDatabase());

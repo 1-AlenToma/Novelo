@@ -11,7 +11,7 @@ import { DBInit } from "../Types"
 
 class AppSettings extends DBInit {
     id: number = 0;
-    filesDataLocation?: string = "";
+    filesDataLocation?: string = undefined;
     parsers?: { name: string; content: string }[] = [];
     rate: number = 1;
     pitch: number = 0.9;
@@ -36,6 +36,7 @@ class AppSettings extends DBInit {
     fontStyle?: string = "normal";
     theme?: string = "light";
     lang?: string = "English";
+    sentenceMargin?: number = 5;
     useSentenceBuilder?: {
         enabled: boolean;
         minLength: number;
@@ -74,6 +75,7 @@ class AppSettings extends DBInit {
             .nullable.column("shadowLength")
             .nullable.number
             .column("filesDataLocation").nullable
+            .column("sentenceMargin").nullable.number
             .column("selectedParser").objectPrototype(AppSettings.prototype);
     }
 }

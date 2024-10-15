@@ -1,10 +1,10 @@
-import { IStorage, DataCache } from "../Types";
+import { IStorage, DataCache, FilesPath } from "../Types";
 import { FileHandler } from "../native";
 
 class Storage implements IStorage {
   handler: FileHandler;
   constructor() {
-    this.handler = new FileHandler("Memo");
+    this.handler = new FileHandler(FilesPath.Cache)
   }
   async set(file: string, value: DataCache) {
     await this.handler.write(

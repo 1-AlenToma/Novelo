@@ -18,6 +18,7 @@ import {
   useAnimate
 } from "../hooks";
 import { ifSelector } from "../Methods";
+import { ISize } from "../Types";
 
 export default ({
   procent,
@@ -28,7 +29,7 @@ export default ({
   speed
 }: any) => {
   if (ifSelector(ifTrue) === false) return null;
-  const [size, setSize] = useState();
+  const [size, setSize] = useState<ISize>();
   const { animate, animateX } = useAnimate({
     speed:speed ?? 50
   });
@@ -50,7 +51,7 @@ export default ({
     applyProc();
   }, [size]);
 
-  let bound = [];
+  let bound :number[] = [];
   for (let i = 0; i <= 100; i++) {
     bound.push(
       Math.round(

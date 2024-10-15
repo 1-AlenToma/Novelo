@@ -5,12 +5,15 @@ import {
   FileHandler,
   HttpHandler,
   DownloadManager,
-  ImageCache
+  ImageCache,
+  FilesZipper,
+  Notification
 } from "./native";
 import { AppSettings, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
-import {Voice} from "expo-speech";
+import { Voice } from "expo-speech";
 import DbContext from "./db/dbContext";
+
 import createDbContext, {
   IDatabase,
   IQueryResultItem,
@@ -19,10 +22,50 @@ import createDbContext, {
   decrypt,
   TableBuilder
 } from "./expo-sqlite-wrapper/src";
+import { ReadDirItem } from "react-native-fs";
 
-export const FilesPath ={
+
+
+export type FileInfo = {
+  name?: string;
+  folders: string[];
+  folder: string;
+  filePath?: string;
+  path: string;
+}
+
+export type NotificationData= {
+  data: any,
+  type: "File" | "Story"
+}
+
+export type ZipEventData = { progress?: number, color?: string, filePath?: string, loading?: boolean }
+export type SystemDir = "Cache" | "File";
+export type EncodingType = "json" | "utf8" | "base64";
+export type FileFnc = (
+  type: "Write" | "Delete",
+  file: string
+) => void;
+
+export type IImage = {
+  src: string;
+  id: string;
+}
+
+export type SelectionType = "Folder" | "File";
+
+export type EXT = "json" | "txt" | "epub" | "zip";
+
+export const FilesPath = {
   File: "noveloFiles",
-  Cache: "Memo"
+  Cache: "Memo",
+  Images: "Images"
+}
+
+export type NovelFile = {
+  fileName: string,
+  type: string,
+  content: string
 }
 
 export const OmitType = <T, K extends keyof T>(Class: new () => T, ...keys: K[]): new () => Omit<T, typeof keys[number]> => Class;
@@ -36,6 +79,10 @@ export abstract class DBInit extends IBaseModule<TableNames> {
   };
   //  this will be assigned by the db
   async saveChanges() {
+
+  }
+
+  async update(...keys: string[]) {
 
   }
 
@@ -57,6 +104,13 @@ export type GlobalType =
     lineHeight: number;
     selectedFoldItem: string;
     panEnabled: boolean;
+    zip: FilesZipper,
+    notification: Notification,
+    browser: {
+      data?: { func: Function, onCancel: () => void, desc: string, props: { selectionType: SelectionType, ext?: EXT[] } };
+      pickFile: (eXT: EXT[], desc?: string) => Promise<ReadDirItem | undefined>;
+      pickFolder: (desc?: string) => Promise<ReadDirItem | undefined>;
+    },
     selection: {
       downloadSelectedItem: any,
       favoritItem: any
@@ -70,7 +124,7 @@ export type GlobalType =
     alert: (msg: string, title?: string) =>
       {
         show: () => void;
-        confirm: (func: (confirmed:boolean)=> void) => void;
+        confirm: (func: (confirmed: boolean) => void) => void;
         toast: () => void;
       };
 
@@ -81,9 +135,9 @@ export type GlobalType =
     isFullScreen: boolean,
     appSettings: AppSettings,
     voices: undefined | Voice[],
-    cache: () => FileHandler,
+    cache: FileHandler,
     files: FileHandler,
-    imageCache: () => ImageCache,
+    imageCache: ImageCache,
     speech: any,
     nav: any,
     orientation: (value: "Default" | "LANDSCAPE") => void,

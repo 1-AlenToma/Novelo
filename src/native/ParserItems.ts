@@ -1,6 +1,6 @@
 import { public_m } from "../Methods";
 import HttpHandler from "./HttpHandler";
-import {OmitType} from "../Types"
+import {NovelFile, OmitType} from "../Types"
 
 class ChapterInfo {
   name: string = "";
@@ -26,7 +26,8 @@ public_m(CommentScript);
 
 class DetailInfo extends LightInfo {
   epub?:any; // temp
-  files?:{fileName:string,type:string, content:string}[]; // temp
+  files?:NovelFile[]; // temp
+  imagePath?: string; // this is used for downloaded images start path
   rating: string = "";
   novelUpdateRating = "";
   novelUpdateUrl = "";
@@ -75,7 +76,7 @@ class ParserDetail extends OmitType(SearchDetail, "text", "page") {
 abstract class NovelInfo {
   url: string;
   http: HttpHandler;
-  type: string = "NovelInfos";
+  type: string = "Novel";
   constructor(url: string) {
     this.url = url;
     this.http = new HttpHandler();
@@ -93,16 +94,19 @@ abstract class Parser {
   icon: string;
   settings: ParserDetail;
   protectedChapter: boolean = false;
+  type: string = "Novel";
   constructor(
     url: string,
     name: string,
-    icon: string
+    icon: string,
+    type?: string
   ) {
     this.url = url;
     this.http = new HttpHandler();
     this.name = name;
     this.icon = (url?.join(icon) ?? "") as string;
     this.settings = new ParserDetail();
+    this.type = type ?? "Novel";
   }
 
   abstract search(

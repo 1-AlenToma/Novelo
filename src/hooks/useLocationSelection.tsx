@@ -1,56 +1,87 @@
 import * as React from "react";
-import { pickDirectory } from "react-native-document-picker";
-import { Modal, TouchableOpacity, Icon, Text, View, Form } from "../components";
-import * as MediaLibrary from "expo-media-library";
-import { FileHandler } from "../native";
+import { Modal, TouchableOpacity, Icon, Text, View, ProgressBar, useLoader, FileBrowser } from "../components";
+import { FileHandler, ImageCache } from "../native";
 import { FilesPath } from "../Types";
 
-export default () => {
-    context.hook("appSettings.filesDataLocation");
-    const state = buildState({
-        uri: context.appSettings.filesDataLocation,
-        loading: false,
-        progress: 0,
-        visible: false
-    }).build();
 
-    const browse = () => {
-        context.alert("Please Choose a location somewhere in document or download.", "Attention").confirm(async (confirmed) => {
-            if (confirmed) {
-                let { status } = await MediaLibrary.requestPermissionsAsync();
-                if (status !== "granted") {
-                    context.alert("You have to allow permission to the documents directory").show();
-                    return;
-                }
-                let response = await pickDirectory();
-                if (response && response.uri) {
-                    context.alert("We will begin moving the data to the new location").toast();
-                    state.loading = true;
-                    let fileHandler = new FileHandler(response.uri.path(FilesPath.File));
-                    let files = await context.files.allFilesInfos();
+
+
+export default () => {
+    context.hook("appSettings.filesDataLocation", "appSettings.filesDataLocation");
+    const state = buildState({
+        uri: context.appSettings.filesDataLocation ?? context.files.dir,
+        progress: 0
+    }).build();
+    const loader = useLoader()
+
+    const browse = async () => {
+        let uri = await context.browser.pickFolder("Use new location for Novelo to save its data.")
+        if (!uri || uri.path === context.appSettings.filesDataLocation) {
+            return;
+        }
+
+        context.alert("We will begin moving the data to the new location").confirm(async (confirm) => {
+
+            try {
+
+                if (uri && confirm) {
+
+                    loader.show();
+                    let fileHandler = new FileHandler(uri.path.path(FilesPath.File));
+                    let imageHandler = new ImageCache(uri.path.path(FilesPath.Images))
+                    await fileHandler.checkDir();
+                    await imageHandler.checkDir();
+                    let files = await context.files.allFilesInfos(true);
+                    let images = await context.imageCache.allFilesInfos(true);
                     state.progress = 0.1;
+                    let total = files.length + images.length;
+                    // writing Files
                     for (let i = 0; i < files.length; i++) {
-                        let content = await context.files.read(files[i].path);
-                        await fileHandler.write(files[i].name, content);
-                        state.progress = files.length.procent(i);
+                        let file = getFileInfo(files[i].path, context.files.dir);
+                        await fileHandler.copy(files[i].path, file.filePath ?? files[i].name);
+                        state.progress = total.procent(i);
+
                     }
 
+                    // writing Images
+                    for (let i = 0; i < images.length; i++) {
+                        let file = getFileInfo(images[i].path, context.imageCache.dir);
+                        await imageHandler.copy(images[i].path, file.filePath ?? images[i].name);
+                        state.progress = total.procent(i + files.length);
+                    }
+
+                    await context.db().commitTransaction();
+                    state.uri = context.appSettings.filesDataLocation = uri.path;
+                    await context.appSettings.saveChanges();
+                    context.imageCache = imageHandler;
+                    context.files = fileHandler;
                 }
 
+            } catch (e) {
+                console.error(e);
+                context.alert(e.toString(), "Error").show()
+
+            } finally {
+                loader.hide();
             }
         });
     }
 
-    let elem = (<>
-        <TouchableOpacity css="settingButton" text="Data location path">
-            <TouchableOpacity onPress={() => state.visible = true}>
-                <Text invertColor={true}>{state.uri}</Text>
-            </TouchableOpacity>
-        </TouchableOpacity>
-        <Modal height={200} visible={state.visible}>
 
-        </Modal>
+    let elem = (<>
+        <TouchableOpacity onPress={browse} css="settingButton">
+            <Icon
+                invertColor={true}
+                type="MaterialCommunityIcons"
+                name="folder"
+            />
+            <Text css="fos:12" invertColor={true}>{state.uri}</Text>
+            <ProgressBar procent={state.progress} ifTrue={() => loader.loading} />
+            {loader.elem}
+        </TouchableOpacity>
     </>
     )
+
+    return { elem }
 
 }

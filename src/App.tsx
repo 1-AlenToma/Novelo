@@ -28,10 +28,13 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 import { useFonts } from "./hooks";
 import { clearStyles } from "./styles";
+import AppTest from "./App.test";
+import GlobalFileBrowse from "./components/GlobalFileBrowse";
+const testning = false;
 
-export default function App() {
+const App = () => {
     const fontLoader = useFonts();
-    context.hook("size", "theme.settings", "isFullScreen", "updater");
+    context.hook("size", "theme.settings", "isFullScreen", "updater", "files");
 
     context.useEffect(
         (item, props) => {
@@ -73,13 +76,13 @@ export default function App() {
         context.theme.invertSettings = () => {
             return context.theme.themeMode == "light"
                 ? {
-                      ...styles.darkContainer,
-                      ...styles.darkThemeText
-                  }
+                    ...styles.darkContainer,
+                    ...styles.darkThemeText
+                }
                 : {
-                      ...styles.lightContainer,
-                      ...styles.lightThemeText
-                  };
+                    ...styles.lightContainer,
+                    ...styles.lightThemeText
+                };
         };
         clearStyles();
         context.theme.settings = {
@@ -94,7 +97,7 @@ export default function App() {
 
     useEffect(() => {
         setThemeStyle();
-        let itemToRemove : any[]= [];
+        let itemToRemove: any[] = [];
         (async () => {
             try {
                 loader.show();
@@ -110,7 +113,7 @@ export default function App() {
         return () => {
             //const RNExitApp = require("react-native-exit-app").default;
             if (!__DEV__)
-            RNExitApp.exitApp?.();
+                RNExitApp.exitApp?.();
             itemToRemove?.forEach(x => x.remove());
         };
     }, []);
@@ -124,10 +127,9 @@ export default function App() {
                 <AppStack />
                 <PlayerView />
             </NavigationContainer>
-            <StatusBar
-                style={context.theme.themeMode == "light" ? "dark" : "light"}
-            />
+            <StatusBar style={context.theme.themeMode == "light" ? "dark" : "light"} />
             <AlertView />
+            <GlobalFileBrowse />
         </AppContainer>
     );
 }
@@ -157,3 +159,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#ffffff"
     }
 });
+
+
+
+export default (testning ? AppTest : App);

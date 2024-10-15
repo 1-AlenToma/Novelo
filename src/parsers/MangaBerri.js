@@ -15,7 +15,8 @@ export default class MangaFire extends Parser {
         super(
             "https://mangaberri.com",
             "MangaBerri",
-            "/favicon.ico"
+            "/favicon.ico",
+            "Manga"
         );
         this.protectedChapter = false;
         this.settings.searchEnabled = false;
@@ -67,16 +68,17 @@ export default class MangaFire extends Parser {
         let data = html
             .$(".manga-item")
             .map(f => {
+                let name = f.find(".link").eq(1);
                 if (f.find("img").attr("src")?.has())
                     return LightInfo.n()
-                        .Name(f.find(".link").eq(0).text)
+                        .Name(name.text)
                         .Url(
-                            f.find(".link").eq(0).url("href"))
+                            name.url("href"))
                         .Type("Manga")
                         .Image(
                             f.find("img").url("src") || f.find("img").attr("src")
                         )
-                        .Info(f.find(".link").eq(1).text)
+                        .Info(f.find(".link").eq(2).text)
                         .ParserName(this.name);
             }).filter(x => x != undefined)
            // console.warn(JSON.stringify(data, undefined, 4))
@@ -99,7 +101,7 @@ export default class MangaFire extends Parser {
         ).html;
         let body = html.$("body");
 
-        return body.find(".reading-container img").map(x => `<img src="${x.url("src") || x.attr("src")}" />`).join("\n");
+        return body.find(".reading-container img").map(x => `<img src="${x.url("src") || x.attr("src")}"  />`).join("\n");
     }
 
     async detail(url) {

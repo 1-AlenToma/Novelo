@@ -12,7 +12,8 @@ import {
   ActionSheet,
   ProgressBar,
   Modal,
-  FoldableItem
+  FoldableItem,
+  FileBrowser
 } from "../components";
 import Header from "./Header";
 import * as React from "react";
@@ -23,12 +24,14 @@ import {
   useView
 } from "../hooks";
 import * as DocumentPicker from "expo-document-picker";
+import * as DockPicker from "react-native-document-picker"
 import { Book, Chapter } from "../db";
 import {
   FileHandler,
   ZipBook,
   EpubBuilder
 } from "../native";
+import { ReadDirItem } from "react-native-fs";
 const EpubHanlder = ({
   navop,
   parentState
@@ -39,19 +42,19 @@ const EpubHanlder = ({
       skipImages: false
     }
   });
-  const loadEpub = async () => {
+  const loadEpub = async (item: ReadDirItem) => {
     try {
-      let { assets } =
-        await DocumentPicker.getDocumentAsync({
-          copyToCacheDirectory: true,
-          type: "application/epub+zip"
-        });
-      if (!assets || assets.length <= 0) return;
-      context
-        .alert(
-          `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip them?`,
-          "Please Confirm"
-        )
+      /* let item = await DockPicker.pickSingle({
+         copyTo: "cachesDirectory",
+         type: "application/epub+zip"
+       });
+ 
+       if (!item || !item.fileCopyUri) return;*/
+      state.browserVisible = false;
+      context.alert(
+        `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip them?`,
+        "Please Confirm"
+      )
         .confirm(async answer => {
           state.skipImages = answer;
           try {
@@ -59,10 +62,8 @@ const EpubHanlder = ({
             await context.db().disableHooks();
             await context.db().disableWatchers();
             context.files.disable();
-            let uri: any =
-              assets?.firstOrDefault("uri");
-            let name : any =
-              assets?.firstOrDefault("name");
+            let uri: any = item.path;
+            let name: any = item.name;
             let bk = await ZipBook.load(
               uri,
               name,
@@ -80,12 +81,20 @@ const EpubHanlder = ({
               count++;
               loader.show((100 * count) / total);
             };
+            let displayImage: any = undefined;
             if (!state.skipImages) {
+              bk.imagePath = folderValidName(bk.name);
               for (let file of images) {
+
                 await calc();
-                file.content = await context
-                  .imageCache()
-                  .write(file.url, file.content);
+                if (file.url && !file.url.empty()) {
+                  let path = await context
+                    .imageCache
+                    .write(bk.imagePath.path(getFileInfoFromUrl(file.fileName ?? file.url)).trimEnd("/"), file.content);
+                  file.content = path;
+                  if (!displayImage)
+                    displayImage = bk.imagePath.path(getFileInfoFromUrl(file.fileName ?? file.url)).trimEnd("/");
+                }
               }
 
               let chImage =
@@ -98,6 +107,13 @@ const EpubHanlder = ({
                   ...bk.chapters
                 ];
             }
+
+            let img = bk.files.find(
+              x => x.type === "Image"
+            );
+
+            if (!displayImage)
+              displayImage = img?.content;
             let book = Book.n()
               .Name(bk.name)
               .Url(bk.url)
@@ -107,14 +123,10 @@ const EpubHanlder = ({
                   .filter(x => x.type === "CSS")
                   .map(x => x.content)
                   .join("\n")
-              )
-              .ImageBase64(
-                bk.files.find(
-                  x => x.type === "Image"
-                )?.content ?? ""
-              )
+              ).ImageBase64(displayImage)
               .ParserName("epub");
-            await context.files.write(bk.url, JSON.stringify(bk));
+            bk.files = []; // clear files as it is not needed anymore
+            await context.files.write("".fileName(bk.name, "epub"), JSON.stringify(bk));
             await context.db().save(book);
           } catch (e) {
             context.alert(e.message).show();
@@ -151,12 +163,14 @@ const EpubHanlder = ({
               <Icon
                 invertColor={true}
                 size={35}
-                name="file-zip"
+                name="file-directory"
                 type="Octicons"
               />
             ),
-            press: () => {
-              loadEpub();
+            press: async () => {
+              let uri = await context.browser.pickFile(["epub"], "Select Epub file");
+              if (uri)
+                loadEpub(uri)
             }
           }
         ]}
@@ -204,10 +218,8 @@ const ItemRender = ({
     .useFile("json", x => {
       return x.has(
         "".fileName(
-          item.url,
-          item.parserName == "epub"
-            ? ""
-            : item.parserName
+          item.name,
+          item.parserName
         )
       );
     });
@@ -235,21 +247,21 @@ const ItemRender = ({
       x => x.url == b.url
     );
     if (novel) {
-      itemState.info = `(${
-        b.selectedChapterIndex + 1
-      }/${
-        novel.chapters.filter(
+      itemState.info = `(${b.selectedChapterIndex + 1
+        }/${novel.chapters.filter(
           x => x.content && x.content.has()
         ).length
-      })`;
+        })`;
     }
     loader.hide();
   };
   item =
     books.find(x => x.url === item.url) ?? item;
+  const novelInfo = fileItems.find(x => item.url === x.url);
   return (
     <FoldableItem
       single={true}
+      enabled={(novelInfo?.chapters.length ?? 0) > 0}
       css="wi:98% overflow"
       buttons={[
         {
@@ -296,21 +308,20 @@ const ItemRender = ({
                 loader.show();
                 if (answer) {
                   try {
-                    let file = fileItems.find(
-                      x => x.url == item.url
-                    );
+                    let file = fileItems.find(x => x.url == item.url);
 
                     if (file) {
-                      if (
-                        item.parserName ==
-                          "epub" ||
-                        !item.favorit
-                      ) {
-                        await context
-                          .dbContext()
-                          .deleteBook(item.id);
+                      if (item.parserName == "epub" || !item.favorit) {
+                        await context.dbContext().deleteBook(item.id);
                       }
                       await file.deleteFile();
+
+                      if (context.appSettings.currentNovel && context.appSettings.currentNovel.url == item.url) {
+                        context.appSettings.currentNovel = {} as any;
+                        await context.appSettings.saveChanges();
+                      }
+
+
                     }
                   } catch (e) {
                     console.error(e);
@@ -334,9 +345,10 @@ const ItemRender = ({
             options
               .nav("ReadChapter")
               .add({
+                name: item.name,
                 url: item.url,
                 parserName: item.parserName,
-                epub:true
+                epub: true
               })
               .push();
             return true;

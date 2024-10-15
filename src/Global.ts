@@ -3,18 +3,28 @@ import { cssTranslator, clearStyles } from "./styles";
 import IDOMParser from "advanced-html-parser";
 import * as Methods from "./Methods";
 import StateBuilder from "react-smart-state";
-import { IGlobalState } from "./Types";
+import { IGlobalState, FileInfo } from "./Types";
 import * as React from "react";
+import TestRunner from "./tests/TestRunner";
+
+
 const cheerio = require("react-native-cheerio");
+const fileTypesExt = [".json", ".html", ".epub", "zip", "rar", ".jpg", ".gif", ".png", ".jpeg", ".webp"];
 
 declare global {
+    var fileTypes: string[];
+    var tests: TestRunner[];
     var useState: typeof React.useState;
     var useEffect: typeof React.useEffect;
     var useRef: <T = any>(item?: T) => { current: T };
     var context: IGlobalState;
     var methods: typeof Methods;
     var buildState: typeof StateBuilder;
-    var getFileName: (file: string, dir: string) => string;
+    var getFileName: (file: string, dir?: string) => string;
+    var getFileInfo: (path: string, dir?: string) => FileInfo;
+    var getFileInfoFromUrl: (url: string) => string;
+    var test: (name: string) => TestRunner;
+    var folderValidName: (name: string) => string;
     interface Date {
         getMinDiff: (date: Date) => number;
     }
@@ -27,19 +37,21 @@ declare global {
         clear: () => T[];
         has: (item?: any) => boolean;
         niceJson: (...keyToRemove: (keyof T)[]) => string;
-        skip: (index: number, handler: Function) => string;
+        skip: (index: number, handler?: Function) => string[];
     }
 
     interface String {
         isManga(): boolean;
-        fileName(...url: string[]): string;
+        fileName(name: string, parserName: string): string;
+        isLocalPath(incBase64?: boolean): boolean;
         escapeRegExp(): string;
         join(...relative: String[]): string;
         path(...relative: string[]): string;
         empty(): boolean;
         onEmpty(defaultValue: string): string;
-        query(item: any): String;
-        trimEnd(...items): String;
+        query(item: any): string;
+        trimEnd(...items): string;
+        trimStr(...items): string; // TrimStart
         has(selector?: string): boolean;
         count(count: number): boolean;
         imageUrlSize: (size: string) => string;
@@ -50,6 +62,7 @@ declare global {
         cleanText(): string;
         htmlArray(): string[];
         html(): any;
+        htmlImagesSources(): string[];
         splitSearch(searchFor: string): boolean;
         displayName(): string;
         imageFetchBuilder(
@@ -63,12 +76,12 @@ declare global {
     interface Number {
         sureValue: (a?: number, isInt?: boolean) => number;
         readAble: () => any;
-        procent: (index:number)=> number;
+        procent: (index: number) => number;
     }
 }
 
 String.prototype.onEmpty = function (defaultValue: string) {
-    
+
     let str = new String(this).toString();
     return !str.empty() ? str : defaultValue;
 }
@@ -79,12 +92,18 @@ String.prototype.isManga = function () {
     return mng.find(x => str.toLowerCase() == x) != undefined;
 }
 
-String.prototype.fileName = function (...url: string[]) {
-    return `${url
-        .join("")
-        .replace(/(\/|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "")
-        .toLowerCase()}.json`;
+String.prototype.fileName = function (name: string, parserName: string) {
+    return parserName.path(name
+        .replace(/(\/|\.|:|"|'|\{|\}|\[|\]|\,|\’)/gim, "")
+        .toLowerCase() + ".json").trimEnd("/");
 };
+
+String.prototype.isLocalPath = function (base64?: boolean) {
+    const str = new String(this).toString();
+    let res = !/http(s)?:|www\./g.test(str);
+    return !base64 ? res : res && !/data\:image/g.test(str);
+};
+
 String.prototype.displayName = function () {
     let str = new String(this).toString();
     return str[0].toUpperCase() + str.substring(1);
@@ -110,7 +129,7 @@ Number.prototype.readAble = function () {
     return nr;
 };
 
-Number.prototype.procent = function(index:number){
+Number.prototype.procent = function (index: number) {
     let p = (100 * index + 1) / this;
     return p;
 }
@@ -253,6 +272,13 @@ String.prototype.htmlArray = function () {
     return elems.map(x => x.outerHTML);
 };
 
+String.prototype.htmlImagesSources = function () {
+    let str = new String(this).toString();
+    const doc = IDOMParser.parse(`<div>${str}</div>`);
+    let elems = [...doc.documentElement.querySelectorAll("img")];
+    return elems.map(x => x.getAttribute("src"));
+};
+
 String.prototype.sSpace = function (total?: number) {
     total = (1).sureValue(total);
     let str = new String(this || "").toString();
@@ -322,6 +348,15 @@ String.prototype.trimEnd = function (...items) {
     return str;
 };
 
+String.prototype.trimStr = function (...items) {
+    let str = new String(this).toString().trim();
+    items.forEach(x => {
+        if (str.startsWith(x)) str = str.substring(1);
+    });
+
+    return str;
+};
+
 String.prototype.query = function (item: any) {
     let url = new String(this).toString();
     if (url.endsWith("/")) url = url.substring(0, url.length - 1);
@@ -339,13 +374,14 @@ String.prototype.query = function (item: any) {
 String.prototype.path = function (...relative: string[]) {
     let url = new String(this).toString().trim();
     relative
-        .filter(x => x && x.has())
+        .filter(x => x != undefined && x !== null && x.has())
+        .map(x => x.toString())
         .forEach(x => {
-            if (url.endsWith("/")) url = url.substring(0, url.length - 1);
-            if (x.startsWith("/")) x = x.substring(1);
-            url = `${url}/${x}`;
+            url = `${url.trimEnd("/")}/${x.trimStr("/")}`;
         });
     if (!url.endsWith("/")) url += "/";
+    if (fileTypes.find(x => url.trimEnd("/").endsWith(x)))
+        return url.trimEnd("/")
     return url;
 };
 
@@ -372,27 +408,87 @@ String.prototype.join = function (this: string, ...relative: String[]) {
     return url;
 }
 
-const GlobalContext = require("./GlobalContext").default;
-global.context = GlobalContext;
+
+//declare var global: typeof globalThis;
+
+global.fileTypes = fileTypesExt;
 global.methods = Methods;
+global.tests = [];
+global.test = (desc: string) => {
+    let item = new TestRunner(desc);
+    global.tests.push(item);
+    return item;
+}
 global.buildState = StateBuilder;
 global.useEffect = React.useEffect;
 global.useState = React.useState;
 global.useRef = React.useRef;
-global.getFileName = (file: string, dir: string) => {
-    // its full path
-    let types = [".json", ".html", ".epub"];
+global.folderValidName = (name: string) => {
+    return (name ?? Methods.newId()).replace(/([\(\)\,\.\+\-\:\<\>\_\-])/gim, "")
+}
+
+global.getFileInfoFromUrl = (url: string) => {
+    return url.trimEnd("/").split("/").pop() as string;
+}
+
+global.getFileInfo = (path: string, dir?: string) => {
+    let item = {
+        path,
+        folders: [],
+        folder: "",
+        filePath: "",
+    } as FileInfo;
+
+    if (fileTypes.find(x => path.endsWith(x))) {
+        item.name = path.split("/").pop();
+    }
+
+    if (dir && item.name)
+        item.filePath = path.replace(dir, "").trimStr("/");
+    else item.filePath = item.name;
+
+    if (item.name)
+        path = path.split("/").reverse().skip(0).reverse().join("/"); // execlude file
+
+    if (dir)
+        item.folder = path.replace(dir.split("/").reverse().skip(0).reverse().join("/"), "")
+    else item.folder = path;
+
+
+    path.split("/").filter(x => !x.empty()).forEach(x => {
+        let lastItem = item.folders.lastOrDefault() as string | undefined;
+        let p = lastItem ? lastItem.path(x) : x;
+        // p = dir ? dir.path(p) : p;
+        if (!p.startsWith("/"))
+            p = "/" + p;
+        if (!item.folders.find(x => x == p))
+            item.folders.push(p);
+    });
+    if (dir)
+        item.folders = item.folders.filter(x => (dir.length < x.length))
+
+    return item;
+
+}
+global.getFileName = (file: string, dir?: string) => {
+    // its full path 
     if (
         file &&
         file.has() &&
-        !types.find(x => file.has(x))
-    )
+        !fileTypes.find(x => file.has(x))
+    ) {
         file += ".json";
-    if (file.startsWith("/")) return file;
-       file = dir + file;
-   /* if (file.startsWith("/"))
-        file = `file://${file}`;
-    else if (!file.startsWith("file"))
-        file = `file:///${file}`;*/
+    }
+    if (file.startsWith("/") || file.startsWith("file")) return file;
+
+    if (dir)
+        file = dir + file;
+    /* if (file.startsWith("/"))
+         file = `file://${file}`;
+     else if (!file.startsWith("file"))
+         file = `file:///${file}`;*/
     return file;
 }
+
+const GlobalContext = require("./GlobalContext").default;
+global.context = GlobalContext;

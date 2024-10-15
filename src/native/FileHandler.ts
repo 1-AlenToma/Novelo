@@ -1,18 +1,29 @@
-import * as FileSystem from "expo-file-system";
 import { newId } from "../Methods";
 import { useLoader } from "../components";
-import RNF from "react-native-fs";
-export type Dir = "Cache" | "File";
-type Fnc = (
-  type: "Write" | "Delete",
-  file: string
-) => void;
-const DownloadedFiles = new Map();
+import RNF, { ReadDirItem } from "react-native-fs";
+import RNFetchBlob from "rn-fetch-blob";
+import { SystemDir, EncodingType, FileInfo } from "../Types";
+
+
 export default class FileHandler {
   dir: string;
   events: any = {};
   disabled: boolean = false;
-  constructor(dir: string, dirType?: Dir) {
+  CachesDirectoryPath: string;
+  DocumentDirectoryPath: string;
+  DownloadDirectoryPath: string;
+  ExternalStorageDirectoryPath: string;
+  RNF = RNF;
+  enableCaching: boolean;
+  DownloadedFiles = new Map();
+  root: FileInfo;
+
+  constructor(dir: string, dirType?: SystemDir, enableCaching?: boolean) {
+    this.DocumentDirectoryPath = RNF.DocumentDirectoryPath;
+    this.CachesDirectoryPath = RNF.CachesDirectoryPath;
+    this.DownloadDirectoryPath = RNF.DownloadDirectoryPath;
+    this.ExternalStorageDirectoryPath = RNF.ExternalStorageDirectoryPath;
+    this.enableCaching = enableCaching || false;
     this.events = {
       values: () =>
         Object.keys(this.events)
@@ -28,7 +39,10 @@ export default class FileHandler {
     } else // is a full path
     {
       this.dir = dir;
+
     }
+
+    this.root = getFileInfo(this.dir);
   }
 
   disable() {
@@ -61,8 +75,130 @@ export default class FileHandler {
       );
   }
 
+
+  getName(file: string) {
+    // its full path
+    return getFileName(file, this.dir);
+  }
+
+  async exists(file: string) {
+    await this.checkDir();
+    let fileUri = this.getName(file);
+    return await RNF.exists(fileUri);
+  }
+
+
+  async delete(file: string) {
+    await this.checkDir();
+    let fileUri = this.getName(file);
+    console.log("Deleting", fileUri)
+    if (this.enableCaching)
+      this.DownloadedFiles.delete(fileUri);
+    if (await this.exists(file))
+      await RNF.unlink(fileUri);
+    this.trigger("Delete", file, fileUri);
+  }
+
+  async write(file: string, content: string | number[]) {
+    let fileUri = this.getName(file);
+    await this.checkDir(fileUri);
+    console.log(
+      "writing",
+      fileUri,
+      "filename",
+      file
+    );
+
+
+    await RNFetchBlob.fs.writeFile(
+      fileUri,
+      content,
+      "utf8"
+    );
+
+    console.log("Finished Wrting", fileUri)
+    if (this.enableCaching)
+      this.DownloadedFiles.set(fileUri, content);
+    this.trigger("Write", file, fileUri);
+    return getFileInfo(fileUri, this.dir).filePath ?? fileUri;
+  }
+
+  async allFilesInfos(recrusive?: boolean, path?: string) {
+    if (!path)
+      await this.checkDir();
+    let fileUri = path ?? this.getName("");
+    let dirs: ReadDirItem[] = [];
+    dirs = await RNF.readDir(fileUri);
+    if (recrusive)
+      for (let item of dirs.filter(x => x.isDirectory()))
+        dirs = [...dirs, ...(await this.allFilesInfos(recrusive, item.path))]
+    return dirs.filter(x => x.isFile());
+  }
+
+  async copy(source: string, des: string) {
+    des = this.getName(des);
+    await this.checkDir(des);
+    await RNF.copyFile(source, des);
+  }
+
+  async allFiles(folder?: string) {
+    let fileUri = folder ?? this.getName("");
+    if (!await this.RNF.exists(fileUri))
+      return [];
+    let files: string[] = [];
+    let dirs = await RNF.readDir(fileUri);
+    for (let dir of dirs.filter(x => x.isDirectory())) {
+      files = [...files, ...(await this.allFiles(dir.path))]
+    }
+    files = [...files, ...dirs.filter(x => x.isFile()).map(x => x.path)]
+    return files;
+  }
+
+  async read(file: string, type?: EncodingType) {
+    await this.checkDir();
+    let text: string | undefined = undefined;
+    let fileUri = this.getName(file);
+    console.log("reading", fileUri);
+    if (this.enableCaching && this.DownloadedFiles.has(fileUri))
+      return this.DownloadedFiles.get(fileUri) as string;
+    if (await this.exists(file)) {
+      text = await RNFetchBlob.fs.readFile(fileUri, (type || "utf8") as any)
+      if (this.enableCaching)
+        this.DownloadedFiles.set(fileUri, text);
+      return text as string;
+    } else return text;
+  }
+
+  async deleteDir() {
+    await RNF.unlink(this.dir);
+  }
+
+  public async checkDir(fullPath?: string) {
+    let fileInfo = getFileInfo(fullPath ?? this.dir, this.dir);
+    try {
+      let folders: string[] = [];
+
+      if (fullPath)
+        folders = fileInfo.folders;
+      else folders.push(this.dir);
+      for (let folder of folders)
+        if (!await RNF.exists(folder)) {
+          console.info(
+            folder,
+            "directory doesn't exist, creating…",
+            folder
+          );
+          await RNF.mkdir(folder);
+        }
+
+    } catch (e) {
+      console.error(e, [fileInfo].niceJson());
+      throw e;
+    }
+  }
+
   useFile(
-    globalType?: "json" | "utf8" | "base64",
+    globalType?: EncodingType,
     validator?: (x: any) => boolean,
     updateState?: "New" | "NewDelete"
   ) {
@@ -81,13 +217,7 @@ export default class FileHandler {
       }
       if (!fromDisabled) {
         if (
-          (updateState === "New" ||
-            (updateState == "NewDelete" &&
-              op != "Delete")) &&
-          files.current.find(
-            x => x === fileName || x == fullName
-          )
-        ) {
+          (updateState === "New" || (updateState == "NewDelete" && op != "Delete")) && files.current.find(x => x === fileName || x == fullName)) {
           return;
         }
       }
@@ -104,6 +234,7 @@ export default class FileHandler {
         }
       };
     }, []);
+
     useEffect(() => {
       //this.events[id]();
     }, [validator]);
@@ -137,7 +268,7 @@ export default class FileHandler {
 
     const loadContent = async (
       file: string,
-      type?: "json" | "utf8" | "base64"
+      type?: EncodingType
     ) => {
       let item = await this.read(
         file,
@@ -148,9 +279,9 @@ export default class FileHandler {
         try {
           let tm = JSON.parse(item);
           tm.deleteFile = async () => {
-            await context
-              .imageCache()
-              .clearImages(tm.files ?? []);
+            await context.imageCache.clearImages(tm.files ?? []);
+            if (tm.imagePath)
+              await this.RNF.unlink(context.imageCache.dir.path(tm.imagePath).trimEnd("/"));
             await this.delete(file);
           };
           return tm;
@@ -170,88 +301,6 @@ export default class FileHandler {
     };
   }
 
-  getName(file: string) {
-    // its full path
-    return getFileName(file, this.dir);
-  }
-
-  async exists(file: string) {
-    await this.checkDir();
-    let fileUri = this.getName(file);
-    return await RNF.exists(fileUri);
-  }
-
-  async delete(file: string) {
-    await this.checkDir();
-    let fileUri = this.getName(file);
-    DownloadedFiles.delete(fileUri);
-    if (await this.exists(file))
-      await RNF.unlink(fileUri);
-    this.trigger("Delete", file, fileUri);
-  }
-
-  async write(file: string, content: string) {
-    await this.checkDir();
-    let fileUri = this.getName(file);
-    console.log(
-      "writing",
-      fileUri,
-      "filename",
-      file
-    );
-
-    await RNF.writeFile(
-      fileUri,
-      content,
-      "utf8"
-    );
-
-    console.log("Finished Wrting", fileUri)
-    DownloadedFiles.set(fileUri, content);
-    this.trigger("Write", file, fileUri);
-  }
-
-  async allFilesInfos(){
-    await this.checkDir();
-    let fileUri = this.getName("");
-    let dirs = await RNF.readDir(fileUri);
-    return dirs.filter(x => x.isFile());
-  }
-
-  async allFiles() {
-    await this.checkDir();
-    let fileUri = this.getName("");
-    let dirs = await RNF.readDir(fileUri);
-    return dirs.filter(x => x.isFile()).map(x => x.path);
-  }
-
-  async read(file: string, type?: any) {
-    await this.checkDir();
-    let fileUri = this.getName(file);
-    console.log("reading", fileUri);
-    if (DownloadedFiles.has(fileUri))
-      return DownloadedFiles.get(fileUri);
-    if (await this.exists(file)) {
-      let text = await RNF.readFile(fileUri, type || "utf8")
-      DownloadedFiles.set(fileUri, text);
-      return text;
-    } else return undefined;
-  }
-
-  async deleteDir() {
-    await RNF.unlink(this.dir);
-  }
-
-  private async checkDir() {
-    const dirInfo = await FileSystem.getInfoAsync(
-      this.dir
-    );
-    if (!await RNF.exists(this.dir)) {
-      console.log(
-        this.dir,
-        "directory doesn't exist, creating…"
-      );
-      await RNF.mkdir(this.dir);
-    }
-  }
 }
+
+

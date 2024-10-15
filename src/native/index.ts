@@ -8,6 +8,8 @@ import ZipBook from "./ZipBook";
 import EpubBuilder from "./EpubBuilder";
 import DownloadManager from "./DownloadManager";
 import EventEmitter from "./EventEmitter";
+import FilesZipper from "./Zip";
+import Notification from "./Notification";
 
 import {
   LightInfo,
@@ -37,5 +39,7 @@ export {
   EpubBuilder,
   DownloadManager,
   EventEmitter,
-  ImageCache
+  ImageCache,
+  FilesZipper,
+  Notification
 };

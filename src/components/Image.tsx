@@ -13,18 +13,18 @@ export default ({
   const [imgSize, setImgSize] = useState({});
   const [source, setSource] = useState(noImage);
   let loadImage = () => {
-    let g = require("../GlobalContext").default;
     if (url && url.toString().startsWith("[")) {
       // image selector
-      g.parser
-        .current()
+      context.parser
+        .current
         .fetchSelectorImage(url)
         .then(x => setSource(x))
-        .catch(x => {});
-    } else if (url && url.toString().startsWith("file")) {
-      g.imageCache()
-        .read(url)
-        .then(x => setSource(x));
+        .catch(x => { });
+    } else if (url && typeof url === "string" && url.toString().isLocalPath(true)) {
+      context.imageCache.read(url.trimStr("/")).then(x => {
+        if (x && !x.empty())
+          setSource(x)
+      });
     } else if (url && url.toString().has()) {
       setSource(url);
     }
@@ -52,13 +52,13 @@ export default ({
         typeof source == "number"
           ? source
           : {
-              uri: source,
-              method: "GET",
-              headers: {
-                "User-Agent":
-                  "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
-              }
+            uri: source,
+            method: "GET",
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
             }
+          }
       }
       style={[imgSize, ...st]}
     />

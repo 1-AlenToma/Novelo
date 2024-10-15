@@ -25,6 +25,7 @@ import {
   joinKeys,
   sleep
 } from "../Methods";
+import { DetailInfo, ZipBook } from "../native";
 let encKey = "novelo.enc";
 let encKeys = ["url", "parserName", "image"];
 export default class DbContext {
@@ -114,7 +115,7 @@ export default class DbContext {
 
   decode(value: string) {
     if (
-      value&&
+      value &&
       typeof value === "string" &&
       value.startsWith("#")
     )
@@ -154,9 +155,11 @@ export default class DbContext {
   };
 
   downloadDatabase = async (
+    folder: string,
     options: DownloadOptions
   ) => {
     try {
+      context.zip.beginNew();
       let item = {
         appSettings: undefined as AppSettings | undefined,
         books: [] as Book[],
@@ -202,9 +205,12 @@ export default class DbContext {
       }
       if (options.epubs) {
         let files = await context.files.allFiles();
+        let images = await context.imageCache.allFiles();
+        context.zip.files(...files, ...images);
+
         for (let file of files) {
-          let novel = JSON.parse(
-            await context.files.read(file)
+          let novel: ZipBook = JSON.parse(
+            await context.files.read(file) ?? "{}"
           );
           novel.fileName = file;
           let book = await this.database
@@ -233,10 +239,13 @@ export default class DbContext {
         "tableName"
       );
       this.encryptItem(item);
-      await writeFile(
-        JSON.stringify(item),
-        "Novelo_Backup.json"
-      );
+      context.zip.data({ content: JSON.stringify(item), path: "Novelo_Backup.json" });
+      await context.zip.zipFiles(folder, context.appSettings.filesDataLocation ?? context.files.DocumentDirectoryPath);
+      // await context.files.RNF.writeFile(folder.path("Novelo_Backup.json"), JSON.stringify(item))
+      /*  await writeFile(
+          JSON.stringify(item),
+          "Novelo_Backup.json"
+        );*/
     } catch (e) {
       console.error(e);
       return e.message;
@@ -244,26 +253,30 @@ export default class DbContext {
   };
 
   uploadData = async (
-    uri: string,
-    onChange: (p: number) => void
+    uri: string
   ) => {
-    let total = 0; 
+    let total = 0;
     let index = 0;
     const calc = (finished?: boolean) => {
       index++;
       let p = (100 * index + 1) / total;
       if (finished) p = 100;
-      onChange?.(p);
+      context.zip.trigger("CopyProgress", { progress: p, filePath: "Copy content" })
     };
     try {
+      context.zip.beginNew();
+      await context.zip.unzip(uri, context.appSettings.filesDataLocation ?? context.files.DocumentDirectoryPath, "Novelo_Backup")
+      let file = context.zip._data.find(x => x.path.has("Novelo_Backup"))?.content;
+      if (!file){
+        console.error("Could not find Novel_Backup file")
+        return;
+
+      }
       await this.database.disableWatchers();
       await this.database.disableHooks();
       await this.database.beginTransaction();
-      let file = await context.files.read(uri);
-      let item = file?.has()
-        ? JSON.parse(file)
-        : undefined;
-
+      context.files.disable();
+      let item = JSON.parse(file);
       if (item) {
         let total =
           item.books.length +
@@ -321,7 +334,7 @@ export default class DbContext {
           if (index % 5 === 0) await sleep(10);
         }
 
-        for (let epub of item.epubs) {
+        /*for (let epub of item.epubs) {
           await context
             .files
             .write(
@@ -330,7 +343,7 @@ export default class DbContext {
             );
           calc();
           if (index % 5 === 0) await sleep(10);
-        }
+        }*/
       }
 
       await this.database.commitTransaction();
@@ -341,19 +354,24 @@ export default class DbContext {
     } finally {
       await this.database.enableHooks();
       await this.database.enableWatchers();
+      context.files.enable();
       calc(true);
     }
   };
 
   async deleteBook(id: number) {
-    await this.database
+    await this
+      .database
       .querySelector<Chapter>("Chapters")
-      .Where.Column(x => x.parent_Id)
+      .Where
+      .Column(x => x.parent_Id)
       .EqualTo(id)
       .delete();
-    await this.database
+    await this
+      .database
       .querySelector<Book>("Books")
-      .Where.Column(x => x.id)
+      .Where
+      .Column(x => x.id)
       .EqualTo(id)
       .delete();
   }

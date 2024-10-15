@@ -29,6 +29,7 @@ import Toast from "./Toast";
 import ChapterView from "./ChapterView";
 import ButtonList from "./ButtonList";
 import FoldableItem from "./FoldableItem";
+import FileBrowser from "./FileBrowser";
 
 import {
   AppContainer,
@@ -68,5 +69,6 @@ export {
   Toast,
   ChapterView,
   ButtonList,
-  FoldableItem
+  FoldableItem,
+  FileBrowser
 };

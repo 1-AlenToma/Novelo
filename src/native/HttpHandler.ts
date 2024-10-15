@@ -106,7 +106,7 @@ class HttpValue {
         text.indexOf("[") != 1
       )
         return JSON.parse(text);
-    } catch (e) {}
+    } catch (e) { }
     return text;
   }
 }
@@ -261,24 +261,25 @@ class HttpHandler {
             });
             const blob = await response.blob();
             const reader = new FileReader();
+            reader.onerror = function (e) {
+              console.error(e);
+              onSuccess(new HttpError(e));
+            }
             reader.onload = function () {
-              onSuccess(
-                `data:image/jpg;base64,${reader.result.safeSplit(
-                  ",",
-                  1
-                )}`
-              );
+              if (reader.result)
+                onSuccess(`data:image/jpg;base64,${reader.result.toString().safeSplit(",", 1)}`);
             };
             reader.readAsDataURL(blob);
           } catch (e) {
+
             console.error(e);
-            onSuccess(url);
+            onSuccess(new HttpError(e));
           }
         }
       );
     } catch (e) {
       console.error(e);
-      return url;
+      return new HttpError(e);
     }
   }
 }

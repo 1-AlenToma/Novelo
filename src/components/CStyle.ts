@@ -59,8 +59,13 @@ export default NestedStyleSheet.create({
     display: "none"
   },
 
-  button:
-    "di:flex pa:2 row ali:center he:35 miw:55",
+  fileButton: "di:flex row pa:5 bow:0.4 boc:gray juc:center ali:center mar:5 he:90%",
+
+  "fileButton.Icon": "desc fos:30 co:red mar:5",
+
+  "fileButton.Text": "desc fos:12",
+
+  button: "di:flex pa:2 row ali:center he:35 miw:55",
 
   "button.Icon": "desc fos:30 co:red mar:5",
 

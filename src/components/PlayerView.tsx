@@ -165,6 +165,7 @@ export default ({ ...props }: any) => {
               context.nav
                 .nav("ReadChapter")
                 .add({
+                  name: context.player.novel.name,
                   url: context.player.novel.url,
                   parserName:
                     context.player.novel

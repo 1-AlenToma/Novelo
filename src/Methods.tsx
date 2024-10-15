@@ -147,7 +147,7 @@ function generateText(html, minLength) {
     const isName = () => {
       let t = '';
       for (var i = index - 5; i <= text.length; i++) {
-        if (text.charAt(i)?.trim().length<=0) continue;
+        if (text.charAt(i)?.trim().length <= 0) continue;
         t += text.charAt(i);
         if (t.length >= 5) break;
       }
@@ -482,6 +482,13 @@ const public_m = (...Items: any[]) => {
           Item.prototype[n] = function (v: any) {
             if (!this)
               throw "this is null " + Item;
+            if (v && typeof v == "object" && Array.isArray(v)) {
+              v = v.reduce((arr, c) => {
+                if (arr.indexOf(c) === -1)
+                  arr.push(c);
+                return arr;
+              }, [])
+            }
             this[x] = v;
             return this;
           };
