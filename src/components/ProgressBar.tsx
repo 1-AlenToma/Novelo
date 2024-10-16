@@ -65,7 +65,7 @@ export default ({
       onLayout={e => {
         setSize(e.nativeEvent.layout);
       }}
-      css="flex clearboth to:0 le:0 absolute zi:5 juc:center overflow ali:center bow:0 boc:#000">
+      css="flex clearboth to:0 le:0 bo:0 absolute zi:5 juc:center overflow ali:center bow:0 boc:#000">
       <View css="clearboth blur zi:1 absolute" />
       <View
         css="zi:3"

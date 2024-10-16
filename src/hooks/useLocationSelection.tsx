@@ -69,7 +69,7 @@ export default () => {
 
 
     let elem = (<>
-        <TouchableOpacity onPress={browse} css="settingButton">
+        <TouchableOpacity onPress={browse} css="settingButton borderTop">
             <Icon
                 invertColor={true}
                 type="MaterialCommunityIcons"

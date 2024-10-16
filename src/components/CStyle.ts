@@ -71,17 +71,22 @@ export default NestedStyleSheet.create({
 
   "button.Text": "desc fos:14",
 
+  borderBottom: "bobw:1 bobc:#ccc",
+
+  borderTop: "botw:1 botc:#ccc",
+
   listButton:
-    "di:flex bobw:1 bobc:#ccc pa:2 row ali:center mih:40",
+    "di:flex borderBottom pa:2 row ali:center mih:48",
 
   "listButton.Icon": "fos:15 bold mar:5",
 
   "listButton.Text": "desc fos:13",
 
-  settingButton:
-    "listButton pa:5 wi:100% ali:center",
+  settingButton: "listButton pa:0 par:5 wi:100% ali:center",
 
-  "settingButton.Icon": "fos:25 mar:5",
+  "settingButton.Icon": "mal:5 fos:25 mar:5",
+
+  "settingButton.Text": "pa:5 maw:90%",
 
   box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5",
   selectedRow: "bac:#e5313a",

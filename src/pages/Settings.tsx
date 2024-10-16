@@ -204,7 +204,6 @@ export default (props: any) => {
             name="cleaning-services"
           />
           <Text
-            css="he:40"
             invertColor={true}>
             Clean files
             {"\n"}

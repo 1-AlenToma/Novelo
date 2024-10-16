@@ -1,6 +1,6 @@
 {
   "name": "novelo",
-  "version": "1.0.9",
+  "version": "1.0.8",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "gradlew": "cd android && gradlew assembleRelease",
@@ -76,7 +76,8 @@
     "rn-fetch-blob": "^0.12.0",
     "rn-update-apk": "^5.0.0",
     "translate-google-api": "^1.0.4",
-    "util": "^0.12.5"
+    "util": "^0.12.5",
+    "expo-application": "~5.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

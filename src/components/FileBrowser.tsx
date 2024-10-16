@@ -103,7 +103,7 @@ const FileBrowser = (
                         </TouchableOpacity>
                         <TouchableOpacity css="fileButton" ifTrue={() => selectionType == "Folder"} onPress={() => {
                             if (state.containerPath == root) {
-                                context.alert("This Path cant be used, please choose a Folder", "Attention").show();
+                                context.alert("This Path cant be used, please choose/create a Folder", "Attention").show();
                                 return;
                             }
                             use(state.containerDirItem as any)

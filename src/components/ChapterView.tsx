@@ -123,13 +123,13 @@ export default ({
           items={state.chArray[page].items}
           container={({ item, index }) => (
             <View
-              css={`flex mih:20 row juc:space-between di:flex ali:center pal:5 par:5 bor:2 ${
+              css={`flex mih:40 row juc:space-between di:flex ali:center pal:5 par:5 bor:2 ${
                 current == item.url
                   ? "selectedRow"
                   : ""
               }`}>
               <Text
-                css="desc maw:90%"
+                css="desc fos:15 maw:90%"
                 invertColor={true}>
                 {item.name.safeSplit("/", -1)}
               </Text>
@@ -143,7 +143,7 @@ export default ({
                       ? "green"
                       : undefined
                   }
-                  size={16}
+                  size={20}
                   type="MaterialIcons"
                   name="preview"
                 />
@@ -156,7 +156,7 @@ export default ({
                       ? "green"
                       : undefined
                   }
-                  size={16}
+                  size={20}
                   type="AntDesign"
                   name="checkcircle"
                 />
