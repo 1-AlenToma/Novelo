@@ -90,8 +90,8 @@ android {
         applicationId 'com.alentoma.Novelo'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "1.0.8"
+        versionCode 9
+        versionName "1.0.9"
     }
     signingConfigs {
         debug {

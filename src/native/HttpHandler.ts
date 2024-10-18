@@ -1,7 +1,7 @@
 import Html from "./Html";
 import MapCacher from "./MapCacher";
 
-const tempData = new MapCacher<HttpTemp>(300, 100);
+const tempData = new MapCacher<HttpTemp>(300);
 
 const createKey = (...args) => {
   return JSON.stringify(args).replace(

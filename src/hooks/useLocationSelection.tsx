@@ -21,7 +21,6 @@ export default () => {
         }
 
         context.alert("We will begin moving the data to the new location").confirm(async (confirm) => {
-
             try {
 
                 if (uri && confirm) {
@@ -52,9 +51,10 @@ export default () => {
 
                     await context.db().commitTransaction();
                     state.uri = context.appSettings.filesDataLocation = uri.path;
-                    await context.appSettings.saveChanges();
                     context.imageCache = imageHandler;
                     context.files = fileHandler;
+                    await context.appSettings.saveChanges();
+                 
                 }
 
             } catch (e) {

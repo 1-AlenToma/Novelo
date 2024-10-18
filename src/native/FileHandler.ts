@@ -3,6 +3,7 @@ import { useLoader } from "../components";
 import RNF, { ReadDirItem } from "react-native-fs";
 import RNFetchBlob from "rn-fetch-blob";
 import { SystemDir, EncodingType, FileInfo } from "../Types";
+import MapCacher from "./MapCacher";
 
 
 export default class FileHandler {
@@ -15,7 +16,7 @@ export default class FileHandler {
   ExternalStorageDirectoryPath: string;
   RNF = RNF;
   enableCaching: boolean;
-  DownloadedFiles = new Map();
+  DownloadedFiles = new MapCacher(100);
   root: FileInfo;
 
   constructor(dir: string, dirType?: SystemDir, enableCaching?: boolean) {
@@ -229,7 +230,7 @@ export default class FileHandler {
           return;
         }
       }
-      await loader.show();
+     // await loader.show();
       files.current = await this.allFiles();
       await loadItems();
     };
@@ -243,14 +244,10 @@ export default class FileHandler {
       };
     }, []);
 
-    useEffect(() => {
-      //this.events[id]();
-    }, [validator]);
-
     const loadItems = async () => {
       await loader.show();
       let ims: any[] = [];
-      await setItems([]);
+      //await setItems([]);
       for (let file of files.current) {
         let breakit = false;
         try {
