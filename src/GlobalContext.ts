@@ -37,6 +37,7 @@ const cache = new FileHandler(FilesPath.Cache, "Cache");
 const imageCache = new ImageCache();
 const zip = new FilesZipper();
 const notification = new Notification();
+const privateData = new FileHandler(FilesPath.Private, "File")
 
 
 const data = StateBuilder<GlobalType>(
@@ -99,7 +100,7 @@ const data = StateBuilder<GlobalType>(
         appSettings: new AppSettings(),
         voices: undefined,
         cache: cache,
-        files: new FileHandler(FilesPath.File, "File"),
+        files: new FileHandler(FilesPath.File, "File", true),
         imageCache: imageCache,
         speech: Speech,
         nav: undefined,
@@ -153,9 +154,17 @@ const data = StateBuilder<GlobalType>(
                 const loadVoices = (counter?: number) => {
                     setTimeout(
                         async () => {
-                            var voices = await Speech.getAvailableVoicesAsync();
+                            const filename = "voices.json";
+                            let voices = await Speech.getAvailableVoicesAsync();
+                            if (voices.length <= 0) {
+                                let localVoices = await privateData.read(filename);
+                                voices = localVoices && localVoices.has() ? JSON.parse(localVoices) : voices;
+                            }
 
-                            if (voices.length > 0) data.voices = voices;
+                            if (voices.length > 0) {
+                                data.voices = voices;
+                                await privateData.write(filename, JSON.stringify(voices));
+                            }
                             else {
                                 console.log("voices not found");
                                 if (!counter || counter < 10)
@@ -171,7 +180,7 @@ const data = StateBuilder<GlobalType>(
                     .querySelector<AppSettings>("AppSettings")
                     .findOrSave(data.appSettings);
                 if (data.appSettings.filesDataLocation && !data.appSettings.filesDataLocation.empty()) {
-                    data.files = new FileHandler(data.appSettings.filesDataLocation.path(FilesPath.File));
+                    data.files = new FileHandler(data.appSettings.filesDataLocation.path(FilesPath.File), undefined, true);
                     data.imageCache = new ImageCache(data.appSettings.filesDataLocation.path(FilesPath.Images))
                 }
                 if (data.parser.find(data.appSettings.selectedParser)) {

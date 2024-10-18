@@ -14,7 +14,8 @@ class Html {
     if (typeof htext === "string") {
       this.p = cheerio.load(htext, {
         xml: {
-          normalizeWhitespace: true
+          normalizeWhitespace: true,
+          decodeEntities: false
         }
       });
     } else {

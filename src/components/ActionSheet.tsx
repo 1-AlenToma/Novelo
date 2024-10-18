@@ -1,10 +1,9 @@
-import View from "./ThemeView";
-import Text from "./ThemeText";
 import Icon from "./Icons";
-import TouchableOpacity from "./TouchableOpacityView";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import { ElementsContext } from "./AppContainer";
 import { proc, sleep, newId } from "../Methods";
 import * as React from "react";
+import Constants from "expo-constants";
 import {
   useContext
 } from "react";
@@ -42,7 +41,7 @@ export default ({
 }) => {
   let getHeight = () => {
     let h = height;
-    if (!(typeof h === "number" && h > 100)) {
+    if ((typeof h === "string")) {
       h = proc(
         parseFloat(
           (h?.toString() ?? "0").replace(/%/g, "")
@@ -52,20 +51,21 @@ export default ({
     }
     if (typeof h === "number" && h < 400) h = 400;
 
-    return h;
+    return Math.min(h, proc(elContext.containerSize().height, 80));
   };
 
   let elContext = useContext<any>(ElementsContext);
+  context.hook("size")
   const { animateY, animate } = useAnimate({
     y: -getHeight(),
     speed
   });
   const [render, state, loader] = useView({
-    component: Animated.View,
-    onTouchEnd: () =>
-      (state.refItem.isTouched = false),
+    component: AnimatedView,
+
+    onTouchEnd: () => (state.refItem.isTouched = false),
     state: {
-      
+
     },
     refItem: {
       startValue: 0,
@@ -77,13 +77,14 @@ export default ({
     }
   });
 
+
+
   const setSize = () => {
+    let containerHeight = elContext.containerSize().height;
     state.refItem.interpolate = [
-      context.size.screen.height -
-      getHeight() +
-      50,
-      context.size.window.height + 50
-    ];
+      containerHeight,
+      containerHeight - Math.max(getHeight(), state.size.height)
+    ].reverse();
   };
   setSize();
 
@@ -98,7 +99,7 @@ export default ({
         if (state.refItem.isVisible && !show) {
           onHide?.();
           renderUpdate();
-        }else renderUpdate();
+        } else renderUpdate();
       }
     );
   };
@@ -244,11 +245,12 @@ export default ({
                 {title}
               </Text>
             </View>
-            <View ifTrue={()=> state.refItem.show} css="flex fg:1 zi:5 maw:99% overflow">
+            <View ifTrue={() => state.refItem.show} css="flex fg:1 zi:5 maw:99% overflow">
               {children}
             </View>
           </View>,
           {
+            css: "overflow absolute mah:80% le:1% overflow wi:98% juc:flex-start boTLR:25 botrr:25",
             style: [
               {
                 height: getHeight(),
@@ -257,15 +259,12 @@ export default ({
                     translateY:
                       animate.y.interpolate({
                         inputRange: inputRange,
-                        outputRange:
-                          state.refItem
-                            .interpolate,
+                        outputRange: state.refItem.interpolate,
                         extrapolate: "clamp"
                       })
                   }
                 ]
               },
-              "absolute mah:95% le:1% overflow wi:98% juc:flex-start boTLR:25 botrr:25".css()
             ],
             ...state.refItem.panResponse
               .panHandlers

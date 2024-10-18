@@ -242,18 +242,13 @@ export default class ReadNovelFull extends Parser {
     ).html;
     item.Chapters(
       cHhtml
-        .$(".list-chapter")
-        .map(x =>
-          x
-            .find("a")
-            .map(a =>
-              ChapterInfo.n()
-                .Name(a.attr("title"))
-                .Url(a.url("href"))
-                .ParserName(this.name)
-            )
+        .$("li a")
+        .map(a =>
+          ChapterInfo.n()
+            .Name(a.text)
+            .Url(a.url("href"))
+            .ParserName(this.name)
         )
-        .flatMap(x => x)
     );
 
     return item;

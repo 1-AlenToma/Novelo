@@ -1,9 +1,7 @@
-import Text from "./ThemeText";
-import View from "./ThemeView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import { Value } from "../native";
 import ItemList from "./ItemList";
 import useLoader from "./Loader";
-import TouchableOpacity from "./TouchableOpacityView";
 import HomeNovelItem from "./HomeNovelItem";
 import { useNavigation } from "../hooks";
 import { Header } from "../pages";

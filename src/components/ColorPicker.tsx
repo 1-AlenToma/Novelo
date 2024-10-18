@@ -1,10 +1,7 @@
-import View from "./ThemeView";
-import TouchableOpacity from "./TouchableOpacityView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Modal from "./Modal";
 import { invertColor } from "../Methods";
 import * as React from "react";
-import { ScrollView } from "react-native";
 import ColorPicker, {
   Panel1,
   Swatches,

@@ -86,7 +86,7 @@ export default NestedStyleSheet.create({
 
   "settingButton.Icon": "mal:5 fos:25 mar:5",
 
-  "settingButton.Text": "pa:5 maw:90%",
+  "settingButton.Text": "pa:5 maw:90%", 
 
   box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5",
   selectedRow: "bac:#e5313a",

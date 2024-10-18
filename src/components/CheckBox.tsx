@@ -1,10 +1,7 @@
-import View from "./ThemeView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Icon from "./Icons";
 import * as React from "react";
 import { Animated, Easing } from "react-native";
-import TouchableOpacity from "./TouchableOpacityView";
-import AnimatedView from "./AnimatedView";
 import { useAnimate } from "../hooks";
 export default ({
   checked,

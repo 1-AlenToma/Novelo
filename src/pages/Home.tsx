@@ -61,7 +61,7 @@ const CurrentItem = ({
     "currentNovel"
   )(() => reload());
 
-  let book = books?.firstOrDefault() ?? {};
+  let book: Book = books?.firstOrDefault() ?? {} as any;
   if (!books?.firstOrDefault()) return children;
   return (
     <>
@@ -154,8 +154,7 @@ const CurrentItem = ({
           <TouchableOpacity
             css="listButton"
             onPress={() => {
-              context.appSettings.currentNovel =
-                {};
+              context.appSettings.currentNovel = {} as any;
               context.appSettings.saveChanges();
               setVisible(false);
             }}>

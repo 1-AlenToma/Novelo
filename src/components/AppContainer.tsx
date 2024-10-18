@@ -4,8 +4,9 @@ import {
 } from "react";
 import * as React from "react";
 import { newId } from "../Methods";
-import View from "./ThemeView";
+import { View } from "./ReactNativeComponents";
 import { useUpdate, useTimer } from "../hooks";
+import { ISize } from "Types";
 
 const ElementsContext = createContext({});
 let zindex = 1;
@@ -16,10 +17,11 @@ const AppContainer = ({
 }) => {
   const [isReady, setIsReady] = useState(false);
   const [items] = useState(new Map());
+  const containerSize = useRef<ISize>(context.size.window)
   const data = {
     items,
-    update: () => {},
-    newKey: () => {},
+    update: () => { },
+    newKey: () => { },
     find: (id: string) => {
       return data.items.get(id);
     },
@@ -27,6 +29,7 @@ const AppContainer = ({
     remove: (id: string) => {
       items.delete(id);
     },
+    containerSize: () => containerSize.current,
     zIndex: () => zindex++,
     updateProps: (
       elem: any,
@@ -61,6 +64,9 @@ const AppContainer = ({
     <ElementsContext.Provider value={data}>
       <>
         <View
+          onLayout={({ nativeEvent }) => {
+            containerSize.current = nativeEvent.layout
+          }}
           css="zi:1 flex"
           onStartShouldSetResponderCapture={() =>
             false
@@ -89,7 +95,7 @@ const AppChildContainer = () => {
     appContext.setIsReady(true);
   }, []);
   let items = appContext.items;
-  let rItem :any[] = [];
+  let rItem: any[] = [];
   items.forEach((x, k) => {
     rItem.push({ x, k });
   });

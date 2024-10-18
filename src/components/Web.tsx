@@ -9,12 +9,10 @@ import {
   invertColor,
   sleep
 } from "../Methods";
-import { ScrollView } from "react-native";
 import { Asset, useAssets } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import { Player, DetailInfo } from "../native";
-import View from "./ThemeView";
-import TextView from "./ThemeText";
+import {View, AnimatedView,Text as TextView, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import BattariView from "./BattariView";
 import ProgressBar from "./ProgressBar";
 import Svg, {

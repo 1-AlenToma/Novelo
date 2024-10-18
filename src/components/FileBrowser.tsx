@@ -1,9 +1,11 @@
 import * as React from "react";
-import { Modal, TouchableOpacity, Icon, Text, View } from ".";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import { FileHandler, ImageCache } from "../native";
 import { FilesPath, EXT, SelectionType } from "../Types";
 import { ReadDirItem } from "react-native-fs";
-import { ScrollView, TextInput } from "react-native";
+import {TextInput } from "react-native";
+import Icon from "./Icons";
+import Modal from "./Modal";
 import {
     checkManagePermission,
     requestManagePermission,

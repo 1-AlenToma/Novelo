@@ -1,10 +1,7 @@
-import View from "./ThemeView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Icon from "./Icons";
 import * as React from "react";
 import { Animated, Easing } from "react-native";
-import TouchableOpacity from "./TouchableOpacityView";
-import AnimatedView from "./AnimatedView";
 export default ({
   text,
   onPress,
@@ -45,7 +42,7 @@ export default ({
         <View
           ifTrue={text != undefined}
           invertColor={true}
-          css="absolute bac:red to:-1.5 le:10 pal:10 he:2 overflow:visible">
+          css="absolute to:-1.5 le:10 pal:10 he:2 overflow:visible">
           <Text
             invertColor={true}
             css={`

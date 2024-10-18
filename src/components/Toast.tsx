@@ -1,7 +1,4 @@
-import View from "./ThemeView";
-import Text from "./ThemeText";
-import Icon from "./Icons";
-import TouchableOpacity from "./TouchableOpacityView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import { ElementsContext } from "./AppContainer";
 import { proc, sleep, newId } from "../Methods";
 import {
@@ -29,7 +26,7 @@ export default ({
   speed?: number;
   children?: any;
   title?: any;
-  height: string;
+  height: any;
   visible: boolean;
   onHide?: () => void;
   toTop?: boolean;

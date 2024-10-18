@@ -1,9 +1,7 @@
 import TabBar from "./TabBar";
 import useLoader from "./Loader";
 import ParserTester from "./ParserTester";
-import Text from "./ThemeText";
-import View from "./ThemeView";
-import TouchableOpacity from "./TouchableOpacityView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Image from "./Image";
 import ItemList from "./ItemList";
 import Icon from "./Icons";
@@ -21,7 +19,6 @@ import Modal from "./Modal";
 import DropdownList from "./DropdownList";
 import PlayerView from "./PlayerView";
 import AlertView from "./AlertView";
-import AnimatedView from "./AnimatedView";
 import ProgressBar from "./ProgressBar";
 import ColorPicker from "./ColorPicker";
 import Form from "./Form";
@@ -43,6 +40,7 @@ export {
   Text,
   View,
   TouchableOpacity,
+  ScrollView,
   Image,
   ItemList,
   Icon,

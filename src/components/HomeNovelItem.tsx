@@ -1,5 +1,4 @@
-import Text from "./ThemeText";
-import View from "./ThemeView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Image from "./Image";
 import Icon from "./Icons";
 import { LightInfo } from "../native";

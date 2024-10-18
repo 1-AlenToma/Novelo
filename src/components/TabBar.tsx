@@ -2,15 +2,12 @@ import {
   StyleSheet,
   Animated,
   Easing,
-  TouchableOpacity,
-  ScrollView,
   SafeAreaView,
   PanResponder
 } from "react-native";
 import * as React from "react";
 
-import View from "./ThemeView";
-import AnimatedView from "./AnimatedView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import useLoader from "./Loader";
 import * as Icons from "@expo/vector-icons";
 import {
@@ -27,7 +24,6 @@ import {
   useTimer,
   useAnimate
 } from "../hooks";
-import Text from "./ThemeText";
 import { TabIcon, TabChild } from "../Types";
 
 const Menu = ({

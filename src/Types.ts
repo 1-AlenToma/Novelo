@@ -34,7 +34,7 @@ export type FileInfo = {
   path: string;
 }
 
-export type NotificationData= {
+export type NotificationData = {
   data: any,
   type: "File" | "Story"
 }
@@ -59,7 +59,8 @@ export type EXT = "json" | "txt" | "epub" | "zip";
 export const FilesPath = {
   File: "noveloFiles",
   Cache: "Memo",
-  Images: "Images"
+  Images: "Images",
+  Private: "Private"
 }
 
 export type NovelFile = {
@@ -118,7 +119,8 @@ export type GlobalType =
     alertMessage: {
       msg: any;
       title: string;
-      confirm: (answer: boolean) => any;
+      confirm?: (answer: boolean) => any;
+      toast?: boolean
     };
     novelFavoritInfo: any,
     alert: (msg: string, title?: string) =>

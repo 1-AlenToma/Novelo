@@ -64,7 +64,7 @@ const ActionItem = ({
             Search by {keyName}
           </Text>
         }>
-        <View css="he:90%">
+        <View css="flex">
           <ScrollView horizontal={false}>
             <View css="wi:100%">
               {items.items?.map((x, i) => (

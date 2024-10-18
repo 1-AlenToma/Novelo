@@ -16,7 +16,6 @@ import {
 import * as React from "react";
 import { Book, Chapter } from "../db";
 import { useLocationSelection, AppUpdate } from "../hooks";
-import * as DocumentPicker from "expo-document-picker";
 
 
 export default (props: any) => {

@@ -1,13 +1,9 @@
-import View from "./ThemeView";
-import TextInput from "./TextInputView";
-import Text from "./ThemeText";
 import Icon from "./Icons";
 import useLoader from "./Loader";
 import ItemList from "./ItemList";
 import * as React from "react";
-import { ScrollView } from "react-native";
 import { useUpdate, useTimer } from "../hooks";
-import TouchableOpacity from "./TouchableOpacityView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 export default ({
   book,
   current,
@@ -123,13 +119,13 @@ export default ({
           items={state.chArray[page].items}
           container={({ item, index }) => (
             <View
-              css={`flex mih:40 row juc:space-between di:flex ali:center pal:5 par:5 bor:2 ${
+              css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 ${
                 current == item.url
                   ? "selectedRow"
                   : ""
               }`}>
               <Text
-                css="desc fos:15 maw:90%"
+                css="desc fos:12 wi:85% tea:left"
                 invertColor={true}>
                 {item.name.safeSplit("/", -1)}
               </Text>

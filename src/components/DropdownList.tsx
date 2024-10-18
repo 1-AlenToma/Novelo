@@ -2,11 +2,9 @@ import Modal from "./Modal";
 import ActionSheet from "./ActionSheet";
 import ItemList from "./ItemList";
 import * as React from "react";
-import View from "./ThemeView";
 import TextInput from "./TextInputView";
-import Text from "./ThemeText";
 import Icon from "./Icons";
-import TouchableOpacity from "./TouchableOpacityView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 
 export default ({
   items,

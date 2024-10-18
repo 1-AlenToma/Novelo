@@ -1,7 +1,6 @@
 import ActionSheet from "./ActionSheet";
 import * as React from "react";
-import TouchableOpacity from "./TouchableOpacityView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import { ifSelector } from "../Methods";
 export default ({
   btn,
@@ -21,7 +20,8 @@ export default ({
   const [visible, setVisible] = useState(false);
 
   let tprops = {
-    onPress: () => setVisible(true)
+    onPress: () => setVisible(true),
+    onLongPress: undefined
   };
   
   if(refItem)

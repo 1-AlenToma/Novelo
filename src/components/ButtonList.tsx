@@ -1,9 +1,6 @@
-import View from "./ThemeView";
-import Text from "./ThemeText";
 import Icon from "./Icons";
-import TouchableOpacity from "./TouchableOpacityView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import ItemList from "./ItemList";
-import { ScrollView } from "react-native";
 import * as React from "react";
 
 export default ({

@@ -511,14 +511,13 @@ function proc(partialValue, totalValue) {
   return (partialValue / 100) * totalValue;
 }
 
-const parseThemeStyle = (
+export const parseThemeStyleNoneHook = (
+  id: string,
   style: any,
   css: any,
   invertColor: any,
   isRootView?: boolean
 ) => {
-  const id = useRef(newId());
-
   let themeSettings = {
     ...(!(invertColor ?? false)
       ? context.theme.settings
@@ -539,10 +538,23 @@ const parseThemeStyle = (
   if (css) st.push(css.css(id));
   if (isRootView)
     st = [...st, context.theme.getRootTheme()];
+
+  return st;
+}
+
+const parseThemeStyle = (
+  style: any,
+  css: any,
+  invertColor: any,
+  isRootView?: boolean
+) => {
+  const id = useRef(newId()).current as string;
+
+  
   useEffect(() => {
     return () => clearStyles(id);
   }, []);
-  return st;
+  return parseThemeStyleNoneHook(id, style, css, invertColor, isRootView)
 };
 
 const removeProps = (
@@ -670,5 +682,6 @@ export {
   ifSelector,
   writeFile,
   getDirectoryPermissions,
-  generateText
+  generateText,
+  clearStyles
 };

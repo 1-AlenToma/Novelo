@@ -82,6 +82,7 @@ let StyledWrapper = React.forwardRef(
     let id = React.useRef(newId()).current;
     let [_, setUpdater] = React.useState(0);
     let parsedData: any = React.useRef({
+      oldCss: undefined,
       style: undefined,
       pk: undefined
     }).current;
@@ -90,6 +91,8 @@ let StyledWrapper = React.forwardRef(
       : undefined;
 
     React.useEffect(() => {
+     // if (parsedData.oldCss == css)
+     //     return;
       parsedData.style = undefined;
       setUpdater(x => (x > 1000 ? 1 : x) + 1);
     }, [css]);
@@ -128,6 +131,7 @@ let StyledWrapper = React.forwardRef(
       if (tCss) sArray.push(tCss);
       parsedData.style = sArray;
       parsedData.pk = pk;
+      parsedData.oldCss = css;
     }
 
     let cValue = {

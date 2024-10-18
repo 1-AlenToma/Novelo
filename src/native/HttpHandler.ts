@@ -1,7 +1,7 @@
 import Html from "./Html";
-import g from "../GlobalContext";
-const tempData = new Map<string, HttpTemp>();
-let lock = false;
+import MapCacher from "./MapCacher";
+
+const tempData = new MapCacher<HttpTemp>(300, 100);
 
 const createKey = (...args) => {
   return JSON.stringify(args).replace(
@@ -10,24 +10,13 @@ const createKey = (...args) => {
   );
 };
 
-const validateSize = async () => {
-  if (tempData.size <= 300) return;
-  lock = true;
-  while (tempData.size > 100) {
-    tempData.delete(
-      tempData.entries().next().key
-    );
-  }
-  lock = false;
-};
+
 
 const getFetch = async (
   url: string,
   options: any,
   ignoreAlert: boolean
 ) => {
-  while (lock) await methods.sleep(100);
-  await validateSize();
   let key = createKey({ url, options });
   try {
     if (tempData.has(key))
@@ -55,7 +44,7 @@ const getFetch = async (
           `${data.status} Request Timeout`
         );
       // For any other server error
-      throw new Error(data.status);
+      throw new Error(data.status.toString());
     }
   } catch (e) {
     tempData.delete(key);
@@ -91,7 +80,7 @@ class HttpValue {
   }
 
   get html() {
-    return new Html(this.value, this.baseUrl);
+    return new Html(this.value.replace(/(?<!^)(\w| )(\/p\>)/gmi, ""), this.baseUrl);
   }
 
   get text() {
@@ -141,6 +130,7 @@ class HttpHandler {
     return {
       headers: {
         ...options,
+        cache: 'no-store',
         "User-Agent":
           "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
       }
@@ -170,7 +160,7 @@ class HttpHandler {
         this.ignoreAlert
       );
       return new HttpValue(
-        await data.text(),
+        data ? await data.text() : "",
         baseurl || url
       );
     } catch (e) {
@@ -209,7 +199,7 @@ class HttpHandler {
 
   async encodedPost(url: any, item: any) {
     try {
-      var formBody = [];
+      var formBody: any = [];
       for (var property in item) {
         var encodedKey =
           encodeURIComponent(property);

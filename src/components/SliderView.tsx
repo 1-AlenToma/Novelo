@@ -8,9 +8,7 @@ import {
 } from "../Methods";
 import * as React from "react";
 import Icon from "./Icons";
-import TouchableOpacity from "./TouchableOpacityView";
-import View from "./ThemeView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import { TouchableWithoutFeedback } from "react-native";
 const Slider = StyledView(SliderRange, "Slider");
 

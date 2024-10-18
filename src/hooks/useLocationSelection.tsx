@@ -27,7 +27,7 @@ export default () => {
                 if (uri && confirm) {
 
                     loader.show();
-                    let fileHandler = new FileHandler(uri.path.path(FilesPath.File));
+                    let fileHandler = new FileHandler(uri.path.path(FilesPath.File), undefined, true);
                     let imageHandler = new ImageCache(uri.path.path(FilesPath.Images))
                     await fileHandler.checkDir();
                     await imageHandler.checkDir();

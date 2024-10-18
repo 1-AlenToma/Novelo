@@ -242,7 +242,7 @@ String.prototype.cleanHtml = function () {
 
 String.prototype.html = function () {
     let str = new String(this).toString();
-    let html = cheerio.load(str, {
+    let html = cheerio.load(str, { 
         decodeEntities: false
     });
     return html;
@@ -417,7 +417,7 @@ global.tests = [];
 global.test = (desc: string) => {
     let item = new TestRunner(desc);
     global.tests.push(item);
-    return item;
+    return item; 
 }
 global.buildState = StateBuilder;
 global.useEffect = React.useEffect;

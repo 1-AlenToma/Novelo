@@ -11,7 +11,8 @@ const veryIntensiveTask =
   async taskDataArguments => {
     // Example of an infinite loop task
     const { delay } = taskDataArguments;
-    let tasks : any = [];
+    console.info(taskDataArguments)
+    let tasks: any = [];
     let getDate = (days: number) => {
       const date = new Date();
       date.setDate(date.getDate() + days);
@@ -19,12 +20,12 @@ const veryIntensiveTask =
     };
     tasks.push(
       new EventEmitter(10, async function () {
-        this.extra =(
+        this.extra = (
           !this.extra || this.extra.length <= 0
             ? await context.cache.allFiles()
-            : this.extra).filter(x=> x);
-        let i = 10;
-        while (i > 0 && this.extra.length > 0) {
+            : this.extra).filter(x => x);
+        let i = 5;
+        while (i > 0 && this.extra.length > 0 && context.downloadManager().items.size <= 0) {
           i--;
           let f = this.extra.shift();
           let date = getDate(30);
@@ -66,7 +67,7 @@ const options = {
   color: "#ff00ff",
   linkingURI: "novels://file", // See Deep Linking for more info
   parameters: {
-    delay: 1000
+    delay: 3000
   }
 };
 
@@ -77,7 +78,7 @@ export default class BGService {
         veryIntensiveTask,
         options
       );
-    } catch (e) {console.error(e)}
+    } catch (e) { console.error(e) }
   }
 
   static async notify() {
@@ -89,6 +90,6 @@ export default class BGService {
   static async stop() {
     try {
       await BackgroundService.stop();
-    } catch (e) {}
+    } catch (e) { }
   }
 }

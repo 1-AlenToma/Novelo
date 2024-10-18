@@ -154,6 +154,14 @@ export default class FileHandler {
     return files;
   }
 
+  async search(fileName: string){
+    let lst = await this.allFilesInfos();
+    let item = lst.find(x=> x.isFile() && x.name.has(fileName));
+    if (item)
+        return await this.read(item.path);
+    return undefined;
+  }
+
   async read(file: string, type?: EncodingType) {
     await this.checkDir();
     let text: string | undefined = undefined;

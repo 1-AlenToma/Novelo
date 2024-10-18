@@ -1,15 +1,13 @@
 import Icon from "./Icons";
-import TouchableOpacity from "./TouchableOpacityView";
-import View from "./ThemeView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Modal from "./Modal";
 import Toast from "./Toast";
-import { ScrollView } from "react-native";
 import * as React from "react";
+import { ISize } from "Types";
 
 export default () => {
   context.hook("alertMessage");
-  const [size, setSize] = useState();
+  const [size, setSize] = useState<ISize>();
   const rendered = useRef(false);
   let message = context.alertMessage;
   let confirm = (answer: boolean) => {
@@ -38,7 +36,7 @@ export default () => {
             width,
             height
           ) => {
-            setSize({ height: height * 2.5 });
+            setSize({ height: height * 2.5, width });
           }}>
           <Text
             invertColor={true}
@@ -63,7 +61,7 @@ export default () => {
             width,
             height
           ) => {
-            setSize({ height: height * 2.5 });
+            setSize({ height: height * 2.5, width });
           }}>
           <View css="flex pal:5 clearboth">
             <Text

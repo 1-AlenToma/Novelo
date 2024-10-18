@@ -1,7 +1,5 @@
-import View from "./ThemeView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Icon from "./Icons";
-import TouchableOpacity from "./TouchableOpacityView";
 import { ElementsContext } from "./AppContainer";
 import { proc, sleep, newId } from "../Methods";
 import {

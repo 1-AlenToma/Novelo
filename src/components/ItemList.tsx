@@ -4,8 +4,7 @@ import {
 } from "react";
 import * as React from "react";
 import { FlashList } from "@shopify/flash-list";
-import TouchableOpacity from "./TouchableOpacityView";
-import View from "./ThemeView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import { useUpdate, useTimer } from "../hooks";
 import { newId } from "../Methods";
 

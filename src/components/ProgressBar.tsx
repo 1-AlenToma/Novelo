@@ -1,12 +1,8 @@
-import Text from "./ThemeText";
-import View from "./ThemeView";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 import Icon from "./Icons";
 import Slider from "./SliderView";
-import AnimatedView from "./AnimatedView";
-import TouchableOpacity from "./TouchableOpacityView";
 import * as React from "react";
 import {
-  ScrollView,
   Linking,
   PanResponder,
   Animated

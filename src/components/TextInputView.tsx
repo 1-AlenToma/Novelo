@@ -7,9 +7,7 @@ import {
   StyledView
 } from "../Methods";
 import Modal from "./Modal";
-import TouchableOpacity from "./TouchableOpacityView";
-import View from "./ThemeView";
-import Text from "./ThemeText";
+import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
 const Input = StyledView(TextInput, "TextInput");
 export default React.forwardRef(
   (

@@ -1,7 +1,7 @@
 import { Animated } from "react-native";
 import * as React from "react";
 import { sleep } from "../Methods";
-import View from "./ThemeView";
+import {View} from "./ReactNativeComponents";
 import { useAnimate } from "../hooks";
 
 export default ({
