@@ -54,7 +54,7 @@ export default class DownloadManager {
             break;
           } else if (src && (src as any).isNetwork?.()) {
             await sleep(10000); // try later until success
-          }
+          }else break; // other issue, Image not found etc
 
         }
 
@@ -75,12 +75,10 @@ export default class DownloadManager {
       if (this.items.has(url)) return;
       this.items.set(url, 0.1);
 
-      let parser = context.parser.find(parserName);
+      let parser = ParserWrapper.getAllParsers(parserName) as ParserWrapper;
       parser.http = new HttpHandler(true); // to ignore alert
       let novel = await parser.detail(url);
-      let book = await context
-        .db()
-        .querySelector<Book>("Books")
+      let book = await context.db().querySelector<Book>("Books")
         .Where.Column(x => x.url)
         .EqualTo(url)
         .AND.Column(x => x.parserName)
@@ -143,8 +141,6 @@ export default class DownloadManager {
             savedItem.chapters.push(ch);
           if (index % 50 === 0 || savedItem.chapters.length == 1 || !this.items.has(savedItem.url)) {
             if (savedItem.files.length > 0) {
-
-
               for (let image of savedItem.files) {
                 await context.imageCache.write(image.fileName, image.content);
               }
