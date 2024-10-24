@@ -6,7 +6,7 @@ import Player from "./Player";
 import BGService from "./BackgroundService";
 import ZipBook from "./ZipBook";
 import EpubBuilder from "./EpubBuilder";
-import DownloadManager from "./DownloadManager";
+//import DownloadManager from "./DownloadManager";
 import EventEmitter from "./EventEmitter";
 import FilesZipper from "./Zip";
 import Notification from "./Notification";
@@ -37,7 +37,6 @@ export {
   BGService,
   ZipBook,
   EpubBuilder,
-  DownloadManager,
   EventEmitter,
   ImageCache,
   FilesZipper,

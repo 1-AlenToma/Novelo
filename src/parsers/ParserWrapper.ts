@@ -166,7 +166,11 @@ export default class ParserWrapper extends Parser {
         data.group?.has())
   })
   async load() {
+    try{
     return await this.parser.load();
+    }catch(e){
+      console.error("error", e);
+    }
   }
 
   @Memo({

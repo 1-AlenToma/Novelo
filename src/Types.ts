@@ -4,13 +4,13 @@ import {
   BGService,
   FileHandler,
   HttpHandler,
-  DownloadManager,
   ImageCache,
   FilesZipper,
   Notification
 } from "./native";
 import { AppSettings, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
+import DownloadManager from "./native/DownloadManager";
 import { Voice } from "expo-speech";
 import DbContext from "./db/dbContext";
 

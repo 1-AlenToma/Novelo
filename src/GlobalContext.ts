@@ -2,12 +2,12 @@ import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
 import { AppSettings } from "./db";
 import { newId } from "./Methods";
+import DownloadManager from "./native/DownloadManager"
 import {
     Player,
     BGService,
     FileHandler,
     HttpHandler,
-    DownloadManager,
     ImageCache,
     FilesZipper,
     Notification
@@ -34,7 +34,6 @@ const parsers = ParserWrapper.getAllParsers() as ParserWrapper[];
 let currentParser = parsers[0];
 const downloadManager = new DownloadManager();
 const cache = new FileHandler(FilesPath.Cache, "Cache");
-const imageCache = new ImageCache();
 const zip = new FilesZipper();
 const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File")
@@ -101,7 +100,7 @@ const data = StateBuilder<GlobalType>(
         voices: undefined,
         cache: cache,
         files: new FileHandler(FilesPath.File, "File", true),
-        imageCache: imageCache,
+        imageCache: new ImageCache(),
         speech: Speech,
         nav: undefined,
         orientation: (value: "Default" | "LANDSCAPE") => {

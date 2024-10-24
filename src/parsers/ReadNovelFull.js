@@ -10,6 +10,7 @@ const {
   Parser
 } = require("../native");
 
+
 export default class ReadNovelFull extends Parser {
   constructor() {
     super(
@@ -19,10 +20,7 @@ export default class ReadNovelFull extends Parser {
     );
     this.settings.searchEnabled = true;
     this.settings.genreMultiSelection = false;
-    this.settings.searchCombination = [
-      "Genre",
-      "Status"
-    ];
+    this.settings.searchCombination = ["Genre", "Status"];
   }
 
   async load() {
