@@ -58,7 +58,7 @@ export default function Memorize(
         this,
         args
       );
-      while (callingFun.has(key)) await sleep(10);
+      while (callingFun.has(key)) await sleep(100);
       let data = null as DataCache | null;
       callingFun.set(key, true);
       try {
@@ -69,33 +69,17 @@ export default function Memorize(
           ) {
             data = await option.storage.get(key);
           }
-          if (
-            data &&
-            typeof data.date === "string"
-          )
+
+          if (data && typeof data.date === "string")
             data.date = new Date(data.date);
 
-          if (
-            !data ||
-            days_between(data.date) >=
-              option.daysToSave
-          || (option.updateIfTrue && option.updateIfTrue(data.data))) {
+          if (!data || days_between(data.date) >= option.daysToSave || (option.updateIfTrue && option.updateIfTrue(data.data))) {
             try {
-              let data2 = await currentFn.bind(
-                this
-              )(...args);
-              if (!option.isDebug || 1==1) {
+              let data2 = await currentFn.bind(this)(...args);
+              if (!option.isDebug) {
                 if (data2) {
-                  if (
-                    !option.validator ||
-                    option.validator(data2)
-                  ) {
-                    if (data)
-                      await option.storage.delete(
-                        key
-                      );
-                    await option.storage.set(
-                      key,
+                  if (!option.validator || option.validator(data2)) {
+                    await option.storage.set(key,
                       {
                         date: new Date(),
                         data: data2
@@ -104,14 +88,8 @@ export default function Memorize(
                     return data2;
                   } else {
                     if (data) {
-                      await option.storage.delete(
-                        key
-                      );
                       data.date = new Date();
-                      await option.storage.set(
-                        key,
-                        data
-                      ); // extend the date
+                      await option.storage.set(key,data); // extend the date
                     }
                     return data?.data ?? data2;
                   }

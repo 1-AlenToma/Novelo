@@ -15,7 +15,7 @@ class Storage implements IStorage {
 
   async get(file: string) {
     let data = await this.handler.read(file);
-    return data ? JSON.parse(data) : null;
+    return data && !data.empty() ? JSON.parse(data) : null;
   }
 
   async has(file: string) {

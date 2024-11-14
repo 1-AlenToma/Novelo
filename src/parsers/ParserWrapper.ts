@@ -176,13 +176,8 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: 2,
     isDebug:debugg,
-    keyModifier: (target, key) =>
-      `${key}${target.name}`,
-    validator: (data: any) =>
-      data &&
-      data.has() &&
-      !data[0].name.empty() &&
-      !data[0].url.empty()
+    keyModifier: (target, key) => `${key}${target.name}`,
+    validator: (data: any) => data && data.has() && !data[0].name.empty() && !data[0].url.empty()
   })
   async group(
     value: Value,
@@ -190,10 +185,7 @@ export default class ParserWrapper extends Parser {
     alertOnError?: boolean
   ) {
     try {
-      let item = await this.parser.group(
-        value,
-        page
-      );
+      let item = await this.parser.group(value,page);
       if (alertOnError) this.showError();
       return item;
     } catch (e) {
