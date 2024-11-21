@@ -230,7 +230,7 @@ export const TabBar = (props: TabBarProps) => {
     const visibleChildren = children.filter(
         x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon)
     );
-    const { animate, animateX } = useAnimate();
+    const { animate, animateX, currentValue } = useAnimate();
     const menuAnimation = useAnimate();
     const state = StateBuilder({
         size: { width: globalData.window.width, height: globalData.window.height } as Size,
@@ -334,6 +334,9 @@ export const TabBar = (props: TabBarProps) => {
         ) => {
 
             if (state.refItem.handled) return;
+            state.refItem.handled = true;
+            currentValue.x = undefined;
+            menuAnimation.currentValue.x = undefined;
             let newValue = gestureState.dx;
             let diff = newValue - state.refItem.startValue;
             let width = state.size.width;

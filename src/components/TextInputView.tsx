@@ -16,8 +16,7 @@ export default React.forwardRef(
     }: any,
     ref
   ) => {
-    if (methods.ifSelector(props.ifTrue) === false)
-      return null;
+
     const inputRef = React.useRef();
     const [visible, setVisible] = React.useState(inputVisible || false);
     const [size, setSize] = React.useState();
@@ -25,6 +24,8 @@ export default React.forwardRef(
       props.defaultValue
     );
 
+    if (methods.ifSelector(props.ifTrue) === false)
+      return null;
 
     if (isModole) {
       return (
@@ -77,13 +78,11 @@ export default React.forwardRef(
         style={{
           flex: props.multiline ? 1 : undefined
         }}
-        onLayout={e => {
-          if (e.nativeEvent.layout.height) {
-            setSize(e.nativeEvent.layout);
-          }
-        }}
-        css={`wi:100% ali:center fl-1 he-100%`}>
+        css={`wi:100% ali:center fl-1 juc-center he-100%`}>
         <TextInput
+          onLayout={e => {
+            setSize(e.nativeEvent.layout);
+          }}
           ref={c => {
             if (ref) {
               if (typeof ref === "function")
@@ -99,26 +98,27 @@ export default React.forwardRef(
           {...props}
           style={[style,
             {
+              zIndex: 1,
               fontSize: 12,
               width: props.multiline
                 ? "100%"
                 : undefined,
-
               height: props.multiline ? "90%" : "auto"
             },
           ]}
         />
         <TouchableOpacity
           style={{
-            marginTop:
-              ((size?.height ?? 1) - 24) / 2
+            marginTop: ((size?.height ?? 1) - 24) / 2,
+            left: (size?.width ?? 0) + (size?.x ?? 0) - 24
           }}
-
-          css="absolute ri:5"
+          css="absolute zi-2"
           ifTrue={() => (
             props.readOnly !== true && (
               props.value?.has() ||
-              props.defaultValue?.has()))
+              props.defaultValue?.has()
+              || txt?.has()
+            ))
           }
           onPress={() => {
             inputRef.current?.clear();
@@ -127,10 +127,10 @@ export default React.forwardRef(
             props.onSubmitEditing?.("");
           }}>
           <Icon
-            css="bold"
+            css="bold co-red"
             type="AntDesign"
             name="close"
-            size={24}
+            size={10}
           />
         </TouchableOpacity>
       </View>

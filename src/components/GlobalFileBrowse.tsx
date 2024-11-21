@@ -6,8 +6,9 @@ export default () => {
     context.hook("browser.data")
 
     return (
-        <Modal onHide={() => {
-            context.browser.data?.onCancel?.()
+        <Modal addCloser={true} onHide={async () => {
+            if (context.browser.data?.onCancel)
+                await context.browser.data?.onCancel?.()
             context.browser.data = undefined
         }
         } css="he-80%" isVisible={context.browser.data != undefined}>
