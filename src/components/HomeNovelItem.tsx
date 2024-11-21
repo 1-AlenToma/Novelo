@@ -1,6 +1,5 @@
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Icon } from "./ReactNativeComponents";
 import Image from "./Image";
-import Icon from "./Icons";
 import { LightInfo } from "../native";
 import * as React from "react";
 
@@ -13,7 +12,7 @@ export default ({
 }) => {
   if (!vMode) {
     return (
-      <View css="clearboth bor:5 overflow">
+      <View css="clearboth bor:5 overflow invert">
         <Image
           resizeMethod="scale"
           url={item.image}
@@ -27,19 +26,20 @@ export default ({
           name="fiber-new"
           type="MaterialIcons"
         />
-        <View css="clearwidth bottom he:50% overflow">
+        <View css="clearwidth bottom he:50% overflow invert">
           <View css="blur bottom clearboth" />
           <Text
             numberOfLines={3}
             css="clearwidth wi:100% header co:#fff pa:4 teA:center">
             {item.name}
           </Text>
-          <View ifTrue={()=> item.decription?.length >1} css="row wi:100% pal:5 par:5 di:flex ali:flex-start juc:center">
+          <View ifTrue={() => item.decription?.length > 1}
+            css="row wi:100% pal:5 par:5 di:flex ali:flex-start juc:center clb">
             <Icon
               type="EvilIcons"
               name="pencil"
               size={15}
-              css="co:#fff"
+              css="co-#FFFFFF"
             />
             <Text numberOfLines={1} css="desc co:#fff fos:8 tea:center">
               {item.decription}
@@ -55,8 +55,7 @@ export default ({
   } else
     return (
       <View
-        invertColor={true}
-        css="clearboth di:flex overflow row flex ali:flex-start juc:flex-start">
+        css="invert clearboth di:flex overflow row flex ali:flex-start juc:flex-start">
         <Image
           resizeMethod="scale"
           url={item.image}
@@ -70,27 +69,24 @@ export default ({
           name="fiber-new"
           type="MaterialIcons"
         />
-        <View css="flex clearboth pa:5">
+        <View css="flex clearboth pa:5 invert">
           <Text
-            invertColor={true}
             css="header">
             {item.name}
           </Text>
-          <View ifTrue={()=> item.decription?.length >1} css="row clearwidth ali:center">
+          <View ifTrue={() => item.decription?.length > 1} css="row clearwidth ali:center invert">
             <Icon
-              invertColor={true}
               type="EvilIcons"
               name="pencil"
+              css="invertco"
               size={15}
             />
             <Text
-              invertColor={true}
               css="desc">
               {item.decription}
             </Text>
           </View>
           <Text
-            invertColor={true}
             css="desc co:#e30505 bottom bo:5 pal:5">
             {item.info}
           </Text>

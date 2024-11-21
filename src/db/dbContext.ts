@@ -10,7 +10,7 @@ import {
   SQLiteProvider,
   useSQLiteContext,
   addDatabaseChangeListener
-} from "expo-sqlite/next";
+} from "expo-sqlite";
 import {
   Book,
   Chapter,

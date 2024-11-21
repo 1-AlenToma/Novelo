@@ -1,11 +1,9 @@
 import * as React from "react";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Icon, Modal, AlertDialog, TextInput } from "./ReactNativeComponents";
 import { FileHandler, ImageCache } from "../native";
 import { FilesPath, EXT, SelectionType } from "../Types";
 import { ReadDirItem } from "react-native-fs";
-import {TextInput } from "react-native";
-import Icon from "./Icons";
-import Modal from "./Modal";
+
 import {
     checkManagePermission,
     requestManagePermission,
@@ -64,13 +62,14 @@ const FileBrowser = (
         if (state.selectedPath) {
             let msg = state.selectedPath.isDirectory() ? "Are you sure, you want to remove this folder and its content?" :
                 "Are you sure, you want to remove this File?"
-            context.alert(msg, "Attention").confirm(async confirm => {
-                if (confirm && state.handler && state.selectedPath) {
-                    await state.handler.RNF.unlink(state.selectedPath.path);
-                    state.selectedPath = undefined;
-                    render();
-                }
-            })
+            AlertDialog.confirm({ message: msg, title: "Attention" })
+                .then(async confirm => {
+                    if (confirm && state.handler && state.selectedPath) {
+                        await state.handler.RNF.unlink(state.selectedPath.path);
+                        state.selectedPath = undefined;
+                        render();
+                    }
+                })
         }
     }
 
@@ -83,71 +82,74 @@ const FileBrowser = (
                     state.newFolderName = "";
                     state.create = false;
                     render();
-                } else context.alert("Folder with this name already exist, please choose other Name", "Attention").toast();
+                } else AlertDialog.toast({ message: "Folder with this name already exist, please choose other Name", title: "Attention" });
 
             }
         } catch {
             state.newFolderName = "";
             state.create = false;
-            context.alert("Creating Folder in this dir is not allowed, please choose a folder", "Error").show();
+            AlertDialog.alert({ message: "Creating Folder in this dir is not allowed, please choose a folder", title: "Error" });
 
         }
     }
 
     return (
-        <View css="flex:1 mat:10 pa:5">
-            <View ifTrue={() => state.managedFiles} css="he:50">
+        <View css="flex:1 mat:10 pa:5 invert">
+            <View ifTrue={() => state.managedFiles} css="he:50 invert">
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-                    <View css="flex:0 he:50 fld:row juc:flex-end ali:center">
-                        <TouchableOpacity css="fileButton" onPress={back} ifTrue={() => state.containerPath != root}>
-                            <Icon type="MaterialIcons" invertColor={true} name="backspace" />
-                            <Text invertColor={true}>Back</Text>
+                    <View css="flex:0 he:50 fld:row juc:flex-end ali:center invert">
+                        <TouchableOpacity css="fileButton invert" onPress={back} ifTrue={() => state.containerPath != root}>
+                            <Icon type="MaterialIcons" name="backspace" />
+                            <Text css="invertco">Back</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity css="fileButton" ifTrue={() => selectionType == "Folder"} onPress={() => {
+                        <TouchableOpacity css="fileButton invert" ifTrue={() => selectionType == "Folder"} onPress={() => {
                             if (state.containerPath == root) {
-                                context.alert("This Path cant be used, please choose/create a Folder", "Attention").show();
+                                AlertDialog.alert({ message: "This Path cant be used, please choose/create a Folder", title: "Attention" });
                                 return;
                             }
                             use(state.containerDirItem as any)
                         }}>
-                            <Icon type="MaterialIcons" invertColor={true} name="select-all" />
-                            <Text invertColor={true}>Use this Folder</Text>
+                            <Icon type="MaterialIcons" css="invertco" name="select-all" />
+                            <Text css="invertco">Use this Folder</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity css="fileButton" onPress={deleteItem} ifTrue={() => state.selectedPath && selectionType == "Folder"}>
-                            <Icon type="MaterialIcons" invertColor={true} name="folder-delete" />
-                            <Text invertColor={true}>Delete</Text>
+                        <TouchableOpacity css="fileButton invert" onPress={deleteItem} ifTrue={() => state.selectedPath && selectionType == "Folder"}>
+                            <Icon type="MaterialIcons" css="invertco" name="folder-delete" />
+                            <Text css="invert">Delete</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity css="fileButton" ifTrue={() => selectionType == "Folder"} onPress={() => state.create = true}>
-                            <Icon type="MaterialIcons" invertColor={true} name="create-new-folder" />
-                            <Text invertColor={true}>New Folder</Text>
+                        <TouchableOpacity css="fileButton invert" ifTrue={() => selectionType == "Folder"} onPress={() => state.create = true}>
+                            <Icon type="MaterialIcons" css="invertco" name="create-new-folder" />
+                            <Text css="invertco">New Folder</Text>
                         </TouchableOpacity>
-                        <Modal height={200} visible={state.create} onHide={() => state.create = false}>
-                            <TextInput placeholder="Folder Name" style={{
-                                marginTop: 10,
-                                borderWidth: .5,
-                                borderColor: "gray",
-                                padding: 5,
-                                color: context.theme.invertSettings().color
-                            }} placeholderTextColor={"gray"} onChangeText={(t) => state.newFolderName = t} />
-                            <TouchableOpacity css="fileButton he:50 wi:50% mat:10" onPress={createFolder} ifTrue={() => !state.newFolderName.empty()}>
-                                <Text invertColor={true}>Create</Text>
+                        <Modal css={"he-200"} isVisible={state.create} onHide={() => state.create = false}>
+                            <TextInput
+                                placeholder="Folder Name"
+                                css="invert"
+                                style={{
+                                    marginTop: 10,
+                                    borderWidth: .5,
+                                    borderColor: "gray",
+                                    padding: 5
+                                }} placeholderTextColor={"gray"}
+                                onChangeText={(t) => state.newFolderName = t} />
+                            <TouchableOpacity css="fileButton he:50 wi:50% mat:10 invert" onPress={createFolder} ifTrue={() => !state.newFolderName.empty()}>
+                                <Text css="invertco">Create</Text>
                             </TouchableOpacity>
                         </Modal>
                     </View>
                 </ScrollView>
             </View>
-            <View css="fl:1 juc:center ali:center" ifTrue={() => !state.managedFiles}>
+            <View css="fl:1 juc:center ali:center invert" ifTrue={() => !state.managedFiles}>
                 <TouchableOpacity css="fileButton he:50 bow:0" onPress={async () => {
                     if (!(state.managedFiles = await requestManagePermission())) {
-                        context.alert("Please give permission to access your storage, this is importend to be able to handle file operations", "Attention").show();
+                        AlertDialog.alert({ message: "Please give permission to access your storage, this is importend to be able to handle file operations", title: "Attention" });
                         return;
                     }
                 }}>
-                    <Text css="co:blue fow:bold" invertColor={true}>Give Permission</Text>
+                    <Text css="co:blue fow:bold">Give Permission</Text>
                 </TouchableOpacity>
             </View>
-            <View css="flex:1" ifTrue={() => state.managedFiles}>
-                <Text css="fos:10 co:gray" invertColor={true}>path:{state.containerPath}</Text>
+            <View css="flex:1 invert" ifTrue={() => state.managedFiles}>
+                <Text css="fos:10 co:gray" >path:{state.containerPath}</Text>
                 <ScrollView>
                     {
                         state.files.map((x, i) => (
@@ -173,13 +175,13 @@ const FileBrowser = (
 
                                 }
 
-                            }} css={`settingButton maw:95% ${x.path === state.selectedPath?.path ? "selectedRow" : ""}`}>
+                            }} css={`settingButton invert maw:95% ${x.path === state.selectedPath?.path ? "selectedRow" : ""}`}>
                                 <Icon
-                                    invertColor={true}
+                                    css="invertco"
                                     type="MaterialCommunityIcons"
                                     name={x.isDirectory() ? "folder" : (x.name.toLowerCase().endsWith(".epub") || x.name.toLowerCase().endsWith(".zip") ? "zip-box" : "card-text-outline")}
                                 />
-                                <Text css="fos:12 wi:90%" invertColor={true}>{x.name}</Text>
+                                <Text css="fos:12 wi:90% invertco">{x.name}</Text>
                             </TouchableOpacity>
                         ))
                     }

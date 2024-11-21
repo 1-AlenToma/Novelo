@@ -1,7 +1,14 @@
+import { StatusBar } from "react-native";
 import { NestedStyleSheet } from "../styles";
 const font = "SourceSans3-Bold";
 const font0 = "SourceSans3-BlackItalic";
 export default NestedStyleSheet.create({
+  root: {
+    marginTop: StatusBar.currentHeight
+  },
+  clb: {
+    backgroundColor: "transparent"
+  },
   desc: {
     fontSize: 10,
     fontFamily: font0
@@ -86,7 +93,7 @@ export default NestedStyleSheet.create({
 
   "settingButton.Icon": "mal:5 fos:25 mar:5",
 
-  "settingButton.Text": "pa:5 maw:90%", 
+  "settingButton.Text": "pa:5 maw:90%",
 
   box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5",
   selectedRow: "bac:#e5313a",
@@ -101,13 +108,11 @@ export default NestedStyleSheet.create({
   Slider: "clearboth",
   band: "clearwidth absolute he:50 zi:100 di:flex",
   form: "clearwidth row di:flex juc:space-between ali:center mab:5",
-  "form.Text":
-    "desc fos:13 tea:left par:10 wi:130",
+  "form.Text":"desc fos:13 tea:left par:10 wi:130",
   "formlist.Text": "wi:90%",
   "form.chackBox": "ali:center mar:10",
 
   formRow: "clearwidth mab:5",
-  "formRow.Text":
-    "desc fos:13 tea:left par:10 wi:100",
+  "formRow.Text":"desc fos:13 tea:left par:10 wi:100",
   "formRow.chackBox": "ali:center mar:10"
 });

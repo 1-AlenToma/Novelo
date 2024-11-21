@@ -6,7 +6,7 @@ It is very easy to create the `repository`, it only taks few line. See below
 import createDbContext, { IDatabase, IQueryResultItem, IBaseModule } from 'expo-sqlite-wrapper'
 import {
   openDatabaseAsync
-} from "expo-sqlite/next";
+} from "expo-sqlite";
 const tables = [Parent.GetTableStructor(), Child.GetTableStructor()]
 export default class DbContext {
   databaseName: string = "mydatabase.db";

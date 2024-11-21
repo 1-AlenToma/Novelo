@@ -108,7 +108,7 @@ export type GlobalType =
     zip: FilesZipper,
     notification: Notification,
     browser: {
-      data?: { func: Function, onCancel: () => void, desc: string, props: { selectionType: SelectionType, ext?: EXT[] } };
+      data?: { func: Function, onCancel: (value?: any) => void, desc?: string, props: { selectionType: SelectionType, ext?: EXT[] } };
       pickFile: (eXT: EXT[], desc?: string) => Promise<ReadDirItem | undefined>;
       pickFolder: (desc?: string) => Promise<ReadDirItem | undefined>;
     },
@@ -123,13 +123,6 @@ export type GlobalType =
       toast?: boolean
     };
     novelFavoritInfo: any,
-    alert: (msg: string, title?: string) =>
-      {
-        show: () => void;
-        confirm: (func: (confirmed: boolean) => void) => void;
-        toast: () => void;
-      };
-
     player: Player,
     http: () => HttpHandler,
     downloadManager: () => DownloadManager,
@@ -150,18 +143,7 @@ export type GlobalType =
       all: () => ParserWrapper[],
     },
     updater: string,
-    theme: {
-      settings?: {
-        color: string;
-        backgroundColor: string;
-      },
-      invertSettings: () => any,
-      themeMode: ThemeMode,
-      getRootTheme: (themeMode?: ThemeMode) => any,
-      textTheme: () => { color: any },
-      viewTheme: () => { backgroudColor: any };
-
-    },
+    selectedThemeIndex: number,
     dbContext: () => DbContext,
     db: () => IDatabase<TableNames>,
     size: {

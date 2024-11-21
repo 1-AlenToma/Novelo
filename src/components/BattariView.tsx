@@ -1,13 +1,8 @@
 import {
-  removeProps,
-  parseThemeStyle,
-  StyledView,
-  newId,
   invertColor
 } from "../Methods";
 import * as React from "react";
-import Icon from "./Icons";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
 import * as Battery from "expo-battery";
 import { useTimer, useUpdate } from "../hooks";
 
@@ -32,15 +27,14 @@ export default ({ color }: any) => {
   let level = batteryLevel * 100;
   //level=100;
   return (
-    <View css="wi:26 mal:5 overflow juc:center ali:center">
+    <View css="wi:26 mal:5 overflow juc:center ali:center clb">
       <View
         style={{
           height: height - 14,
-          width:
-            level - (level > 30 ? 15 : 0) + "%",
+          width: (level - (level > 30 ? 15 : 0) + "%"),
           backgroundColor: "#3b5998"
         }}
-        css="absolute le:1 bor:2 flex he:11 bac:#fff zi:1"
+        css="absolute le:1 bor:2 flex he:11 bac:#fff zi:1 clb"
       />
       <Icon
         css="zi:2"
@@ -52,7 +46,7 @@ export default ({ color }: any) => {
       <Text
         style={{ color: invertColor(color) }}
         css="desc fos:8 zi:3 absolute">
-        {parseInt(Math.min(level,99).toString())}%
+        {parseInt(Math.min(level, 99).toString())}%
       </Text>
     </View>
   );

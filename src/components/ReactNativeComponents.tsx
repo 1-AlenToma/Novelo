@@ -1,10 +1,12 @@
-import { ViewProps, TextProps, ScrollViewProps, TouchableOpacityProps } from "react-native";
+
 import * as ReactNative from "react-native"
 import * as React from "react";
 import "../Global";
 import { ISize } from "../Types";
 import Constants from "expo-constants";
+export * from "../styles";
 
+/*
 type Props = {
     css?: string;
     ifTrue?: Function | boolean;
@@ -14,12 +16,6 @@ type Props = {
 }
 
 type TypedStyle<T, P> = (props: P & Props) => React.ReactElement;
-
-
-
-
-
-
 const StyledView = function ({ ...props }: Props & { View: any, children: any, removebg?: boolean, style?: any }) {
     if (methods.ifSelector(props.ifTrue) === false)
         return null;
@@ -96,5 +92,7 @@ export const TouchableOpacity = Parser<ReactNative.TouchableOpacity, TouchableOp
 export const ScrollView = Parser<ReactNative.ScrollView, ScrollViewProps>(ReactNative.ScrollView);
 export const Text = Parser<ReactNative.Text, TextProps>(ReactNative.Text, true);
 export const AnimatedView = Parser<ReactNative.View, TextProps>(ReactNative.Animated.View);
+
+*/
 
 

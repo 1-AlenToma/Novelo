@@ -1,5 +1,4 @@
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
-import Modal from "./Modal";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Modal } from "./ReactNativeComponents";
 import { invertColor } from "../Methods";
 import * as React from "react";
 import ColorPicker, {
@@ -19,20 +18,21 @@ export default ({
   return (
     <TouchableOpacity
       onPress={() => setVisible(true)}
-      css={`juc:center ali:center bor:5 flex ${css}`}
+      css={`juc:center ali:center bor:5 flex invert ${css}`}
       style={{
         backgroundColor: value
       }}>
       <Modal
-        height="80"
-        visible={visible}
+        css="he-80%"
+        isVisible={visible}
+        addCloser={true}
         onHide={() => setVisible(false)}>
         <ScrollView>
-          <View css="flex ali:center mat:20">
+          <View css="flex ali:center mat:20 invert">
             <View
-              css="juc:center ali:center bor:5 wi:90% mab:10 pa:10"
+              css="juc:center ali:center bor:5 wi:90% mab:10 pa:10 invert"
               style={{
-                backgroundColor: value
+                backgroundColor: value ?? "gray"
               }}>
               <Text
                 style={{
@@ -50,14 +50,13 @@ export default ({
               <Panel1 />
               <HueSlider />
               <OpacitySlider />
-              <Swatches />
             </ColorPicker>
           </View>
         </ScrollView>
       </Modal>
       <Text
         style={{ color: invertColor(value) }}
-        css="bold">
+        css="bold pal-5 par-5">
         Pick a Color
       </Text>
     </TouchableOpacity>

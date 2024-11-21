@@ -1,15 +1,14 @@
 import SliderRange from "@react-native-community/slider";
 import {
   removeProps,
-  parseThemeStyle,
   StyledView,
   newId,
   invertColor as InvertColor
 } from "../Methods";
 import * as React from "react";
-import Icon from "./Icons";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
 import { TouchableWithoutFeedback } from "react-native";
+import { globalData } from "styles/demo/src/theme/ThemeContext";
 const Slider = StyledView(SliderRange, "Slider");
 
 export default ({
@@ -26,11 +25,6 @@ export default ({
   const timer = useRef();
   const [value, setValue] = useState(props.value);
   if (ifTrue === false) return null;
-  let st = parseThemeStyle(
-    style,
-    undefined,
-    invertColor
-  );
 
   useEffect(() => {
     setValue(props.value);
@@ -49,7 +43,7 @@ export default ({
   };
   return (
     <View
-      css={`clearwidth mah:40 row ali:center juc:space-between ${css}`}>
+      css={`clearwidth mah:40 row ali:center juc:space-between invert ${css}`}>
       <>
         {buttons ? (
           <TouchableOpacity
@@ -66,7 +60,6 @@ export default ({
               }
             }}>
             <Icon
-              invertColor={invertColor}
               name="minus-square"
               type="FontAwesome"
               size={24}
@@ -74,11 +67,9 @@ export default ({
           </TouchableOpacity>
         ) : null}
         <View
-          invertColor={!invertColor}
-          css="wi:35 he:20 pal:5 par:5 juc:center ali:center"
+          css="wi:35 he:20 pal:5 par:5 juc:center ali:center invert"
           ifTrue={() => renderValue == true}>
           <Text
-            invertColor={!invertColor}
             css="desc fos:10 tea:center">
             {(0).sureValue(value).readAble()}
           </Text>
@@ -89,17 +80,18 @@ export default ({
               false
             }
             onTouchStart={e => {
-              context.panEnabled = false;
+              globalData.panEnabled = false;
             }}
             onTouchEnd={e => {
-              context.panEnabled = true;
+              globalData.panEnabled = true;
             }}
             minimumTrackTintColor="#f17c7c"
             maximumTrackTintColor="#000000"
             step={1}
             {...props}
             onValueChange={change}
-            style={st}
+            style={style}
+            css={css}
           />
         </View>
         {buttons ? (

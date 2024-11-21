@@ -1,4 +1,4 @@
-import * as SqlLite from "expo-sqlite/next";
+import * as SqlLite from "expo-sqlite";
 import { TableBuilder } from "./TableStructor";
 import BulkSave from "./BulkSave";
 import {

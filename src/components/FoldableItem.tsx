@@ -1,5 +1,4 @@
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
-import Icon from "./Icons";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Icon } from "./ReactNativeComponents";
 import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";
@@ -93,10 +92,9 @@ export default ({
           {Array.isArray(buttons)
             ? buttons.map((x, i) => (
               <TouchableOpacity
-                invertColor={true}
-                css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% ${i == value
-                    ? "selectedRow"
-                    : ""
+                css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value
+                  ? "selectedRow"
+                  : ""
                   }`}
                 ifTrue={x.ifTrue}
                 onPress={() => {
@@ -106,8 +104,7 @@ export default ({
                 key={i}>
                 {x.icon}
                 <Text
-                  invertColor={true}
-                  css="desc"
+                  css="desc invertco"
                   ifTrue={() =>
                     x.text?.has() ?? false
                   }>

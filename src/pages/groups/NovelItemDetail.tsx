@@ -14,7 +14,9 @@ import {
   ActionSheetButton,
   TabBar,
   ChapterView,
-  HomeNovelItem
+  HomeNovelItem,
+  TabView,
+  AlertDialog
 } from "../../components/";
 import WebView from "react-native-webview";
 import * as React from "react";
@@ -25,7 +27,7 @@ import {
 import { useNavigation } from "../../hooks";
 import Header from "../../pages/Header";
 import { Book, Chapter } from "../../db";
-import {DetailInfo} from "../../native"
+import { DetailInfo } from "../../native"
 
 export default ({ ...props }: any) => {
   const [{ url, parserName }, options, navop] =
@@ -41,10 +43,10 @@ export default ({ ...props }: any) => {
       book: {} as Book | undefined,
       authorNovels: [] as any[]
     }).ignore(
-    "book",
-    "novel",
-    "authorNovels"
-  ).build();
+      "book",
+      "novel",
+      "authorNovels"
+    ).build();
 
   let fetchAuthorNovels = async () => {
     //alert(state.novel.authorUrl);
@@ -127,8 +129,7 @@ export default ({ ...props }: any) => {
   //console.warn([state.novel].niceJson("chapters"), state.novel.alternativeNames?.has() )
   return (
     <View
-      rootView={true}
-      css="flex">
+      css="flex root">
       <Header
         {...props}
         titleCss="fos:12"
@@ -139,7 +140,6 @@ export default ({ ...props }: any) => {
               false,
             text: (
               <Icon
-                invertColor={true}
                 type="Octicons"
                 name="browser"
               />
@@ -154,32 +154,37 @@ export default ({ ...props }: any) => {
       />
       {loader.elem}
       <TabBar
-        ifTrue={()=> !state.novel.name?.empty()}
-        position="Top"
-        fontSize={9}>
-        <View
+        header={{
+          style: "invert",
+          textStyle: "invert",
+          overlayStyle: {
+            content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
+          }
+        }}
+        ifTrue={() => !state.novel.name?.empty()}
+        position="Top">
+        <TabView
           css="flex mah:99% juc:flex-end"
           disableScrolling={true}
           icon={{
             name: "info-circle",
-            type: "FontAwesome"
+            type: "FontAwesome",
+            css: "invert"
           }}>
           <View css="flex mat:10">
             <ScrollView>
               <View css="flex ali:center">
                 <View
-                  css="row box"
-                  invertColor={true}>
+                  css="row box invert">
                   <Image
                     resizeMethod="scale"
                     url={state.novel?.image}
                     css="resizeMode:contain he:100% wi:150 bor:5"
                   />
-                  <View css="flex pa:5">
+                  <View css="flex pa:5 invert">
                     <Text
                       selectable={true}
-                      css="header flex flg:1 fos:18"
-                      invertColor={true}>
+                      css="header flex flg:1 fos:18">
                       {state.novel.name}
                       <Text
                         css="desc co:#775903 clearwidth"
@@ -193,43 +198,37 @@ export default ({ ...props }: any) => {
                     </Text>
 
                     <Text
-                      ifTrue={()=>state.novel.novelUpdateRating?.has()}
-                      invertColor={true}
+                      ifTrue={() => state.novel.novelUpdateRating?.has()}
                       css="desc">
                       NovelUpdateRating:
                       {state.novel?.novelUpdateRating?.sSpace()}
                     </Text>
                     <Text
-                      ifTrue={()=> state.novel.rating?.has()}
-                      invertColor={true}
+                      ifTrue={() => state.novel.rating?.has()}
                       css="desc">
                       Rating:
                       {state.novel?.rating?.sSpace()}
                     </Text>
                     <Text
-                      ifTrue={()=> state.novel.status?.has() }
-                      invertColor={true}
+                      ifTrue={() => state.novel.status?.has()}
                       css="desc">
                       Status:
                       {state.novel?.status?.sSpace()}
                     </Text>
                     <Text
-                      ifTrue={()=> state.novel.alternativeNames?.has()}
-                      invertColor={true}
+                      ifTrue={() => state.novel.alternativeNames?.has()}
                       css="desc">
                       AlternativeNames:
                       {state.novel?.alternativeNames?.toString()?.sSpace()}
                     </Text>
                     <Text
-                      ifTrue={()=> state.novel.author?.has()}
-                      invertColor={true}
+                      ifTrue={() => state.novel.author?.has()}
                       css="desc">
                       Created By:
                       {state.novel?.author?.sSpace()}
                     </Text>
                     <Text
-                      ifTrue={()=>state.novel.lastUpdated?.has()}
-                      invertColor={true}
+                      ifTrue={() => state.novel.lastUpdated?.has()}
                       css="desc">
                       Last Update:
                       {state.novel?.lastUpdated?.sSpace()}
@@ -237,16 +236,15 @@ export default ({ ...props }: any) => {
                   </View>
                 </View>
                 <View
-                  css="box pal:10 par:10 mih:30"
-                  ifTrue={()=>state.novel.genre?.has() || state.novel.tags?.has()}
-                  invertColor={true}>
+                  css="box pal:10 par:10 mih:30 invert"
+                  ifTrue={() => state.novel.genre?.has() || state.novel.tags?.has()}>
                   <View css="he:29 clearwidth">
                     <ScrollView
                       horizontal={true}
                       contentContainerStyle={{
                         height: 28
                       }}>
-                      <View css="row wi:100%">
+                      <View css="row wi:100% invert">
                         {state.novel.genre?.map(
                           (x, i) => (
                             <TouchableOpacity
@@ -259,13 +257,10 @@ export default ({ ...props }: any) => {
                                   })
                                   .push();
                               }}
-                              css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8"
+                              css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8 invert"
                               key={i}>
                               <Text
-                                css="desc fos:15"
-                                invertColor={
-                                  true
-                                }>
+                                css="desc fos:15">
                                 #{x}
                               </Text>
                             </TouchableOpacity>
@@ -275,26 +270,22 @@ export default ({ ...props }: any) => {
                     </ScrollView>
                   </View>
                   <View
-                    ifTrue={()=> state.novel.tags?.has()}
+                    ifTrue={() => state.novel.tags?.has()}
                     css="he:29 mat:6 clearwidth">
                     <ScrollView
                       horizontal={true}
                       contentContainerStyle={{
                         height: 28
                       }}>
-                      <View css="row wi:100%">
+                      <View css="row wi:100% invert">
                         {state.novel.tags?.map(
                           (x, i) => (
                             <TouchableOpacity
-                              invertColor={false}
                               activeOpacity={1}
-                              css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8"
+                              css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8 invert"
                               key={i}>
                               <Text
-                                css="desc fos:15"
-                                invertColor={
-                                  false
-                                }>
+                                css="desc fos:15">
                                 #{x}
                               </Text>
                             </TouchableOpacity>
@@ -305,18 +296,16 @@ export default ({ ...props }: any) => {
                   </View>
                 </View>
                 <View
-                  css="box pal:10 par:10"
-                  invertColor={true}>
+                  css="box pal:10 par:10 invert">
                   <FText
-                    css="desc fos:14 lih:20 pab:10"
+                    css="desc fos:14 lih:20 pab:10 invert"
                     invertColor={true}
                     selectable={true}
                     text={state.novel.decription?.cleanHtml()}
                   />
-                  <View css="botw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center">
+                  <View css="botw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center invert">
                     <Text
-                      ifTrue={()=> state.novel.chapters?.has()}
-                      invertColor={true}
+                      ifTrue={() => state.novel.chapters?.has()}
                       css="desc fos:15">
                       {state.novel.chapters
                         ?.length + " Chapter "}
@@ -330,9 +319,9 @@ export default ({ ...props }: any) => {
                       refItem={chapterRef}
                       btn={
                         <Icon
-                          invertColor={true}
                           type="AntDesign"
                           name="caretright"
+                          css="invertco"
                           size={20}
                         />
                       }
@@ -367,11 +356,9 @@ export default ({ ...props }: any) => {
                   </View>
                 </View>
                 <View
-                  invertColor={true}
-                  ifTrue={()=> state.authorNovels?.has()}
-                  css="box he:265 pal:10 par:10 juc:flex-start">
+                  ifTrue={() => state.authorNovels?.has()}
+                  css="box he:265 pal:10 par:10 juc:flex-start invert">
                   <Text
-                    invertColor={true}
                     css="header fos:18 pab:5">
                     Authors Novels
                   </Text>
@@ -404,11 +391,9 @@ export default ({ ...props }: any) => {
                   />
                 </View>
                 <View
-                  invertColor={true}
-                  ifTrue={()=> state.novel.novelUpdateRecommendations?.has()}
-                  css="box he:265 pal:10 par:10 juc:flex-start">
+                  ifTrue={() => state.novel.novelUpdateRecommendations?.has()}
+                  css="box he:265 pal:10 par:10 juc:flex-start invert">
                   <Text
-                    invertColor={true}
                     css="header pab:5">
                     Recommendations
                   </Text>
@@ -455,8 +440,7 @@ export default ({ ...props }: any) => {
                 state.novel.url?.has() ?? false
               }>
               <TouchableOpacity
-                css="button mar:5 clearheight juc:center"
-                invertColor={true}
+                css="button mar:5 clearheight juc:center invert"
                 onPress={async () => {
                   context
                     .downloadManager()
@@ -464,24 +448,23 @@ export default ({ ...props }: any) => {
                       state.novel.url,
                       state.novel.parserName
                     );
-                  context
+                  AlertDialog
                     .alert(
-                      "novel is downloading",
-                      "Attantion"
-                    )
-                    .show();
+                      {
+                        message: "novel is downloading",
+                        title: "Attantion"
+                      }
+                    );
                 }}>
                 <View css="blur" />
                 <Icon
                   type="Feather"
                   name="download"
-                  invertColor={true}
-                  css="mar:0"
+                  css="mar:0 invert"
                 />
               </TouchableOpacity>
               <TouchableOpacity
-                css="mar:5 button pa:5 wi:65% clearheight"
-                invertColor={true}
+                css="mar:5 button pa:5 wi:65% clearheight invert"
                 onPress={() => {
                   options
                     .nav("ReadChapter")
@@ -494,14 +477,12 @@ export default ({ ...props }: any) => {
                     .push();
                 }}>
                 <Text
-                  invertColor={true}
                   css="fos:30">
                   READ
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                css="button clearheight juc:center mar:0"
-                invertColor={true}
+                css="button clearheight juc:center mar:0 invert"
                 onPress={async () => {
                   loader.show();
                   let book =
@@ -540,24 +521,17 @@ export default ({ ...props }: any) => {
                 <Icon
                   type="Fontisto"
                   name="favorite"
-                  invertColor={
-                    state.book?.favorit
-                      ? undefined
-                      : true
-                  }
-                  css="mar:0"
-                  style={{
-                    color: state.book?.favorit
-                      ? "red"
-                      : undefined
-                  }}
+                  css="mar:0 invert"
+                  style={state.book?.favorit ? {
+                    color: "red"
+                  } : undefined}
                 />
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </TabView>
 
-        <View
+        <TabView
           css="flex"
           disableScrolling={true}
           ifTrue={() =>
@@ -565,7 +539,8 @@ export default ({ ...props }: any) => {
           }
           icon={{
             name: "comments",
-            type: "FontAwesome"
+            type: "FontAwesome",
+            css: "invert"
           }}>
           <WebView
             injectedJavaScript={`
@@ -604,7 +579,7 @@ export default ({ ...props }: any) => {
             }
             javaScriptEnabled={true}
           />
-        </View>
+        </TabView>
       </TabBar>
     </View>
   );

@@ -1,6 +1,6 @@
-import ActionSheet from "./ActionSheet";
+import { ActionSheet } from "./ReactNativeComponents";
 import * as React from "react";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import { ifSelector } from "../Methods";
 export default ({
   btn,
@@ -23,14 +23,13 @@ export default ({
     onPress: () => setVisible(true),
     onLongPress: undefined
   };
-  
-  if(refItem)
-    {
-      refItem.current = {
-        close:()=> setVisible(false),
-        show:()=> setVisible(true)
-      }
+
+  if (refItem) {
+    refItem.current = {
+      close: () => setVisible(false),
+      show: () => setVisible(true)
     }
+  }
 
   if (onPress) {
     tprops.onPress = onPress;
@@ -38,7 +37,7 @@ export default ({
   }
   return (
     <>
-      <TouchableOpacity {...tprops}>
+      <TouchableOpacity {...tprops} style={{backgroundColor:"transparent"}}>
         {typeof btn === "string" ? (
           <Text css={css}>{btn}</Text>
         ) : (
@@ -48,7 +47,7 @@ export default ({
       <ActionSheet
         {...props}
         speed={400}
-        visible={visible}
+        isVisible={visible}
         onHide={() => setVisible(false)}
       />
     </>

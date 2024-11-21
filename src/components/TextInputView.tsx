@@ -1,14 +1,9 @@
-import { TextInput } from "react-native";
 import * as React from "react";
-import Icon from "./Icons";
 import {
   removeProps,
-  parseThemeStyle,
   StyledView
 } from "../Methods";
-import Modal from "./Modal";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
-const Input = StyledView(TextInput, "TextInput");
+import { View, AnimatedView, Text, TouchableOpacity, Icon, Modal, TextInput } from "./ReactNativeComponents";
 export default React.forwardRef(
   (
     {
@@ -22,68 +17,55 @@ export default React.forwardRef(
     ref
   ) => {
     if (methods.ifSelector(props.ifTrue) === false)
-        return null;
+      return null;
     const inputRef = React.useRef();
     const [visible, setVisible] = React.useState(inputVisible || false);
     const [size, setSize] = React.useState();
     const [txt, setTxt] = React.useState(
       props.defaultValue
     );
-    let st = parseThemeStyle(
-      style,
-      css,
-      invertColor
-    );
-    if (props.multiline)
-      st.push({ textAlignVertical: "top" });
+
 
     if (isModole) {
       return (
-        <View css="flex">
+        <View css="flg-1 width-100% he-100%">
           <Modal
-            blur={false}
-            visible={visible}
+            addCloser={true}
+            disableBlurClick={false}
+            isVisible={visible}
             onHide={() => setVisible(false)}
-            height="80">
+            css="he-80%">
             <View css="flex mat:20">
               <TouchableOpacity
-                css="listButton bow:1 boc:#ccc juc:center ali:center mab:10"
+                css="listButton bow:1 boc:#ccc juc:center ali:center mab:10 invert"
                 onPress={() => {
                   props.onChangeText(txt);
                   setVisible(false);
                 }}>
-                <Text invertColor={true}>
+                <Text css={"invertco"}>
                   Save
                 </Text>
               </TouchableOpacity>
-              <Input
+              <TextInput
                 ref={ref}
                 disableFullscreenUI={true}
                 inputMode="search"
-                placeholderTextColor={st.firstOrDefault(
-                  "color"
-                )}
                 {...props}
                 onChangeText={t => setTxt(t)}
-                style={[
-                  ...st,
-                  { flex: 1 }
-                ]}
+                style={[style, { flex: 1, textAlignVertical: props.multiline ? "top" : undefined }]}
               />
             </View>
           </Modal>
           <TouchableOpacity
-            ifTrue={()=> inputVisible != true}
-            onPress={() => setVisible(true)}>
-            <Input
+            ifTrue={() => inputVisible != true}
+            onPress={() => setVisible(true)} css="fl-1">
+            <TextInput
               disableFullscreenUI={true}
               inputMode="search"
-              placeholderTextColor={st.firstOrDefault(
-                "color"
-              )}
               {...props}
+              css={css}
               readOnly={true}
-              style={st}
+              style={[style, { flexGrow: 1, width: 200, textAlignVertical: props.multiline ? "top" : undefined }]}
             />
           </TouchableOpacity>
         </View>
@@ -100,8 +82,8 @@ export default React.forwardRef(
             setSize(e.nativeEvent.layout);
           }
         }}
-        css="wi:100% ali:center">
-        <Input
+        css={`wi:100% ali:center fl-1 he-100%`}>
+        <TextInput
           ref={c => {
             if (ref) {
               if (typeof ref === "function")
@@ -111,18 +93,19 @@ export default React.forwardRef(
             inputRef.current = c;
           }}
           disableFullscreenUI={true}
+          textAlignVertical={props.multiline ? "top" : undefined}
           inputMode="search"
-          placeholderTextColor={st.firstOrDefault(
-            "color"
-          )}
+          placeholderTextColor={context.selectedThemeIndex == 0 ? "#000000" : "#FFFFFF"}
           {...props}
-          style={[
+          style={[style,
             {
+              fontSize: 12,
               width: props.multiline
                 ? "100%"
-                : undefined
+                : undefined,
+
+              height: props.multiline ? "90%" : "auto"
             },
-            ...st
           ]}
         />
         <TouchableOpacity
@@ -130,19 +113,20 @@ export default React.forwardRef(
             marginTop:
               ((size?.height ?? 1) - 24) / 2
           }}
+
           css="absolute ri:5"
-          ifTrue={() =>
-            props.value?.has() ||
-            props.defaultValue?.has()
+          ifTrue={() => (
+            props.readOnly !== true && (
+              props.value?.has() ||
+              props.defaultValue?.has()))
           }
           onPress={() => {
-            inputRef.current.clear();
-            inputRef.current.focus();
+            inputRef.current?.clear();
+            inputRef.current?.focus();
             props.onChangeText?.("");
             props.onSubmitEditing?.("");
           }}>
           <Icon
-            invertColor={invertColor}
             css="bold"
             type="AntDesign"
             name="close"

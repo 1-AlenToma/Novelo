@@ -1,9 +1,9 @@
-import Icon from "./Icons";
+import { Icon } from "./ReactNativeComponents";
 import useLoader from "./Loader";
 import ItemList from "./ItemList";
 import * as React from "react";
 import { useUpdate, useTimer } from "../hooks";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 export default ({
   book,
   current,
@@ -16,8 +16,8 @@ export default ({
       index: { page: 0, index: 0 },
       current: ""
     }).ignore(
-    "chArray"
-  ).build();
+      "chArray"
+    ).build();
   const loader = useLoader(
     current && current.has(),
     "Loading Chapter"
@@ -61,7 +61,7 @@ export default ({
   }, [book, novel, current]);
 
   return (
-    <View css="clearboth juc:flex-start mah:90%">
+    <View css="clearboth juc:flex-start mah:90% invert">
       <View
         ifTrue={() => state.chArray.length > 1}
         css="clearwidth he:50 mat:10">
@@ -74,13 +74,11 @@ export default ({
           selectedIndex={page}
           container={({ item, index }) => (
             <View
-              css={`row di:flex ali:center bor:5 listButton ${
-                page == item.index
+              css={`row di:flex ali:center bor:5 listButton invert ${page == item.index
                   ? " selectedRow pal:5 par:5"
                   : ""
-              }`}>
+                }`}>
               <Text
-                invertColor={true}
                 css="desc fos:15">
                 {item.index > 0
                   ? item.index * size + 1 + " - "
@@ -100,11 +98,11 @@ export default ({
               />
             </View>
           )}
-          itemCss="pa:5  clearwidth bobw:1 boc:gray"
+          itemCss="pa:5 clearwidth bobw:1 boc:gray invert"
           vMode={false}
         />
       </View>
-      <View css="clearwidth mih:50 flex">
+      <View css="clearwidth mih:50 flex invert">
         <ItemList
           updater={[page, id]}
           onPress={item => {
@@ -119,24 +117,21 @@ export default ({
           items={state.chArray[page].items}
           container={({ item, index }) => (
             <View
-              css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 ${
-                current == item.url
+              css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 invert ${current == item.url
                   ? "selectedRow"
                   : ""
-              }`}>
+                }`}>
               <Text
-                css="desc fos:12 wi:85% tea:left"
-                invertColor={true}>
+                css="desc fos:12 wi:85% tea:left">
                 {item.name.safeSplit("/", -1)}
               </Text>
-              <View css="row">
+              <View css="row clb">
                 <Icon
-                  invertColor={true}
-                  color={
+                  css={
                     book?.chapterSettings?.find(
                       x => x.url == item.url
                     )?.scrollProgress >= 200
-                      ? "green"
+                      ? "co-green"
                       : undefined
                   }
                   size={20}
@@ -144,12 +139,11 @@ export default ({
                   name="preview"
                 />
                 <Icon
-                  invertColor={true}
-                  color={
+                  css={
                     book?.chapterSettings?.find(
                       x => x.url == item.url
                     )?.isFinished
-                      ? "green"
+                      ? "co-green"
                       : undefined
                   }
                   size={20}
@@ -159,7 +153,7 @@ export default ({
               </View>
             </View>
           )}
-          itemCss="pa:5 clearwidth bobw:1 boc:gray"
+          itemCss="pa:5 clearwidth bobw:1 boc:gray invert"
           vMode={true}
         />
       </View>

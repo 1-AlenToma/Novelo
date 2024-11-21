@@ -34,7 +34,7 @@ class AppSettings extends DBInit {
     use3D?: boolean = false;
     shadowLength?: number = 1;
     fontStyle?: string = "normal";
-    theme?: string = "light";
+    selectedTheme: number;
     lang?: string = "English";
     sentenceMargin?: number = 5;
     useSentenceBuilder?: {
@@ -61,7 +61,7 @@ class AppSettings extends DBInit {
             .number.column("margin")
             .nullable.number.column("textAlign")
             .column("backgroundColor")
-            .column("theme")
+            .column("selectedTheme").number.nullable
             .column("isBold")
             .boolean.column("fontName")
             .column("lockScreen")

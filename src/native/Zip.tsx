@@ -169,7 +169,7 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
 
 
         return (
-            <ProgressBar procent={state?.progress ?? .1} text={state?.filePath} color={state?.color} />
+            <ProgressBar value={(state?.progress ?? .1) / 100} text={state?.filePath} color={state?.color} />
         )
     }
 }

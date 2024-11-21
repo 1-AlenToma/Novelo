@@ -10,7 +10,8 @@ import {
   CheckBox,
   TextInput,
   ActionSheet,
-  FoldableItem
+  FoldableItem,
+  AlertDialog
 } from "../components";
 import * as React from "react";
 import Header from "./Header";
@@ -69,9 +70,8 @@ const ItemRender = ({
             .find(b.parserName)
             .detail(b.url);
           if (novel) {
-            context.novelFavoritInfo[b.url] = `(${
-              b.selectedChapterIndex + 1
-            }/${novel.chapters.length})`;
+            context.novelFavoritInfo[b.url] = `(${b.selectedChapterIndex + 1
+              }/${novel.chapters.length})`;
             context.novelFavoritInfo = {
               ...context.novelFavoritInfo
             };
@@ -94,19 +94,20 @@ const ItemRender = ({
           text: "Delete",
           icon: (
             <Icon
-              size={15}
-              invertColor={true}
               name="delete"
               type="MaterialIcons"
+              css="invertco"
             />
           ),
           onPress: () => {
-            context
-              .alert(
-                `You will be deleting this novel.\nAre you sure?`,
-                "Please Confirm"
+            AlertDialog
+              .confirm(
+                {
+                  message: `You will be deleting this novel.\nAre you sure?`,
+                  title: "Please Confirm"
+                }
               )
-              .confirm(async answer => {
+              .then(async answer => {
                 loader.show();
                 if (answer) {
                   try {
@@ -124,10 +125,9 @@ const ItemRender = ({
         {
           icon: (
             <Icon
-              size={15}
-              invertColor={true}
               name="book-reader"
               type="FontAwesome5"
+              css="invertco"
             />
           ),
           text: "Read",
@@ -156,25 +156,22 @@ const ItemRender = ({
           },
           icon: (
             <Icon
-              size={15}
-              invertColor={true}
               name="info-circle"
               type="FontAwesome5"
+              css="invertco"
             />
           ),
           text: "Info"
         }
       ]}>
       <View
-        invertColor={true}
-        css="clearwidth bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start">
+        css="clearwidth bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start invert">
         <Image
           url={item.imageBase64}
           css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
         />
         <Text
-          css="header pa:5 maw:80% overflow"
-          invertColor={true}>
+          css="header pa:5 maw:80% overflow">
           {item.name}
         </Text>
         <Text css="desc co:red absolute bo:5 right:10">

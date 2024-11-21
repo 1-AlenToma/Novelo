@@ -2,17 +2,11 @@ import {
   Text,
   View,
   TouchableOpacity,
-  useLoader,
   Image,
-  ItemList,
   Icon,
   NovelGroup,
-  CheckBox,
   AnimatedView,
   ActionSheet,
-  Form,
-  ProgressBar,
-  FoldableItem
 } from "../components";
 import * as React from "react";
 import Header from "./Header";
@@ -35,7 +29,6 @@ const CurrentItem = ({
   const [_, options, navop] =
     useNavigation(props);
   const [visible, setVisible] = useState(false);
-  context.hook("theme.settings");
   const [books, dataIsLoading, reload] = context
     .db()
     .useQuery(
@@ -46,7 +39,7 @@ const CurrentItem = ({
         .Where.Column(x => x.url)
         .EqualTo(
           context.appSettings.currentNovel?.url ??
-            "hhhh"
+          "hhhh"
         )
         .AND.Column(x => x.parserName)
         .EqualTo(
@@ -66,13 +59,13 @@ const CurrentItem = ({
   return (
     <>
       <ActionSheet
-        title="Actions"
         onHide={() => setVisible(false)}
-        visible={visible}
-        height={300}>
-        <View>
+        isVisible={visible}
+        size={300}>
+        <View css="invert">
+          <Text css="header">Actions</Text>
           <TouchableOpacity
-            css="listButton"
+            css="invert listButton"
             ifTrue={() =>
               book.parserName != "epub"
             }
@@ -87,14 +80,13 @@ const CurrentItem = ({
               setVisible(false);
             }}>
             <Icon
-              invertColor={true}
               name="info-circle"
               type="FontAwesome5"
             />
-            <Text invertColor={true}>Info</Text>
+            <Text>Info</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            css="listButton"
+            css="invert listButton"
             onPress={() => {
               options
                 .nav("ReadChapter")
@@ -111,15 +103,14 @@ const CurrentItem = ({
               setVisible(false);
             }}>
             <Icon
-              invertColor={true}
               name="book-reader"
               type="FontAwesome5"
             />
-            <Text invertColor={true}>
+            <Text>
               Read
               {context.appSettings.currentNovel
                 ?.isEpub &&
-              book.parserName != "epub"
+                book.parserName != "epub"
                 ? ` (Epub)`
                 : ""}
             </Text>
@@ -130,7 +121,7 @@ const CurrentItem = ({
                 ?.isEpub &&
               book.parserName != "epub"
             }
-            css="listButton"
+            css="invert listButton"
             onPress={() => {
               options
                 .nav("ReadChapter")
@@ -143,34 +134,31 @@ const CurrentItem = ({
               setVisible(false);
             }}>
             <Icon
-              invertColor={true}
               name="book-reader"
               type="FontAwesome5"
             />
-            <Text invertColor={true}>
+            <Text>
               Read (Online)
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            css="listButton"
+            css="invert listButton"
             onPress={() => {
               context.appSettings.currentNovel = {} as any;
               context.appSettings.saveChanges();
               setVisible(false);
             }}>
             <Icon
-              invertColor={true}
               name="notification-clear-all"
               type="MaterialCommunityIcons"
             />
-            <Text invertColor={true}>Clear</Text>
+            <Text>Clear</Text>
           </TouchableOpacity>
         </View>
       </ActionSheet>
       <AnimatedView
         style={style}
-        css="bor:5 overflow ma:5"
-        invertColor={true}>
+        css="bor:5 overflow ma:5 invert">
         {children}
         <TouchableOpacity
           css="flex pa:5 row"
@@ -193,9 +181,8 @@ const CurrentItem = ({
             url={book.imageBase64}
             css="resizeMode:cover bor:5 he:100% wi:110"
           />
-          <View css="flex">
+          <View css="flex invert">
             <Text
-              invertColor={true}
               css="header pa:4">
               {book.name}
             </Text>
@@ -203,12 +190,11 @@ const CurrentItem = ({
               {book.parserName.displayName()}
             </Text>
             <Text
-              invertColor={true}
               css="desc co:red bottom le:35%">
               READING NOW
               {context.appSettings.currentNovel
                 ?.isEpub &&
-              book.parserName != "epub"
+                book.parserName != "epub"
                 ? ` (Epub)`
                 : ""}
             </Text>
@@ -231,7 +217,7 @@ export default ({ ...props }: any) => {
     inputRange: [
       0,
       HEADER_EXPANDED_HEIGHT -
-        HEADER_COLLAPSED_HEIGHT
+      HEADER_COLLAPSED_HEIGHT
     ],
     outputRange: [
       HEADER_EXPANDED_HEIGHT,
@@ -262,11 +248,10 @@ export default ({ ...props }: any) => {
             inputEnabled={true}
           />
         </CurrentItem>
-      
+
         {groups.map((x, i) => (
           <View
-            invertColor={true}
-            css="ali:center bor:5 overflow ma:5 pa:5 pab:0"
+            css="ali:center bor:5 overflow ma:5 pa:5 pab:0 invert"
             key={
               i + context.parser.current.name
             }>

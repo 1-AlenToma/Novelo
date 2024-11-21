@@ -1,5 +1,4 @@
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
-import { Value } from "../native";
+import { View, AnimatedView, Text, TouchableOpacity } from "./ReactNativeComponents";
 import ItemList from "./ItemList";
 import useLoader from "./Loader";
 import HomeNovelItem from "./HomeNovelItem";
@@ -26,7 +25,7 @@ export default memo(
     const page = useRef(0);
     const item =
       context.parser.current.settings.group[
-        itemIndex
+      itemIndex
       ];
     const getItems = async () => {
       loader.show();
@@ -59,24 +58,23 @@ export default memo(
       <View
         css={
           !vMode
-            ? "he:240 mab:10 clearwidth"
-            : "flex mab:10"
+          ? "he:240 mab:10 clearwidth invert"
+          : "flex mab:10 root"
         }>
         {loader.elem}
         <View
-          css={`pal:5 clearwidth par:5 row juc:space-between ${
-            !vMode ? "pal:0 par:0" : ""
-          }
+          css={`pal:5 clearwidth par:5 row juc:space-between invert ${!vMode ? "pal:0 par:0" : ""
+            }
           `}>
           {!vMode ? (
             <Text
-              invertColor={true}
-              css="header he:20">
+              css="header he:20 invertco">
               {item.text}
             </Text>
           ) : null}
           {!vMode ? (
             <TouchableOpacity
+              css="clb"
               onPress={() => {
                 option
                   .nav("GroupDetail")
@@ -86,8 +84,7 @@ export default memo(
                   .push();
               }}>
               <Text
-                invertColor={true}
-                css="desc fos:14">
+                css="desc fos:14 invertco">
                 Browse
               </Text>
             </TouchableOpacity>
@@ -118,8 +115,8 @@ export default memo(
           }}
           itemCss={
             !vMode
-              ? "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"
-              : "boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
+              ? "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow clb"
+              : "boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5 clb"
           }
           items={items}
           container={HomeNovelItem}

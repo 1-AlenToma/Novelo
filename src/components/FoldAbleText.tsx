@@ -1,20 +1,13 @@
-import {
-  Text,
-  View,
-  TouchableOpacity
-} from "react-native";
 import * as React from "react";
-import {
-  removeProps,
-  parseThemeStyle
-} from "../Methods";
+import { View ,Text ,TouchableOpacity} from "./ReactNativeComponents";
+
 let getFirstLine = (text: any) => {
   if (!text) return text;
   let txt = "";
   for (let s of text) {
     if (s == "\r" || s == "\n") continue;
     txt += s;
-    if ((s == "." || s=="!") && txt.length >= 20) break;
+    if ((s == "." || s == "!") && txt.length >= 20) break;
   }
   return txt;
 };
@@ -36,11 +29,6 @@ export default ({
   }, [text]);
   if (ifTrue === null || ifTrue === false)
     return null;
-  let st = parseThemeStyle(
-    style,
-    css,
-    invertColor
-  );
 
   return (
     <View
@@ -48,22 +36,18 @@ export default ({
       onPress={e => {
         e.preventDefault();
         return true;
-      }}>
+      }} css={"invert"}>
       <Text
-        {...props}
-        style={removeProps(
-          st,
-          "backgroundColor"
-        )}>
+        {...props} css={css} style={style}>
         {txt === text || fState === true ? (
-          <Text >
-          {text}
+          <Text>
+            {text}
           </Text>
         ) : (
           <>
             {txt}
             <Text
-              style={"co:#bf6416".css()}
+              css={"co:#bf6416"}
               onPress={() => setFState(true)}>
               {"More".sSpace(2)}
             </Text>

@@ -12,9 +12,8 @@ import {
 import { Asset, useAssets } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import { Player, DetailInfo } from "../native";
-import {View, AnimatedView,Text as TextView, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text as TextView, TouchableOpacity, ProgressBar } from "./ReactNativeComponents";
 import BattariView from "./BattariView";
-import ProgressBar from "./ProgressBar";
 import Svg, {
   Circle,
   Rect,
@@ -68,7 +67,7 @@ const Clock = ({ secondEnabled }: any) => {
   }, []);
 
   return (
-    <View>
+    <View css="clb">
       <TextView
         style={{
           color: invertColor(
@@ -100,8 +99,7 @@ const Scroller = ({ ...props }: any) => {
       }
       speed={200}
       color="#3b5998"
-      procent={svgProgress}
-      text={false}
+      value={svgProgress / 100}
     />
   );
 };
@@ -435,7 +433,7 @@ export default ({
     if (context.player.isloading) return;
     state.refItem.loading = true;
     let content = {
-      inlineStyle:cleanInlineStyle(),
+      inlineStyle: cleanInlineStyle(),
       content: context.player.showPlayer
         ? `<p>${context.player
           .currentPlaying()
@@ -649,10 +647,10 @@ export default ({
 
   return (
     <>
-      <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center">
+      <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center clb">
         <Scroller />
       </View>
-      <View css="row absolute bo:1 ri:10 zi:99 juc:center ali:center">
+      <View css="row absolute bo:1 ri:10 zi:99 juc:center ali:center clb">
         <Clock />
         <BattariView
           color={

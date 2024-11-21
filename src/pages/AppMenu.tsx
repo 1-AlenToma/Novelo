@@ -10,17 +10,24 @@ export default ({ ...props }) => {
   context.hook("parser.current");
   return (
     <TabBar
-      rootView={true}
-      fontSize={12}>
+      css="root"
+      header={{
+        style: "invert",
+        textStyle: "invert",
+        overlayStyle: {
+          content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
+        }
+      }}>
       <Home
-         title="home"
+        title="home"
         disableScrolling={true}
         {...props}
         icon={{
           name: "home",
-          type: "Entypo"
+          type: "Entypo",
+          css: "invert"
         }}
-       
+
       />
 
       <Favorit
@@ -28,7 +35,8 @@ export default ({ ...props }) => {
         disableScrolling={true}
         icon={{
           name: "favorite",
-          type: "MaterialIcons"
+          type: "MaterialIcons",
+          css: "invert"
         }}
         title="Favorit"
       />
@@ -37,7 +45,8 @@ export default ({ ...props }) => {
         disableScrolling={true}
         icon={{
           name: "download-for-offline",
-          type: "MaterialIcons"
+          type: "MaterialIcons",
+          css: "invert"
         }}
         title="Downloads"
       />
@@ -45,7 +54,8 @@ export default ({ ...props }) => {
         {...props}
         icon={{
           name: "settings",
-          type: "Ionicons"
+          type: "Ionicons",
+          css: "invert"
         }}
         title="Settings"
       />

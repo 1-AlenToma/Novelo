@@ -5,7 +5,7 @@ console.log(`Running in ${isDev ? "development" : "production"} env`);
 export default {
   "name": "Novelo",
   "slug": "Novelo",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "orientation": "default",
   "icon": "./assets/ic_launcher_round.png",
   "scheme": "novels",

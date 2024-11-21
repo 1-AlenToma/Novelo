@@ -11,7 +11,7 @@ import {
   Image,
   useLoader,
   DropdownList,
-  Form
+  AlertDialog,
 } from "../components/";
 import * as React from "react";
 import { Book, Chapter } from "../db";
@@ -20,7 +20,6 @@ import { useLocationSelection, AppUpdate } from "../hooks";
 
 export default (props: any) => {
   let loader = useLoader();
-  context.hook("theme.themeMode");
   const dataLocation = useLocationSelection();
   context.zip.on("Loading")
   const { fileItems, elem } = context
@@ -52,6 +51,7 @@ export default (props: any) => {
       added: {}
     }
   ).ignore("items").build();
+  context.hook("selectedThemeIndex");
 
   const download = async () => {
     const location = await context.browser.pickFolder("Select where to save the backup file");
@@ -62,15 +62,15 @@ export default (props: any) => {
       ...state
     });
     loader.hide();
-    context.alert("File downloaded to " + context.zip._fullPath, "Success").show();
+    AlertDialog.alert({ message: "File downloaded to " + context.zip._fullPath, title: "Success" });
     // context.notification.push("File Downloaded", context.zip._fullPath ?? "", { data: context.zip._fullPath, type: "File" })
 
   };
 
   const cleanData = () => {
-    context
-      .alert("Are you sure?", "Please Confirm")
-      .confirm(async answer => {
+    AlertDialog
+      .confirm({ message: "Are you sure?", title: "Please Confirm" })
+      .then(async answer => {
         try {
           if (!answer) return;
           loader.show();
@@ -121,7 +121,7 @@ export default (props: any) => {
       .dbContext()
       .uploadData(uri.path);
     loader.hide();
-    if (msg) context.alert(msg);
+    if (msg) AlertDialog.alert({ message: msg });
   };
 
   const itemPress = (item: any) => {
@@ -144,22 +144,18 @@ export default (props: any) => {
     }, {});
   };
 
-
-
   return (
-    <View css="flex">
-      
+    <View css="flex clb">
       <View
         ifTrue={
           context.zip._loading
         }
-        css="he:30 clearwidth zi:99999">
+        css="he:30 clearwidth zi:99999 clb">
         <context.zip.ProgressBar />
       </View>
       {loader.elem ?? elem}
       <View
-        invertColor={true}
-        css="mih:99% ali:center bor:5 overflow">
+        css="mih:99% ali:center bor:5 overflow invert">
         <View css="he:30% juc:center ali:center">
           <Image
             resizeMode="contain"
@@ -170,40 +166,39 @@ export default (props: any) => {
         {dataLocation.elem}
         <AppUpdate />
         <TouchableOpacity
-          css="settingButton"
+          css="invert settingButton"
           onPress={download}>
           <Icon
-            invertColor={true}
             type="MaterialCommunityIcons"
             name="database-import"
+            css="invertco"
           />
-          <Text invertColor={true}>
+          <Text>
             Download Backup
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          css="settingButton"
+          css="invert settingButton"
           onPress={uploadBackup}>
           <Icon
-            invertColor={true}
             type="MaterialCommunityIcons"
             name="database-export"
+            css="invertco"
           />
-          <Text invertColor={true}>
+          <Text>
             Upload Backup
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          css="settingButton"
+          css="invert settingButton"
           onPress={cleanData}>
           <Icon
-            invertColor={true}
             type="MaterialIcons"
             name="cleaning-services"
+            css="invertco"
           />
-          <Text
-            invertColor={true}>
+          <Text>
             Clean files
             {"\n"}
             <Text css="co:red desc">
@@ -213,51 +208,38 @@ export default (props: any) => {
           </Text>
         </TouchableOpacity>
 
-        <View css="settingButton">
+        <View css="settingButton invert">
           <Icon
-            invertColor={true}
             type="MaterialCommunityIcons"
             name="theme-light-dark"
+            css="invertco"
           />
           <DropdownList
-            invertColor={true}
-            height={200}
-            toTop={true}
-            selectedIndex={
-              context.appSettings.theme == "dark"
-                ? 1
-                : 0
-            }
-            updater={[context.appSettings.theme]}
-            hooks={["appSettings.theme"]}
-            items={["light", "dark"]}
+            mode="Modal"
+            selectedValue={context.selectedThemeIndex}
+            css="invert wi-90%"
+            size={120}
+            items={[{ label: "Light", value: 0, }, { label: "Dark", value: 1 }]}
             render={item => {
               return (
                 <View
                   css={`
-                    ${item ==
-                      context.appSettings.theme
-                      ? "selectedRow"
-                      : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
+                     ali:center bac:transparent pal:10 bor:5 flex row juc:space-between mih:24 clb
                   `}>
                   <Text
-                    css={`desc fos:13`}
-                    invertColor={true}>
-                    {item.displayName()}
+                    css={`desc fos:13 invertco`}>
+                    {item.label}
                   </Text>
                 </View>
               );
             }}
             onSelect={theme => {
-              context.appSettings.theme = theme;
+              context.appSettings.selectedTheme = theme.value;
 
-              context.theme.themeMode = theme;
+              context.selectedThemeIndex = theme.value;
               context.appSettings.saveChanges();
               //Updates.reloadAsync();
             }}
-            selectedValue={(
-              context.appSettings.theme ?? "dark"
-            ).displayName()}
           />
         </View>
       </View>

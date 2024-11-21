@@ -12,13 +12,10 @@ import {
   TextInput,
   SizeAnimator,
   ActionSheet,
-  ActionSheetButton
+  ActionSheetButton,
+  ScrollView
 } from "../../components/";
 import * as React from "react";
-import {
-  ScrollView,
-  Linking
-} from "react-native";
 import {
   useNavigation,
   useUpdate
@@ -39,37 +36,35 @@ const ActionItem = ({
   let selected = {};
   items.items?.map(
     x =>
-      (selected[x.text] = state.text[
-        keyName
-      ].find(f => x.text == f.text)
-        ? "selected"
-        : "")
+    (selected[x.text] = state.text[
+      keyName
+    ].find(f => x.text == f.text)
+      ? "selected"
+      : "")
   );
   return (
     <View
       ifTrue={items.items?.has() ?? false}
-      invertColor={true}
-      css="mih:50 pa:10 pat:15">
+      css="mih:50 pa:10 pat:15 invert">
       <ActionSheetButton
-        height="50"
+        size="50%"
         title={keyName.displayName()}
+        css={"invert"}
         btn={
           <Text
-            invertColor={true}
-            css={`header co:#bf6416 ${
-              state.text[keyName].has()
-                ? "selected"
-                : ""
-            }`}>
+            css={`header co:#bf6416 ${state.text[keyName].has()
+              ? "selected"
+              : ""
+              }`}>
             Search by {keyName}
           </Text>
         }>
-        <View css="flex">
+        <View css="flex invert">
           <ScrollView horizontal={false}>
-            <View css="wi:100%">
+            <View css="wi:100% invert">
               {items.items?.map((x, i) => (
                 <TouchableOpacity
-                  css={`bor:10 hi:25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8`}
+                  css={`bor:10 he-25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8`}
                   key={i}
                   onPress={() => {
                     let item = {};
@@ -77,10 +72,8 @@ const ActionItem = ({
                     selection(item);
                   }}>
                   <Text
-                    css={`desc bold fos:15 ${
-                      selected[x.text]
-                    }`}
-                    invertColor={true}>
+                    css={`desc bold fos:15 invertco ${selected[x.text]
+                      }`}>
                     {x.text}
                   </Text>
                 </TouchableOpacity>
@@ -117,15 +110,15 @@ export default ({ ...props }: any) => {
             x.text.has(genre)
           )
           ? [
-              parser.settings.genre.find(x =>
-                x.text.has(genre)
-              )
-            ]
+            parser.settings.genre.find(x =>
+              x.text.has(genre)
+            )
+          ]
           : []
       ),
     currentPage: 0,
     parser: parser
-  }).ignore("parser","items").build();
+  }).ignore("parser", "items").build();
 
   const fetchData = async (page?: number) => {
     loader.show();
@@ -240,8 +233,7 @@ export default ({ ...props }: any) => {
 
   return (
     <View
-      css="flex"
-      rootView={true}>
+      css="flex root">
       {loader.elem}
       <Header
         {...navop}
@@ -256,8 +248,7 @@ export default ({ ...props }: any) => {
       />
 
       <View
-        invertColor={true}
-        css="row juc:space-between ali:center">
+        css="row juc:space-between ali:center invert">
         <ActionItem
           state={state}
           selection={item => selection(item)}

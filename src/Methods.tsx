@@ -1,5 +1,5 @@
 import uuid from "react-native-uuid";
-import { Styleable, clearStyles } from "./styles";
+import { Styleable } from "./styles";
 import * as MediaLibrary from "expo-media-library";
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
@@ -458,7 +458,7 @@ const StyledView = function <T>(
 ) {
   const Style =
     require("./components/CStyle").default;
-  return Styleable(View, StyledXName, Style);
+  return Styleable(View, StyledXName);
 };
 const public_m = (...Items: any[]) => {
   try {
@@ -542,20 +542,6 @@ export const parseThemeStyleNoneHook = (
   return st;
 }
 
-const parseThemeStyle = (
-  style: any,
-  css: any,
-  invertColor: any,
-  isRootView?: boolean
-) => {
-  const id = useRef(newId()).current as string;
-
-  
-  useEffect(() => {
-    return () => clearStyles(id);
-  }, []);
-  return parseThemeStyleNoneHook(id, style, css, invertColor, isRootView)
-};
 
 const removeProps = (
   item: any,
@@ -674,7 +660,6 @@ export {
   newId,
   proc,
   removeProps,
-  parseThemeStyle,
   StyledView,
   joinKeys,
   arrayBuffer,
@@ -682,6 +667,5 @@ export {
   ifSelector,
   writeFile,
   getDirectoryPermissions,
-  generateText,
-  clearStyles
+  generateText
 };

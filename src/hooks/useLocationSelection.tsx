@@ -1,5 +1,13 @@
 import * as React from "react";
-import { Modal, TouchableOpacity, Icon, Text, View, ProgressBar, useLoader, FileBrowser } from "../components";
+import {
+    Modal, TouchableOpacity, Icon,
+    Text,
+    View,
+    ProgressBar,
+    useLoader,
+    FileBrowser,
+    AlertDialog
+} from "../components";
 import { FileHandler, ImageCache } from "../native";
 import { FilesPath } from "../Types";
 
@@ -20,7 +28,7 @@ export default () => {
             return;
         }
 
-        context.alert("We will begin moving the data to the new location").confirm(async (confirm) => {
+        AlertDialog.confirm({ message: "We will begin moving the data to the new location" }).then(async (confirm) => {
             try {
 
                 if (uri && confirm) {
@@ -54,12 +62,12 @@ export default () => {
                     context.imageCache = imageHandler;
                     context.files = fileHandler;
                     await context.appSettings.saveChanges();
-                 
+
                 }
 
             } catch (e) {
                 console.error(e);
-                context.alert(e.toString(), "Error").show()
+                AlertDialog.alert({ message: e.toString(), title: "Error" });
 
             } finally {
                 loader.hide();
@@ -71,12 +79,11 @@ export default () => {
     let elem = (<>
         <TouchableOpacity onPress={browse} css="settingButton borderTop">
             <Icon
-                invertColor={true}
                 type="MaterialCommunityIcons"
                 name="folder"
             />
-            <Text css="fos:12" invertColor={true}>{state.uri}</Text>
-            <ProgressBar procent={state.progress} ifTrue={() => loader.loading} />
+            <Text css="fos:12 invertco">{state.uri}</Text>
+            <ProgressBar value={state.progress / 100} ifTrue={() => loader.loading} />
             {loader.elem}
         </TouchableOpacity>
     </>

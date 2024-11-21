@@ -15,7 +15,7 @@ import {
   Query
 } from "./expo.sql.wrapper.types";
 import { TableBuilder } from "./TableStructor";
-import * as SQLite from "expo-sqlite/next";
+import * as SQLite from "expo-sqlite";
 import BulkSave from "./BulkSave";
 import UseQuery from "./hooks/useQuery";
 import QuerySelector, {

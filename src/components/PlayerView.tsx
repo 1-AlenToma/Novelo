@@ -1,5 +1,4 @@
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
-import Icon from "./Icons";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Icon } from "./ReactNativeComponents";
 import Slider from "./SliderView";
 
 import * as React from "react";
@@ -94,8 +93,8 @@ export default ({ ...props }: any) => {
           {
             top:
               context.player.hooked &&
-              context.player.showController &&
-              !moved.current
+                context.player.showController &&
+                !moved.current
                 ? 41
                 : 1,
             transform: [
@@ -105,14 +104,14 @@ export default ({ ...props }: any) => {
                     inputRange: [
                       0,
                       context.size.window.height -
-                        40
+                      40
                     ],
                     outputRange: [
                       context.player.hooked
                         ? 0
                         : 41,
                       context.size.window.height -
-                        40
+                      40
                     ],
                     extrapolate: "clamp"
                   })
@@ -120,19 +119,17 @@ export default ({ ...props }: any) => {
             ]
           }
         ]}
-        css={`band zi:500 bac:black absolute overflow he:40 juc:center ali:center row pal:10 par:10 ${
-          context.player.viewState == "Folded"
-            ? "wi:40 bor:4 ri:2"
-            : !context.player.hooked
+        css={`band zi:500 bac:black absolute overflow he:40 juc:center ali:center row pal:10 par:10 invert ${context.player.viewState == "Folded"
+          ? "wi:40 bor:4 ri:2"
+          : !context.player.hooked
             ? "bor:4"
             : `bobw:1 boc:${methods.invertColor(
-                context.appSettings
-                  .backgroundColor
-              )}`
-        }`}
-        {...pan.current.panHandlers}
-        invertColor={true}>
-        <View css="row jus:center ali:center di:flex">
+              context.appSettings
+                .backgroundColor
+            )}`
+          }`}
+        {...pan.current.panHandlers}>
+        <View css="row juc:center ali:center di:flex invert">
           <TouchableOpacity
             onStartShouldSetResponderCapture={() =>
               false
@@ -141,15 +138,14 @@ export default ({ ...props }: any) => {
             onPress={() => {
               context.player.viewState =
                 context.player.viewState ==
-                "Folded"
+                  "Folded"
                   ? "Unfolded"
                   : "Folded";
             }}>
             <Icon
-              invertColor={true}
               name={
                 context.player.viewState ==
-                "Folded"
+                  "Folded"
                   ? "menu-unfold"
                   : "menu-fold"
               }
@@ -174,10 +170,9 @@ export default ({ ...props }: any) => {
             ifTrue={
               !context.player.hooked &&
               context.player.viewState !==
-                "Folded"
+              "Folded"
             }>
             <Icon
-              invertColor={true}
               type="Octicons"
               name="browser"
             />
@@ -186,11 +181,9 @@ export default ({ ...props }: any) => {
             ifTrue={
               context.player.viewState != "Folded"
             }
-            invertColor={false}
-            css="wi:40 he:30 juc:center ali:center">
+            css="wi:40 he:30 invert juc:center ali:center invert">
             <Text
-              css="bold fos:10 tea:center"
-              invertColor={false}>
+              css="bold fos:10 tea:center invertco">
               {context.player
                 .currentChapterSettings
                 .audioProgress + 1}
@@ -199,7 +192,7 @@ export default ({ ...props }: any) => {
             </Text>
           </View>
           <View
-            css="clearheight flex"
+            css="clearheight flex invert"
             ifTrue={
               context.player.viewState != "Folded"
             }>
@@ -242,7 +235,6 @@ export default ({ ...props }: any) => {
               }
               type="Ionicons"
               size={35}
-              invertColor={true}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -256,7 +248,6 @@ export default ({ ...props }: any) => {
               name="play-back-circle"
               size={35}
               type="Ionicons"
-              invertColor={true}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -270,7 +261,6 @@ export default ({ ...props }: any) => {
               name="play-forward-circle"
               size={35}
               type="Ionicons"
-              invertColor={true}
             />
           </TouchableOpacity>
         </View>

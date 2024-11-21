@@ -4,7 +4,7 @@ import {
 } from "react";
 import * as React from "react";
 import { FlashList } from "@shopify/flash-list";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import { useUpdate, useTimer } from "../hooks";
 import { newId } from "../Methods";
 
@@ -38,7 +38,7 @@ export default ({
   selectedIndex?: number;
 }) => {
   context.hook(
-    "theme.settings",
+    "selectedThemeIndex",
     ...(hooks ?? [])
   );
   const time = useTimer(100);
@@ -46,7 +46,7 @@ export default ({
     useRef(true);
   const ref = useRef();
   const selected = useRef();
-  const Render = memo(({ item, index }:any) => {
+  const Render = memo(({ item, index }: any) => {
     let d = { item, vMode, index };
     if (props) d = { ...d, ...props };
     let VR = container;
@@ -89,14 +89,13 @@ export default ({
 
   return (
     <View
-      ready={true}
       style={{
         maxHeight: "100%",
         width: "100%",
         height: "100%",
         flex: 0
       }}
-      css="fg:1 mah:100%">
+      css="flg:1 mah:100% bac-transparent">
       <FlashList
         ref={c => {
           ref.current = c;
@@ -114,7 +113,7 @@ export default ({
         initialScrollIndex={scrollIndex}
         horizontal={vMode !== true}
         data={items}
-        
+
         estimatedItemSize={200}
         onEndReachedThreshold={0.5}
         onMomentumScrollBegin={() => {
@@ -124,7 +123,7 @@ export default ({
         extraData={[
           ...(updater ?? []),
           selectedIndex,
-          context.theme.settings
+          context.selectedThemeIndex
         ]}
         onEndReached={() => {
           if (
@@ -136,7 +135,7 @@ export default ({
           }
         }}
         renderItem={({ item, index }) =>
-        <Render item={item} index={index} />
+          <Render item={item} index={index} />
         }
         keyExtractor={(item, index) =>
           index.toString()

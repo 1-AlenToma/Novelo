@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ActivityIndicator } from "react-native";
-import {View, AnimatedView, Text, TouchableOpacity, ScrollView} from "./ReactNativeComponents";
-import ProgressBar from "./ProgressBar";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, ProgressBar } from "./ReactNativeComponents";
+
 
 export default (
   initValue?: boolean,
@@ -10,8 +10,7 @@ export default (
   const [loading, setLoading] = useState(
     initValue ?? false
   );
-  const [progressValue, setProgressValue] =
-    useState();
+  const [progressValue, setProgressValue] = useState<number | undefined>();
 
   useEffect(() => {
     setLoading(initValue ?? false);
@@ -28,7 +27,7 @@ export default (
   };
 
   let elem = !loading ? null : (
-    <View css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center">
+    <View css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center clb">
       <View css="clearboth blur absolute zi:1" />
       <ActivityIndicator
         size="large"
@@ -37,11 +36,13 @@ export default (
         }}
       />
       <ProgressBar
-        ifTrue={() => progressValue > 0}
-        procent={progressValue}
-      />
+        ifTrue={(progressValue ?? 0) > 0}
+        value={progressValue / 100}
+      >
+        <Text css="fos-12 bold co-#FFFFFF">{(progressValue ?? 0).readAble()}%</Text>
+      </ProgressBar>
       <Text
-        ifTrue={() => text != undefined}
+        ifTrue={text != undefined}
         css="bold co:#ffffff fos:18 zi:3">
         {text}
       </Text>

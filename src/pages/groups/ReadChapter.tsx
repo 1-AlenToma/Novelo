@@ -9,8 +9,6 @@ import {
   NovelGroup,
   FText,
   TextInput,
-  SizeAnimator,
-  ActionSheet,
   ActionSheetButton,
   Web,
   TabBar,
@@ -19,9 +17,13 @@ import {
   Modal,
   DropdownList,
   ColorPicker,
-  Form,
+  FormGroup,
+  FormItem,
   ChapterView,
-  ButtonList
+  ButtonGroup,
+  TabView,
+  AlertDialog,
+  Button
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -75,18 +77,18 @@ const Modoles = () => {
     <>
       {loader.elem}
       <Modal
-        blur={false}
-        visible={context.player.menuOptions.comment != undefined}
+        addCloser={true}
+        disableBlurClick={true}
+        isVisible={context.player.menuOptions.comment != undefined}
         onHide={() => (context.player.menuOptions.comment = undefined)}
-        height={200}
+        css={"he-200"}
       >
-        <View css="flex mat:20">
+        <View css="flex mat:20 invert">
           <TextInput
             onChangeText={x =>
               (context.player.menuOptions.comment = x)
             }
             readOnly={true}
-            invertColor={false}
             css="pa:5 bor:2 flg:1 clearboth"
             multiline={true}
             defaultValue={context.player.menuOptions.comment}
@@ -94,18 +96,17 @@ const Modoles = () => {
         </View>
       </Modal>
       <Modal
-        blur={false}
-        visible={context.player.menuOptions.textEdit != undefined}
+
+        disableBlurClick={true}
+        isVisible={context.player.menuOptions.textEdit != undefined}
         onHide={() => (context.player.menuOptions.textEdit = undefined)}
-        height="90"
+        addCloser={true}
+        css="he-90%"
       >
         <ScrollView>
-          <View css="flex mat:20">
-            <Form
-              root={true}
-              text="TextToEdit"
-              css="formRow he:100"
-            >
+          <View css="flex mat:20 invert">
+            <FormItem
+              title="TextToEdit">
               <TextInput
                 onChangeText={x =>
                 (context.player.menuOptions.textEdit.edit =
@@ -118,8 +119,8 @@ const Modoles = () => {
                   context.player.menuOptions.textEdit?.edit
                 }
               />
-            </Form>
-            <Form root={true} text="EditWith" css="formRow he:100">
+            </FormItem>
+            <FormItem title="EditWith">
               <TextInput
                 onChangeText={x =>
                 (context.player.menuOptions.textEdit.editWith =
@@ -133,8 +134,8 @@ const Modoles = () => {
                     ?.editWith
                 }
               />
-            </Form>
-            <Form root={true} text="Comment" css="formRow he:100">
+            </FormItem>
+            <FormItem title="Comment">
               <TextInput
                 onChangeText={x =>
                 (context.player.menuOptions.textEdit.comments =
@@ -148,8 +149,8 @@ const Modoles = () => {
                     ?.comments
                 }
               />
-            </Form>
-            <Form text="BackgroundColor">
+            </FormItem>
+            <FormItem title="BackgroundColor" labelPosition="Left">
               <ColorPicker
                 value={
                   context.player.menuOptions.textEdit
@@ -162,56 +163,50 @@ const Modoles = () => {
                 })
                 }
               />
-            </Form>
-            <TouchableOpacity
-              onPress={async () => {
-                context.player.book.textReplacements.push(
-                  context.player.menuOptions.textEdit
-                );
-                await context.player.book.saveChanges();
-                await context.player.clean();
-                context.player.menuOptions.textEdit = undefined;
-              }}
-              css="button clearwidth bow:1 boc:#ccc bor:5 juc:center"
-            >
-              <Text invertColor={true}>Save</Text>
-            </TouchableOpacity>
+            </FormItem>
+            <Button text="Save" css={"ali-center juc-center"} onPress={async () => {
+              context.player.book.textReplacements.push(
+                context.player.menuOptions.textEdit
+              );
+              await context.player.book.saveChanges();
+              await context.player.clean();
+              context.player.menuOptions.textEdit = undefined;
+            }} />
           </View>
         </ScrollView>
       </Modal>
       <Modal
-        blur={false}
-        visible={
+        addCloser={true}
+        disableBlurClick={true}
+        isVisible={
           context.player.menuOptions.textToTranslate != undefined
         }
         onHide={() =>
           (context.player.menuOptions.textToTranslate = undefined)
         }
-        height="100"
+        css="he-80%"
       >
-        <View css="flex mat:20">
-          <View css="form">
-            <Text invertColor={true}>TranslateTo:</Text>
+        <View css="flex mat:20 invert">
+          <FormItem title="TranslateTo:" labelPosition="Left">
             <DropdownList
-              height="80"
-              toTop={true}
-              items={Object.keys(LANGUAGE_TABLE)}
+              css={"invert"}
+              items={Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } })}
               render={item => {
                 return (
-                  <Text css="desc fos:13" invertColor={true}>
-                    {item}
+                  <Text css="desc fos:13 invertco">
+                    {item.label}
                   </Text>
                 );
               }}
               onSelect={language => {
-                context.appSettings.lang = language;
+                context.appSettings.lang = language.value;
                 context.appSettings.saveChanges();
               }}
               selectedValue={
                 context.appSettings.lang ?? "English"
               }
             />
-          </View>
+          </FormItem>
           <View css="form flex">
             <WebView
               injectedJavaScript={`
@@ -252,10 +247,10 @@ const Modoles = () => {
       </Modal>
 
       <Modal
-        blur={false}
-        visible={context.player.menuOptions.define != undefined}
+        disableBlurClick={true}
+        isVisible={context.player.menuOptions.define != undefined}
         onHide={() => (context.player.menuOptions.define = undefined)}
-        height="100"
+        css="he-100%"
       >
         <View css="flex mat:20">
           <View css="form flex">
@@ -385,7 +380,7 @@ const Controller = ({ state, ...props }) => {
         context.appSettings.useSentenceBuilder = useSentenceBuilder;
       }
 
-      if (sentenceMargin){
+      if (sentenceMargin) {
         context.appSettings.sentenceMargin = sentenceMargin;
       }
       await context.appSettings.saveChanges();
@@ -398,12 +393,10 @@ const Controller = ({ state, ...props }) => {
     <>
       <View
         ifTrue={context.player.showController}
-        css={`band he:110 bottom juc:center ali:center pal:10 par:10 botw:1 boc:${invertColor(
+        css={`band he:110 bottom juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(
           context.appSettings.backgroundColor
-        )}`}
-        invertColor={true}
-      >
-        <Text invertColor={true} css="desc fos:13">
+        )}`}>
+        <Text css="desc fos:13">
           {context.player.procent(thisState.chapterSliderValue)}
         </Text>
         <View css="clearwidth juc:center ali:center">
@@ -428,8 +421,7 @@ const Controller = ({ state, ...props }) => {
         <View css="clearwidth ali:center juc:center ">
           <Text
             numberOfLines={1}
-            invertColor={true}
-            css="header bold fos:18 foso:italic"
+            css="header bold fos:18 fontStyle:italic invertco"
           >
             {state.book.name}
           </Text>
@@ -448,7 +440,6 @@ const Controller = ({ state, ...props }) => {
             ifTrue: !(context.player.novel.type?.isManga() ?? false),
             text: (
               <Icon
-                invertColor={true}
                 name="featured-play-list"
                 type="MaterialIcons"
               />
@@ -463,10 +454,9 @@ const Controller = ({ state, ...props }) => {
             text: (
               <ActionSheetButton
                 title="Chapters"
-                height="95"
+                size="95%"
                 btn={
                   <Icon
-                    invertColor={true}
                     type="MaterialCommunityIcons"
                     name="menu"
                   />
@@ -486,112 +476,96 @@ const Controller = ({ state, ...props }) => {
           {
             text: () => (
               <ActionSheetButton
-                height="99%"
+                size="99%"
                 btn={
                   <Icon
-                    invertColor={true}
                     type="Ionicons"
                     name="settings"
                   />
                 }
               >
                 <View css="flex">
-                  <TabBar
-                    loadAll={false}
-                    fontSize={14}
-                    scrollableHeader={true}
-                    scrollHeight="90%"
-                    position="Top"
-                  >
-                    <View
+                  <TabBar position="Top" header={{
+                    style: "invert",
+                    overlayStyle: {
+                      content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
+                    }
+                  }}>
+                    <TabView
                       icon={{
                         name: "format-font",
                         type: "MaterialCommunityIcons"
                       }}
-                      css="flex"
+                      css="invert"
                     >
-                      <CheckBox
-                        text="LockScreen:"
-                        css="pal:1"
-                        invertColor={true}
-                        checked={
-                          context.appSettings
-                            .lockScreen
-                        }
-                        onChange={() => {
-                          editSettings({
-                            lockScreen:
-                              !context.appSettings
-                                .lockScreen
-                          });
-                        }}
-                      />
-                      <Form text="NavigationMethod">
-                        <ButtonList
-                          items={["Scroll", "Snap"]}
-                          onPress={navigationType => {
+                      <FormItem title="LockScreen:" labelPosition="Left">
+                        <CheckBox
+                          css="pal:1 invert"
+                          checked={
+                            context.appSettings
+                              .lockScreen
+                          }
+                          onChange={() => {
                             editSettings({
-                              navigationType
+                              lockScreen:
+                                !context.appSettings
+                                  .lockScreen
                             });
                           }}
-                          value={
-                            context.appSettings
-                              .navigationType
+                        />
+                      </FormItem>
+                      <FormItem title="NavigationMethod">
+                        <ButtonGroup
+                          buttons={["Scroll", "Snap"]}
+                          onPress={(_, items) => {
+                            editSettings({
+                              navigationType: items[0]
+                            });
+                          }}
+                          selectedIndex={
+                            [context.appSettings.navigationType == "Scroll" ? 0 : 1]
                           }
                         />
-                      </Form>
-                      <Form text="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
-                        <ButtonList
-                          items={[
+                      </FormItem>
+                      <FormItem title="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
+                        <ButtonGroup
+                          buttons={[
                             "normal",
                             "italic",
                             "oblique"
                           ]}
-                          onPress={fontStyle => {
+                          onPress={(_, items) => {
                             editSettings({
-                              fontStyle
+                              fontStyle: items[0]
                             });
                           }}
-                          value={(
-                            context.appSettings
-                              .fontStyle ||
-                            "normal"
-                          ).displayName()}
+                          selectedIndex={(
+                            [[
+                              "normal",
+                              "italic",
+                              "oblique"
+                            ].findIndex(x => x == context.appSettings.fontStyle)].filter(x => x >= 0)
+                          )}
                         />
-                      </Form>
-                      <Form text="Background">
-                        <ColorPicker
-                          value={
-                            context.appSettings
-                              .backgroundColor
-                          }
-                          onComplete={({ hex }) =>
+                      </FormItem>
+                      <FormItem title="TextAlign" ifTrue={() => !(state.novel.type?.isManga())}>
+                        <ButtonGroup
+                          buttons={[
+                            "align-left",
+                            "align-center",
+                            "align-justify",
+                            "align-right"
+                          ]}
+                          onPress={(_, items) => {
                             editSettings({
-                              backgroundColor: hex
-                            })
-                          }
-                        />
-                      </Form>
-                      <Form css="row" text="TextAlign" ifTrue={() => !(state.novel.type?.isManga())}>
-                        {[
-                          "align-left",
-                          "align-center",
-                          "align-justify",
-                          "align-right"
-                        ].map((x, i) => (
-                          <TouchableOpacity
-                            key={i}
-                            onPress={() => {
-                              editSettings({
-                                textAlign:
-                                  x.safeSplit(
-                                    "-",
-                                    1
-                                  )
-                              });
-                            }}
-                            css="mar:5"
-                          >
+                              textAlign:
+                                items[0].safeSplit(
+                                  "-",
+                                  1
+                                )
+                            });
+                          }}
+                          render={(x, i) => (
                             <Icon
                               type="Feather"
                               name={x}
@@ -605,75 +579,68 @@ const Controller = ({ state, ...props }) => {
                                   ? {
                                     color: "red"
                                   }
-                                  : {})
+                                  : { color: "gray" })
                               }}
-                              invertColor={true}
-                            />
-                          </TouchableOpacity>
-                        ))}
-                      </Form>
-                      <Form text="Font" ifTrue={() => !(state.novel.type?.isManga())}>
-                        <DropdownList
-                          height="80"
-                          toTop={true}
-                          selectedIndex={Object.keys(
-                            Fonts
-                          ).findIndex(
-                            x =>
-                              x ==
-                              context.appSettings
-                                .fontName
-                          )}
-                          updater={[
+                            />)
+                          }
+                          selectedIndex={[[
+                            "align-left",
+                            "align-center",
+                            "align-justify",
+                            "align-right"
+                          ].findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0)}
+                        />
+                      </FormItem>
+                      <FormItem title="Background">
+                        <ColorPicker
+                          value={
                             context.appSettings
-                              .fontName
-                          ]}
-                          hooks={[
-                            "appSettings.fontName"
-                          ]}
-                          items={Object.keys(Fonts)}
+                              .backgroundColor
+                          }
+                          onComplete={({ hex }) =>
+                            editSettings({
+                              backgroundColor: hex
+                            })
+                          }
+                        />
+                      </FormItem>
+
+                      <FormItem title="Font" ifTrue={() => !(state.novel.type?.isManga())}>
+                        <DropdownList
+                          mode="Modal"
+                          css={"invert"}
+                          items={Object.keys(Fonts).map(x => { return { label: x, value: x } })}
                           render={item => {
                             return (
                               <View
-                                css={`
-                                                                    ${item ==
-                                    context
-                                      .appSettings
-                                      .fontName
-                                    ? "selectedRow"
-                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between mih:24
+                                css={`${item.value ==
+                                  context
+                                    .appSettings
+                                    .fontName
+                                  ? "selectedRow"
+                                  : ""} invert ali:center pal:10 bor:5 flex row juc:space-between mih:24
                                                                 `}
                               >
                                 <Text
-                                  style={{
-                                    fontFamily:
-                                      item
-                                  }}
-                                  css={`
-                                      header
-                                  `}
-                                  invertColor={
-                                    true
-                                  }
+                                  style={{ fontFamily: item.value }}
+                                  css={`header invertco`}
                                 >
-                                  {item}
+                                  {item.label}
                                 </Text>
                               </View>
                             );
                           }}
                           onSelect={fontName => {
                             editSettings({
-                              fontName
+                              fontName: fontName.value
                             });
                           }}
                           selectedValue={
-                            context.appSettings
-                              .fontName ||
-                            "SourceSans3-Black"
+                            context.appSettings.fontName || "SourceSans3-Black"
                           }
                         />
-                      </Form>
-                      <Form text="FontSize" ifTrue={() => !(state.novel.type?.isManga())}>
+                      </FormItem>
+                      <FormItem title="FontSize" ifTrue={() => !(state.novel.type?.isManga())}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -691,9 +658,9 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={10}
                           maximumValue={40}
                         />
-                      </Form>
+                      </FormItem>
 
-                      <Form text="LineHeight" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="LineHeight" ifTrue={() => !(state.novel.type?.isManga())}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -711,9 +678,9 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={(context.appSettings.fontSize * context.lineHeight) - 8}
                           maximumValue={(context.appSettings.fontSize * context.lineHeight) + 20}
                         />
-                      </Form>
+                      </FormItem>
 
-                      <Form text="Sentence Margin" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="Sentence Margin" ifTrue={() => !(state.novel.type?.isManga())}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -731,9 +698,9 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={5}
                           maximumValue={15}
                         />
-                      </Form>
+                      </FormItem>
 
-                      <Form text="Padding" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="Padding" ifTrue={() => !(state.novel.type?.isManga())}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -751,11 +718,11 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={5}
                           maximumValue={40}
                         />
-                      </Form>
-                    </View>
-                    <View
+                      </FormItem>
+                    </TabView>
+                    <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
-                      css="flex"
+                      css="flex invert"
                       icon={{
                         name: "text-fields",
                         type: "MaterialIcons"
@@ -766,7 +733,6 @@ const Controller = ({ state, ...props }) => {
                           context.player.book
                             .parserName !== "epub"
                         }
-                        invertColor={true}
                         css="desc fos:10"
                       >
                         Enabling This Option Will Make
@@ -779,119 +745,117 @@ const Controller = ({ state, ...props }) => {
                         Depending on How The Auther
                         wrote it.
                       </Text>
-                      <CheckBox
-                        ifTrue={() =>
-                          context.player.book
-                            .parserName !== "epub"
-                        }
-                        text="UseSentenceBuilder:"
-                        css="pal:1"
-                        invertColor={true}
-                        checked={
-                          context.appSettings
-                            .useSentenceBuilder
-                            ?.enabled ?? false
-                        }
-                        onChange={() => {
-                          editSettings({
-                            useSentenceBuilder: {
-                              ...(context
-                                .appSettings
-                                .useSentenceBuilder ??
-                                {}),
-                              enabled: !(
-                                context
-                                  .appSettings
-                                  .useSentenceBuilder
-                                  ?.enabled ??
-                                false
-                              )
-                            }
-                          });
-                        }}
-                      >
-                        <Form
-                          text="MinLength"
-                          ifTrue={() =>
+                      <FormItem ifTrue={() =>
+                        context.player.book
+                          .parserName !== "epub"
+                      } title="UseSentenceBuilder:" labelPosition="Left">
+                        <CheckBox
+                          css="pal:1 invert"
+                          checked={
                             context.appSettings
                               .useSentenceBuilder
-                              ?.enabled == true
+                              ?.enabled ?? false
                           }
-                        >
-                          <Slider
-                            step={10}
-                            css="flex"
-                            renderValue={true}
-                            invertColor={true}
-                            buttons={true}
-                            value={
-                              context.appSettings
-                                .useSentenceBuilder
-                                ?.minLength ??
-                              100
-                            }
-                            onSlidingComplete={length => {
-                              editSettings({
-                                useSentenceBuilder:
-                                {
-                                  ...(context
+                          onChange={() => {
+                            editSettings({
+                              useSentenceBuilder: {
+                                ...(context
+                                  .appSettings
+                                  .useSentenceBuilder ??
+                                  {}),
+                                enabled: !(
+                                  context
                                     .appSettings
-                                    .useSentenceBuilder ??
-                                    {}),
-                                  minLength:
-                                    length
-                                }
-                              });
-                            }}
-                            minimumValue={100}
-                            maximumValue={400}
-                          />
-                        </Form>
-                      </CheckBox>
-                      <CheckBox
-                        text="Add Shadow:"
-                        css="pal:1"
-                        invertColor={true}
-                        checked={
-                          context.appSettings.use3D
+                                    .useSentenceBuilder
+                                    ?.enabled ??
+                                  false
+                                )
+                              }
+                            });
+                          }}
+                        />
+                      </FormItem>
+                      <FormItem
+                        title="MinLength"
+                        ifTrue={() =>
+                          context.appSettings
+                            .useSentenceBuilder
+                            ?.enabled == true
                         }
-                        onChange={() => {
-                          editSettings({
-                            use3D: !context
-                              .appSettings.use3D
-                          });
-                        }}
                       >
-                        <Form
-                          text="Shadow Length"
-                          ifTrue={() =>
+                        <Slider
+                          step={10}
+                          css="flex"
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          value={
                             context.appSettings
-                              .use3D == true
+                              .useSentenceBuilder
+                              ?.minLength ??
+                            100
                           }
-                        >
-                          <Slider
-                            css="flex"
-                            renderValue={true}
-                            invertColor={true}
-                            buttons={true}
-                            value={(1).sureValue(
-                              context.appSettings
-                                .shadowLength,
-                              true
-                            )}
-                            onSlidingComplete={shadowLength => {
-                              editSettings({
-                                shadowLength
-                              });
-                            }}
-                            minimumValue={1}
-                            maximumValue={3}
-                          />
-                        </Form>
-                      </CheckBox>
-                      <Form
-                        css="form he:200"
-                        text="InlineStyle"
+                          onSlidingComplete={length => {
+                            editSettings({
+                              useSentenceBuilder:
+                              {
+                                ...(context
+                                  .appSettings
+                                  .useSentenceBuilder ??
+                                  {}),
+                                minLength:
+                                  length
+                              }
+                            });
+                          }}
+                          minimumValue={100}
+                          maximumValue={400}
+                        />
+                      </FormItem>
+                      <FormItem title="Add Shadow:" labelPosition="Left">
+                        <CheckBox
+                          css="pal:1 invert"
+                          checked={
+                            context.appSettings.use3D
+                          }
+                          onChange={() => {
+                            editSettings({
+                              use3D: !context
+                                .appSettings.use3D
+                            });
+                          }}
+                        />
+                      </FormItem>
+                      <FormItem
+                        title="Shadow Length"
+                        ifTrue={() =>
+                          context.appSettings
+                            .use3D == true
+                        }
+                      >
+                        <Slider
+                          css="flex"
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          value={(1).sureValue(
+                            context.appSettings
+                              .shadowLength,
+                            true
+                          )}
+                          onSlidingComplete={shadowLength => {
+                            editSettings({
+                              shadowLength
+                            });
+                          }}
+                          minimumValue={1}
+                          maximumValue={3}
+                        />
+                      </FormItem>
+                      <FormItem
+                        css="he:200 "
+                        title="InlineStyle"
+                        labelPosition="Top"
                       >
                         <TextInput
                           isModole={true}
@@ -908,87 +872,59 @@ const Controller = ({ state, ...props }) => {
                             context.player.book.saveChanges();
                           }}
                         />
-                      </Form>
-                    </View>
-                    <View
+                      </FormItem>
+                    </TabView>
+                    <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
-                      css="flex"
+                      css="flex invert"
                       icon={{
                         name: "settings-voice",
                         type: "MaterialIcons"
                       }}
                     >
-                      <Form text="Voices">
+                      <FormItem title="Voices">
                         <DropdownList
-                          height="80"
-                          toTop={true}
-                          updater={[
-                            context.player.testVoice
-                          ]}
-                          hooks={["player.testVoice"]}
-                          items={context.voices}
-                          onSearch={(item, txt) => {
-                            let l =
-                              lang[
-                              item.language.toLowerCase()
+                          mode="Modal"
+                          enableSearch={true}
+                          css="invert"
+                          items={context.voices.map(x => {
+                            return {
+                              label: `${lang[
+                                x.language.toLowerCase()
                               ] ||
-                              lang[
-                              item.language
-                                .safeSplit(
-                                  "-",
-                                  0
-                                )
-                                .toLowerCase()
-                              ] ||
-                              item.language;
-                            return l.has(txt);
-                          }}
-                          selectedIndex={context.voices?.findIndex(
-                            x =>
-                              x.name ==
-                              context.appSettings
-                                .voice
-                          )}
+                                lang[
+                                x.language
+                                  .safeSplit(
+                                    "-",
+                                    0
+                                  )
+                                  .toLowerCase()
+                                ] ||
+                                x.language}(${x.language})`,
+                              value: x.name
+                            }
+                          })}
+                          selectedValue={context.appSettings.voice}
                           render={item => {
                             return (
                               <View
-                                css={`
-                                                                    ${item.name ==
-                                    context
-                                      .appSettings
-                                      .voice
-                                    ? "selectedRow"
-                                    : ""} ali:center pal:10 bor:5 flex row juc:space-between
+                                css={`${item.label ==
+                                  context
+                                    .appSettings
+                                    .voice
+                                  ? "selectedRow"
+                                  : ""} invert ali:center pal:10 bor:5 flex row juc:space-between
                                                                 `}
                               >
                                 <Text
                                   css={`desc fos:13`}
-                                  invertColor={
-                                    true
-                                  }
                                 >
-                                  {lang[
-                                    item.language.toLowerCase()
-                                  ] ||
-                                    lang[
-                                    item.language
-                                      .safeSplit(
-                                        "-",
-                                        0
-                                      )
-                                      .toLowerCase()
-                                    ] ||
-                                    item.language}
-                                  (
-                                  {
-                                    item.language
-                                  }
-                                  )
+                                  {item.label}
                                 </Text>
                                 <TouchableOpacity
                                   onPress={() =>
                                     context.player.testPlaying(
-                                      item.name
+                                      item.value
                                     )
                                   }
                                 >
@@ -997,16 +933,13 @@ const Controller = ({ state, ...props }) => {
                                       context
                                         .player
                                         .testVoice ==
-                                        item.name
+                                        item.value
                                         ? "stop-circle"
                                         : "play-circle"
                                     }
                                     type="Ionicons"
                                     size={
                                       35
-                                    }
-                                    invertColor={
-                                      true
                                     }
                                   />
                                 </TouchableOpacity>
@@ -1015,16 +948,12 @@ const Controller = ({ state, ...props }) => {
                           }}
                           onSelect={voice => {
                             editSettings({
-                              voice: voice.name
+                              voice: voice.value
                             });
                           }}
-                          selectedValue={
-                            context.appSettings
-                              .voice ?? ""
-                          }
                         />
-                      </Form>
-                      <Form text="Pitch">
+                      </FormItem>
+                      <FormItem title="Pitch">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -1043,8 +972,8 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={0.9}
                           maximumValue={3}
                         />
-                      </Form>
-                      <Form text="Rate">
+                      </FormItem>
+                      <FormItem title="Rate">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -1062,16 +991,13 @@ const Controller = ({ state, ...props }) => {
                           minimumValue={0.9}
                           maximumValue={3}
                         />
-                      </Form>
-                      <Form
-                        css="mah:200"
-                        root={true}
-                        text="Words Highlight Settings"
-                      >
-                        <Form
-                          root={true}
-                          css="he:80 clearwidth"
-                          text="Color"
+                      </FormItem>
+                      <FormItem labelPosition="Top" css="mah:200 invert" title="Words Highlight Settings">
+                        <FormItem
+                          css="invert"
+                          title="Color"
+                          labelPosition="Left"
+
                         >
                           <ColorPicker
                             value={
@@ -1093,52 +1019,49 @@ const Controller = ({ state, ...props }) => {
                               })
                             }
                           />
-                        </Form>
-                        <CheckBox
-                          text="Only Word:"
-                          css="pal:1"
-                          invertColor={true}
-                          checked={
-                            context.appSettings
-                              .voiceWordSelectionsSettings
-                              ?.appendSelection ??
-                            false
-                          }
-                          onChange={() => {
-                            editSettings({
-                              voiceWordSelectionsSettings:
-                              {
-                                color: context
-                                  .appSettings
-                                  .voiceWordSelectionsSettings
-                                  ?.color,
-                                appendSelection:
-                                  !(
-                                    context
-                                      .appSettings
-                                      .voiceWordSelectionsSettings
-                                      ?.appendSelection ??
-                                    false
-                                  )
-                              }
-                            });
-                          }}
-                        />
-                      </Form>
-                    </View>
-                    <View
+                        </FormItem>
+                        <FormItem title="Only Word:" labelPosition="Left">
+                          <CheckBox
+                            css="pal:1 invert"
+                            checked={
+                              context.appSettings
+                                .voiceWordSelectionsSettings
+                                ?.appendSelection ??
+                              false
+                            }
+                            onChange={() => {
+                              editSettings({
+                                voiceWordSelectionsSettings:
+                                {
+                                  color: context
+                                    .appSettings
+                                    .voiceWordSelectionsSettings
+                                    ?.color,
+                                  appendSelection:
+                                    !(
+                                      context
+                                        .appSettings
+                                        .voiceWordSelectionsSettings
+                                        ?.appendSelection ??
+                                      false
+                                    )
+                                }
+                              });
+                            }}
+                          />
+                        </FormItem>
+                      </FormItem>
+                    </TabView>
+                    <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
-                      css="flex"
+                      css="flex invert"
                       icon={{
                         name: "format-color-highlight",
                         type: "MaterialCommunityIcons"
                       }}
                     >
-                      <View css="flex clearboth juc:flex-start mih:100">
-                        <Text
-                          invertColor={true}
-                          css="header fos:18"
-                        >
+                      <View css="flex clearboth juc:flex-start mih:100 invert">
+                        <Text css="header fos:18">
                           Text Replacements
                         </Text>
                         <ItemList
@@ -1154,59 +1077,39 @@ const Controller = ({ state, ...props }) => {
                               }}
                               css="flex di:flex row juc:space-between ali:center pal:10 bor:2"
                             >
-                              <View css="flex overflow maw:80%">
-                                <Text
-                                  css="desc fos:13"
-                                  invertColor={
-                                    true
-                                  }
-                                >
+                              <View css="flex overflow maw:80% clb">
+                                <Text css="desc fos:13">
                                   {item.edit}
                                   {"\n=>"}
                                 </Text>
                                 <Text
-                                  css="desc fos:13"
-                                  invertColor={
-                                    true
-                                  }
-                                >
+                                  css="desc fos:13">
                                   {
                                     item.editWith
                                   }
                                 </Text>
                               </View>
-                              <TouchableOpacity
-                                onPress={async () => {
-                                  context.player.book.textReplacements =
-                                    context.player.book.textReplacements.filter(
-                                      x =>
-                                        x !=
-                                        item
-                                    );
+                              <Button text="Delete" onPress={async () => {
+                                context.player.book.textReplacements =
+                                  context.player.book.textReplacements.filter(
+                                    x =>
+                                      x !=
+                                      item
+                                  );
 
-                                  await context.player.book.saveChanges();
-                                  await context.player.clean();
-                                }}
-                                css="button"
-                              >
-                                <Text
-                                  invertColor={
-                                    true
-                                  }
-                                >
-                                  Delete
-                                </Text>
-                              </TouchableOpacity>
+                                await context.player.book.saveChanges();
+                                await context.player.clean();
+                              }}></Button>
                             </View>
                           )}
                           itemCss="pa:5 clearwidth bobw:1 boc:gray"
                           vMode={true}
                         />
                       </View>
-                    </View>
+                    </TabView>
                   </TabBar>
-                </View>
-              </ActionSheetButton>
+                </View >
+              </ActionSheetButton >
             )
           }
         ]}
@@ -1424,12 +1327,14 @@ export default (props: any) => {
 
   context.useEffect(() => {
     if (context.player.networkError) {
-      context
-        .alert(
-          `Something went wrong as the chapter could not be retrieved. Please check your internet connection.\nWould you like to retry`,
-          "Error"
+      AlertDialog
+        .confirm(
+          {
+            message: `Something went wrong as the chapter could not be retrieved. Please check your internet connection.\nWould you like to retry`,
+            title: "Error"
+          }
         )
-        .confirm(answer => {
+        .then(answer => {
           if (answer) context.player.jumpTo();
         });
     }

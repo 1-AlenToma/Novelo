@@ -69,28 +69,6 @@ const data = StateBuilder<GlobalType>(
             confirm: (answer: boolean) => { }
         },
         novelFavoritInfo: {},
-        alert: (msg: string, title?: string) => {
-            return {
-                show: () => {
-                    data.alertMessage.msg = msg;
-                    data.alertMessage.title = title;
-                    data.alertMessage.confirm = undefined;
-                    data.alertMessage.toast = undefined;
-                },
-                confirm: (func: Function) => {
-                    data.alertMessage.msg = msg;
-                    data.alertMessage.title = title;
-                    data.alertMessage.confirm = func;
-                    data.alertMessage.toast = undefined;
-                },
-                toast: () => {
-                    data.alertMessage.msg = msg;
-                    data.alertMessage.title = title;
-                    data.alertMessage.confirm = undefined;
-                    data.alertMessage.toast = true;
-                }
-            };
-        },
         player: {} as Player,
         http: () => globalHttp,
         downloadManager: () => downloadManager,
@@ -126,20 +104,7 @@ const data = StateBuilder<GlobalType>(
             all: () => parsers
         },
         updater: newId(),
-        theme: {
-            settings: undefined,
-            invertSettings: () => { },
-            themeMode: "dark",
-            getRootTheme: (themeMode) => { },
-            textTheme: () => {
-                return { color: data.theme.settings?.color };
-            },
-            viewTheme: () => {
-                return {
-                    backgroudColor: data.theme.settings?.backgroundColor
-                };
-            }
-        },
+        selectedThemeIndex: 0,
         dbContext: () => globalDb,
         db: () => globalDb.database,
         size: {
@@ -188,11 +153,11 @@ const data = StateBuilder<GlobalType>(
                 let appSettingWatcher = globalDb.database.watch("AppSettings");
                 appSettingWatcher.onSave = async items => {
                     let item = items?.firstOrDefault();
-                    if (item) data.appSettings = item;
+                    if (item) data.appSettings = item as any;
                 };
-                data.theme.themeMode = data.appSettings.theme;
+                data.selectedThemeIndex = data.appSettings.selectedTheme ?? 0;
                 loadVoices();
-                data.parser.current.settings = await data.parser.current.load();
+                data.parser.current.settings = (await data.parser.current.load() as any);
                 const showSubscription = Keyboard.addListener(
                     "keyboardDidShow",
                     () => {

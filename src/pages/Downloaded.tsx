@@ -13,7 +13,8 @@ import {
   ProgressBar,
   Modal,
   FoldableItem,
-  FileBrowser
+  FileBrowser,
+  AlertDialog
 } from "../components";
 import Header from "./Header";
 import * as React from "react";
@@ -39,7 +40,8 @@ const EpubHanlder = ({
   const [render, state, loader] = useView({
     component: false,
     state: {
-      skipImages: false
+      skipImages: false,
+      browserVisible: false
     }
   });
   const loadEpub = async (item: ReadDirItem) => {
@@ -51,11 +53,13 @@ const EpubHanlder = ({
  
        if (!item || !item.fileCopyUri) return;*/
       state.browserVisible = false;
-      context.alert(
-        `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip them?`,
-        "Please Confirm"
+      AlertDialog.confirm(
+        {
+          message: `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip them?`,
+          title: "Please Confirm"
+        }
       )
-        .confirm(async answer => {
+        .then(async answer => {
           state.skipImages = answer;
           try {
             loader.show();
@@ -129,7 +133,7 @@ const EpubHanlder = ({
             await context.files.write("".fileName(bk.name, "epub"), JSON.stringify(bk));
             await context.db().save(book);
           } catch (e) {
-            context.alert(e.message).show();
+            AlertDialog.alert({ message: e.message });
             console.error(e);
           } finally {
             context.db().enableWatchers();
@@ -139,7 +143,7 @@ const EpubHanlder = ({
           }
         });
     } catch (e) {
-      context.alert(e.message).show();
+      AlertDialog.alert({ message: e.message });
       console.error(e);
     }
   };
@@ -150,8 +154,8 @@ const EpubHanlder = ({
         ifTrue={() =>
           loader.elem ? true : false
         }
-        css="absolute clearboth zi:500">
-        <View css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+        css="absolute clearboth zi:500 clb">
+        <View css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40% clb">
           {loader.elem}
         </View>
       </View>
@@ -161,7 +165,6 @@ const EpubHanlder = ({
           {
             text: () => (
               <Icon
-                invertColor={true}
                 size={35}
                 name="file-directory"
                 type="Octicons"
@@ -272,9 +275,9 @@ const ItemRender = ({
               .items.has(item.url ?? ""),
           icon: (
             <Icon
-              invertColor={true}
               name="update"
               type="MaterialIcons"
+              css="invertco"
             />
           ),
           text: "Update",
@@ -292,19 +295,20 @@ const ItemRender = ({
           text: "Delete",
           icon: (
             <Icon
-              size={15}
-              invertColor={true}
               name="delete"
               type="MaterialIcons"
+              css="invertco"
             />
           ),
           onPress: () => {
-            context
-              .alert(
-                `You will be deleting this novel.\nAre you sure?`,
-                "Please Confirm"
+            AlertDialog
+              .confirm(
+                {
+                  message: `You will be deleting this novel.\nAre you sure?`,
+                  title: "Please Confirm"
+                }
               )
-              .confirm(async answer => {
+              .then(async answer => {
                 loader.show();
                 if (answer) {
                   try {
@@ -334,8 +338,7 @@ const ItemRender = ({
         {
           icon: (
             <Icon
-              size={15}
-              invertColor={true}
+              css="invertco"
               name="book-reader"
               type="FontAwesome5"
             />
@@ -367,8 +370,7 @@ const ItemRender = ({
           },
           icon: (
             <Icon
-              size={15}
-              invertColor={true}
+              css="invertco"
               name="info-circle"
               type="FontAwesome5"
             />
@@ -378,16 +380,14 @@ const ItemRender = ({
         }
       ]}>
       <View
-        invertColor={true}
-        css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start">
+        css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start invert">
         {loader.elem ?? elem}
         <Image
           url={item.imageBase64}
           css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
         />
         <Text
-          css="header pa:5 maw:80% overflow"
-          invertColor={true}>
+          css="header pa:5 maw:80% overflow">
           {item.name}
         </Text>
         <Text css="desc co:red absolute bo:5 right:10 zi:6">
@@ -401,23 +401,23 @@ const ItemRender = ({
         <View
           ifTrue={urlObj[item.url] ? true : false}
           css="clearboth absolute row juc:flex-end ali:center">
+
+          <ProgressBar value={(urlObj[item.url]?.p ?? 0) / 100}>
+            <Text css="fos-12 bold co-#FFFFFF">{(urlObj[item.url]?.p ?? 0).readAble()}%</Text>
+          </ProgressBar>
           <TouchableOpacity
-            css="button zi:6 miw:30"
+            css="button zi:6 miw:30 clb"
             onPress={() =>
               context
                 .downloadManager()
                 .stop(item.url)
             }>
             <Icon
-              invertColor={true}
               name="controller-stop"
               type="Entypo"
               css="zi:7"
             />
           </TouchableOpacity>
-          <ProgressBar
-            procent={urlObj[item.url]?.p}
-          />
         </View>
       </View>
     </FoldableItem>
