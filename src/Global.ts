@@ -366,6 +366,7 @@ String.prototype.query = function (item: any) {
         if (url.endsWith("&") || url.endsWith("&&") || url.endsWith("?"))
             url += `${x}=${v}`;
         else url += `&&${x}=${v}`;
+       
     });
 
     return url;

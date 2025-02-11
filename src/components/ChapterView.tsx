@@ -60,6 +60,8 @@ export default ({
     });
   }, [book, novel, current]);
 
+  
+
   return (
     <View css="clearboth juc:flex-start mah:90% invert">
       <View
@@ -83,7 +85,7 @@ export default ({
                 {item.index > 0
                   ? item.index * size + 1 + " - "
                   : "1 - "}
-                {(item.index + 1) * size}
+                {((item.index + 1) * size) > novel.chapters.length ? novel.chapters.length : ((item.index + 1) * size)}
               </Text>
               <Icon
                 ifTrue={

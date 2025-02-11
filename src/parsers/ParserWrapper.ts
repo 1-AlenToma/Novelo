@@ -7,9 +7,11 @@ import {
 
 import ReadNovelFull from "./ReadNovelFull";
 import MangaBerri from "./MangaBerri";
+import NovelBin from "./Novelbin";
 
 import NovelUpdate from "./infos/NovelUpdates";
 import Memo from "../attr/Memo";
+import { AlertDialog } from "styles";
 const debugg = false;
 export default class ParserWrapper extends Parser {
   parser: Parser;
@@ -37,18 +39,13 @@ export default class ParserWrapper extends Parser {
   }
 
   showError() {
-    if (this.getError()) {
-      context
-        .alert(
-          this.getError()?.toString()?? "",
-          "Error"
-        )
-        .toast();
-    }
+    if (this.getError()) 
+      AlertDialog.toast({message:this.getError()?.toString(), type:"Error"});
+    
   }
 
   static getAllParsers(parserName?: string) {
-    let prs = [ReadNovelFull,MangaBerri].map(
+    let prs = [ReadNovelFull,NovelBin,MangaBerri].map(
       x => new ParserWrapper(new x())
     );
     if (parserName)
@@ -58,7 +55,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 5,
-    isDebug: false,
+    isDebug: debugg,
     argsOverride: (args: any[]) => {
       return args;
     },
@@ -120,6 +117,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 5,
+    isDebug: debugg,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
     validator: (data: any) =>

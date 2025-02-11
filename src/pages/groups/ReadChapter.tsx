@@ -23,13 +23,14 @@ import {
   ButtonGroup,
   TabView,
   AlertDialog,
-  Button
+  Button,
+  ColorSelection
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
 import * as React from "react";
 import translate from "translate-google-api";
-import { LANGUAGE_TABLE } from "react-native-translator/dist/utils/languageCodeConverter";
+import LANGUAGE_TABLE from "react-native-translator/dist/constants/languageMap";
 import { ScrollView, Linking } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useNavigation, useUpdate, useTimer, useDbHook, ChapterProcess } from "../../hooks";
@@ -247,10 +248,11 @@ const Modoles = () => {
       </Modal>
 
       <Modal
+        addCloser={true}
         disableBlurClick={true}
         isVisible={context.player.menuOptions.define != undefined}
         onHide={() => (context.player.menuOptions.define = undefined)}
-        css="he-100%"
+        css="he-80%"
       >
         <View css="flex mat:20">
           <View css="form flex">
@@ -592,17 +594,12 @@ const Controller = ({ state, ...props }) => {
                         />
                       </FormItem>
                       <FormItem title="Background">
-                        <ColorPicker
-                          value={
-                            context.appSettings
-                              .backgroundColor
-                          }
-                          onComplete={({ hex }) =>
-                            editSettings({
-                              backgroundColor: hex
-                            })
-                          }
-                        />
+                        <ColorSelection selectedValue={context.appSettings.backgroundColor} onChange={(hex) => {
+                          editSettings({
+                            backgroundColor: hex
+                          })
+                        }} />
+
                       </FormItem>
 
                       <FormItem title="Font" ifTrue={() => !(state.novel.type?.isManga())}>
@@ -613,12 +610,7 @@ const Controller = ({ state, ...props }) => {
                           render={item => {
                             return (
                               <View
-                                css={`${item.value ==
-                                  context
-                                    .appSettings
-                                    .fontName
-                                  ? "selectedRow"
-                                  : ""} invert ali:center pal:10 bor:5 flex row juc:space-between mih:24
+                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between mih:24
                                                                 `}
                               >
                                 <Text
@@ -908,16 +900,11 @@ const Controller = ({ state, ...props }) => {
                           render={item => {
                             return (
                               <View
-                                css={`${item.label ==
-                                  context
-                                    .appSettings
-                                    .voice
-                                  ? "selectedRow"
-                                  : ""} invert ali:center pal:10 bor:5 flex row juc:space-between
+                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between
                                                                 `}
                               >
                                 <Text
-                                  css={`desc fos:13`}
+                                  css={`desc invertco fos:13`}
                                 >
                                   {item.label}
                                 </Text>
@@ -937,6 +924,7 @@ const Controller = ({ state, ...props }) => {
                                         ? "stop-circle"
                                         : "play-circle"
                                     }
+                                    css="invert"
                                     type="Ionicons"
                                     size={
                                       35
@@ -999,26 +987,16 @@ const Controller = ({ state, ...props }) => {
                           labelPosition="Left"
 
                         >
-                          <ColorPicker
-                            value={
-                              context.appSettings
-                                .voiceWordSelectionsSettings
-                                ?.color
-                            }
-                            onComplete={({ hex }) =>
-                              editSettings({
-                                voiceWordSelectionsSettings:
-                                {
-                                  color: hex,
-                                  appendSelection:
-                                    context
-                                      .appSettings
-                                      .voiceWordSelectionsSettings
-                                      ?.appendSelection
-                                }
-                              })
-                            }
-                          />
+                          <ColorSelection selectedValue={context.appSettings.voiceWordSelectionsSettings?.color} onChange={(hex) => {
+                            editSettings({
+                              voiceWordSelectionsSettings:
+                              {
+                                color: hex,
+                                appendSelection: context.appSettings.voiceWordSelectionsSettings?.appendSelection
+                              }
+                            })
+                          }} />
+                         
                         </FormItem>
                         <FormItem title="Only Word:" labelPosition="Left">
                           <CheckBox

@@ -14,12 +14,13 @@ export const InternalThemeContext = React.createContext({
     totalItems: () => 1
 } as internalThemeContext)
 
-
+var timer = undefined;
 export const globalData = StateBuilder<GlobalState>({
     storage: new Map() as any,
     tStorage: new Map() as any,
     activePan: false,
     panEnabled: true,
+    containerSize: { height: 0, width: 0 },
     alertViewData: {
         data: undefined,
         toastData: undefined,

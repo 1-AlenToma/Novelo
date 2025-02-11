@@ -80,7 +80,7 @@ class HttpValue {
   }
 
   get html() {
-    return new Html(this.value.replace(/(?<!^)(\w| )(\/p\>)/gmi, ""), this.baseUrl);
+    return new Html(this.value.replace(/(?<!^)(\w| )(\/p\>)|([a-z]+="\s*")/gmi, ""), this.baseUrl);
   }
 
   get text() {

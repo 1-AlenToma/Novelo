@@ -69,7 +69,7 @@ const CurrentItem = ({
             ifTrue={() =>
               book.parserName != "epub"
             }
-            onPress={() => {
+            onPress={() => { 
               options
                 .nav("NovelItemDetail")
                 .add({
@@ -82,6 +82,7 @@ const CurrentItem = ({
             <Icon
               name="info-circle"
               type="FontAwesome5"
+              css="invertco"
             />
             <Text>Info</Text>
           </TouchableOpacity>
@@ -105,6 +106,7 @@ const CurrentItem = ({
             <Icon
               name="book-reader"
               type="FontAwesome5"
+              css="invertco"
             />
             <Text>
               Read
@@ -136,6 +138,7 @@ const CurrentItem = ({
             <Icon
               name="book-reader"
               type="FontAwesome5"
+              css="invertco"
             />
             <Text>
               Read (Online)
@@ -151,6 +154,7 @@ const CurrentItem = ({
             <Icon
               name="notification-clear-all"
               type="MaterialCommunityIcons"
+              css="invertco"
             />
             <Text>Clear</Text>
           </TouchableOpacity>
@@ -207,6 +211,7 @@ const CurrentItem = ({
 export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
+  context.hook("size");
   context.nav = options;
   let groups =
     context.parser.current.settings.group;
@@ -239,7 +244,7 @@ export default ({ ...props }: any) => {
             }
           ],
           { useNativeDriver: false }
-        )}>
+        )} style={{minWidth:context.size.window.width}}>
         <CurrentItem
           style={{ height }}
           {...props}>

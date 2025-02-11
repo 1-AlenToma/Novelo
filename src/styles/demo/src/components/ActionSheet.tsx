@@ -17,6 +17,7 @@ import {
 import { ActionSheetProps } from "../Typse";
 import { Blur } from "./Blur";
 export const ActionSheet = (props: ActionSheetProps) => {
+    globalData.hook("containerSize")
     let position = props.position;
     if (props.position == undefined)
         position = "Bottom";
@@ -27,7 +28,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
             h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), isVertical ?
                 globalData.screen.height : globalData.screen.width);
         }
-        return Math.min(h, proc(isVertical ? context.containerSize().height : context.containerSize().width, 80));
+        return Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 80));
     }
 
     let context = useContext(InternalThemeContext);
@@ -55,7 +56,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
     }).ignore("refItem").build();
 
     const setSize = () => {
-        let size = context.containerSize();
+        let size = globalData.containerSize;
         let containerHeight = Math.min(globalData.screen.height, size.height)
         let sheetHeight = Math.abs(containerHeight - getHeight());
 
@@ -120,6 +121,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
     globalData.useEffect(() => {
         timer(() => {
             setSize();
+            
             if (state.refItem.isVisible) {
                 state.refItem.panResponse = undefined;
                 renderUpdate();
@@ -240,7 +242,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
 
         fn(state.id,
-            <View key={state.id} css={x => x.baC("$co-transparent").cls("_topPostion")} style={{ zIndex: zIndex + 300 }}>
+            <View key={state.id} css={"co-transparent _topPostion"} style={{ zIndex: zIndex + 300 }}>
                 <Blur style={{
                     opacity: blurAnimation.animate.x.interpolate({
                         inputRange: [0, 1],

@@ -16,6 +16,7 @@ import ColorPicker from "./ColorPicker";
 import ChapterView from "./ChapterView";
 import FoldableItem from "./FoldableItem";
 import FileBrowser from "./FileBrowser";
+import ColorSelection from "./ColorSelection";
 export * from "./ReactNativeComponents";
 
 
@@ -35,6 +36,7 @@ export {
   Slider,
   PlayerView,
   ColorPicker,
+  ColorSelection,
   ChapterView,
   FoldableItem,
   FileBrowser

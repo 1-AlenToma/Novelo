@@ -3,7 +3,7 @@ import {
   TableBuilder,
   ColumnType,
   IQueryResultItem
-} from "expo-sqlite-wrapper";
+} from "../expo-sqlite-wrapper/src";
 import TableNames from "./TableNames";
 import { public_m } from "../Methods";
 import Chapter from "./Chapter";

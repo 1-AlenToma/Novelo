@@ -346,6 +346,12 @@ export default ({
         body img {
           max-width: 98%;
         }
+
+        .Manga img {
+          margin: auto;
+          margin-bottom: 5px;
+          display: block;
+        }
         
         h1,h2,h3,h4,h5,h6{
           line-height: ${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5}px !important;
@@ -722,7 +728,7 @@ export default ({
         }
         </script>
         </head>
-        <body>
+        <body class="${context.player.novel.type}">
         
         </body>
         </html>

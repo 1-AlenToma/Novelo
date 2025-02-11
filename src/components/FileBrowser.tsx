@@ -112,7 +112,7 @@ const FileBrowser = (
                             <Icon type="MaterialIcons" css="invertco" name="select-all" />
                             <Text css="invertco">Use this Folder</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity css="fileButton invert" onPress={deleteItem} ifTrue={() => state.selectedPath && selectionType == "Folder"}>
+                        <TouchableOpacity css="fileButton invert" onPress={deleteItem} ifTrue={() => state.selectedPath != undefined && selectionType === "Folder"}>
                             <Icon type="MaterialIcons" css="invertco" name="folder-delete" />
                             <Text css="invert">Delete</Text>
                         </TouchableOpacity>
@@ -120,20 +120,22 @@ const FileBrowser = (
                             <Icon type="MaterialIcons" css="invertco" name="create-new-folder" />
                             <Text css="invertco">New Folder</Text>
                         </TouchableOpacity>
-                        <Modal css={"he-200"} isVisible={state.create} onHide={() => state.create = false}>
-                            <TextInput
-                                placeholder="Folder Name"
-                                css="invert"
-                                style={{
-                                    marginTop: 10,
-                                    borderWidth: .5,
-                                    borderColor: "gray",
-                                    padding: 5
-                                }} placeholderTextColor={"gray"}
-                                onChangeText={(t) => state.newFolderName = t} />
-                            <TouchableOpacity css="fileButton he:50 wi:50% mat:10 invert" onPress={createFolder} ifTrue={() => !state.newFolderName.empty()}>
-                                <Text css="invertco">Create</Text>
-                            </TouchableOpacity>
+                        <Modal css={"he-200"} addCloser={true} isVisible={state.create} onHide={() => state.create = false}>
+                            <View css="mat-10 bac-transparent flex-1">
+                                <TextInput
+                                    placeholder="Folder Name"
+                                    css="invert"
+                                    style={{
+                                        marginTop: 10,
+                                        borderWidth: .5,
+                                        borderColor: "gray",
+                                        padding: 5
+                                    }} placeholderTextColor={"gray"}
+                                    onChangeText={(t) => state.newFolderName = t} />
+                                <TouchableOpacity css="fileButton he:50 wi:50% mat:10 bac-blue" onPress={createFolder} ifTrue={() => !state.newFolderName.empty()}>
+                                    <Text css="invertco">Create</Text>
+                                </TouchableOpacity>
+                            </View>
                         </Modal>
                     </View>
                 </ScrollView>

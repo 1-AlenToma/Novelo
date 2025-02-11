@@ -78,6 +78,7 @@ const App = () => {
     context.useEffect(
         (item, props) => {
             NavigationBar.setVisibilityAsync(
+                
                 context.isFullScreen && !context.KeyboardState
                     ? "hidden"
                     : "visible"
@@ -85,6 +86,7 @@ const App = () => {
             setStatusBarHidden(context.isFullScreen);
             if (!context.isFullScreen)
                 NavigationBar.setBehaviorAsync("overlay-swipe");
+            
         },
         "isFullScreen",
         "KeyboardState"
@@ -92,8 +94,6 @@ const App = () => {
 
     const visibility = NavigationBar.useVisibility();
     const loader = useLoader(true);
-
-
     useEffect(() => {
         let itemToRemove: any[] = [];
         (async () => {

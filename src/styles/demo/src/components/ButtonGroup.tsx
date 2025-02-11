@@ -50,22 +50,23 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
     }, "scrollView", "selectedIndex")
 
     const getItem = (item: string, index: number) => {
-        const selectedStyle = optionalStyle(props.selectedStyle);
+        const itemStyle = props.itemStyle?.(item, index);
+        
         return (
             <TouchableOpacity
                 onLayout={({ nativeEvent }) => state.sizes.set(index, nativeEvent.layout)}
                 onPress={() => select(index)}
-                style={[selectedStyle.o, props.scrollable ? undefined : { flex: 1 }]} key={index}
-                css={x => x.cls("_buttonGroupButton", "ButtonGroupButton").if(props.isVertical == true, c => c.wi("100%")).if(state.selectedIndex.includes(index), c => c.cls("selectedValue"))}>
+                style={[props.scrollable ? undefined : { flex: 1 }]} key={index}
+                css={x => x.cls("_buttonGroupButton", "ButtonGroupButton").if(props.isVertical == true, c => c.wi("100%")).if(state.selectedIndex.includes(index), c => c.cls("selectedValue").joinRight(props.selectedStyle)).joinRight(itemStyle?.container)}>
                 {
-                    props.render ? props.render(item, index) : <Text style={selectedStyle.o} css={x => x.if(state.selectedIndex.includes(index), c => c.cls("selectedValue")).joinRight(selectedStyle.c)}>{item}</Text>
+                    props.render ? props.render(item, index) : <Text css={x => x.joinRight(itemStyle?.text).if(state.selectedIndex.includes(index), c => c.cls("selectedValue").joinRight(props.selectedStyle))}>{item}</Text>
                 }
             </TouchableOpacity>
         )
     }
 
     const Component = props.scrollable ? ScrollView : View;
-    const cProps = props.scrollable ? { contentContainerStyle: { flex: 1 }, ref: c => state.scrollView = c } : { style: { flex: 1, backgroundColor: "transparent" } }
+    const cProps = props.scrollable ? { contentContainerStyle: { flex: 0 }, ref: c => state.scrollView = c } : { style: { flex: 1, backgroundColor: "transparent" } }
     return (
         <View ifTrue={props.ifTrue} css={x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css)} style={props.style}>
             <Component horizontal={!props.isVertical} {...cProps} >

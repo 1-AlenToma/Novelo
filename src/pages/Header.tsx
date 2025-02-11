@@ -45,6 +45,7 @@ export default ({
     "isFullScreen"
   );
   const input = useRef();
+  const sourceContainer = useRef({ close: () => { } });
   const state = buildState(
     {
       text: "",
@@ -123,6 +124,7 @@ export default ({
                 onInputChange(state.text)
               }
               placeholder="Search Novels"
+              style={{ width: "100%", height: "70%" }}
               css="he:90% clearwidth bow:1 bor:3 desc fos:14 boc:#ccc pal:10"
               onFocus={() =>
                 state.inputAnimator.show()
@@ -140,7 +142,7 @@ export default ({
                   ? "90%"
                   : "98%"
             }}
-            css="flex absolute le:5 he:85% juc:center pal:5 bow:1 bor:3 boc:#ccc">
+            css="flex absolute le:5 he:85% juc:center pal:5 bow:1 bor:3 boc:#ccc overflow">
             <Text css="desc fos:14 invert">
               Search Novels
             </Text>
@@ -182,6 +184,7 @@ export default ({
               css="mal:10 bac-transparent"
               size="60%"
               title="Choose Parser"
+              refItem={sourceContainer}
               btn={
                 <Icon
                   size={30}
@@ -194,8 +197,10 @@ export default ({
                 .map((x, i) => (
                   <TouchableOpacity
                     key={i}
-                    onPress={() =>
-                      context.parser.set(x)
+                    onPress={() => {
+                      context.parser.set(x);
+                      sourceContainer.current.close();
+                    }
                     }
                     css={`listButton pal:5 invert ${x.name ===
                       context.parser.current.name

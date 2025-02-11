@@ -122,28 +122,32 @@ export default ({ ...props }: any) => {
 
   const fetchData = async (page?: number) => {
     loader.show();
-    let parser = state.parser;
-    if (parser) {
-      let txt = state.text.clone();
-      if (page === undefined) txt.page++;
-      else txt.page = page;
-      let currentItems =
-        txt.page > 1 ? [...state.items] : [];
-      let items = await parser.search(txt, true);
-      if (txt.page <= 1) currentItems = items;
-      else {
-        currentItems = currentItems.distinct(
-          "url",
-          items
-        );
-      }
+    try {
+      let parser = state.parser;
+      if (parser) {
+        let txt = state.text.clone();
+        if (page === undefined) txt.page++;
+        else txt.page = page;
+        let currentItems =
+          txt.page > 1 ? [...state.items] : [];
+        let items = await parser.search(txt, true);
+        if (txt.page <= 1) currentItems = items;
+        else {
+          currentItems = currentItems.distinct(
+            "url",
+            items
+          );
+        }
 
-      if (txt.page == 1 || items.length > 0) {
-        state.items = currentItems;
-        state.text = txt;
+        if (txt.page == 1 || items.length > 0) {
+          state.items = currentItems;
+          state.text = txt;
+        }
       }
+    } finally {
+      loader.hide();
     }
-    loader.hide();
+
   };
 
   useEffect(() => {
@@ -267,27 +271,29 @@ export default ({ ...props }: any) => {
           keyName="genre"
         />
       </View>
-      <ItemList
-        onPress={item => {
-          option
-            .nav("NovelItemDetail")
-            .add({
-              url: item.url,
-              parserName: item.parserName
-            })
-            .push();
-        }}
-        vMode={true}
-        onEndReached={() => {
-          if (!loader.loading) {
-            loader.show();
-            fetchData();
-          }
-        }}
-        itemCss="boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
-        items={state.items}
-        container={HomeNovelItem}
-      />
+      <View css="clearwidth mih:50 pab-20 flex invert">
+        <ItemList
+          onPress={item => {
+            option
+              .nav("NovelItemDetail")
+              .add({
+                url: item.url,
+                parserName: item.parserName
+              })
+              .push();
+          }}
+          vMode={true}
+          onEndReached={() => {
+            if (!loader.loading) {
+              loader.show();
+              fetchData();
+            }
+          }}
+          itemCss="boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
+          items={state.items}
+          container={HomeNovelItem}
+        />
+      </View>
     </View>
   );
 };

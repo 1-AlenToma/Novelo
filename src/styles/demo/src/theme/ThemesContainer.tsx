@@ -116,11 +116,16 @@ const ThemeInternalContainer = ({ children }: any) => {
 
     return (
         <InternalThemeContext.Provider value={contextValue}>
-            <View onLayout={({ nativeEvent }) => {
-                state.containerSize.height = nativeEvent.layout.height;
-                state.containerSize.width = nativeEvent.layout.width;
-                state.containerSize.y = nativeEvent.layout.y;
-                state.containerSize.x = nativeEvent.layout.x;
+            <View onLayout={(event) => {
+                event.target.measure(
+                    (x, y, width, height, pageX, pageY) => {
+                        state.containerSize.height = height;
+                        state.containerSize.width = width;
+                        state.containerSize.y = y;
+                        state.containerSize.x = x;
+                        globalData.containerSize = state.containerSize;
+                    },
+                );
             }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
                 <StaticFullView />
                 <StaticView />

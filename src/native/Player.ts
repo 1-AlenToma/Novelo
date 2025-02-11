@@ -340,6 +340,7 @@ class Player {
   }
 
   async playPrev() {
+    await this.stop();
     if (
       this.currentChapterSettings.audioProgress -
       1 >=
@@ -347,33 +348,34 @@ class Player {
     ) {
       this.currentChapterSettings.audioProgress--;
       await this.currentChapterSettings.saveChanges();
-      if (this.playing()) this.speak();
+      if (this.playing()) await this.speak();
     }
   }
 
   async playNext() {
+    await this.stop();
     if (
       this.currentChapterSettings.audioProgress +
       1 >=
       this.chapterArray.length
     ) {
-      this.next();
+     await this.next();
       return;
     } else {
       this.currentChapterSettings.audioProgress++;
       await this.currentChapterSettings.saveChanges();
-      if (this.playing()) this.speak();
+      if (this.playing()) await this.speak();
     }
   }
 
-  speak() {
-    this.stop();
-    let text =
-      this.currentPlaying()?.cleanText() ?? "";
+  async speak() {
+    
+    let text = this.currentPlaying()?.cleanText() ?? "";
     if (!/[a-zA-Z0-9]/gim.test(text)) {
-      this.playNext();
+      await this.playNext();
       return;
     }
+   // await this.stop();
     context.speech.speak(text, {
       onBoundary: boundaries => {
         let { charIndex, charLength } =
@@ -382,7 +384,6 @@ class Player {
         let length = charLength;
 
         // if (length + 1 < text.length) length++;
-
         this.highlightedText = {
           text: text,
           index: charIndex,
@@ -394,7 +395,7 @@ class Player {
       rate: context.appSettings.rate,
       voice: context.appSettings.voice,
       onDone: async () => {
-        if (this.playing()) this.playNext();
+        if (this.playing()) await this.playNext();
       }
     });
   }
@@ -414,8 +415,9 @@ class Player {
     );
   }
 
-  stop() {
-    context.speech.stop();
+  async stop() {
+    if (await context.speech.isSpeakingAsync())
+      await context.speech.stop();
   }
 }
 

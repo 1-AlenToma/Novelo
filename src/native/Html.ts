@@ -15,7 +15,7 @@ class Html {
       this.p = cheerio.load(htext, {
         xml: {
           normalizeWhitespace: true,
-          decodeEntities: false
+          decodeEntities: true
         }
       });
     } else {
@@ -124,7 +124,7 @@ class Html {
   }
 
   get outerHtml() {
-    return this.io.prop("outerHTML");
+    return this.io?.html();
   }
 
   hasClass(cl: string) {

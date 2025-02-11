@@ -135,6 +135,7 @@ export type GlobalState = {
     panEnabled: boolean,
     screen: Size;
     window: Size;
+    containerSize: Size;
     storage: CSSStorage;
     tStorage: CSSStorage;
     appStart: () => EventListener[];
@@ -336,6 +337,10 @@ export type ButtonGroupProps = StyledProps & {
     selectedIndex: number[];
     onPress?: (index: number[], selectedItems: any[]) => void;
     selectedStyle?: string | ViewStyle;
+    itemStyle?: (item: string, index: number) => {
+        text?: string | ViewStyle;
+        container?: string | ViewStyle;
+    }
     isVertical?: boolean;
     scrollable?: boolean;
 }

@@ -8,7 +8,7 @@ import AppSettings from "./AppSettings";
 import {
   IDatabase,
   IQueryResultItem
-} from "expo-sqlite-wrapper";
+} from "../expo-sqlite-wrapper/src";
 
 const Tables = [
   Book.tb(),

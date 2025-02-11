@@ -1,4 +1,4 @@
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Modal } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Modal } from "./ReactNativeComponents";
 import { invertColor } from "../Methods";
 import * as React from "react";
 import ColorPicker, {
@@ -8,6 +8,7 @@ import ColorPicker, {
   OpacitySlider,
   HueSlider
 } from "reanimated-color-picker";
+import { ScrollView , GestureHandlerRootView} from 'react-native-gesture-handler';
 
 export default ({
   css,
@@ -27,32 +28,40 @@ export default ({
         isVisible={visible}
         addCloser={true}
         onHide={() => setVisible(false)}>
-        <ScrollView>
-          <View css="flex ali:center mat:20 invert">
-            <View
-              css="juc:center ali:center bor:5 wi:90% mab:10 pa:10 invert"
-              style={{
-                backgroundColor: value ?? "gray"
-              }}>
-              <Text
+        <GestureHandlerRootView style={{ flex: 1 }}>
+
+          <ScrollView>
+            <View css="flex ali:center mat:20 invert">
+              <View
+                css="juc:center ali:center bor:5 wi:90% mab:10 pa:10 invert"
                 style={{
-                  color: invertColor(value)
-                }}
-                css="bold fos:18">
-                Preview Text
-              </Text>
+                  backgroundColor: value ?? "gray"
+                }}>
+                <Text
+                  style={{
+                    color: invertColor(value)
+                  }}
+                  css="bold fos:18">
+                  Preview Text
+                </Text>
+              </View>
+              <ColorPicker
+                style={{ width: "90%", flex: 1 }}
+                value={value}
+                onComplete={onComplete}>
+                <Preview />
+                <View css="bac-transparent mab-10">
+                  <Panel1 />
+                </View>
+
+                <View css="bac-transparent mab-10">
+                  <HueSlider />
+                </View>
+                <OpacitySlider />
+              </ColorPicker>
             </View>
-            <ColorPicker
-              style={{ width: "90%", flex: 1 }}
-              value={value}
-              onComplete={onComplete}>
-              <Preview />
-              <Panel1 />
-              <HueSlider />
-              <OpacitySlider />
-            </ColorPicker>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </GestureHandlerRootView>
       </Modal>
       <Text
         style={{ color: invertColor(value) }}

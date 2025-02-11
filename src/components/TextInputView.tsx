@@ -96,7 +96,7 @@ export default React.forwardRef(
           inputMode="search"
           placeholderTextColor={context.selectedThemeIndex == 0 ? "#000000" : "#FFFFFF"}
           {...props}
-          style={[style,
+          style={[
             {
               zIndex: 1,
               fontSize: 12,
@@ -104,7 +104,7 @@ export default React.forwardRef(
                 ? "100%"
                 : undefined,
               height: props.multiline ? "90%" : "auto"
-            },
+            },style
           ]}
         />
         <TouchableOpacity
@@ -112,7 +112,7 @@ export default React.forwardRef(
             marginTop: ((size?.height ?? 1) - 24) / 2,
             left: (size?.width ?? 0) + (size?.x ?? 0) - 24
           }}
-          css="absolute zi-2"
+          css="absolute zi-2 bac-transparent"
           ifTrue={() => (
             props.readOnly !== true && (
               props.value?.has() ||
