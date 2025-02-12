@@ -16,6 +16,7 @@ import {
 import * as React from "react";
 import { Book, Chapter } from "../db";
 import { useLocationSelection, AppUpdate } from "../hooks";
+import WebNovelTester from "../components/WebNovelTester";
 
 
 export default (props: any) => {
@@ -48,7 +49,8 @@ export default (props: any) => {
       appSettings: true,
       epubs: true,
       items: [] as any[],
-      added: {}
+      added: {},
+      showWebTester: false
     }
   ).ignore("items").build();
   context.hook("selectedThemeIndex");
@@ -146,6 +148,9 @@ export default (props: any) => {
 
   return (
     <View css="flex clb">
+      <Modal css="he-80%" isVisible={state.showWebTester} onHide={() => state.showWebTester = false} addCloser={true}>
+        <WebNovelTester />
+      </Modal>
       <View
         ifTrue={
           context.zip._loading
@@ -242,6 +247,19 @@ export default (props: any) => {
             }}
           />
         </View>
+        <TouchableOpacity
+          css="invert settingButton"
+          onPress={()=> state.showWebTester= true}>
+          <Icon
+            type="MaterialCommunityIcons"
+            name="database-import"
+            css="invertco"
+          />
+          <Text>
+            Test Parser (Developers only)
+          </Text>
+        </TouchableOpacity>
+
       </View>
     </View >
   );

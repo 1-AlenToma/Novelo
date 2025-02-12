@@ -26,7 +26,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         let h = props.size ?? "50%";
         if ((typeof h === "string")) {
             h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), isVertical ?
-                globalData.screen.height : globalData.screen.width);
+                globalData.containerSize.height : globalData.containerSize.width);
         }
         return Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 80));
     }
@@ -56,8 +56,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
     }).ignore("refItem").build();
 
     const setSize = () => {
-        let size = globalData.containerSize;
-        let containerHeight = Math.min(globalData.screen.height, size.height)
+        let size =  globalData.containerSize;
+        let containerHeight = size.height;
         let sheetHeight = Math.abs(containerHeight - getHeight());
 
         if (position == "Top") {
@@ -71,7 +71,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         }
 
         if (position == "Right") {
-            containerHeight = Math.min(globalData.screen.width, size.width)
+            containerHeight = Math.min(globalData.containerSize.width, size.width)
             sheetHeight = Math.abs(containerHeight - getHeight());
         }
 

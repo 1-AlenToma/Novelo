@@ -340,7 +340,6 @@ class Player {
   }
 
   async playPrev() {
-    await this.stop();
     if (
       this.currentChapterSettings.audioProgress -
       1 >=
@@ -353,7 +352,6 @@ class Player {
   }
 
   async playNext() {
-    await this.stop();
     if (
       this.currentChapterSettings.audioProgress +
       1 >=
@@ -369,13 +367,12 @@ class Player {
   }
 
   async speak() {
-    
     let text = this.currentPlaying()?.cleanText() ?? "";
     if (!/[a-zA-Z0-9]/gim.test(text)) {
       await this.playNext();
       return;
     }
-   // await this.stop();
+    await this.stop();
     context.speech.speak(text, {
       onBoundary: boundaries => {
         let { charIndex, charLength } =

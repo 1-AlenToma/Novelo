@@ -15,6 +15,7 @@ import { NestedStyleSheet, ThemeContainer } from "./styles";
 import AppTest from "./App.test";
 import GlobalFileBrowse from "./components/GlobalFileBrowse";
 import CStyle from "./components/CStyle";
+import { Platform } from "react-native";
 
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
@@ -109,8 +110,9 @@ const App = () => {
         })();
 
         return () => {
-            if (!__DEV__)
-                RNExitApp.exitApp?.();
+            // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
+            if (!__DEV__ && !(Platform?.constants?.Model?.has("Subsystem for Android") ?? false))
+               RNExitApp.exitApp?.();
             itemToRemove?.forEach(x => x.remove());
         };
     }, []);

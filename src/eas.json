@@ -8,13 +8,16 @@
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "development"
-      }
-      
+      },
+      "channel": "development"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "preview"
     },
-    "production": {}
+    "production": {
+      "channel": "production"
+    }
   },
   "submit": {
     "production": {}

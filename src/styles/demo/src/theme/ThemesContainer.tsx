@@ -124,6 +124,7 @@ const ThemeInternalContainer = ({ children }: any) => {
                         state.containerSize.y = y;
                         state.containerSize.x = x;
                         globalData.containerSize = state.containerSize;
+                        console.warn(globalData.containerSize, pageX, pageY, globalData.screen)
                     },
                 );
             }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
