@@ -608,6 +608,7 @@ window.slider = function (options) {
   ].scrollIntoView();
   window.bookSlider = this;
 };
+
 const regChar = (
   `”“-=%+*<>|/[]{}()$#!!&?,":;..'’‘ _` + "`"
 )
@@ -669,12 +670,6 @@ window.highlight = function (options) {
 
   if (lastH) {
     lastH.parentNode.scrollTop = lastH.offsetTop;
-    return;
-    lastH.scrollIntoView({
-      behavior: "smooth",
-      block: options.block || "center",
-      inline: options.inline || "center"
-    });
   }
 };
 

@@ -11,7 +11,7 @@ import {
 import { AppSettings, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
 import DownloadManager from "./native/DownloadManager";
-import { Voice } from "expo-speech";
+import * as Speech from 'expo-speech';
 import DbContext from "./db/dbContext";
 
 import createDbContext, {
@@ -129,11 +129,11 @@ export type GlobalType =
     KeyboardState: boolean,
     isFullScreen: boolean,
     appSettings: AppSettings,
-    voices: undefined | Voice[],
+    voices: undefined | Speech.Voice[],
     cache: FileHandler,
     files: FileHandler,
     imageCache: ImageCache,
-    speech: any,
+    speech: typeof Speech,
     nav: any,
     orientation: (value: "Default" | "LANDSCAPE") => void,
     parser: {

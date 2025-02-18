@@ -90,9 +90,7 @@ export default class ZipBook extends ZipBase {
           if (isImage(fileName)) {
             if (skipImages) return undefined;
             type = "Image";
-            cn = `data:image/jpg;base64,${await file.async(
-              "base64"
-            )}`;
+            cn = `data:image/jpg;base64,${await file.async("base64")}`;
           } else if (
             ext == "ncx" ||
             fileName.has("-toc.")
@@ -106,20 +104,11 @@ export default class ZipBook extends ZipBase {
             ext == "xhtml"
           ) {
             type = "HTML";
-            let filecontent =
-              await file.async("text");
-            cn =
-              filecontent
-                .html()("body")
-                ?.html() ?? filecontent;
-            let title =
-              filecontent.html()("title");
-            if (
-              title &&
-              title.text().has() &&
-              !/\..*$/.test(title.text())
-            ) {
-              name = cleanNames(title.text());
+            let filecontent = await file.async("text");
+            cn = (filecontent as string).html().find("body")?.html ?? filecontent;
+            let title = (filecontent as string).html().find("title");
+            if (title && title.text.has() && !/\..*$/.test(title.text)) {
+              name = cleanNames(title.text);
             }
           }
 
@@ -158,33 +147,23 @@ export default class ZipBook extends ZipBase {
           x.has(".ncx")
         );
         for (let item of ncxs) {
-          let $ = (
-            await content.file(item).async("text")
-          ).html();
-          $("navMap")
-            .find("navPoint")
-            .each((i, x) =>
+          let $ = ((await content.file(item).async("text")) as string).html();
+          $.$("navMap").find("navPoint").forEach((x, i) =>
               navMap.push({
-                text: $(x).find("text").text(),
+                text: x.find("text").text,
                 playOrder:
-                  $(x).attr("playOrder") ??
+                  x.attr("playOrder") ??
                   i.toString(),
-                name: $(x)
-                  .find("content")
-                  .attr("src")
+                name: x.find("content").attr("src")
               } as any)
             );
         }
       };
       await renderNavMap();
-      let $ = (
-        await content.file(opf).async("text")
-      ).html();
+      let $ = ((await content.file(opf).async("text")) as string).html();
 
       let items: Html[] = [];
-      $("manifest")
-        .find("item")
-        .each((i, x) => items.push(x));
+      $.find("manifest").findAll("item").forEach(x => items.push(x));
       let total = items.length;
       let count = 0;
       const calc = async () => {
@@ -195,7 +174,6 @@ export default class ZipBook extends ZipBase {
       };
 
       for (let item of items) {
-        item = $(item);
         let href = item.attr("href");
         let k = keys.find(
           x => x.indexOf(href) !== -1

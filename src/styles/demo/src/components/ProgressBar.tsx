@@ -18,7 +18,6 @@ export const ProgressBar = ({
     style,
     children
 }: ProgressBarProps) => {
-    if (ifSelector(ifTrue) === false) return null;
     const [size, setSize] = React.useState<Size>();
     const { animate, animateX } = useAnimate({
         speed: speed ?? 50
@@ -53,6 +52,7 @@ export const ProgressBar = ({
 
     return (
         <View
+            ifTrue={ifTrue}
             onLayout={e => {
                 setSize(e.nativeEvent.layout);
             }}

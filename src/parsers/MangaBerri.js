@@ -58,30 +58,28 @@ export default class MangaFire extends Parser {
             url = this.url.join(options.group.firstOrDefault("value"));
         }
 
-        if (options.genre?.has()){
+        if (options.genre?.has()) {
             url = this.url.join(options.genre.firstOrDefault("value"));
         }
 
         let html = (
             await this.http.get_html(url, this.url)
         ).html;
-        let data = html
-            .$(".manga-item")
+        let data = html.$(".manga-item")
             .map(f => {
-                let name = f.find(".link").eq(1);
+                let name = f.findAll(".link").eq(1);
                 if (f.find("img").attr("src")?.has())
                     return LightInfo.n()
                         .Name(name.text)
-                        .Url(
-                            name.url("href"))
+                        .Url(name.url("href"))
                         .Type("Manga")
                         .Image(
                             f.find("img").url("src") || f.find("img").attr("src")
                         )
-                        .Info(f.find(".link").eq(2).text)
+                        .Info(f.findAll(".link").eq(2).text)
                         .ParserName(this.name);
             }).filter(x => x != undefined)
-           // console.warn(JSON.stringify(data, undefined, 4))
+        // console.warn(JSON.stringify(data, undefined, 4))
         return data;
     }
 
@@ -99,16 +97,15 @@ export default class MangaFire extends Parser {
         let html = (
             await this.http.get_html(url, this.url)
         ).html;
-        let body = html.$("body");
-
-        return body.find(".reading-container img").map(x => `<img src="${x.url("src") || x.attr("src")}"  />`).join("\n");
+        let imgs = html.first(".reading-container").findAll("img").map(x => `<img src="${x.url("src") || x.attr("src")}"  />`).join("\n");
+        return imgs;
     }
 
     async detail(url) {
         let html = (
             await this.http.get_html(url, this.url)
         ).html;
-        let body = html.$(".content-container");
+        let body = html.find(".content-container");
 
         let item = DetailInfo.n();
         item
@@ -187,7 +184,7 @@ export default class MangaFire extends Parser {
         `);
 
         item.Chapters(
-            body.find(".chapters-container > a")
+            body.findAll(".chapters-container > a")
                 .map(a =>
                     ChapterInfo.n()
                         .Name(a.text)

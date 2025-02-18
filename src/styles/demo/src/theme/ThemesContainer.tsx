@@ -124,7 +124,6 @@ const ThemeInternalContainer = ({ children }: any) => {
                         state.containerSize.y = y;
                         state.containerSize.x = x;
                         globalData.containerSize = state.containerSize;
-                        console.warn(globalData.containerSize, pageX, pageY, globalData.screen)
                     },
                 );
             }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
@@ -132,7 +131,13 @@ const ThemeInternalContainer = ({ children }: any) => {
                 <StaticView />
                 <ToastView />
                 <AlertView />
-                {children}
+                <View style={{
+                    width: "100%",
+                    height: "100%",
+                    zIndex: 1
+                }}>
+                    {children}
+                </View>
             </View>
         </InternalThemeContext.Provider>
     )

@@ -35,8 +35,11 @@ export const AlertView = () => {
             <View css="fl:1 pa-0">
                 <View css="fl:1 pa-10" style={{ height: data.callBack ? "90%" : "100%" }}
                     onLayout={({ nativeEvent }) => {
-                        if (!state.size)
+                        if (!state.size) {
                             state.size = nativeEvent.layout;
+                            state.size.height += data.callBack ? 30 : 0;
+                            state.size.height = Math.max(state.size.height, 200)
+                        }
                     }}>
                     <Text css={`fos-md fow:bold`} ifTrue={data.title != undefined}>{data.title}</Text>
                     <Text css={`fos-${data.size ?? "sm"} co:gray pal:2`}>{data.message}</Text>

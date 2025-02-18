@@ -18,6 +18,12 @@ export default function <T>({
 }: {
   state: T;
   component: any;
+  timer?: number;
+  loader: {
+    text?: string;
+    value?: boolean;
+  },
+  ref?: (c: any) => void;
 }) {
   let gProps: any = props as any;
   const update = useUpdate();
@@ -34,7 +40,7 @@ export default function <T>({
       refItem: gProps.refItem ?? {},
       id: methods.newId()
     }).ignore(
-      "refItem","size", ...(gProps.ignore ?? [])
+      "refItem", "size", ...(gProps.ignore ?? [])
     ).build();
 
   let render = (children: any, prs?: any) => {
@@ -45,8 +51,8 @@ export default function <T>({
         <Component
           {...prs}
           onLayout={event => {
-            
-            itemState.size = {...event.nativeEvent.layout};
+
+            itemState.size = { ...event.nativeEvent.layout };
             gProps.onLayout?.(event);
           }}>
           {children}

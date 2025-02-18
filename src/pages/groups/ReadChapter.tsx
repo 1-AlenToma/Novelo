@@ -39,6 +39,7 @@ import Header from "../../pages/Header";
 import { Book, Chapter } from "../../db";
 import { arrayBuffer, newId, proc, invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
+
 const lang = {};
 
 for (let l in LANGUAGE_TABLE) {
@@ -79,7 +80,6 @@ const Modoles = () => {
       {loader.elem}
       <Modal
         addCloser={true}
-        disableBlurClick={true}
         isVisible={context.player.menuOptions.comment != undefined}
         onHide={() => (context.player.menuOptions.comment = undefined)}
         css={"he-200"}
@@ -97,12 +97,10 @@ const Modoles = () => {
         </View>
       </Modal>
       <Modal
-
-        disableBlurClick={true}
         isVisible={context.player.menuOptions.textEdit != undefined}
         onHide={() => (context.player.menuOptions.textEdit = undefined)}
         addCloser={true}
-        css="he-90%"
+        css="he-80%"
       >
         <ScrollView>
           <View css="flex mat:20 invert">
@@ -178,7 +176,6 @@ const Modoles = () => {
       </Modal>
       <Modal
         addCloser={true}
-        disableBlurClick={true}
         isVisible={
           context.player.menuOptions.textToTranslate != undefined
         }
@@ -190,6 +187,7 @@ const Modoles = () => {
         <View css="flex mat:20 invert">
           <FormItem title="TranslateTo:" labelPosition="Left">
             <DropdownList
+              size={"80%"}
               css={"invert"}
               items={Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } })}
               render={item => {
@@ -249,7 +247,6 @@ const Modoles = () => {
 
       <Modal
         addCloser={true}
-        disableBlurClick={true}
         isVisible={context.player.menuOptions.define != undefined}
         onHide={() => (context.player.menuOptions.define = undefined)}
         css="he-80%"
@@ -448,8 +445,7 @@ const Controller = ({ state, ...props }) => {
             ),
             press: () => {
               context.player.playing(false);
-              context.player.showPlayer =
-                !context.player.showPlayer;
+              context.player.showPlayer = !context.player.showPlayer;
             }
           },
           {
@@ -518,15 +514,13 @@ const Controller = ({ state, ...props }) => {
                       </FormItem>
                       <FormItem title="NavigationMethod">
                         <ButtonGroup
-                          buttons={["Scroll", "Snap"]}
+                          buttons={["Scroll", "Snap", "ScrollSnap"]}
                           onPress={(_, items) => {
                             editSettings({
                               navigationType: items[0]
                             });
                           }}
-                          selectedIndex={
-                            [context.appSettings.navigationType == "Scroll" ? 0 : 1]
-                          }
+                          selectedIndex={[context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? 2 : 1)]}
                         />
                       </FormItem>
                       <FormItem title="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
@@ -605,18 +599,14 @@ const Controller = ({ state, ...props }) => {
                       <FormItem title="Font" ifTrue={() => !(state.novel.type?.isManga())}>
                         <DropdownList
                           mode="Modal"
+                          size={"80%"}
                           css={"invert"}
                           items={Object.keys(Fonts).map(x => { return { label: x, value: x } })}
                           render={item => {
                             return (
                               <View
-                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between mih:24
-                                                                `}
-                              >
-                                <Text
-                                  style={{ fontFamily: item.value }}
-                                  css={`header invertco`}
-                                >
+                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between mih:24`}>
+                                <Text css={`header invertco fontFamily-${item.value}`}>
                                   {item.label}
                                 </Text>
                               </View>
@@ -877,6 +867,7 @@ const Controller = ({ state, ...props }) => {
                       <FormItem title="Voices">
                         <DropdownList
                           mode="Modal"
+                          size={"80%"}
                           enableSearch={true}
                           css="invert"
                           items={context.voices.map(x => {
@@ -996,7 +987,7 @@ const Controller = ({ state, ...props }) => {
                               }
                             })
                           }} />
-                         
+
                         </FormItem>
                         <FormItem title="Only Word:" labelPosition="Left">
                           <CheckBox
@@ -1110,11 +1101,11 @@ const InternalWeb = ({ state, ...props }: any) => {
       }}
       onMenu={(item: any) => {
         // handle later
-        if (item.item.text == "Translate")
+        if (item.text == "Translate")
           context.player.menuOptions.textToTranslate = item.selection;
-        else if (item.item.text === "Copy") {
+        else if (item.text === "Copy") {
           Clipboard.setStringAsync(item.selection);
-        } else if (item.item.text === "Define") {
+        } else if (item.text === "Define") {
           context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
             / /g,
             "+"
@@ -1130,30 +1121,23 @@ const InternalWeb = ({ state, ...props }: any) => {
       }}
       menuItems={{
         selector: "#novel",
-        rows: [
+        minlength: 2,
+        items: [
           {
-            cols: [
-              {
-                text: "Copy",
-                icon: "content_copy"
-              },
-              {
-                text: "Translate",
-                icon: "translate"
-              },
-              {
-                text: "Define",
-                icon: "search"
-              }
-            ]
+            text: "Copy",
+            icon: "content_copy"
           },
           {
-            cols: [
-              {
-                text: "Edit",
-                icon: "edit_note"
-              }
-            ]
+            text: "Translate",
+            icon: "translate"
+          },
+          {
+            text: "Define",
+            icon: "search"
+          },
+          {
+            text: "Edit",
+            icon: "edit_note"
           }
         ]
       }}
@@ -1203,7 +1187,7 @@ export default (props: any) => {
         loader.hide();
         return;
       }
-
+      [state.novel].niceJson("chapters")
       state.novel =
         parserName == "epub" || epub
           ? files.fileItems.find(x => x.url === url)
@@ -1308,6 +1292,7 @@ export default (props: any) => {
       AlertDialog
         .confirm(
           {
+            css: "he-50%",
             message: `Something went wrong as the chapter could not be retrieved. Please check your internet connection.\nWould you like to retry`,
             title: "Error"
           }
@@ -1317,6 +1302,8 @@ export default (props: any) => {
         });
     }
   }, "player.networkError");
+
+
 
   if (
     loader.loading &&
@@ -1330,6 +1317,7 @@ export default (props: any) => {
       <View
         css="flex"
         style={{
+          zIndex:100,
           backgroundColor: context.appSettings.backgroundColor
         }}
       >

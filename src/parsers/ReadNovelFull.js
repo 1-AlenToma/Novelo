@@ -93,9 +93,7 @@ export default class ReadNovelFull extends Parser {
             return LightInfo.n()
               .Name(f.find(".novel-title").text)
               .Url(
-                f
-                  .find(".novel-title a")
-                  .url("href")
+                f.find(".novel-title a").url("href")
               )
               .Image(
                 f
@@ -154,15 +152,12 @@ export default class ReadNovelFull extends Parser {
   }
 
   async chapter(url) {
-    let html = (await this.http.get_html(url))
-      .html;
+    let html = (await this.http.get_html(url)).html;
     return html.$(".chr-c").html;
   }
 
   async detail(url) {
-    let html = (
-      await this.http.get_html(url, this.url)
-    ).html;
+    let html = (await this.http.get_html(url, this.url)).html;
     let body = html.$("body");
 
     let item = DetailInfo.n();
@@ -184,14 +179,10 @@ export default class ReadNovelFull extends Parser {
           .parent.remove("h3").text
       )
       .Author(
-        body.find('.info-meta a[href*="authors"]')
+        body.first('.info-meta a[href*="authors"]')
           .text
       )
-      .AuthorUrl(
-        body
-          .find('.info-meta a[href*="authors"]')
-          .url("href")
-      )
+      .AuthorUrl(body.first('.info-meta a[href*="authors"]').url("href"))
       .Genre(
         body
           .find('.info-meta a[href*="genres"]')
@@ -231,9 +222,7 @@ export default class ReadNovelFull extends Parser {
         this.url
           .join("ajax/chapter-archive")
           .query({
-            novelId: html
-              .$("[data-novel-id]")
-              .attr("data-novel-id")
+            novelId: html.find("[data-novel-id!=''][data-novel-id]").attr("data-novel-id")
           }),
         this.url
       )

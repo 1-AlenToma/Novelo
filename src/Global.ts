@@ -1,14 +1,13 @@
 import CStyle from "./components/CStyle";
-import { cssTranslator, clearStyles } from "./styles";
+import { cssTranslator } from "./styles";
 import IDOMParser from "advanced-html-parser";
 import * as Methods from "./Methods";
 import StateBuilder from "react-smart-state";
 import { IGlobalState, FileInfo } from "./Types";
 import * as React from "react";
 import TestRunner from "./tests/TestRunner";
+import Html  from "native/Html";
 
-
-const cheerio = require("react-native-cheerio");
 const fileTypesExt = [".json", ".html", ".epub", "zip", "rar", ".jpg", ".gif", ".png", ".jpeg", ".webp"];
 
 declare global {
@@ -61,7 +60,7 @@ declare global {
         cleanHtml(): string;
         cleanText(): string;
         htmlArray(): string[];
-        html(): any;
+        html(): Html;
         htmlImagesSources(): string[];
         splitSearch(searchFor: string): boolean;
         displayName(): string;
@@ -236,15 +235,20 @@ String.prototype.splitSearch = function (searchFor: string) {
 
 String.prototype.cleanHtml = function () {
     let str = new String(this).toString();
-    let html = cheerio.load(str).text();
+    let html = IDOMParser.parse(`<div>${str}</div>`, {
+        errorHandler: {
+            error: (e: string) => { },
+            warning: (e: string) => { },
+            fatalError: console.error
+        }
+
+    }).documentElement.text();
     return html;
 };
 
 String.prototype.html = function () {
     let str = new String(this).toString();
-    let html = cheerio.load(str, { 
-        decodeEntities: false
-    });
+    let html = new Html(`<div>${str}</div>`, "");
     return html;
 };
 
@@ -300,7 +304,6 @@ String.prototype.eSpace = function (total?: number) {
 };
 
 String.prototype.safeSplit = function (c: string, index: number) {
-
     let ar = new String(this).toString().split(c);
     if (index === -1) return (ar.lastOrDefault() ?? "") as string;
     return ar[index] ?? "";
@@ -366,7 +369,7 @@ String.prototype.query = function (item: any) {
         if (url.endsWith("&") || url.endsWith("&&") || url.endsWith("?"))
             url += `${x}=${v}`;
         else url += `&&${x}=${v}`;
-       
+
     });
 
     return url;
@@ -418,7 +421,7 @@ global.tests = [];
 global.test = (desc: string) => {
     let item = new TestRunner(desc);
     global.tests.push(item);
-    return item; 
+    return item;
 }
 global.buildState = StateBuilder;
 global.useEffect = React.useEffect;

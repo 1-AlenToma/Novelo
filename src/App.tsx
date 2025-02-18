@@ -86,7 +86,9 @@ const App = () => {
             );
             setStatusBarHidden(context.isFullScreen);
             if (!context.isFullScreen)
+            {
                 NavigationBar.setBehaviorAsync("overlay-swipe");
+            }
             
         },
         "isFullScreen",
@@ -108,7 +110,7 @@ const App = () => {
                 loader.hide();
             }
         })();
-
+        context.isFullScreen = false;
         return () => {
             // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
             if (!__DEV__ && !(Platform?.constants?.Model?.has("Subsystem for Android") ?? false))

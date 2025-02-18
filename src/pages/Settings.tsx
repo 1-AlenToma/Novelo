@@ -101,8 +101,10 @@ export default (props: any) => {
               .IN(ids)
               .delete();
           await _books.delete();
+          console.warn("deleting cache")
           await context.cache.deleteDir();
           await context.cache.checkDir();
+          console.warn("Cache Deleted")
 
 
 

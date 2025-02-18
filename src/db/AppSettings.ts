@@ -30,7 +30,7 @@ class AppSettings extends DBInit {
         parserName: string;
         isEpub?: boolean;
     } = {} as any;
-    navigationType?: "Scroll" | "Snap" = "Snap";
+    navigationType?: "Scroll" | "Snap" | "ScrollSnap" = "Snap";
     use3D?: boolean = false;
     shadowLength?: number = 1;
     fontStyle?: string = "normal";

@@ -17,6 +17,7 @@ export default (
   }, [initValue]);
 
   const show = (progress?: number) => {
+
     setProgressValue(progress);
     setLoading(true);
   };

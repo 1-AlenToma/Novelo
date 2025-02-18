@@ -11,11 +11,11 @@ const {
   } = require("../native");
   
   
-  export default class NovelBin extends Parser {
+  export default class NovelBinCom extends Parser {
     constructor() {
       super(
-        "https://novelbin.me",
-        "NovelBin.me",
+        "https://novelbin.com",
+        "NovelBin.com",
         "/img/favicon.ico"
       );
       this.settings.searchEnabled = true;
@@ -32,7 +32,7 @@ const {
         html
           .$(".dropdown-menu a")
           .filter(x =>
-            x.attr("href").has("genres/")
+            x.attr("href").has("genre/")
           )
           .map(x =>
             Value.n()
@@ -182,17 +182,17 @@ const {
             .parent.remove("h3").text
         )
         .Author(
-          body.find('.info-meta a[href*="author"]')
+          body.find('.info-meta a[href*="/a/"]')
             .text
         )
         .AuthorUrl(
           body
-            .find('.info-meta a[href*="author"]')
+            .find('.info-meta a[href*="/a/"]')
             .url("href")
         )
         .Genre(
           body
-            .find('.info-meta a[href*="genres"]')
+            .find('.info-meta a[href*="genre"]')
             .map(x => x.text)
         )
         .Status(

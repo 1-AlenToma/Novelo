@@ -14,8 +14,8 @@ const getKey = (
   if (option.argsOverride)
     args = option.argsOverride(...args);
   let key = JSON.stringify(args);
-  if(!option.argsOverride)
-    key+= propertyName;
+  if (!option.argsOverride)
+    key += propertyName;
   key =
     "memoizing." +
     key
@@ -89,7 +89,7 @@ export default function Memorize(
                   } else {
                     if (data) {
                       data.date = new Date();
-                      await option.storage.set(key,data); // extend the date
+                      await option.storage.set(key, data); // extend the date
                     }
                     return data?.data ?? data2;
                   }
@@ -100,13 +100,13 @@ export default function Memorize(
                   date: new Date()
                 };
             } catch (e) {
-              console.error("MemoizingError", e);
+              console.error("MemoizingError", e, propertyKey, descriptor);
             }
           }
         }
         return data?.data;
       } catch (e) {
-        console.error("MemoizingError", e);
+        console.error("MemoizingError", e, propertyKey, descriptor);
       } finally {
         callingFun.delete(key);
       }

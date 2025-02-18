@@ -79,8 +79,18 @@ class HttpValue {
     this.httpError = httpError;
   }
 
+  cleanUnfinishedAttributes(html) {
+    return html.replace(/<(\w+)([^>]*)>/g, (match, tag, attrs) => {
+      // Match only properly formatted attributes with non-empty values
+      const validAttrs = (attrs.match(/\b[a-zA-Z0-9-]+="[^"]+"/g) || [])
+        .filter(attr => !/=[\s*]""/.test(attr)); // Remove empty attributes
+
+      return `<${tag}${validAttrs.length ? " " + validAttrs.join(" ") : ""}>`;
+    }).replace(/\s+>/g, ">"); // Remove unnecessary spaces before '>'
+  }
+
   get html() {
-    return new Html(this.value.replace(/(?<!^)(\w| )(\/p\>)|([a-z]+="\s*")/gmi, ""), this.baseUrl);
+    return new Html(this.cleanUnfinishedAttributes(this.value.replace(/(?<!^)(\w| )(\/p\>)|([a-z]+="\s*")/gmi, "")), this.baseUrl);
   }
 
   get text() {
@@ -154,15 +164,8 @@ class HttpHandler {
     try {
       if (item) url = this.queryString(url, item);
       console.info("get_html", url);
-      const data = await getFetch(
-        url,
-        this.header(),
-        this.ignoreAlert
-      );
-      return new HttpValue(
-        data ? await data.text() : "",
-        baseurl || url
-      );
+      const data = await getFetch(url, this.header(), this.ignoreAlert);
+      return new HttpValue(data ? await data.text() : "", baseurl || url);
     } catch (e) {
       console.error("httget", e);
       this.httpError = new HttpError(e);

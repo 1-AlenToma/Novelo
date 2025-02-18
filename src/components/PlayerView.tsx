@@ -91,6 +91,7 @@ export default ({ ...props }: any) => {
         ifTrue={context.player.showPlayer}
         style={[
           {
+            zIndex: 100,
             top:
               context.player.hooked &&
                 context.player.showController &&
@@ -119,7 +120,7 @@ export default ({ ...props }: any) => {
             ]
           }
         ]}
-        css={`band zi:500 bac:black absolute overflow he:40 juc:center ali:center row pal:10 par:10 invert ${context.player.viewState == "Folded"
+        css={`band zi:100 bac:black absolute overflow he:40 juc:center ali:center row pal:10 par:10 invert ${context.player.viewState == "Folded"
           ? "wi:40 bor:4 ri:2"
           : !context.player.hooked
             ? "bor:4"
@@ -197,15 +198,11 @@ export default ({ ...props }: any) => {
               context.player.viewState != "Folded"
             }>
             <Slider
-              value={
-                context.player
-                  .currentChapterSettings
-                  .audioProgress
-              }
+              value={context.player.currentChapterSettings.audioProgress}
               onValueChange={value => {
                 audioProgressTimer(async () => {
-                  context.player.currentChapterSettings.audioProgress =
-                    value;
+                  await context.player.stop();
+                  context.player.currentChapterSettings.audioProgress = value;
                   await context.player.currentChapterSettings.saveChanges();
                   if (context.player.playing())
                     context.player.speak();

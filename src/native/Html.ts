@@ -1,31 +1,24 @@
-const cheerio = require("react-native-cheerio");
+import IDOMParser from "advanced-html-parser";
+import { Document, Element } from "advanced-html-parser/types";
 class Html {
-  io: any;
+  io: Element | Element[] | Html;
   uurl: string;
-  p: Function;
   rType: string = "HTML";
-  constructor(
-    htext: any,
-    uurl?: string,
-    parent?: any
-  ) {
+  constructor(htext: any, uurl?: string) {
     this.uurl = uurl ?? "";
-    this.p = parent;
     if (typeof htext === "string") {
-      this.p = cheerio.load(htext, {
-        xml: {
-          normalizeWhitespace: true,
-          decodeEntities: true
+      this.io = IDOMParser.parse(`<div>${htext}</div>`, {
+        errorHandler: {
+          error: (e: string) => { },
+          warning: (e: string) => { },
+          fatalError: console.error
         }
-      });
+
+      }).documentElement;
     } else {
       //console.error(htext);
-      this.io =
-        htext && htext.find
-          ? htext
-          : this.p
-          ? this.p(htext)
-          : htext;
+      this.io = htext ?? [];
+      //  this.io = htext && htext.find ? htext : this.p ? this.p(htext) : htext;
     }
   }
 
@@ -33,125 +26,127 @@ class Html {
     console.log(...name);
   }
 
+  get elements(): Element[] {
+    if ((this.io as Html).rType)
+      return (this.io as Html).elements;
+    return (Array.isArray(this.io) ? this.io : [this.io]) as Element[];
+  }
+
+  getItems(selector: string): Element[] {
+    if ((this.io as Html).rType)
+      return (this.io as Html).getItems(selector);
+
+    if (Array.isArray(this.io))
+      return (this.io as Element[]).map(x => [...x.querySelectorAll(selector)]).flatMap(x => x).filter((x, index, array) => x && x != null && array.indexOf(x) === index);
+    return [...(this.io as Element).querySelectorAll(selector)];
+  }
+
   $(selector: any) {
-    return new Html(
-      this.p(selector),
-      this.uurl,
-      this.p
-    );
+    return new Html(this.getItems(selector), this.uurl);
+  }
+
+  findAll(selector: any) {
+    return new Html(this.getItems(selector), this.uurl);
+  }
+
+  first(selector) {
+    return new Html(this.getItems(selector).firstOrDefault(), this.uurl);
   }
 
   find(selector) {
-    return new Html(
-      this.io && this.io.find
-        ? this.io.find(selector)
-        : this.$(selector),
-      this.uurl,
-      this.p
-    );
+    return new Html(this.getItems(selector), this.uurl);
   }
 
   map(fn: (x: Html, index: number) => any) {
-    let items : any[] = [];
-    this.io.each((index, x) => {
-      let item = fn(
-        new Html(
-          x.io ? x.io : x,
-          this.uurl,
-          this.p
-        ),
-        index
-      );
+    let items: any[] = [];
+    this.elements.forEach((x, index) => {
+      let item = fn(new Html(x, this.uurl), index);
       if (item !== undefined && item !== null)
         items.push(item);
     });
     return items;
   }
 
-  eq(index:number){
-     let item = this.filter((x,i)=> i == index);
-     return item;
+  eq(index: number) {
+    let item = this.filter((x, i) => i == index);
+    return item;
   }
 
-  filter(
-    fn: (x: Html, index: number) => boolean
-  ) {
+  filter(fn: (x: Html, index: number) => boolean) {
     return new Html(
-      this.io.filter((i, x) =>
-        fn(new Html(x, this.uurl, this.p), i)
+      this.elements.filter((x, i) =>
+        fn(new Html(x, this.uurl), i)
       ),
-      this.uurl,
-      this.p
+      this.uurl
     );
   }
 
   get length() {
-    return this.io?.length ?? 0;
+    return this.elements?.length ?? 0;
   }
-  
-  get hasValue (){
-    return this.length >0;
+
+  get hasValue() {
+    return this.length > 0;
   }
 
   forEach(fn: (x: Html, index: number) => void) {
-    this.io.each((i, x) => {
-      fn(new Html(x, this.uurl, this.p), i);
+    this.elements.forEach((x, i) => {
+      fn(new Html(x, this.uurl), i);
     });
     return this;
   }
 
   get text() {
-    return this.io.text();
+    return this.elements.map(x => x.text()).join("");
   }
 
   val(v?: string) {
-    return this.io.val(v);
+    if (v != undefined)
+      this.elements.forEach(x => x.value = v);
+    return this.elements.map(x => x.value).join("");
   }
 
   data(key: string) {
-    return this.io.data(key);
+    return this.elements.map(x => x.getAttribute(key)).filter(x => x != undefined && x != "").join("");
   }
 
   remove(selector: string) {
-    this.find(selector).forEach(x =>
-      x.io.remove()
+    this.getItems(selector).forEach(x =>
+      x.remove()
     );
     return this;
   }
 
   get html() {
-    return this.io.html();
+    return this.elements.map(x => x.innerHTML).join("")
   }
 
   get outerHtml() {
-    return this.io?.html();
+    return this.elements.map(x => x.outerHTML).join("")
   }
 
   hasClass(cl: string) {
-    return this.io.hasClass(cl);
+    return this.elements.find(x => x.getAttribute("class").indexOf(cl) != -1) != undefined;
   }
 
   get parent() {
     return new Html(
-      this.io.parent(),
-      this.uurl,
-      this.p
+      this.elements.map(x => x.parentNode),
+      this.uurl
     );
   }
 
   get children() {
     return new Html(
-      this.io.children(),
-      this.uurl,
-      this.p
+      this.elements.map(x => [...x.children]).flatMap(x => x),
+      this.uurl
     );
   }
 
   closest(key: string) {
     return new Html(
-      this.io.closest(key),
-      this.uurl,
-      this.p
+      this.elements.map(x => x.closest(key)).filter(x => x),
+      this.uurl
     );
   }
 
@@ -159,7 +154,7 @@ class Html {
     let value = "";
     key.split("|").forEach(k => {
       if (value == "") {
-        let v = this.io.attr(k);
+        let v = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length>0)?.getAttribute(k);
         if (v && v.length > 0) {
           value = v;
         }
@@ -169,16 +164,12 @@ class Html {
   }
 
   url(key: string) {
-    let value : any= "";
+    let value: any = "";
     key.split("|").forEach(k => {
       if (!value || value.empty()) {
-        value = this.io.attr(k);
-        if (
-          value &&
-          !value.empty() &&
-          this.uurl
-        ) {
-          value = this.uurl.join(value) ?? value;
+        value = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length>0)?.getAttribute(k);
+        if (value && !value.empty() && this.uurl) {
+          value = this.uurl.join(value);
         }
       }
     });

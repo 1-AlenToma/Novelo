@@ -73,41 +73,18 @@ class Player {
     if (this.novel.type && this.novel.type.isManga()) {
       return (this.html = html ?? "");
     }
-    let txt =
-      html ??
-      this.currentChapter.content ??
-      this.html;
+    let txt = html ?? this.currentChapter.content ?? this.html;
 
-    txt =
-      context.appSettings.useSentenceBuilder
-        ?.enabled &&
-        this.book.parserName != "epub"
-        ? methods.generateText(
-          txt,
-          context.appSettings.useSentenceBuilder
-            ?.minLength ?? 100
-        )
-        : txt.html().html();
+    txt = context.appSettings.useSentenceBuilder?.enabled && this.book.parserName != "epub" ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
     try {
       for (let t of this.book.textReplacements) {
-        let rg = new RegExp(
-          t.edit.escapeRegExp(),
-          "gim"
-        );
+        let rg = new RegExp(t.edit.escapeRegExp(), "gim");
 
-        let className = t.comments?.has()
-          ? "comments"
-          : "";
-        let click = className.has()
-          ? `window.postmsg('Comments', ${this.book.textReplacements.findIndex(
-            x => x == t
-          )})`
-          : "";
-        let spn = `<span onclick="${click}" class="custom ${className}" {#style}>${t.editWith
-          }</span>`;
+        let className = t.comments?.has() ? "comments" : "";
+        let click = className.has() ? `window.postmsg('Comments', ${this.book.textReplacements.findIndex(x => x == t)})` : "";
+        let spn = `<span onclick="${click}" class="custom ${className}" {#style}>${t.editWith}</span>`;
         if (t.bgColor) {
-          spn = spn.replace("{#style}", `style="background-color:${t.bgColor
-            }; color:${invertColor(t.bgColor)}"`)
+          spn = spn.replace("{#style}", `style="background-color:${t.bgColor}; color:${invertColor(t.bgColor)}"`)
         } else spn = spn.replace("{#style}", "")
         txt = txt.replace(rg, spn);
       }
@@ -117,9 +94,7 @@ class Player {
     }
 
     this.chapterArray = txt.htmlArray();
-    // console.warn(this.chapterArray.niceJson());
     this.html = txt;
-
     return txt;
   }
 
@@ -189,11 +164,7 @@ class Player {
   }
 
   paddingTop() {
-    if (
-      this.showPlayer ||
-      context.appSettings.navigationType !==
-      "Scroll"
-    )
+    if (this.showPlayer || context.appSettings.navigationType !== "Scroll")
       return 2;
     return this.currentChapterIndex > 0
       ? 100
@@ -201,7 +172,9 @@ class Player {
   }
 
   async jumpTo(index?: number | string) {
+    await this.stop();
     this.show();
+
     if (index === undefined)
       index = this.book.selectedChapterIndex;
     if (
@@ -255,13 +228,7 @@ class Player {
       let chSettings = Chapter.n()
         .Url(this.currentChapter.url)
         .Name(this.currentChapter.name)
-        .ScrollProgress(
-          this.currentChapterIndex > 0 &&
-            context.appSettings.navigationType ===
-            "Scroll"
-            ? 100
-            : 10
-        )
+        .ScrollProgress(this.currentChapterIndex > 0 && context.appSettings.navigationType === "Scroll" ? 100 : 10)
         .AudioProgress(0)
         .Parent_Id(this.book.id);
       await context
@@ -308,13 +275,15 @@ class Player {
     this.jumpTo(this.currentChapterIndex + 1);
   }
 
-  prev() {
+  async prev() {
+
     if (this.hasPrev())
       this.jumpTo(this.currentChapterIndex - 1);
   }
 
   playing(v?: boolean) {
     if (v == undefined) return this._playing;
+
     this._playing = v;
     if (!v) this.stop();
     else this.speak();
@@ -340,6 +309,7 @@ class Player {
   }
 
   async playPrev() {
+    await this.stop();
     if (
       this.currentChapterSettings.audioProgress -
       1 >=
@@ -352,12 +322,13 @@ class Player {
   }
 
   async playNext() {
+    await this.stop();
     if (
       this.currentChapterSettings.audioProgress +
       1 >=
       this.chapterArray.length
     ) {
-     await this.next();
+      await this.next();
       return;
     } else {
       this.currentChapterSettings.audioProgress++;
@@ -366,14 +337,18 @@ class Player {
     }
   }
 
+  private currentTextSpeacking = "";
   async speak() {
     let text = this.currentPlaying()?.cleanText() ?? "";
     if (!/[a-zA-Z0-9]/gim.test(text)) {
       await this.playNext();
       return;
     }
-    await this.stop();
-    context.speech.speak(text, {
+    if (await context.speech.isSpeakingAsync() && this.currentTextSpeacking == text)
+      return;
+    //await this.stop();
+    this.currentTextSpeacking = text;
+    context.speech.speak(this.currentTextSpeacking, {
       onBoundary: boundaries => {
         let { charIndex, charLength } =
           boundaries;
@@ -391,13 +366,15 @@ class Player {
       pitch: context.appSettings.pitch,
       rate: context.appSettings.rate,
       voice: context.appSettings.voice,
-      onDone: async () => {
+      onDone: (async () => {
+        await this.stop();
         if (this.playing()) await this.playNext();
-      }
+      }) as any
     });
   }
 
   async testPlay(voice: string) {
+    await this.stop();
     context.speech.speak(
       `There are a number of ways to identify a hearing loss.`,
       {
@@ -405,9 +382,9 @@ class Player {
         pitch: context.appSettings.pitch,
         rate: context.appSettings.rate,
         voice: voice,
-        onDone: async () => {
+        onDone: (async () => {
           this.testVoice = "";
-        }
+        }) as any
       }
     );
   }

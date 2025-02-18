@@ -4,6 +4,7 @@ import {
   File,
   EpubSettings
 } from "../Types";
+import Html from "./Html";
 
 export type {
   Parameter,
@@ -158,69 +159,53 @@ export const EpubSettingsLoader = async (
     var pageContent =
       file.find(x => x.path.indexOf(".opf") != -1)
         ?.content ?? "";
-    var page = undefined as undefined | any;
+    var page = undefined as undefined | Html;
     var style =
       file.find(
         x => x.path.indexOf("styles.css") != -1
       )?.content ?? "";
-    var chapters = [] as string[] | any[];
+    var chapters = [] as Html[];
     epubSettings.stylesheet = style;
-    page = pageContent.html();
-    epubSettings.parameter = page("param").map(
+    page = (pageContent as string).html();
+    epubSettings.parameter = page.$("param").map(
       a => {
-        a = page(a);
         return {
           name: a.attr("name"),
           value: a.attr("value")
         } as Parameter;
       }
     );
-    epubSettings.title = page(".title").text();
-    epubSettings.author = page(".rights").text();
-    epubSettings.description = page(
-      ".description"
-    ).text();
-    epubSettings.language =
-      page(".language").text();
-    epubSettings.bookId = page(
-      ".identifier"
-    ).text();
-    epubSettings.source = page(".source").text();
-    chapters = page("itemref").map(x => x);
+    epubSettings.title = page.find(".title").text;
+    epubSettings.author = page.find(".rights").text;
+    epubSettings.description = page.find(".description").text;
+    epubSettings.language = page.find(".language").text;
+    epubSettings.bookId = page.find(".identifier").text;
+    epubSettings.source = page.find(".source").text;
+    chapters = page.$("itemref").map(x => x);
 
     const len = chapters.length + 1;
     var index = 0;
     for (let x of chapters) {
-      x = page(x);
       try {
         var content = "";
         var chItem = "" as string;
         var chId = x.attr("idref");
-        chItem =
-          page("item[id='" + chId + "']")?.attr(
-            "href"
-          ) ?? "";
-        content =
-          file.find(
-            x => x.path.indexOf(chItem) != -1
-          )?.content ?? "";
+        chItem = page.find("item[id='" + chId + "']").attr("href") ?? "";
+        content =file.find(x => x.path.indexOf(chItem) != -1)?.content ?? "";
         var chapter = content.html();
         epubSettings.chapters.push({
-          parameter: chapter("param").map(
+          parameter: chapter.$("param").map(
             (a: any) => {
-              a = chapter(a);
               return {
                 name: a.attr("name"),
                 value: a.attr("value")
               } as Parameter;
             }
           ),
-          title: chapter("title")?.text() ?? "",
-          htmlBody: chapter("body").html()
+          title: chapter.find("title").text ?? "",
+          htmlBody: chapter.find("body").html
         });
-        dProgress =
-          (index / parseFloat(len.toString())) *
-          100;
+        dProgress =(index / parseFloat(len.toString())) * 100;
         localOnProgress?.(dProgress);
         index++;
         await sleep(0);

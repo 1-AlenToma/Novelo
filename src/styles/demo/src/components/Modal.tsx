@@ -46,21 +46,22 @@ export const Modal = (props: ModalProps) => {
 
     React.useEffect(() => {
         render();
-    }, [props.children])
+    }, [props.children, props.style])
 
     React.useEffect(() => {
         state.isVisible = props.isVisible;
         return () => context.remove(state.id)
     }, [])
 
-    const transform: any = {};
-    transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 1],
-        extrapolate: "clamp"
-    });
+
 
     const render = () => {
+        const transform: any = {};
+        transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 1],
+            extrapolate: "clamp"
+        });
         let style = Array.isArray(props.style) ? props.style : [props.style];
         let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
         if (state.isVisible) {

@@ -38,8 +38,7 @@ const DropDownItemController = ({ item, index, state, props }: { props: Dropdown
 }
 
 export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>((props, ref) => {
-    if (ifSelector(props.ifTrue) == false)
-        return null;
+
     const state = StateBuilder({
         visible: false,
         shadow: "",
@@ -97,7 +96,8 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         css: props.css
     } : {};
 
-
+    if (ifSelector(props.ifTrue) == false)
+        return null;
     return (
         <Container {...containerProps}>
             <Selector>

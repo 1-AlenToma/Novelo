@@ -33,7 +33,7 @@ import {
   EpubBuilder
 } from "../native";
 import { ReadDirItem } from "react-native-fs";
-const EpubHanlder = ({
+const EpubHandler = ({
   navop,
   parentState
 }: any) => {
@@ -45,6 +45,7 @@ const EpubHanlder = ({
     }
   });
   const loadEpub = async (item: ReadDirItem) => {
+    let fileName = "";
     try {
       /* let item = await DockPicker.pickSingle({
          copyTo: "cachesDirectory",
@@ -68,14 +69,14 @@ const EpubHanlder = ({
             context.files.disable();
             let uri: any = item.path;
             let name: any = item.name;
-            let bk = await ZipBook.load(
-              uri,
-              name,
-              p => {
-                loader.show(p);
-              },
+            console.log("loading Epub")
+            let bk = await ZipBook.load(uri, name, p => {
+              loader.show(p);
+            },
               state.skipImages
             );
+
+            console.log("finished Loading epub")
             let images = bk.files.filter(
               x => x.type === "Image"
             );
@@ -92,8 +93,7 @@ const EpubHanlder = ({
 
                 await calc();
                 if (file.url && !file.url.empty()) {
-                  let path = await context
-                    .imageCache
+                  let path = await context.imageCache
                     .write(bk.imagePath.path(getFileInfoFromUrl(file.fileName ?? file.url)).trimEnd("/"), file.content);
                   file.content = path;
                   if (!displayImage)
@@ -127,14 +127,17 @@ const EpubHanlder = ({
                   .filter(x => x.type === "CSS")
                   .map(x => x.content)
                   .join("\n")
-              ).ImageBase64(displayImage)
+              ).ImageBase64(displayImage ?? "")
               .ParserName("epub");
             bk.files = []; // clear files as it is not needed anymore
+            fileName = "".fileName(bk.name, "epub")
             await context.files.write("".fileName(bk.name, "epub"), JSON.stringify(bk));
             await context.db().save(book);
           } catch (e) {
             AlertDialog.alert({ message: e.message });
             console.error(e);
+            if (fileName.has())
+              context.files.delete(fileName);
           } finally {
             context.db().enableWatchers();
             context.db().enableHooks();
@@ -515,12 +518,11 @@ export default ({ ...props }: any) => {
         {loader.elem ?? elem}
       </View>
 
-      <EpubHanlder
+      <EpubHandler
         navop={navop}
         parentState={state}
       />
       <Text
-        invertColor={false}
         css="header pa:10 clearwidth">
         Downloaded and Added Epubs
       </Text>
