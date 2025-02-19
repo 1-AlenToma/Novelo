@@ -218,6 +218,14 @@ export const JS = `
                         return items;
                 }
 
+                const cleanHtml = (html)=>{
+                                const item = document.createElement("div");
+                                item.innerHTML = html;
+                                item.querySelectorAll("script,style,iframe, input, button, select").forEach(x => x.remove());
+                                return item.innerHTML;
+                                
+                }
+
                 const validTags = "img p h1 h2 h3 h4 h5 h6".split(" ").map(x => x.toUpperCase());
                 const extractHtml = (html) => {
                         let result = [];
@@ -296,6 +304,7 @@ export const JS = `
                                 div.id = "chapter";
                                 div.className = "novel";
                                 document.body.appendChild(div);
+                                option.content = cleanHtml(option.content);
                                 chapter = getElements(option.content);
 
                                 const text = option.scrollType == "Pagination" ? chapter.map(x => x.outerHTML) : chapter;
@@ -340,7 +349,7 @@ export const JS = `
                                                 color: "#fff",
                                                 fontWeight: "bold",
                                                 fontSize: 25,
-                                                opacity: 0.5
+                                                opacity: 0.8
 
                                         }
 
@@ -541,9 +550,11 @@ export const JS = `
                                         sliderContainer.addEventListener("mouseleave", stopDragging);
                                         sliderContainer.addEventListener("touchcancel", stopDragging);
 
-                                        sliderContainer.addEventListener("dblclick", () => {
-                                                if (window.getSelection().toString().length <= 0 && option.scrollType == "Pagination")
-                                                        sliderContainer.scrollLeft += slider.children[0].offsetWidth;
+                                        sliderContainer.addEventListener("dblclick", (e) => {
+                                                if (window.getSelection().toString().length <= 0 && option.scrollType == "Pagination"){
+                                                        e.preventDefault();
+                                                        sliderContainer.scrollTo({ left: sliderContainer.scrollLeft + slider.children[0].offsetWidth, behavior: "smooth" });                                                        
+                                                        }
                                         });
 
 
@@ -830,16 +841,23 @@ export const JS = `
                                 window.ReactNativeWebView.postMessage(JSON.stringify(item))
                         }
                 }
-
+                
+                let timerClick = null;
                 window.addEventListener('click', function (event) {
                         try {
+                                clearTimeout(timerClick);
                                 let target = event.target;
                                 if (target.closest(".selection-menu"))
                                         return;
-                                if (!selectionMenu || selectionMenu.style.display == "none") window.postmsg("click", true);
+                        timerClick = setTimeout(()=> {
+                                if (!selectionMenu || selectionMenu.style.display == "none"){
+                                if (!(event.detail == 2 && ["Pagination"].includes(options.scrollType)))
+                                       window.postmsg("click", true);  
+                                }
                                 if (selectionMenu && !selectionMenu.contains(event.target) && window.getSelection().toString().length < options.menu.minlength) {
                                         selectionMenu.style.display = 'none';
                                 }
+                        },100);
 
 
                         } catch (e) {
