@@ -1,13 +1,9 @@
-import { Alert } from 'react-native';
 import { UpdateAPK } from 'rn-update-apk';
 import { TouchableOpacity, Text, Icon, ProgressBar, View, AlertDialog } from '../components';
 import * as React from "react";
 import * as Application from 'expo-application';
 
-
-
 export default () => {
-
     const state = buildState({
         progress: 0,
         downloading: false,
