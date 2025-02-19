@@ -11,20 +11,25 @@ interface ViewState<T> {
   id: string;
 }
 
-export default function <T>({
-  state,
-  component,
-  ...props
-}: {
-  state: T;
+interface Props<T> {
+  state?: T;
   component: any;
   timer?: number;
-  loader: {
+  loader?: {
     text?: string;
     value?: boolean;
   },
   ref?: (c: any) => void;
-}) {
+  [key: string]: any;
+}
+
+
+
+export default function <T>({
+  state,
+  component,
+  ...props
+}: Props<T>) {
   let gProps: any = props as any;
   const update = useUpdate();
   const timer = useTimer(gProps.timer ?? 100);

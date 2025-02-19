@@ -5,7 +5,7 @@ console.log(`Running in ${isDev ? "development" : "production"} env`);
 export default {
   "name": "Novelo",
   "slug": "Novelo",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "orientation": "default",
   "icon": "./assets/ic_launcher_round.png",
   "scheme": "novels",
@@ -76,11 +76,11 @@ export default {
       "projectId": "a31d9c33-fb94-4252-b9e7-a744705a994e"
     }
   },
-  "runtimeVersion": {
-    "policy": "fingerprint"
-  },
+  "runtimeVersion": "1.0.0",
   "updates": {
-    "url": "https://u.expo.dev/a31d9c33-fb94-4252-b9e7-a744705a994e"
+    "enabled": false,
+    "url": "https://u.expo.dev/a31d9c33-fb94-4252-b9e7-a744705a994e",
+    "checkAutomatically": "NEVER",
   }
 }
 

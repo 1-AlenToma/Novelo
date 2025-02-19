@@ -13,10 +13,13 @@ export default () => {
         downloading: false,
         updater: new UpdateAPK({
             //iosAppId: '123456', // iOS is app store only, but we can point the user there
-            apkVersionUrl: 'https://raw.githubusercontent.com/1-AlenToma/Novelo/main/AppVersion.json',
+            apkVersionUrl: 'https://raw.githubusercontent.com/1-AlenToma/Novelo/main/AppVersion_2.json',
             fileProviderAuthority: `${Application.applicationId}.provider`,
-            needUpdateApp: (needUpdate) => {
-                AlertDialog.confirm({ message: 'New version released, do you want to update?', title: "Update Available" }).then((c) => {
+            needUpdateApp: (needUpdate, whatsNew) => {
+                AlertDialog.confirm({
+                    message: `New version released, do you want to update?\n ${whatsNew}`,
+                    title: "Update Available"
+                }).then((c) => {
                     if (c)
                         needUpdate(true);
                 });
@@ -25,7 +28,10 @@ export default () => {
                 console.log("Force update will start")
             },
             notNeedUpdateApp: () => {
-                AlertDialog.alert({ message: "App is up to date", title: "App Update" });
+                AlertDialog.alert({
+                    message: "App is up to date",
+                    title: "App Update"
+                });
                 console.log("App is up to date")
             },
             downloadApkStart: () => { state.downloading = true },

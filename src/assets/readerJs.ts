@@ -346,7 +346,7 @@ export const JS = `
                                                 alignItems: "center",
                                                 justifyContent: "center",
                                                 backgroundColor: "#000",
-                                                color: "#fff",
+                                                color: "white",
                                                 fontWeight: "bold",
                                                 fontSize: 25,
                                                 opacity: 0.8
@@ -848,18 +848,17 @@ export const JS = `
                                 clearTimeout(timerClick);
                                 let target = event.target;
                                 if (target.closest(".selection-menu"))
+                                    return;
+                                if (selectionMenu && selectionMenu.style.display != "none" && !selectionMenu.contains(event.target) && window.getSelection().toString().length < options.menu.minlength) {
+                                        selectionMenu.style.display = 'none';
                                         return;
+                                }
                         timerClick = setTimeout(()=> {
                                 if (!selectionMenu || selectionMenu.style.display == "none"){
-                                if (!(event.detail == 2 && ["Pagination"].includes(options.scrollType)))
+                                if (!(event.detail >= 2 && ["Pagination"].includes(options.scrollType)))
                                        window.postmsg("click", true);  
                                 }
-                                if (selectionMenu && !selectionMenu.contains(event.target) && window.getSelection().toString().length < options.menu.minlength) {
-                                        selectionMenu.style.display = 'none';
-                                }
-                        },100);
-
-
+                        },300);
                         } catch (e) {
                                 alert(e)
                         }
