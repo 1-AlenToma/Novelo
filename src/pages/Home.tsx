@@ -7,6 +7,7 @@ import {
   NovelGroup,
   AnimatedView,
   ActionSheet,
+  AlertDialog,
 } from "../components";
 import * as React from "react";
 import Header from "./Header";
@@ -29,24 +30,9 @@ const CurrentItem = ({
   const [_, options, navop] =
     useNavigation(props);
   const [visible, setVisible] = useState(false);
-  const [books, dataIsLoading, reload] = context
-    .db()
-    .useQuery(
-      "Books",
-      context
-        .db()
-        .querySelector<Book>("Books")
-        .Where.Column(x => x.url)
-        .EqualTo(
-          context.appSettings.currentNovel?.url ??
-          "hhhh"
-        )
-        .AND.Column(x => x.parserName)
-        .EqualTo(
-          context.appSettings.currentNovel
-            ?.parserName ?? "gggg"
-        )
-    );
+  const [books, dataIsLoading, reload] = context.db.useQuery("Books",
+    context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg")
+  );
   useDbHook(
     "AppSettings",
     item => true,
@@ -69,7 +55,7 @@ const CurrentItem = ({
             ifTrue={() =>
               book.parserName != "epub"
             }
-            onPress={() => { 
+            onPress={() => {
               options
                 .nav("NovelItemDetail")
                 .add({
@@ -95,10 +81,7 @@ const CurrentItem = ({
                   name: book.name,
                   url: book.url,
                   parserName: book.parserName,
-                  epub:
-                    book.parserName == "epub" ||
-                    context.appSettings
-                      .currentNovel?.isEpub
+                  epub: book.parserName == "epub" || context.appSettings.currentNovel?.isEpub
                 })
                 .push();
               setVisible(false);
@@ -244,7 +227,7 @@ export default ({ ...props }: any) => {
             }
           ],
           { useNativeDriver: false }
-        )} style={{minWidth:context.size.window.width}}>
+        )} style={{ minWidth: context.size.window.width }}>
         <CurrentItem
           style={{ height }}
           {...props}>

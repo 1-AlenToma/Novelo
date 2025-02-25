@@ -1,19 +1,19 @@
 import {
-  IBaseModule,
   IDatabase,
-  IDataBaseExtender
-} from "./expo.sql.wrapper.types";
+  IDataBaseExtender,
+  IId,
+  Query
+} from "./sql.wrapper.types";
 import {
   Functions,
   StringBuilder
 } from "./UsefullMethods";
-import * as SQLite from "expo-sqlite";
 
 export default class BulkSave<
   T,
   D extends string
 > {
-  quries: SQLite.Query[];
+  quries: (Query & { parseble?: boolean })[];
   private dbContext: IDataBaseExtender<D>;
   private keys: string[];
   private tableName: D;
@@ -29,7 +29,7 @@ export default class BulkSave<
   }
 
   insert(
-    items: IBaseModule<D> | IBaseModule<D>[]
+    items: IId<D> | IId<D>[]
   ) {
     const itemArray = Array.isArray(items)
       ? items
@@ -93,7 +93,7 @@ export default class BulkSave<
   }
 
   update(
-    items: IBaseModule<D> | IBaseModule<D>[]
+    items: IId<D> | IId<D>[]
   ) {
     const itemArray = Array.isArray(items)
       ? items
@@ -153,7 +153,7 @@ export default class BulkSave<
   }
 
   delete(
-    items: IBaseModule<D> | IBaseModule<D>[]
+    items: IId<D> | IId<D>[]
   ) {
     const itemArray = Array.isArray(items)
       ? items
@@ -214,14 +214,8 @@ export default class BulkSave<
           args: []
         });
       await this.dbContext.executeRawSql(qs);
-      const db = this
-        .dbContext as IDataBaseExtender<D>;
-      await db.triggerWatch(
-        [],
-        "onBulkSave",
-        undefined,
-        this.tableName
-      );
+      const db = this.dbContext as IDataBaseExtender<D>;
+      await db.triggerWatch([], "onBulkSave", undefined, this.tableName);
     }
   }
 }

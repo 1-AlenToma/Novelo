@@ -1,5 +1,8 @@
 import TableBuilder from '../TableStructor'
+export type TableNames = 'DetaliItems' | 'Chapters';
+
 export interface DetaliItems {
+    tableName: TableNames;
     id: number;
     title: string;
     image: string;
@@ -8,10 +11,11 @@ export interface DetaliItems {
     parserName: string;
     chapterIndex: number;
     isFavorit?: boolean;
-    children?:Chapters[]
+    children?: Chapters[]
 }
 
 export interface Chapters {
+    tableName: TableNames;
     id: number;
     chapterUrl: number;
     isViewed?: boolean;
@@ -22,10 +26,11 @@ export interface Chapters {
     unlocked?: boolean;
 }
 
-export type TableNames = 'DetaliItems' | 'Chapters';
+
+
 
 export const tables = [
-    TableBuilder<DetaliItems, TableNames>("DetaliItems").column("id").number.autoIncrement.primary
+    TableBuilder<DetaliItems, TableNames>("DetaliItems")
         .column("title")
         .column("image").encrypt("testEncryptions")
         .column("description").nullable
@@ -33,7 +38,8 @@ export const tables = [
         .column("parserName")
         .column("chapterIndex").number
         .column("isFavorit").boolean,
-    TableBuilder<Chapters, TableNames>("Chapters").column("id").number.autoIncrement.primary
+
+    TableBuilder<Chapters, TableNames>("Chapters")
         .column("chapterUrl").encrypt("testEncryptions")
         .column("isViewed").boolean.nullable
         .column("currentProgress").number.nullable

@@ -51,7 +51,7 @@ export default ({
       text: "",
       inputAnimator: {
         state: undefined
-      }
+      } as any
     }
   ).ignore("inputAnimator").build();
 

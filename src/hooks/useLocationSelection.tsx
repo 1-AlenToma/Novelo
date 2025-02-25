@@ -57,7 +57,7 @@ export default () => {
                         state.progress = total.procent(i + files.length);
                     }
 
-                    await context.db().commitTransaction();
+                    await context.db.commitTransaction();
                     state.uri = context.appSettings.filesDataLocation = uri.path;
                     context.imageCache = imageHandler;
                     context.files = fileHandler;

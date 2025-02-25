@@ -30,7 +30,7 @@ export default class StringBuilder {
         return this;
     }
 
-    trimEnd(...q) {
+    trimEnd(...q: string[]) {
         this.text = this.text.trim();
         q.forEach(x => {
             if (this.text.endsWith(x))

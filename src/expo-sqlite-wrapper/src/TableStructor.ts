@@ -1,19 +1,14 @@
 import {
   ColumnType,
-  ITableBuilder
-} from "./expo.sql.wrapper.types";
+  ITableBuilder,
+  ColumnProps,
+  NonFunctionPropertyNames,
+  IId,
+  IChildLoader,
+  ObjectPropertyNamesNames
+} from "./sql.wrapper.types";
 
-interface ColumnProps<T, D extends string> {
-  columnType: ColumnType;
-  isNullable?: boolean;
-  columnName: keyof T;
-  isPrimary?: boolean;
-  isAutoIncrement?: boolean;
-  isUnique?: boolean;
-  encryptionKey?: string;
-}
-
-export class TableBuilder<T, D extends string> {
+export class TableBuilder<T, D extends string> implements ITableBuilder<T, D> {
   props: ColumnProps<T, D>[];
   constrains: {
     columnName: keyof T;
@@ -23,29 +18,67 @@ export class TableBuilder<T, D extends string> {
   tableName: D;
   itemCreate?: (item: T) => T;
   typeProptoType?: any;
+  children: IChildLoader<D>[] = [];
   constructor(tableName: D) {
     this.props = [];
     this.tableName = tableName;
     this.constrains = [];
+    // added default id column
+    this.column("id" as any).number.primary.autoIncrement;
   }
 
+
   colType(colType: ColumnType) {
-    if (
-      colType !== "String" &&
-      this.getLastProp.encryptionKey
-    ) {
-      const ms = `Error:Encryption can only be done to columns with String Types. (${
-        this.tableName
-      }.${
-        this.getLastProp.columnName as string
-      })`;
+    if (colType !== "String" && this.getLastProp.encryptionKey) {
+      const ms = `Error:Encryption can only be done to columns with String Types. (${this.tableName}.${this.getLastProp.columnName as string})`;
       console.error(ms);
       throw ms;
     }
     this.getLastProp.columnType = colType;
+    return this as ITableBuilder<T, D>;
+  }
+
+  hasMany<C extends IId<D>>(prop: ObjectPropertyNamesNames<T>, tableName: D, foreignkey: NonFunctionPropertyNames<C>, idProp?: NonFunctionPropertyNames<T>) {
+    this.children.push({
+      parentTable: this.tableName,
+      parentProperty: (idProp ?? "id") as string,
+      childProperty: foreignkey as string,
+      childTableName: tableName as string,
+      isArray: true,
+      assignTo: prop
+    } as IChildLoader<D>);
     return this;
   }
-  
+
+  hasOne<C extends IId<D>>(prop: ObjectPropertyNamesNames<T>, tableName: D, foreignkey: NonFunctionPropertyNames<C>, idProp?: NonFunctionPropertyNames<T>) {
+    this.children.push({
+      parentTable: this.tableName,
+      parentProperty: (idProp ?? "id") as string,
+      childProperty: foreignkey as string,
+      childTableName: tableName as string,
+      isArray: false,
+      assignTo: prop
+    } as IChildLoader<D>);
+    return this;
+  }
+
+  hasParent<P extends IId<D>>(prop: ObjectPropertyNamesNames<T>, tableName: D, foreignkey: NonFunctionPropertyNames<T>, parentIdKey?: NonFunctionPropertyNames<P>) {
+    this.children.push({
+      parentTable: this.tableName,
+      parentProperty: foreignkey as string,
+      childProperty:  (parentIdKey ?? "id"),
+      childTableName: tableName,
+      isArray: false,
+      assignTo: prop
+    } as IChildLoader<D>);
+    return this;
+  }
+
+  defaultValue(defaultValue: string | boolean | number) {
+    this.getLastProp.defaultValue = defaultValue;
+    return this as ITableBuilder<T, D>;
+  }
+
   get blob() {
     return this.colType("BLOB");
   }
@@ -76,22 +109,22 @@ export class TableBuilder<T, D extends string> {
 
   get nullable() {
     this.getLastProp.isNullable = true;
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 
   get primary() {
     this.getLastProp.isPrimary = true;
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 
   get autoIncrement() {
     this.getLastProp.isAutoIncrement = true;
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 
   get unique() {
     this.getLastProp.isUnique = true;
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 
   get getLastProp() {
@@ -102,61 +135,52 @@ export class TableBuilder<T, D extends string> {
 
   objectPrototype(objectProptoType: any) {
     this.typeProptoType = objectProptoType;
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 
   encrypt(encryptionKey: string) {
     if (
       this.getLastProp.columnType !== "String"
     ) {
-      const ms = `Error:Encryption can only be done to columns with String Types. (${
-        this.tableName
-      }.${
-        this.getLastProp.columnName as string
-      })`;
+      const ms = `Error:Encryption can only be done to columns with String Types. (${this.tableName
+        }.${this.getLastProp.columnName as string
+        })`;
       console.error(ms);
       throw ms;
     }
     this.getLastProp.encryptionKey =
       encryptionKey;
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 
   onItemCreate(func: (item: T) => T) {
     this.itemCreate = func;
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 
   column(colName: keyof T) {
-    const col = {
-      columnName: colName,
-      columnType: "String"
-    } as ColumnProps<T, D>;
-    this.props.push(col);
-    return this;
+    const col = { columnName: colName, columnType: "String" } as ColumnProps<T, D>;
+    if (this.props.find(x => x.columnName == colName))
+      this.props[this.props.findIndex(x => x.columnName == colName)] = col;
+    else
+      this.props.push(col);
+    return this as ITableBuilder<T, D>;
   }
 
   constrain<E extends object>(
-    columnName: keyof T,
+    columnName: NonFunctionPropertyNames<T>,
     contraintTableName: D,
-    contraintColumnName: keyof E
+    contraintColumnName: NonFunctionPropertyNames<E>
   ) {
     this.constrains.push({
       columnName,
       contraintColumnName,
       contraintTableName
     });
-    return this;
+    return this as ITableBuilder<T, D>;
   }
 }
 
-export default <
-  T extends object,
-  D extends string
->(
-  tableName: D
-) => {
-  return new TableBuilder<T, D>(
-    tableName
-  ) as ITableBuilder<T, D>;
+export default <T extends object, D extends string>(tableName: D) => {
+  return new TableBuilder<T, D>(tableName) as ITableBuilder<T, D>;
 };

@@ -64,8 +64,8 @@ const EpubHandler = ({
           state.skipImages = answer;
           try {
             loader.show();
-            await context.db().disableHooks();
-            await context.db().disableWatchers();
+            await context.db.disableHooks();
+            await context.db.disableWatchers();
             context.files.disable();
             let uri: any = item.path;
             let name: any = item.name;
@@ -132,15 +132,15 @@ const EpubHandler = ({
             bk.files = []; // clear files as it is not needed anymore
             fileName = "".fileName(bk.name, "epub")
             await context.files.write("".fileName(bk.name, "epub"), JSON.stringify(bk));
-            await context.db().save(book);
+            await context.db.save(book);
           } catch (e) {
             AlertDialog.alert({ message: e.message });
             console.error(e);
             if (fileName.has())
               context.files.delete(fileName);
           } finally {
-            context.db().enableWatchers();
-            context.db().enableHooks();
+            context.db.enableWatchers();
+            context.db.enableHooks();
             context.files.enable();
             loader.hide();
           }
@@ -196,27 +196,13 @@ const ItemRender = ({
 }: any) => {
   if (!item) return null;
   const [books, dataIsLoading] = context
-    .db()
-    .useQuery(
-      "Books",
-      context
-        .db()
-        .querySelector<Book>("Books")
-        .LoadChildren<Chapter>(
-          "Chapters",
-          "parent_Id",
-          "id",
-          "chapterSettings",
-          true
-        )
-        .Where.Column(x => x.url)
-        .EqualTo(item.url),
-      undefined,
+    .db.Books.useQuery(
+      context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
       (items, op) => {
         return (
           items.find(x => x.url == item.url) !=
           undefined
-        );
+        )
       }
     );
   const { fileItems, elem } = context
@@ -319,7 +305,7 @@ const ItemRender = ({
 
                     if (file) {
                       if (item.parserName == "epub" || !item.favorit) {
-                        await context.dbContext().deleteBook(item.id);
+                        await context.db.deleteBook(item.id);
                       }
                       await file.deleteFile();
 
@@ -441,21 +427,12 @@ export default ({ ...props }: any) => {
     .files
     .useFile("json", undefined, "NewDelete");
   const [books, dataIsLoading, reload] = context
-    .db()
-    .useQuery(
+    .db.useQuery(
       "Books",
       context
-        .db()
-        .querySelector<Book>("Books")
-        .LoadChildren<Chapter>(
-          "Chapters",
-          "parent_Id",
-          "id",
-          "chapterSettings",
-          true
-        )
-        .Where.Column(x => x.url)
-        .IN(fileItems.map(x => x.url)),
+        .db.Books.query.load("chapterSettings")
+        .where.column(x => x.url)
+        .in(fileItems.map(x => x.url)),
       undefined,
       (_items) => {
         if (books.length <= 0) return true;

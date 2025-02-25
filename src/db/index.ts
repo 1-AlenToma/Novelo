@@ -10,20 +10,12 @@ import {
   IQueryResultItem
 } from "../expo-sqlite-wrapper/src";
 
-const Tables = [
-  Book.tb(),
-  Chapter.tb(),
-  Session.tb(),
-  AppSettings.tb()
-] as any[];
-
 export {
   TableNames,
   AppSettings,
   Book,
   Chapter,
   Session,
-  Tables,
   dbContext,
   IDatabase,
   IQueryResultItem

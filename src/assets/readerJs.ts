@@ -131,7 +131,7 @@ export const CSSStyle = `
         }
 `
 export const JS = ` 
-           let div = undefined;
+                let div = undefined;
                 let chapter = undefined;
                 let keyDown = false;
                 let rendering = false;
@@ -174,6 +174,7 @@ export const JS = `
                 }
 
 
+
                 const addString = (...data) => {
                         return data.join("");
                 }
@@ -194,11 +195,11 @@ export const JS = `
                         if (["<div", "<table", "<img"].find(x => htmlString.indexOf(x) != -1))
                                 return undefined;
                         const p = document.createElement("p");
-                        p.innerHTML = htmlString; 
+                        p.innerHTML = htmlString;
                         if (p.querySelector(".custom"))
-                            return undefined;
+                                return undefined;
                         let txt = p.innerText;
-                        txt = txt.replace(/(mrs|mr)((\\s)?(\\.)(\\s)?)/gi, "$1.");
+                        txt = txt.replace(/(mr|Mrs|Ms|Miss|dr|Mt)((\\s)?(\\.)(\\s)?)/gi, "$1.");
                         let regex1 = /([.!])\\s(?=[A-Z])/g;
                         let index = 0;
                         let validIndex = txt.length / 2;
@@ -218,12 +219,12 @@ export const JS = `
                         return items;
                 }
 
-                const cleanHtml = (html)=>{
-                                const item = document.createElement("div");
-                                item.innerHTML = html;
-                                item.querySelectorAll("script,style,iframe, input, button, select").forEach(x => x.remove());
-                                return item.innerHTML;
-                                
+                const cleanHtml = (html) => {
+                        const item = document.createElement("div");
+                        item.innerHTML = html;
+                        item.querySelectorAll("script,style,iframe, input, button, select").forEach(x => x.remove());
+                        return item.innerHTML;
+
                 }
 
                 const validTags = "img p h1 h2 h3 h4 h5 h6".split(" ").map(x => x.toUpperCase());
@@ -551,10 +552,10 @@ export const JS = `
                                         sliderContainer.addEventListener("touchcancel", stopDragging);
 
                                         sliderContainer.addEventListener("dblclick", (e) => {
-                                                if (window.getSelection().toString().length <= 0 && option.scrollType == "Pagination"){
+                                                if (window.getSelection().toString().length <= 0 && option.scrollType == "Pagination") {
                                                         e.preventDefault();
-                                                        sliderContainer.scrollTo({ left: sliderContainer.scrollLeft + slider.children[0].offsetWidth, behavior: "smooth" });                                                        
-                                                        }
+                                                        sliderContainer.scrollTo({ left: sliderContainer.scrollLeft + slider.children[0].offsetWidth, behavior: "smooth" });
+                                                }
                                         });
 
 
@@ -603,38 +604,46 @@ export const JS = `
 
                                 const endReached = () => {
                                         if (!option.addNext)
-                                                return;
+                                                return false;
                                         let value = Math.abs(sliderContainer.scrollHeight - sliderContainer.clientHeight - sliderContainer.scrollTop);
                                         if (["Pagination", "PaginationScroll"].includes(option.scrollType)) {
                                                 value = Math.abs(sliderContainer.scrollWidth - sliderContainer.clientWidth - sliderContainer.scrollLeft);
                                         }
                                         if (value <= 30) {
-                                                if (option.onEnd)
+                                                if (option.onEnd) {
                                                         option.onEnd();
+                                                        return true;
+                                                }
                                                 console.log("end")
+
                                         }
+
+                                        return false;
 
                                 }
 
                                 const startReached = () => {
                                         if (!option.addPrev)
-                                                return;
+                                                return false;
                                         if ((["Pagination", "PaginationScroll"].includes(option.scrollType) && sliderContainer.scrollLeft <= 30) || (option.scrollType == "Scroll" && sliderContainer.scrollTop <= 10)) {
-                                                if (option.onStart)
+                                                if (option.onStart) {
                                                         option.onStart();
+                                                        return true;
+                                                }
                                                 console.log("start")
                                         }
+
+                                        return false;
                                 }
 
                                 const validateScroll = () => {
                                         if (option.scrollType == "Player")
-                                                return; // single page 
+                                                return false; // single page 
                                         if (sliderContainer.scrollHeight <= sliderContainer.offsetHeight && ["Scroll"].includes(option.scrollType))
-                                                return;
+                                                return false;
                                         if (sliderContainer.scrollWidth <= sliderContainer.offsetWidth && ["Pagination", "PaginationScroll"].includes(option.scrollType))
-                                                return;
-                                        endReached();
-                                        startReached();
+                                                return false;
+                                        return (startReached() || endReached())
                                 }
 
                                 const getScrollProcent = () => {
@@ -695,14 +704,19 @@ export const JS = `
                                                                 onSliderScroll(e);
                                                         return;
                                                 }
-                                                snapToNearest();
+                                                ;
                                                 if (option.onscroll && !["Player", "PaginationScroll"].includes(option.scrollType)) {
                                                         if (option.scrollType == "Pagination")
                                                                 option.onscroll(sliderContainer.scrollLeft);
                                                         else option.onscroll(sliderContainer.scrollTop);
                                                 }
                                                 lastScrollPos = sliderContainer.scrollLeft
-                                                validateScroll();
+
+                                                if (validateScroll() && !option.scrollDisabled)
+                                                        option.scrollDisabled = true;
+
+                                                snapToNearest();
+
                                         }, 500);
                                 }
                                 if (!option.scrollDisabled)
@@ -818,13 +832,15 @@ export const JS = `
                         keyDown = false;
                         if (["Scroll", "PaginationScroll", "Player"].includes(options.scrollType))
                                 return;
+                        const sl = div.querySelector(".slider-container");
                         if (e.keyCode == 40 && div.querySelector(".slider")) { // down
-                                div.querySelector(".slider-container").scrollLeft += div.querySelector(".slider").children[0].offsetWidth;
-                                snapToNearest();
+                                sl.scrollTo({ left: sl.scrollLeft + div.querySelector(".slider").children[0].offsetWidth, behavior: "smooth" });
+                                //   snapToNearest();
                         }
                         else if (e.keyCode == 38 && div.querySelector(".slider")) { // down
-                                div.querySelector(".slider-container").scrollLeft -= div.querySelector(".slider").children[0].offsetWidth;
-                                snapToNearest();
+                                sl.scrollTo({ left: sl.scrollLeft - div.querySelector(".slider").children[0].offsetWidth, behavior: "smooth" });
+                                //  div.querySelector(".slider-container").scrollLeft -= div.querySelector(".slider").children[0].offsetWidth;
+                                // snapToNearest();
                         }
                 });
 
@@ -841,24 +857,24 @@ export const JS = `
                                 window.ReactNativeWebView.postMessage(JSON.stringify(item))
                         }
                 }
-                
+
                 let timerClick = null;
                 window.addEventListener('click', function (event) {
                         try {
                                 clearTimeout(timerClick);
                                 let target = event.target;
                                 if (target.closest(".selection-menu"))
-                                    return;
+                                        return;
                                 if (selectionMenu && selectionMenu.style.display != "none" && !selectionMenu.contains(event.target) && window.getSelection().toString().length < options.menu.minlength) {
                                         selectionMenu.style.display = 'none';
                                         return;
                                 }
-                        timerClick = setTimeout(()=> {
-                                if (!selectionMenu || selectionMenu.style.display == "none"){
-                                if (!(event.detail >= 2 && ["Pagination"].includes(options.scrollType)))
-                                       window.postmsg("click", true);  
-                                }
-                        },300);
+                                timerClick = setTimeout(() => {
+                                        if (!selectionMenu || selectionMenu.style.display == "none") {
+                                                if (!(event.detail >= 2 && ["Pagination"].includes(options.scrollType)))
+                                                        window.postmsg("click", true);
+                                        }
+                                }, 300);
                         } catch (e) {
                                 alert(e)
                         }

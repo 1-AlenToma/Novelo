@@ -325,49 +325,55 @@ export default ({
   }
 
   const loadHtmlContent = async () => {
-    if (context.player.isloading) return;
-    loader.show();
-    let content = {
-      inlineStyle: cleanInlineStyle(),
-      content: context.player.showPlayer ? `<p>${context.player.currentPlaying()?.cleanText() ?? ""}</p>` : context.player.html,
-      scroll: context.player.currentChapterSettings.scrollProgress
-    };
+    try {
+      if (context.player.isloading) return;
+      loader.show();
+      let content = {
+        inlineStyle: cleanInlineStyle(),
+        content: context.player.showPlayer ? `<p>${context.player.currentPlaying()?.cleanText() ?? ""}</p>` : context.player.html,
+        scroll: context.player.currentChapterSettings.scrollProgress
+      };
 
-    // console.warn(content)
-    const options = new WebOptions();
-    options.style = {
-      textAlignVertical: "top",
-      textAlign: context.appSettings.textAlign,
-      alignItems: (context.player.showPlayer ? "center" : "unset")
-    };
-    options.viewStyle = {
-      paddingLeft: (5).sureValue(context.appSettings.margin),
-      paddingRight: (5).sureValue(context.appSettings.margin),
-      paddingTop: "40px",
-      lineHeight: context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight),
-      fontSize: context.appSettings.fontSize
-    };
-    options.content = content.content;
-    options.scrollDisabled = context.player.showPlayer;
-    options.scrollValue = content.scroll;
-    options.scrollType = context.player.novel.type.isManga() ? "PaginationScroll" : (context.player.showPlayer ? "Player" : (context.appSettings.navigationType == "Snap" ? "Pagination" : (context.appSettings.navigationType == "ScrollSnap" ? "PaginationScroll" : "Scroll")));
-    options.addNext = context.player.hasNext();
-    options.addPrev = context.player.hasPrev();
-    options.prevText = "Previous Chapter";
-    options.nextText = "Next Chapter";
-    options.menu = options.func("click", menuItems, `(item)=> window.postmsg("menu", item)`);
-    options.addFunction("onEnd", `()=> {window.postmsg("Next", true);}`);
-    options.addFunction("onStart", `()=> {window.postmsg("Prev", true);}`);
-    options.addFunction("onscroll", `(value)=> {window.postmsg("scrollValue", value);}`);
-    options.addFunction("scrollPercentageValue", `(percent) => {window.postmsg("scrollpercent", percent);}`)
-    const sliderJs = (`
+      // console.warn(content)
+      const options = new WebOptions();
+      options.style = {
+        textAlignVertical: "top",
+        textAlign: context.appSettings.textAlign,
+        alignItems: (context.player.showPlayer ? "center" : "unset")
+      };
+      options.viewStyle = {
+        paddingLeft: (5).sureValue(context.appSettings.margin),
+        paddingRight: (5).sureValue(context.appSettings.margin),
+        paddingTop: "40px",
+        lineHeight: context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight),
+        fontSize: context.appSettings.fontSize
+      };
+
+      let scrollType = context.player.novel.type?.isManga() ? "PaginationScroll" : (context.player.showPlayer ? "Player" : (context.appSettings.navigationType == "Snap" ? "Pagination" : (context.appSettings.navigationType == "ScrollSnap" ? "PaginationScroll" : "Scroll")));
+      options.content = content.content;
+      options.scrollDisabled = context.player.showPlayer;
+      options.scrollValue = content.scroll;
+      options.scrollType = scrollType as any;
+      options.addNext = context.player.hasNext();
+      options.addPrev = context.player.hasPrev();
+      options.prevText = "Previous Chapter";
+      options.nextText = "Next Chapter";
+      options.menu = options.func("click", menuItems, `(item)=> window.postmsg("menu", item)`);
+      options.addFunction("onEnd", `()=> {window.postmsg("Next", true);}`);
+      options.addFunction("onStart", `()=> {window.postmsg("Prev", true);}`);
+      options.addFunction("onscroll", `(value)=> {window.postmsg("scrollValue", value);}`);
+      options.addFunction("scrollPercentageValue", `(percent) => {window.postmsg("scrollpercent", percent);}`);
+      const sliderJs = (`
       if(window.loadBody){
         window.loadBody(${JSON.stringify(options)})
       }
       true;
     `);
-    await postMessage("CSS", CSSStyle);// reader style
-    state.refItem.webView?.injectJavaScript(sliderJs);
+      await postMessage("CSS", CSSStyle);// reader style
+      state.refItem.webView?.injectJavaScript(sliderJs);
+    } catch (e) {
+      console.error(e)
+    }
   };
 
   context.useEffect(
@@ -524,7 +530,7 @@ export default ({
         },
         containerStyle: [
           {
-            backgroundColor:context.appSettings.backgroundColor,
+            backgroundColor: context.appSettings.backgroundColor,
             zIndex: 70,
             flex: 0,
             flexGrow: 1

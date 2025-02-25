@@ -119,6 +119,7 @@ const App = () => {
     const visibility = NavigationBar.useVisibility();
     const loader = useLoader(true);
     useEffect(() => {
+
         let itemToRemove: any[] = [];
         (async () => {
             try {

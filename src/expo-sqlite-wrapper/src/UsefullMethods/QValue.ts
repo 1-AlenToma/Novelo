@@ -1,13 +1,14 @@
 import Functions from "./Functions";
-import { IDataBaseExtender } from '../expo.sql.wrapper.types'
-import QuerySelector, { Param } from '../QuerySelector'
+import { IDataBaseExtender } from '../sql.wrapper.types'
+import QuerySelector from '../QuerySelector'
+import { Param } from "../QuerySelectorProps"
 export default class QValue {
     value?: any;
     value2?: any;
     args?: Param;
     isColumn?: boolean;
     alias?: string;
-    isFunction: boolean;
+    isFunction?: boolean;
     selector?: QuerySelector<any, any>;
     isInnerSelect?: boolean;
     type = "QValue";
@@ -25,8 +26,8 @@ export default class QValue {
         if (!this.selector)
             throw "Database cannot be null";
 
-        const items = await this.value.toList();
-        const res = [];
+        const items: any[] = await this.value.toList();
+        const res: any[] = [];
         items.forEach(x => {
             for (const k in x) {
                 const v = x[k];
@@ -76,7 +77,7 @@ export default class QValue {
         if (typeof this.value === "string")
             return [this.value as string];
         else {
-            return this.toType<Function>()(jsonExpression, Functions.aliasNameming).toString().split(",").filter(x => x.length > 1);
+            return (this.toType<Function>()(jsonExpression, Functions.aliasNameming)).toString().split(",").filter(x => x.length > 1);
         }
     }
 

@@ -54,7 +54,7 @@ export default class DownloadManager {
             break;
           } else if (src && (src as any).isNetwork?.()) {
             await sleep(10000); // try later until success
-          }else break; // other issue, Image not found etc
+          } else break; // other issue, Image not found etc
 
         }
 
@@ -78,20 +78,19 @@ export default class DownloadManager {
       let parser = ParserWrapper.getAllParsers(parserName) as ParserWrapper;
       parser.http = new HttpHandler(true); // to ignore alert
       let novel = await parser.detail(url);
-      let book = await context.db().querySelector<Book>("Books")
-        .Where.Column(x => x.url)
-        .EqualTo(url)
-        .AND.Column(x => x.parserName)
-        .EqualTo(parserName)
+      let book = await context.db.Books.query
+        .where.column(x => x.url)
+        .equalTo(url)
+        .and
+        .column(x => x.parserName)
+        .equalTo(parserName)
         .findOrSave(
           Book.n()
             .Url(novel.url)
             .Name(novel.name)
             .ParserName(parserName)
             .ImageBase64(
-              await context
-                .http()
-                .imageUrlToBase64(novel.image)
+              await context.http().imageUrlToBase64(novel.image)
             )
         );
       let key = "".fileName(novel.name, parserName);
@@ -132,7 +131,7 @@ export default class DownloadManager {
               if (ch?.content)
                 ch.content = ch.content.replace(new RegExp(x.fileName.escapeRegExp(), "gim"), src);
               if (savedItem.imagePath)
-              x.fileName = savedItem.imagePath.path(chapterIndex, src).trimEnd("/")
+                x.fileName = savedItem.imagePath.path(chapterIndex, src).trimEnd("/")
               return x;
             })]
           }

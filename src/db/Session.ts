@@ -1,14 +1,9 @@
-import {
-  IBaseModule,
-  TableBuilder,
-  ColumnType,
-  IQueryResultItem
-} from "../expo-sqlite-wrapper/src";
 import TableNames from "./TableNames";
 import { public_m } from "../Methods";
+import { DBInit } from "../Types"
 
-class Session extends IBaseModule<TableNames> {
-  id: number =0;
+class Session extends DBInit {
+  id: number = 0;
   data: string = "";
   date: Date = new Date();
   file: string;
@@ -17,19 +12,12 @@ class Session extends IBaseModule<TableNames> {
     super("Sessions");
   }
 
-  static tb() {
-    return TableBuilder<Session, TableNames>(
-      "Sessions"
-    )
-      .column("id")
-      .primary.autoIncrement.number.column("data")
-      .encrypt("novelo.enc")
-      .column("file")
-      .encrypt("novelo.enc")
+  config() {
+    return this.TableBuilder<Session, TableNames>("Sessions")
+      .column("data").encrypt("novelo.enc")
+      .column("file").encrypt("novelo.enc")
       .column("date")
-      .dateTime.objectPrototype(
-        Session.prototype
-      );
+      .dateTime.objectPrototype(Session.prototype);
   }
 }
 public_m(Session);

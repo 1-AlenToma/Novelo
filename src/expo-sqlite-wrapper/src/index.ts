@@ -1,19 +1,10 @@
-import {
-  IBaseModule,
-  SingleValue,
-  ArrayValue,
-  StringValue,
-  NumberValue,
-  IQuery,
-  IQueryResultItem,
-  IDatabase,
-  IWatcher,
-  ColumnType
-} from "./expo.sql.wrapper.types";
-import createDbContext from "./Database";
+import 'react-native-get-random-values';
+export * from "./sql.wrapper.types";
 import TableBuilder from "./TableStructor";
 import BulkSave from "./BulkSave";
 import { Functions } from "./UsefullMethods";
+import Table from './Table';
+import {ORMDataBase as Database} from "./Database";
 import {
   IQuerySelector,
   IReturnMethods,
@@ -34,22 +25,15 @@ let oDecrypt = Functions.oDecrypt.bind(Functions);
 let oEncypt = Functions.oEncypt.bind(Functions);
 export {
   TableBuilder,
-  IBaseModule,
+  Table,
   BulkSave,
   encrypt,
   decrypt,
   oDecrypt,
-  oEncypt
+  oEncypt,
+  Database
 };
 export type {
-  SingleValue,
-  ArrayValue,
-  NumberValue,
-  StringValue,
-  IQuery,
-  IQueryResultItem,
-  IDatabase,
-  IWatcher,
   IQuerySelector,
   IReturnMethods,
   IOrderBy,
@@ -58,9 +42,7 @@ export type {
   IWhere,
   IHaving,
   IQueryColumnSelector,
-  ColumnType,
   IColumnSelector,
   ArrayIColumnSelector,
   ArrayAndAliasIColumnSelector
 };
-export default createDbContext;

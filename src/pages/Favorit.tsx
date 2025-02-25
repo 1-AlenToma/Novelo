@@ -1,80 +1,49 @@
 import {
   Text,
   View,
-  TouchableOpacity,
   useLoader,
   Image,
   ItemList,
   Icon,
-  NovelGroup,
-  CheckBox,
-  TextInput,
-  ActionSheet,
   FoldableItem,
   AlertDialog
 } from "../components";
 import * as React from "react";
 import Header from "./Header";
-import { Buffer } from "buffer";
 import {
   useNavigation,
-  useUpdate,
-  useDbHook
+  useUpdate
 } from "../hooks";
-import * as DocumentPicker from "expo-document-picker";
-import { Book, Chapter } from "../db";
-import {
-  FileHandler,
-  ZipBook
-} from "../native";
 import { sleep } from "../Methods";
+import { Book } from "db";
 
 const ItemRender = ({
   options,
   item,
   state,
   loader
+}: {
+  item: Book,
+  options: any,
+  state: any,
+  loader: any
 }) => {
   context.hook("novelFavoritInfo");
-  const [books, dataIsLoading] = context
-    .db()
-    .useQuery(
-      "Books",
-      context
-        .db()
-        .querySelector<Book>("Books")
-        .LoadChildren<Chapter>(
-          "Chapters",
-          "parent_Id",
-          "id",
-          "chapterSettings",
-          true
-        )
-        .Where.Column(x => x.url)
-        .EqualTo(item.url),
-      undefined,
-      (items, op) => {
-        return (
-          items.find(
-            x => x.url == item.url && x.favorit
-          ) != undefined
-        );
-      }
-    );
+  const [books, dataIsLoading] = context.db.Books.useQuery(
+    context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
+    (items, op) => {
+      return (items.find(x => x.url == item.url && x.favorit) != undefined);
+    }
+  );
 
   useEffect(() => {
     (async () => {
       for (let b of books) {
         if (b.parserName !== "epub") {
-          let novel = await context.parser
-            .find(b.parserName)
-            .detail(b.url);
+          let novel = await context.parser.find(b.parserName).detail(b.url);
           if (novel) {
-            context.novelFavoritInfo[b.url] = `(${b.selectedChapterIndex + 1
-              }/${novel.chapters.length})`;
-            context.novelFavoritInfo = {
-              ...context.novelFavoritInfo
-            };
+            context.novelFavoritInfo[b.url] = `(${b.selectedChapterIndex + 1}/${novel.chapters.length})`;
+            context.novelFavoritInfo = { ...context.novelFavoritInfo };
           }
         }
         await sleep(500);
@@ -82,8 +51,7 @@ const ItemRender = ({
     })();
   }, [books]);
 
-  item =
-    books.find(x => x.url === item.url) ?? item;
+  item = books.find(x => x.url === item.url) ?? item;
 
   return (
     <FoldableItem
@@ -111,9 +79,11 @@ const ItemRender = ({
                 loader.show();
                 if (answer) {
                   try {
-                    await item
-                      .Favorit(false)
-                      .saveChanges();
+                    let file = context.files.exists("".fileName(item.name, item.parserName));
+                    if (file) {
+                      item.favorit = false;
+                      await item.saveChanges();
+                    } else await context.db.deleteBook(item.id);
                   } catch (e) {
                     console.error(e);
                   }
@@ -200,21 +170,9 @@ export default ({ ...props }: any) => {
     .files
     .useFile("json");
   const [books, dataIsLoading, reload] = context
-    .db()
-    .useQuery(
+    .db.useQuery(
       "Books",
-      context
-        .db()
-        .querySelector<Book>("Books")
-        .LoadChildren<Chapter>(
-          "Chapters",
-          "parent_Id",
-          "id",
-          "chapterSettings",
-          true
-        )
-        .Where.Column(x => x.favorit)
-        .EqualTo(true),
+      context.db.Books.query.load("chapterSettings").where.column(x => x.favorit).equalTo(true),
       undefined,
       (items, op) => {
         if (books.length <= 0) return true;

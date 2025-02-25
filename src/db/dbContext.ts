@@ -1,10 +1,4 @@
-import createDbContext, {
-  IDatabase,
-  IQueryResultItem,
-  IBaseModule,
-  encrypt,
-  decrypt
-} from "../expo-sqlite-wrapper/src";
+import { Database, DatabaseDrive, encrypt, decrypt, oEncypt, oDecrypt } from "../expo-sqlite-wrapper/src";
 import {
   openDatabaseAsync,
   SQLiteProvider,
@@ -14,13 +8,12 @@ import {
 import {
   Book,
   Chapter,
-  Tables,
+  Session,
   TableNames,
   AppSettings
 } from "./";
 import { DownloadOptions } from "../Types";
 import {
-  writeFile,
   removeProps,
   joinKeys,
   sleep
@@ -28,35 +21,46 @@ import {
 import { DetailInfo, ZipBook } from "../native";
 let encKey = "novelo.enc";
 let encKeys = ["url", "parserName", "image"];
-export default class DbContext {
+export default class DbContext extends Database<TableNames> {
   databaseName: string = "Novelo";
-  database: IDatabase<TableNames>;
+  readonly Books = this.DbSet<Book>(Book);
+  readonly Chapters = this.DbSet<Chapter>(Chapter);
+  readonly AppSettings = this.DbSet<AppSettings>(AppSettings);
   constructor() {
-    this.database = createDbContext<TableNames>(
-      Tables,
+    super(
       async () => {
-        let db = await openDatabaseAsync(
-          this.databaseName
-        );
-        //console.error(db.execAsync);
-        //console.error(db.execSync);
-        return db;
+        let db = await openDatabaseAsync(this.databaseName);
+        let driver: DatabaseDrive = {
+          close: async () => await db.closeAsync(),
+          executeSql: async (sql, args, operation) => {
+            console.info("Sql Operation", operation);
+            switch (operation) {
+              case "Bulk":
+                await db.execAsync(sql);
+                break;
+              case "READ":
+                return await db.getAllAsync(sql, args);
+              case "WRITE":
+                let item = await db.runAsync(sql, args);
+                return item?.lastInsertRowId;
+            }
+            return undefined;
+          },
+        }
+        return driver;
       },
       async db => {
         try {
-          for (let sql of `
-      PRAGMA cache_size=8192;
-      PRAGMA encoding="UTF-8";
-      PRAGMA synchronous=NORMAL;
-      PRAGMA temp_store=FILE;
-      `
-            .split(";")
-            .filter(x => x.length > 2)
-            .map(x => {
-              return { sql: x, args: [] };
-            })) {
-            await db.executeRawSql([sql]);
-          }
+
+          await db.executeRawSql([{
+            sql: `
+              PRAGMA cache_size=8192;
+              PRAGMA encoding="UTF-8";
+              PRAGMA synchronous=NORMAL;
+              PRAGMA temp_store=FILE;
+              `, args: []
+          }]);
+
         } catch (e) {
           console.error(e);
         } finally {
@@ -65,6 +69,8 @@ export default class DbContext {
       },
       !__DEV__
     );
+
+    this.addTables(Session)
   }
 
   encryptItem = (item: any) => {
@@ -171,36 +177,19 @@ export default class DbContext {
       }
 
       if (options.all) {
-        item.books = await this.database
-          .querySelector<Book>("Books")
-          .LoadChildren<Chapter>(
-            "Chapters",
-            "parent_Id",
-            "id",
-            "chapterSettings",
-            true
-          )
-          .Where.Column(x => x.favorit)
-          .EqualTo(true)
+        item.books = await this.Books.query.load("chapterSettings")
+          .where.column(x => x.favorit)
+          .equalTo(true)
           .toList();
       } else if (options.items.length > 0) {
-        item.books = await this.database
-          .querySelector<Book>("Books")
-          .LoadChildren<Chapter>(
-            "Chapters",
-            "parent_Id",
-            "id",
-            "chapterSettings",
-            true
-          )
-          .Where.Column(x => x.favorit)
-          .EqualTo(true)
-          .AND.Column(x => x.url)
-          .IN(options.items.map(x => x.url))
-          .AND.Column(x => x.parserName)
-          .IN(
-            options.items.map(x => x.parserName)
-          )
+        item.books = await this.Books.query.load("chapterSettings")
+          .where
+          .column(x => x.favorit).equalTo(true)
+          .and
+          .column(x => x.url).in(options.items.map(x => x.url))
+          .and
+          .column(x => x.parserName)
+          .in(options.items.map(x => x.parserName))
           .toList();
       }
       if (options.epubs) {
@@ -213,17 +202,9 @@ export default class DbContext {
             await context.files.read(file) ?? "{}"
           );
           novel.fileName = file;
-          let book = await this.database
-            .querySelector<Book>("Books")
-            .LoadChildren<Chapter>(
-              "Chapters",
-              "parent_Id",
-              "id",
-              "chapterSettings",
-              true
-            )
-            .Where.Column(x => x.url)
-            .EqualTo(novel.url)
+          let book = await this.Books.query.load("chapterSettings")
+            .where
+            .column(x => x.url).equalTo(novel.url)
             .firstOrDefault();
 
           if (book) {
@@ -241,11 +222,6 @@ export default class DbContext {
       this.encryptItem(item);
       context.zip.data({ content: JSON.stringify(item), path: "Novelo_Backup.json" });
       await context.zip.zipFiles(folder, context.appSettings.filesDataLocation ?? context.files.DocumentDirectoryPath);
-      // await context.files.RNF.writeFile(folder.path("Novelo_Backup.json"), JSON.stringify(item))
-      /*  await writeFile(
-          JSON.stringify(item),
-          "Novelo_Backup.json"
-        );*/
     } catch (e) {
       console.error(e);
       return e.message;
@@ -267,14 +243,14 @@ export default class DbContext {
       context.zip.beginNew();
       await context.zip.unzip(uri, context.appSettings.filesDataLocation ?? context.files.DocumentDirectoryPath, "Novelo_Backup")
       let file = context.zip._data.find(x => x.path.has("Novelo_Backup"))?.content;
-      if (!file){
+      if (!file) {
         console.error("Could not find Novel_Backup file")
         return;
 
       }
-      await this.database.disableWatchers();
-      await this.database.disableHooks();
-      await this.database.beginTransaction();
+      await this.disableWatchers();
+      await this.disableHooks();
+      await this.beginTransaction();
       context.files.disable();
       let item = JSON.parse(file);
       if (item) {
@@ -294,19 +270,11 @@ export default class DbContext {
         }
 
         for (let book of item.books ?? []) {
-          let b = await this.database
-            .querySelector<Book>("Books")
-            .LoadChildren<Chapter>(
-              "Chapters",
-              "parent_Id",
-              "id",
-              "chapterSettings",
-              true
-            )
-            .Where.Column(x => x.url)
-            .EqualTo(book.url)
-            .AND.Column(x => x.parserName)
-            .EqualTo(book.parserName)
+          let b = await this.Books.query.load("chapterSettings")
+            .where.column(x => x.url).equalTo(book.url)
+            .and
+            .column(x => x.parserName)
+            .equalTo(book.parserName)
             .firstOrDefault();
           if (b) {
             joinKeys(b, book, "chapterSettings");
@@ -324,11 +292,11 @@ export default class DbContext {
           }
 
           book.tableName = "Books";
-          await this.database.save(book);
+          await this.save(book);
           for (let ch of book.chapterSettings) {
             ch.tableName = "Chapters";
             ch.parent_Id = book.id;
-            await this.database.save(ch);
+            await this.save(ch);
           }
           calc();
           if (index % 5 === 0) await sleep(10);
@@ -346,33 +314,29 @@ export default class DbContext {
         }*/
       }
 
-      await this.database.commitTransaction();
+      await this.commitTransaction();
     } catch (e) {
-      await this.database.rollbackTransaction();
+      await this.rollbackTransaction();
       console.error(e);
       return e.message;
     } finally {
-      await this.database.enableHooks();
-      await this.database.enableWatchers();
+      await this.enableHooks();
+      await this.enableWatchers();
       context.files.enable();
       calc(true);
     }
   };
 
   async deleteBook(id: number) {
-    await this
-      .database
-      .querySelector<Chapter>("Chapters")
-      .Where
-      .Column(x => x.parent_Id)
-      .EqualTo(id)
+    await this.Books.query
+      .where
+      .column(x => x.id)
+      .equalTo(id)
       .delete();
-    await this
-      .database
-      .querySelector<Book>("Books")
-      .Where
-      .Column(x => x.id)
-      .EqualTo(id)
-      .delete();
+
+    if (context.player && context.player.book?.id == id) {
+      await context.player.stop();
+      context.player = undefined;
+    }
   }
 }

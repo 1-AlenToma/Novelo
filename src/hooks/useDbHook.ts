@@ -33,7 +33,7 @@ export default (
 
   useEffect(() => {
     setValues(currentItem());
-    var watcher = context.db().watch<any>(tbName);
+    var watcher = context.db.watch<any>(tbName as any);
     watcher.onSave = async (items, operation) => {
       for (let item of items) {
         if (hasChange(item)) {

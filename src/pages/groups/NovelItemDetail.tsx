@@ -22,7 +22,8 @@ import WebView from "react-native-webview";
 import * as React from "react";
 import {
   ScrollView,
-  Linking
+  Linking,
+  RefreshControl
 } from "react-native";
 import { useNavigation } from "../../hooks";
 import Header from "../../pages/Header";
@@ -65,31 +66,20 @@ export default ({ ...props }: any) => {
     }
   };
 
-  let fetchData = async () => {
+  let fetchData = async (refresh?: boolean) => {
     loader.show();
     let parser = context.parser.find(parserName);
     try {
       if (parser && url) {
-        let novel = await parser.detail(
-          url,
-          true
-        );
+        let novel = await parser.detail(url, true, refresh ? "RenewMemo" : undefined);
         state.novel = novel ?? {};
         if (novel) {
           state.book = await context
-            .db()
-            .querySelector<Book>("Books")
-            .LoadChildren<Chapter>(
-              "Chapters",
-              "parent_Id",
-              "id",
-              "chapterSettings",
-              true
-            )
-            .Where.Column(x => x.url)
-            .EqualTo(url)
-            .AND.Column(x => x.parserName)
-            .EqualTo(parserName)
+            .db.Books.query.load("chapterSettings")
+            .where.column(x => x.url)
+            .equalTo(url)
+            .and.column(x => x.parserName)
+            .equalTo(parserName)
             .firstOrDefault();
         }
 
@@ -172,15 +162,12 @@ export default ({ ...props }: any) => {
             css: "invert"
           }}>
           <View css="flex mat:10">
-            <ScrollView>
+            <ScrollView refreshControl={
+              <RefreshControl refreshing={loader.loading} onRefresh={() => fetchData(true)} />}>
               <View css="flex ali:center">
                 <View
                   css="row box invert">
-                  <Image
-                    resizeMethod="scale"
-                    url={state.novel?.image}
-                    css="resizeMode:contain he:100% wi:150 bor:5"
-                  />
+                  <Image resizeMethod="scale" url={state.novel?.image} css="resizeMode:contain he:100% wi:150 bor:5" />
                   <View css="flex pa:5 invert">
                     <Text
                       selectable={true}
@@ -337,13 +324,9 @@ export default ({ ...props }: any) => {
                             .add({
                               name: state.novel.name,
                               chapter: item.url,
-                              url: state.novel
-                                .url,
-                              parserName:
-                                state.novel
-                                  .parserName
-                            })
-                            .push();
+                              url: state.novel.url,
+                              parserName: state.novel.parserName
+                            }).push();
                         }}
                         current={
                           state.novel?.chapters?.at(
@@ -373,8 +356,7 @@ export default ({ ...props }: any) => {
                         .nav("NovelItemDetail")
                         .add({
                           url: item.url,
-                          parserName:
-                            item.parserName
+                          parserName: item.parserName
                         })
                         .push();
                     }}
@@ -471,8 +453,7 @@ export default ({ ...props }: any) => {
                     .add({
                       name: state.novel.name,
                       url: state.novel.url,
-                      parserName:
-                        state.novel.parserName
+                      parserName: state.novel.parserName
                     })
                     .push();
                 }}>
@@ -488,16 +469,13 @@ export default ({ ...props }: any) => {
                   let book =
                     state.book ||
                     (await context
-                      .db()
-                      .querySelector<Book>(
-                        "Books"
-                      )
-                      .Where.Column(x => x.url)
-                      .EqualTo(url)
-                      .AND.Column(
+                      .db.Books.query
+                      .where.column(x => x.url)
+                      .equalTo(url)
+                      .and.column(
                         x => x.parserName
                       )
-                      .EqualTo(parserName)
+                      .equalTo(parserName)
                       .findOrSave(
                         Book.n()
                           .Url(state.novel.url)
@@ -511,9 +489,10 @@ export default ({ ...props }: any) => {
                               )
                           )
                       ));
-                  await book
-                    .Favorit(!book.favorit)
-                    .saveChanges();
+                  await book.Favorit(!book.favorit).saveChanges();
+                  if (context.player && context.player.book?.id == book.id) {
+                    context.player.book.favorit = book.favorit;
+                  }
                   state.book = book;
                   loader.hide();
                 }}>

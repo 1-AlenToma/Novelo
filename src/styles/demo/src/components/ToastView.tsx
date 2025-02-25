@@ -8,7 +8,7 @@ import { newId } from "../config";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";
 import { Icon } from "./Icon";
-import { Platform, StatusBar } from 'react-native';
+import { Platform, StatusBar, TouchableOpacity } from 'react-native';
 
 export const ToastView = () => {
     globalData.hook("screen", "alertViewData.toastData");
@@ -121,12 +121,12 @@ export const ToastView = () => {
                 extrapolate: "clamp"
             })
         }]
-    }} css={x => x.cls("_toast").joinRight(typeInfo.css).joinRight(data.css)}>
+    }} css={x => x.cls("_toast").joinRight(typeInfo.css).zI(10000).joinRight(data.css)}>
         <View>
             <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$co-transparent")}>
-                <Button onPress={() => state.visible = false} css={
-                    x => x.cls("sh-none", "_center").size(30, 30).baC("$co-transparent").paL(1).boW(0)
-                } icon={<Icon type="AntDesign" name="close" size={15} />} />
+                <TouchableOpacity onPress={() => state.visible = false}>
+                    <Icon type="AntDesign" css="co:red" name="close" size={15} />
+                </TouchableOpacity>
             </View>
             <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac:transparent">
                 {data.icon ?? typeInfo.icon}

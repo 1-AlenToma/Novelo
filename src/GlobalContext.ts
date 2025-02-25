@@ -105,8 +105,7 @@ const data = StateBuilder<GlobalType>(
         },
         updater: newId(),
         selectedThemeIndex: 0,
-        dbContext: () => globalDb,
-        db: () => globalDb.database,
+        db: globalDb,
         size: {
             window: Dimensions.get("window"),
             screen: Dimensions.get("screen")
@@ -138,11 +137,9 @@ const data = StateBuilder<GlobalType>(
                         (counter ?? 1) * 300
                     );
                 };
-                await globalDb.database.setUpDataBase();
-                await globalDb.database.migrateNewChanges();
-                data.appSettings = await globalDb.database
-                    .querySelector<AppSettings>("AppSettings")
-                    .findOrSave(data.appSettings);
+                await globalDb.setUpDataBase();
+                await globalDb.migrateNewChanges();
+                data.appSettings = await globalDb.AppSettings.query.findOrSave(data.appSettings);
                 if (data.appSettings.filesDataLocation && !data.appSettings.filesDataLocation.empty()) {
                     data.files = new FileHandler(data.appSettings.filesDataLocation.path(FilesPath.File), undefined, true);
                     data.imageCache = new ImageCache(data.appSettings.filesDataLocation.path(FilesPath.Images))
@@ -150,7 +147,7 @@ const data = StateBuilder<GlobalType>(
                 if (data.parser.find(data.appSettings.selectedParser)) {
                     data.parser.set(data.parser.find(data.appSettings.selectedParser))
                 }
-                let appSettingWatcher = globalDb.database.watch("AppSettings");
+                let appSettingWatcher = globalDb.watch("AppSettings");
                 appSettingWatcher.onSave = async items => {
                     let item = items?.firstOrDefault();
                     if (item) data.appSettings = item as any;
@@ -206,6 +203,7 @@ const data = StateBuilder<GlobalType>(
         "player.book.chapterSettings",
         "player.novel",
         "zip",
-        "notification"
+        "notification",
+        "db"
     ).globalBuild();
 export default data;

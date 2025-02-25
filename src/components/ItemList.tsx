@@ -21,7 +21,8 @@ export default ({
   nested,
   updater,
   hooks,
-  selectedIndex
+  selectedIndex,
+  onRefresh
 }: {
   items: any[];
   container: any;
@@ -36,6 +37,7 @@ export default ({
   updater?: any[];
   hooks?: any[];
   selectedIndex?: number;
+  onRefresh?: { loading, onRefresh: () => void }
 }) => {
   context.hook(
     "selectedThemeIndex",
@@ -113,7 +115,8 @@ export default ({
         initialScrollIndex={scrollIndex}
         horizontal={vMode !== true}
         data={items}
-
+        refreshing={onRefresh?.loading}
+        onRefresh={onRefresh?.onRefresh}
         estimatedItemSize={200}
         onEndReachedThreshold={0.5}
         onMomentumScrollBegin={() => {

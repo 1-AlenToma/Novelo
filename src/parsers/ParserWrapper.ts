@@ -40,13 +40,13 @@ export default class ParserWrapper extends Parser {
   }
 
   showError() {
-    if (this.getError()) 
-      AlertDialog.toast({message:this.getError()?.toString(), type:"Error"});
-    
+    if (this.getError())
+      AlertDialog.toast({ message: this.getError()?.toString(), type: "Error" });
+
   }
 
   static getAllParsers(parserName?: string) {
-    let prs = [ReadNovelFull,NovelBinCom,NovelBin,MangaBerri].map(
+    let prs = [ReadNovelFull, NovelBinCom, NovelBin, MangaBerri].map(
       x => new ParserWrapper(new x())
     );
     if (parserName)
@@ -69,10 +69,7 @@ export default class ParserWrapper extends Parser {
       data.chapters &&
       data.chapters.length > 0
   })
-  async detail(
-    url: string,
-    alertOnError?: boolean
-  ) {
+  async detail(url: string, alertOnError?: boolean, renewMemo?: "RenewMemo" | undefined) {
     let item = await this.parser.detail(url);
     if (alertOnError) this.showError();
     return item;
@@ -149,7 +146,7 @@ export default class ParserWrapper extends Parser {
         await this.http.get_html(url, baseUrl)
       ).html;
       return html.$(path).url(attr);
-    } catch (e) {}
+    } catch (e) { }
     return "";
   }
 
@@ -165,26 +162,27 @@ export default class ParserWrapper extends Parser {
         data.group?.has())
   })
   async load() {
-    try{
-    return await this.parser.load();
-    }catch(e){
+    try {
+      return await this.parser.load();
+    } catch (e) {
       console.error("error", e);
     }
   }
 
   @Memo({
     daysToSave: 2,
-    isDebug:debugg,
+    isDebug: debugg,
     keyModifier: (target, key) => `${key}${target.name}`,
     validator: (data: any) => data && data.has() && !data[0].name.empty() && !data[0].url.empty()
   })
   async group(
     value: Value,
     page: number,
-    alertOnError?: boolean
+    alertOnError?: boolean,
+    renewMemo?: "RenewMemo" | undefined
   ) {
     try {
-      let item = await this.parser.group(value,page);
+      let item = await this.parser.group(value, page);
       if (alertOnError) this.showError();
       return item;
     } catch (e) {
@@ -194,10 +192,7 @@ export default class ParserWrapper extends Parser {
     }
   }
 
-  async chapter(
-    url: any,
-    alertOnError?: boolean
-  ) {
+  async chapter(url: any, alertOnError?: boolean) {
     let item = await this.parser.chapter(url);
     if (alertOnError) this.showError();
     return item;

@@ -27,21 +27,12 @@ export default (props: any) => {
     .files
     .useFile("json", undefined, "NewDelete");
   const [books, dataIsLoading] = context
-    .db()
+    .db
     .useQuery(
       "Books",
       context
-        .db()
-        .querySelector<Book>("Books")
-        .LoadChildren<Chapter>(
-          "Chapters",
-          "parent_Id",
-          "id",
-          "chapterSettings",
-          true
-        )
-        .Where.Column(x => x.favorit)
-        .EqualTo(true)
+        .db.Books.query.load("chapterSettings")
+        .where.column(x => x.favorit).equalTo(true)
     );
   const state = buildState(
     {
@@ -60,7 +51,7 @@ export default (props: any) => {
     if (!location)
       return;
     loader.show();
-    await context.dbContext().downloadDatabase(location.path, {
+    await context.db.downloadDatabase(location.path, {
       ...state
     });
     loader.hide();
@@ -78,28 +69,12 @@ export default (props: any) => {
           loader.show();
 
           let _books = context
-            .db()
-            .querySelector<Book>("Books")
-            .Where.Column(x => x.favorit)
-            .EqualTo(false)
-            .AND.Column(x => x.parserName)
-            .NotEqualTo("epub");
-          // skip deleting downloaded files
-          let ids = (await _books.toList())
-            .filter(
-              x =>
-                !fileItems.find(
-                  f => x.url == f.url
-                )
-            )
-            .map(x => x.id);
-          if (ids.length > 0)
-            await context
-              .db()
-              .querySelector<Chapter>("Chapters")
-              .Where.Column(x => x.parent_Id)
-              .IN(ids)
-              .delete();
+            .db.Books.query
+            .where.column(x => x.favorit)
+            .equalTo(false)
+            .and.column(x => x.parserName)
+            .notEqualTo("epub");
+
           await _books.delete();
           console.warn("deleting cache")
           await context.cache.deleteDir();
@@ -121,11 +96,10 @@ export default (props: any) => {
     if (!uri)
       return;
     loader.show();
-    let msg = await context
-      .dbContext()
-      .uploadData(uri.path);
+    let msg = await context.db.uploadData(uri.path);
     loader.hide();
     if (msg) AlertDialog.alert({ message: msg });
+    else AlertDialog.toast({ message: "Data has been imported", type: "Success", title: "FileUpload" })
   };
 
   const itemPress = (item: any) => {
@@ -251,7 +225,7 @@ export default (props: any) => {
         </View>
         <TouchableOpacity
           css="invert settingButton"
-          onPress={()=> state.showWebTester= true}>
+          onPress={() => state.showWebTester = true}>
           <Icon
             type="MaterialCommunityIcons"
             name="database-import"

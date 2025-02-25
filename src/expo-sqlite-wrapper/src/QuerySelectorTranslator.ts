@@ -1,11 +1,12 @@
-import QuerySelector, { Param, Where, IColumnSelector } from './QuerySelector'
-import * as SqlLite from 'expo-sqlite'
-import { Counter, StringBuilder, Functions } from './UsefullMethods'
+
+import { Counter, StringBuilder, Functions, QValue } from './UsefullMethods';
+import { Param } from "./QuerySelectorProps";
+import { IWhereProp, IQuerySelectorProps } from "./sql.wrapper.types";
 
 export default class QuerySelectorTranslator {
-    selector: QuerySelector<any, string>;
+    selector: IQuerySelectorProps<string>;
     querySelectorSql: StringBuilder;
-    constructor(selector: QuerySelector<any, any>) {
+    constructor(selector: IQuerySelectorProps<string>) {
         this.selector = selector;
         this.querySelectorSql = new StringBuilder();
     }
@@ -19,7 +20,7 @@ export default class QuerySelectorTranslator {
         let sql = new StringBuilder();
         if (!this.selector.queryColumnSelector)
             return sql.append("SELECT * FROM", this.selector.tableName, this.selector.joins.length > 0 ? "as a" : "")
-        const counter = new Counter(this.selector.queryColumnSelector.columns);
+        const counter = new Counter(this.selector.queryColumnSelector._columns as QValue[]);
         let addedColumns = false;
 
 
@@ -58,7 +59,7 @@ export default class QuerySelectorTranslator {
             }
         }
         this.selector.queryColumnSelector.cases.forEach(x => {
-            const item = x as any as Where<any, any, string>
+            const item = x as any as IWhereProp<string>
             const c = this.translateWhere(item, args);
             if (!c.isEmpty)
                 sql.append("(", c.toString(), ")", "as", item.alias);
@@ -125,8 +126,8 @@ export default class QuerySelectorTranslator {
         return sql;
     }
 
-    private translateWhere(item: Where<any, any, string>, args: any[]) {
-        const counter = new Counter(item.Queries);
+    private translateWhere(item: IWhereProp<string>, args: any[]) {
+        const counter = new Counter(item.Queries as QValue[]);
         let sql = new StringBuilder();
         const findColumn = () => {
             for (let i = counter.currentIndex; i >= 0; i--) {
@@ -253,7 +254,7 @@ export default class QuerySelectorTranslator {
         try {
             const args = [] as any[];
             const selectcColumnSql = selectType == "DELETE" ? this.translateDeleteColumn() : this.translateColumns(args);
-            const whereSql = this.selector.where ? this.translateWhere(this.selector.where, args) : new StringBuilder();
+            const whereSql = this.selector._where ? this.translateWhere(this.selector._where, args) : new StringBuilder();
             const groupBy = this.selector.others.filter(x => x.args === Param.GroupBy).map(x => x.getColumn(this.selector.jsonExpression));
             const otherSql = this.translateOthers();
             const joinSql = selectType === "SELECT" ? this.translateJoins(args) : new StringBuilder();

@@ -16,14 +16,7 @@ const getKey = (
   let key = JSON.stringify(args);
   if (!option.argsOverride)
     key += propertyName;
-  key =
-    "memoizing." +
-    key
-      .replace(
-        /(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\%|\’|\+|\?|\!)/gim,
-        ""
-      )
-      .toLowerCase();
+  key = "memoizing." + key.replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\%|\’|\+|\?|\!)/gim, "").toLowerCase();
   if (option.keyModifier !== undefined)
     key += option.keyModifier(target, key);
   return key.toLowerCase() + ".json";
@@ -49,9 +42,9 @@ export default function Memorize(
     const currentFn = descriptor.value as (
       ...args: any[]
     ) => Promise<any>;
-    descriptor.value = async function (
-      ...args: any[]
-    ) {
+    descriptor.value = async function (...args: any[]) {
+      let RenewMemo = args.some(x => x == "RenewMemo");
+      args = args.filter(x => x != "RenewMemo");
       const key = getKey(
         option,
         propertyKey,
@@ -63,17 +56,14 @@ export default function Memorize(
       callingFun.set(key, true);
       try {
         if (option.storage) {
-          if (
-            (await option.storage.has(key)) &&
-            !option.isDebug
-          ) {
+          if ((await option.storage.has(key)) && !option.isDebug) {
             data = await option.storage.get(key);
           }
 
           if (data && typeof data.date === "string")
             data.date = new Date(data.date);
 
-          if (!data || days_between(data.date) >= option.daysToSave || (option.updateIfTrue && option.updateIfTrue(data.data))) {
+          if (!data || RenewMemo || days_between(data.date) >= option.daysToSave || (option.updateIfTrue && option.updateIfTrue(data.data))) {
             try {
               let data2 = await currentFn.bind(this)(...args);
               if (!option.isDebug) {

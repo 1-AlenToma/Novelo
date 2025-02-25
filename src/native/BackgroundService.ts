@@ -32,13 +32,11 @@ const veryIntensiveTask =
           let data = JSON.parse((await context.cache.read(f)) ?? "");
           if (data.date > date) {
             await context.cache.delete(f);
-            let book = await context.db().querySelector<Book>("Books")
-              .Where.Column(x => x.url)
-              .EqualTo(data.data.url)
+            let book = await context.db.Books.query.where
+              .column(x => x.url).equalTo(data.data.url)
               .firstOrDefault();
             if (book && !book.favorit)
-              await context.dbContext()
-                .deleteBook(book.id);
+              await context.db.deleteBook(book.id);
           }
         }
       })

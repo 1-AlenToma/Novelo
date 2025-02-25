@@ -1106,10 +1106,7 @@ const InternalWeb = ({ state, ...props }: any) => {
         else if (item.text === "Copy") {
           Clipboard.setStringAsync(item.selection);
         } else if (item.text === "Define") {
-          context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(
-            / /g,
-            "+"
-          )}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
+          context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(/ /g, "+")}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
         } else {
           context.player.menuOptions.textEdit = {
             edit: item.selection,
@@ -1141,11 +1138,19 @@ const InternalWeb = ({ state, ...props }: any) => {
           }
         ]
       }}
-      bottomReched={() => context.player.next(true)}
-      topReched={() => context.player.prev()}
+      bottomReched={() => {
+        if (!context.player.isloading)
+          context.player.next(true)
+      }}
+      topReched={() => {
+        if (!context.player.isloading)
+          context.player.prev()
+      }
+      }
       onScroll={(y: number) => {
+        if (context.player.isloading)
+          return;
         context.player.currentChapterSettings.scrollProgress = y;
-
         context.player.currentChapterSettings.saveChanges();
       }}
     />
@@ -1154,7 +1159,6 @@ const InternalWeb = ({ state, ...props }: any) => {
 
 export default (props: any) => {
   const [{ name, url, parserName, epub, chapter }, nav] = useNavigation(props);
-  const updater = useUpdate();
   const loader = useLoader(true);
   useKeepAwake();
   const files = context.files.useFile(
@@ -1180,18 +1184,17 @@ export default (props: any) => {
   context.hook("appSettings.backgroundColor");
 
   const loadData = async () => {
-    // console.warn({name,url, parserName, epub, chapter})
+    //  console.warn({ name, url, parserName, epub, chapter })
     try {
+
       loader.show();
       if (state.novel.url) {
         loader.hide();
         return;
       }
-      [state.novel].niceJson("chapters")
-      state.novel =
-        parserName == "epub" || epub
-          ? files.fileItems.find(x => x.url === url)
-          : await state.parser?.detail(url, true);
+      state.novel = parserName == "epub" || epub
+        ? files.fileItems.find(x => x.url === url)
+        : await state.parser?.detail(url, true);
       // console.warn([state.novel].niceJson("chapters"))
       if (!state.novel || !state.novel.name)
         return;
@@ -1200,31 +1203,18 @@ export default (props: any) => {
         context.player.novel.url !== url ||
         context.player.isEpup != (epub === true)
       ) {
+        context.player = undefined;
         let book = await context
-          .db()
-          .querySelector<Book>("Books")
-          .LoadChildren<Chapter>(
-            "Chapters",
-            "parent_Id",
-            "id",
-            "chapterSettings",
-            true
-          )
-          .Where.Column(x => x.url)
-          .EqualTo(url)
-          .AND.Column(x => x.parserName)
-          .EqualTo(parserName)
+          .db.Books.query.load("chapterSettings")
+          .where.column(x => x.url)
+          .equalTo(url)
+          .and.column(x => x.parserName).equalTo(parserName)
           .findOrSave(
             Book.n()
               .Url(state.novel.url)
               .Name(state.novel.name)
               .ParserName(parserName)
-              .ImageBase64(
-                await context
-                  .http()
-                  .imageUrlToBase64(state.novel.image)
-              )
-          );
+              .ImageBase64(await context.http().imageUrlToBase64(state.novel.image)));
 
         if (!book.textReplacements) book.textReplacements = [];
         state.book = book;
@@ -1261,6 +1251,7 @@ export default (props: any) => {
         context.player.hooked = true;
         context.player.viewState = "Default";
         await context.player.jumpTo(chapter);
+
         loader.hide();
       }
     } catch (e) {
@@ -1269,6 +1260,8 @@ export default (props: any) => {
       // loader.hide();
     }
   };
+
+
 
   if (parserName == "epub" || epub)
     useEffect(() => {
@@ -1317,7 +1310,7 @@ export default (props: any) => {
       <View
         css="flex"
         style={{
-          zIndex:100,
+          zIndex: 100,
           backgroundColor: context.appSettings.backgroundColor
         }}
       >

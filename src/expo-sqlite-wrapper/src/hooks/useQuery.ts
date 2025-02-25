@@ -1,12 +1,9 @@
 import {
-  IBaseModule,
   IDatabase,
-  IDataBaseExtender,
   IId,
-  IQuery,
   IQueryResultItem,
   Query
-} from "../expo.sql.wrapper.types";
+} from "../sql.wrapper.types";
 import { IReturnMethods } from "../QuerySelector";
 import {
   createQueryResultType,
@@ -23,7 +20,6 @@ const UseQuery = <
   D extends string
 >(
   query:
-    | IQuery<T, D>
     | Query
     | IReturnMethods<T, D>
     | (() => Promise<T[]>),
@@ -57,9 +53,9 @@ const UseQuery = <
         if (!refMounted.current) return;
         setIsLoading(true);
         const sQuery = query as Query;
-        const iQuery = query as IQuery<T, D>;
+        const iQuery = query as IReturnMethods<T, D>;
         const fn = query as () => Promise<T[]>;
-        if (iQuery.Column !== undefined) {
+        if (iQuery.toList !== undefined) {
           dataRef.current = await iQuery.toList();
         } else if (!Functions.isFunc(query)) {
           const r = [] as IQueryResultItem<
@@ -72,10 +68,7 @@ const UseQuery = <
             tableName
           )) {
             r.push(
-              await createQueryResultType<T, D>(
-                x,
-                dbContext
-              )
+              await createQueryResultType<T, D>(x, dbContext as any)
             );
           }
           dataRef.current = r;
@@ -86,10 +79,7 @@ const UseQuery = <
           >[];
           for (const x of await fn()) {
             r.push(
-              await createQueryResultType<T, D>(
-                x,
-                dbContext
-              )
+              await createQueryResultType<T, D>(x, dbContext as any)
             );
           }
           dataRef.current = r;
@@ -134,7 +124,7 @@ const UseQuery = <
           r.push(
             await createQueryResultType(
               x,
-              dbContext
+              dbContext as any
             )
           );
         }

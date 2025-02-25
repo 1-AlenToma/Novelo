@@ -27,17 +27,13 @@ export default memo(
       context.parser.current.settings.group[
       itemIndex
       ];
-    const getItems = async () => {
+    const getItems = async (refreshing?: boolean) => {
       loader.show();
       try {
         let parser = context.parser.current;
-        let p = page.current + 1;
+        let p = refreshing ? 1 : page.current + 1;
         let oldItems = [...items];
-        let gitems = await parser.group(
-          item,
-          p,
-          true
-        );
+        let gitems = await parser.group(item, p, true, refreshing ? "RenewMemo" : undefined);
         oldItems.distinct("url", gitems);
         if (oldItems.length > items.length) {
           page.current = p;
@@ -58,8 +54,8 @@ export default memo(
       <View
         css={
           !vMode
-          ? "he:240 mab:10 clearwidth invert"
-          : "flex mab:10 root"
+            ? "he:240 mab:10 clearwidth invert"
+            : "flex mab:10 root"
         }>
         {loader.elem}
         <View
@@ -97,6 +93,7 @@ export default memo(
           />
         ) : null}
         <ItemList
+          onRefresh={{ loading: loader.loading, onRefresh: () => getItems(true) }}
           onPress={item => {
             option
               .nav("NovelItemDetail")

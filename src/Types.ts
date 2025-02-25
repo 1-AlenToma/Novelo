@@ -8,19 +8,15 @@ import {
   FilesZipper,
   Notification
 } from "./native";
-import { AppSettings, TableNames } from "./db";
+import { AppSettings, dbContext, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
 import DownloadManager from "./native/DownloadManager";
 import * as Speech from 'expo-speech';
 import DbContext from "./db/dbContext";
 
-import createDbContext, {
+import {
   IDatabase,
-  IQueryResultItem,
-  IBaseModule,
-  encrypt,
-  decrypt,
-  TableBuilder
+  Table
 } from "./expo-sqlite-wrapper/src";
 import { ReadDirItem } from "react-native-fs";
 
@@ -74,19 +70,10 @@ export const OmitType = <T, K extends keyof T>(Class: new () => T, ...keys: K[])
 
 
 
-export abstract class DBInit extends IBaseModule<TableNames> {
+export abstract class DBInit extends Table<TableNames> {
   static n() {
     return {} as any;
   };
-  //  this will be assigned by the db
-  async saveChanges() {
-
-  }
-
-  async update(...keys: string[]) {
-
-  }
-
 }
 
 type NestedKeyOf<T extends object, D extends any[] = [0, 0, 0, 0, 0]> = D extends [any, ...infer DD] ? {
@@ -144,8 +131,7 @@ export type GlobalType =
     },
     updater: string,
     selectedThemeIndex: number,
-    dbContext: () => DbContext,
-    db: () => IDatabase<TableNames>,
+    db: dbContext,
     size: {
       window: ISize,
       screen: ISize

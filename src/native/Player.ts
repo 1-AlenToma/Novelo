@@ -231,15 +231,10 @@ class Player {
         .ScrollProgress(this.currentChapterIndex > 0 && context.appSettings.navigationType === "Scroll" ? 100 : 10)
         .AudioProgress(0)
         .Parent_Id(this.book.id);
-      await context
-        .db()
-        .save<Chapter>(chSettings);
-      this.currentChapterSettings = await context
-        .db()
-        .asQueryable<Chapter>(chSettings);
-      this.book.chapterSettings.push(
-        this.currentChapterSettings as any
-      );
+
+      await context.db.save<Chapter>(chSettings);
+      this.currentChapterSettings = await context.db.asQueryable<Chapter>(chSettings);
+      this.book.chapterSettings.push(this.currentChapterSettings as any);
     }
 
     await this.book.saveChanges();
@@ -268,8 +263,7 @@ class Player {
         this.currentChapterSettings
       ) {
         this.show();
-        this.currentChapterSettings.isFinished =
-          finished;
+        this.currentChapterSettings.isFinished = finished;
         await this.currentChapterSettings.saveChanges();
       }
     this.jumpTo(this.currentChapterIndex + 1);
