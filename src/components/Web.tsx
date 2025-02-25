@@ -346,7 +346,9 @@ export default ({
         paddingRight: (5).sureValue(context.appSettings.margin),
         paddingTop: "40px",
         lineHeight: context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight),
-        fontSize: context.appSettings.fontSize
+        fontSize: context.appSettings.fontSize,
+        maxHeight: "100%",
+        overflowY: "auto"
       };
 
       let scrollType = context.player.novel.type?.isManga() ? "PaginationScroll" : (context.player.showPlayer ? "Player" : (context.appSettings.navigationType == "Snap" ? "Pagination" : (context.appSettings.navigationType == "ScrollSnap" ? "PaginationScroll" : "Scroll")));
