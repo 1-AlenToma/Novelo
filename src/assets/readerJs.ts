@@ -334,6 +334,20 @@ export const JS = `
                                         return view;
                                 }
 
+                                const validateImages = (view)=> {
+                                    //window.onImageLoadError
+                                    try{
+                                    view = view || document;
+                                    const imgs = document.querySelectorAll("img");
+                                    imgs.forEach(x=> {
+                                        x.setAttribute("onerror", "window.onImageLoadError(this)")
+                                    });
+                                  }catch(e){
+                                        alert(e);
+                                  }
+                                
+                                }
+
                                 const createScrollPreview = () => {
                                         scrollPerview = document.createElement("div");
                                         scrollPerview.className = "ScollPreview";
@@ -380,7 +394,7 @@ export const JS = `
                                                                 let h = mock.getBoundingClientRect();
                                                                 return (viewHeight = Math.max(mock.offsetHeight, h.height))
                                                         }
-                                                        // window.postmsg("log", "textLength " + size()+ "height "+ height )
+
                                                         while (size() < height && index < text.length) {
                                                                 let old = mock.innerHTML;
                                                                 mock.innerHTML += text[index];
@@ -408,6 +422,7 @@ export const JS = `
                                                                 createMock();
                                                 } else {
                                                         mock.innerHTML = text;
+                                                        
                                                         if (option.scrollType != "PaginationScroll")
                                                                 slider.classList.remove("slider");
                                                         else {
@@ -421,6 +436,7 @@ export const JS = `
                                         }
                                 }
                                 createMock();
+                                validateImages();
 
                                 window.cleanStyle(".sliderView");
                                 if (option.addNext && ["Pagination", "PaginationScroll"].includes(option.scrollType)) {
@@ -946,30 +962,37 @@ export const JS = `
                         window.isValidUrl = urlString => {
                                 return urlString.indexOf("https") != -1 || urlString.indexOf("http") != -1 || urlString.indexOf("www.") != -1
                         }
+
+                        window.getId = ()=> {
+
+                                return Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
+
+                        }
+
+                        window.onImageLoadError = (img)=> {
+                          let src = img.getAttribute("src");
+                          if (!src || src.trim().length<=0)
+                          {
+                                return;
+                          }
+                          if (window.isValidUrl(src))
+                                return; // it is an external image, cant do anything to load it.
+                          
+                          img.id = window.getId();
+                          window.postmsg("Image", [{src, id: img.id}]);
+                        }
+                          
                         window.renderImage = (items) => {
                                 try {
-                                        let imagesToSend = [];
                                         for (let item of items.data) {
                                                 let img = undefined;
                                                 if (!item)
-                                                        continue;
-                                                if (!item.src) {
+                                                  continue;
                                                         img = document.getElementById(item.id);
-                                                        if (img)
-                                                                imagesToSend.push({ src: img.getAttribute("src"), id: item.id })
-                                                }
-                                                else {
-                                                        img = document.getElementById(item.id);
-                                                        if (!img || img.getAttribute("src").length <= 0) {
-                                                                if (img)
-                                                                        img.remove();
-                                                                continue;
-                                                        }
-                                                        img.setAttribute("src", item.cn);
-                                                }
+                                                        if (img && img.setAttribute)
+                                                           img.setAttribute("src", item.cn);
+                                                
                                         }
-                                        if (imagesToSend.length > 0)
-                                                window.postmsg("Image", imagesToSend);
                                 } catch (e) {
                                         if (window.__DEV__)
                                                 alert(e)
@@ -984,37 +1007,13 @@ export const JS = `
                                         await sleep(200);
                                 window.postmsg("data", true);
                         }
-                        psg();
 
 
                         window.loadBody = async (readerOption) => {
-                                let images = null;
-                                const imageLoader = async () => {
-                                        if (images == null)
-                                                images = document.querySelectorAll("img");
-                                        let items = [];
-                                        let i = 1;
-                                        for (let x of images) {
-                                                i++;
-                                                if (!window.isValidUrl(x.getAttribute("src"))) {
-                                                        x.id = "img" + i;
-                                                        items.push({ id: x.id });
-                                                }
-
-                                                if (items.length >= 2) {
-                                                        window.renderImage({ data: items })
-                                                        items = [];
-                                                        await window.sleep(5)
-                                                }
-                                        }
-                                        if (items.length > 0)
-                                                window.renderImage({ data: items })
-                                }
-
                                 await window.create(readerOption);
-                                imageLoader();
                                 window.postmsg("loader", false); // hide loader
                         }
+                        psg();
                 } catch (e) {
                         if (window.__DEV__)
                                 alert(e)

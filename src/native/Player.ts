@@ -144,11 +144,10 @@ class Player {
     let path = this.novel.imagePath as string;
     if (path) {
       for (let image of href) {
-        let src = this.book.parserName != "epub" ? path.path(this.currentChapterIndex.toString(), image.src).trimEnd("/") :
-          path.path(getFileInfoFromUrl(image.src)).trimEnd("/");
+        let src = this.book.parserName != "epub" ? path.path(this.currentChapterIndex.toString(), image.src).trimEnd("/") : path.path(getFileInfoFromUrl(image.src)).trimEnd("/");
         let imageData = await context.imageCache.read(src);
         if (!imageData || imageData.empty())
-          console.warn("could not find", src)
+          console.warn("could not find", src, "-", image.src)
         imgs.push({ ...image, path, cn: imageData });
 
       }

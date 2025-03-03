@@ -16,7 +16,8 @@ import {
   ChapterView,
   HomeNovelItem,
   TabView,
-  AlertDialog
+  AlertDialog,
+  Modal
 } from "../../components/";
 import WebView from "react-native-webview";
 import * as React from "react";
@@ -42,7 +43,8 @@ export default ({ ...props }: any) => {
       cText: "",
       infoLoading: false,
       book: {} as Book | undefined,
-      authorNovels: [] as any[]
+      authorNovels: [] as any[],
+      showNovelUpdateWebView: false
     }).ignore(
       "book",
       "novel",
@@ -56,12 +58,8 @@ export default ({ ...props }: any) => {
       state.novel.authorUrl?.has()
     ) {
       loader.show();
-      let parser =
-        context.parser.find(parserName);
-      state.authorNovels =
-        await parser.getByAuthor(
-          state.novel.authorUrl
-        );
+      let parser = context.parser.find(parserName);
+      state.authorNovels = await parser.getByAuthor(state.novel.authorUrl);
       loader.hide();
     }
   };
@@ -95,7 +93,7 @@ export default ({ ...props }: any) => {
 
   let loadInfo = async (novel: any) => {
     try {
-      return;
+      //return;
       state.infoLoading = true;
       if (novel && (novel.name?.has() ?? false)) {
         let item = await context.parser
@@ -120,24 +118,47 @@ export default ({ ...props }: any) => {
   return (
     <View
       css="flex root">
+      <Modal addCloser={true} css="he-90%" isVisible={state.showNovelUpdateWebView} onHide={() => state.showNovelUpdateWebView = false}>
+        <View css="flex mat-30 mab-10">
+          <WebView
+            injectedJavaScript={methods.injectCSS(`.pgAdWrapper, #div-gpt-ad-noid_blank {
+              display:none !important; visibility: hidden;opacity:0;
+              }`)}
+            nestedScrollEnabled={true}
+            cacheEnabled={true}
+            source={{
+              uri: state.novel.novelUpdateUrl
+            }}
+            contentMode="mobile"
+            scalesPageToFit={true}
+            originWhitelist={["*"]}
+            scrollEnabled={true}
+            userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+            setSupportMultipleWindows={false}
+            style={[
+              {
+                flexGrow: 1,
+                zIndex: 70,
+                flex: 1
+              }
+            ]}
+            allowFileAccess={true}
+            allowFileAccessFromFileURLs={true}
+            allowUniversalAccessFromFileURLs={true}
+            javaScriptEnabled={true}
+          />
+        </View>
+      </Modal>
       <Header
         {...props}
         titleCss="fos:12"
         buttons={[
           {
-            ifTrue:
-              state.novel.novelUpdateUrl?.has() ??
-              false,
+            ifTrue: state.novel.novelUpdateUrl?.has() ?? false,
             text: (
-              <Icon
-                type="Octicons"
-                name="browser"
-              />
+              <Icon type="Octicons" name="browser" />
             ),
-            press: () =>
-              Linking.openURL(
-                state.novel.novelUpdateUrl
-              )
+            press: () => state.showNovelUpdateWebView = true
           }
         ]}
         title={state.novel?.name}
@@ -362,9 +383,7 @@ export default ({ ...props }: any) => {
                     }}
                     vMode={false}
                     itemCss={
-                      !false
-                        ? "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"
-                        : "boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
+                      "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"
                     }
                     items={
                       state.authorNovels ?? []
@@ -374,9 +393,9 @@ export default ({ ...props }: any) => {
                 </View>
                 <View
                   ifTrue={() => state.novel.novelUpdateRecommendations?.has()}
-                  css="box he:265 pal:10 par:10 juc:flex-start invert">
+                  css="box mih:265 pal:10 par:10 juc:flex-start invert">
                   <Text
-                    css="header pab:5">
+                    css="header fos:18 pab:5">
                     Recommendations
                   </Text>
                   <ItemList
@@ -389,27 +408,16 @@ export default ({ ...props }: any) => {
                         })
                         .push();
                     }}
-                    itemCss="boc:#ccc bow:1 he:220 wi:170 pa:4 mal:5 bor:5 overflow"
-                    container={({ item }) => (
-                      <View css="clearboth bor:5 overflow">
-                        <Image
-                          url={item.image}
-                          css="resizeMode:contain bor:5 clearwidth wi:100% he:100%"
-                        />
-                        <View css="clearwidth bottom he:30% overflow">
-                          <View css="blur bottom clearboth" />
-                          <Text css="clearwidth mih:40% overflow header co:#fff pa:4 tea:center">
-                            {item.name}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
+                    itemCss="wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray"
+                    container={({ item, index }) => (
+                      <Text css="fow-bold fos-15 pal-10">{item.name}</Text>
+                    )
+                    }
                     items={
-                      state.novel
-                        .novelUpdateRecommendations
+                      state.novel.novelUpdateRecommendations
                     }
                     nested={true}
-                    vMode={false}
+                    vMode={true}
                   />
                 </View>
               </View>

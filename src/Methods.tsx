@@ -521,6 +521,18 @@ const ifSelector = (
   return value;
 };
 
+const injectCSS = (css: string) => {
+  let js = `
+    try{
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode("${css.replace(/(\r\n|\n|\r)/gm, "")}"));
+    document.body.appendChild(style);
+  }catch(e){alert(e)}
+  true;
+  `;
+  return js;
+}
+
 export {
   public_m,
   sleep,
@@ -533,5 +545,6 @@ export {
   arrayBuffer,
   invertColor,
   ifSelector,
-  generateText
+  generateText,
+  injectCSS
 };

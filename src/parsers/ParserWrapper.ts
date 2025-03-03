@@ -17,7 +17,7 @@ const debugg = false;
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
-  infoEnabled: boolean = false;
+  infoEnabled: boolean = true;
   constructor(parser: Parser) {
     super(parser.url, parser.name, parser.icon, parser.type);
     this.parser = parser;
@@ -41,7 +41,7 @@ export default class ParserWrapper extends Parser {
 
   showError() {
     if (this.getError())
-      AlertDialog.toast({ message: this.getError()?.toString(), type: "Error" });
+      AlertDialog.toast({ title: "OFFLINE", message: this.getError()?.toString(), type: "Error" });
 
   }
 
@@ -85,7 +85,7 @@ export default class ParserWrapper extends Parser {
   }
 
   @Memo({
-    daysToSave: 5,
+    daysToSave: 4,
     isDebug: false,
     argsOverride: (args: any[]) => {
       return [args.firstOrDefault("url")];
@@ -107,8 +107,7 @@ export default class ParserWrapper extends Parser {
     item: DetailInfo,
     alertOnError?: boolean
   ) {
-    let novel =
-      await this.novelUpdate.search(item);
+    let novel = await this.novelUpdate.search(item);
     if (alertOnError) this.showError();
     return novel;
   }

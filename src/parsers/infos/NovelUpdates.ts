@@ -11,14 +11,15 @@ class NovelUpdate extends NovelInfo {
 
   async search(item: DetailInfo) {
     try {
-      let url = this.url.query({
-        s: item.name.replace(/ /g, "+"),
-        post_type: "seriesplans"
+      //https://www.novelupdates.com/series-finder/?sf=1&sh=World+Defying+Dan+God&sort=sdate&order=desc
+      let url = this.url.join("series-finder").query({
+        sf: 1,
+        sh: item.name.replace(/ /g, "+"),
+        sort: "sdate",
+        order: "desc"
       });
 
-      let html_0 = (
-        await this.http.get_html(url, this.url)
-      ).html.$("body");
+      let html_0 = (await this.http.get_html(url, this.url)).html.$("body");
       let serUrl = "";
       html_0
         .find(".search_title a")
@@ -93,6 +94,8 @@ class NovelUpdate extends NovelInfo {
         item.novelUpdateRating =
           html_1.find(".uvotes").text;
 
+
+
         item.novelUpdateRecommendations =
           item.novelUpdateRecommendations = html_1
             .find('.genre[title*="Recommended"]')
@@ -100,19 +103,12 @@ class NovelUpdate extends NovelInfo {
               LightInfo.n()
                 .Name(x.text)
                 .Url(x.url("href"))
-                .Image(
-                  x
-                    .url("href")
-                    .imageFetchBuilder(
-                      ".seriesimg img",
-                      this.url
-                    )
-                )
             );
       }
     } catch (e) {
       console.error(e);
     }
+
     return item;
   }
 }
