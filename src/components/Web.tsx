@@ -365,9 +365,11 @@ export default ({
       options.addFunction("onStart", `()=> {window.postmsg("Prev", true);}`);
       options.addFunction("onscroll", `(value)=> {window.postmsg("scrollValue", value);}`);
       options.addFunction("scrollPercentageValue", `(percent) => {window.postmsg("scrollpercent", percent);}`);
+      let json = JSON.stringify(options);
+      json = json.replace(`"HTMLCONTENT"`, "`" + JSON.stringify(content.content).slice(1, -1) + "`");
       const sliderJs = (`
       if(window.loadBody){
-        window.loadBody(${JSON.stringify(options)})
+        window.loadBody(${json})
       }
       true;
     `);

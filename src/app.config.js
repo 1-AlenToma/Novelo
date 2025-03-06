@@ -1,11 +1,11 @@
 
-const isDev = process.env.APP_ENV === "development";
-console.log(`Running in ${isDev ? "development" : "production"} env`);
+//const isDev = process.env.APP_ENV === "development";
+//console.log(`Running in ${isDev ? "development" : "production"} env`);
 
 export default {
   "name": "Novelo",
   "slug": "Novelo",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "orientation": "default",
   "icon": "./assets/ic_launcher_round.png",
   "scheme": "novels",
@@ -40,7 +40,7 @@ export default {
       "foregroundImage": "./assets/ic_launcher_foreground.png",
       "backgroundColor": "#ffffff"
     },
-    "package": isDev ? "com.alentoma.Novelo.dev" : "com.alentoma.Novelo"
+    "package": "com.alentoma.Novelo"
   },
   "web": {
     "favicon": "./assets/ic_launcher.png"
@@ -71,7 +71,6 @@ export default {
     "expo-asset"
   ],
   "extra": {
-    env: isDev ? "development" : "production",
     "eas": {
       "projectId": "a31d9c33-fb94-4252-b9e7-a744705a994e"
     }

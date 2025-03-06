@@ -1,5 +1,4 @@
 package com.alentoma.Novelo
-
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

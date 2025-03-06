@@ -6,6 +6,8 @@ import {
 } from "../native";
 
 import ReadNovelFull from "./ReadNovelFull";
+import NovelFull from "./NovelFull";
+import NovelFullCom from "./NovelFullCom";
 import MangaBerri from "./MangaBerri";
 import NovelBin from "./Novelbin";
 import NovelBinCom from "./NovelBinCom";
@@ -46,7 +48,7 @@ export default class ParserWrapper extends Parser {
   }
 
   static getAllParsers(parserName?: string) {
-    let prs = [ReadNovelFull, NovelBinCom, NovelBin, MangaBerri].map(
+    let prs = [ReadNovelFull, NovelFullCom, NovelFull, NovelBinCom, NovelBin, MangaBerri].map(
       x => new ParserWrapper(new x())
     );
     if (parserName)

@@ -6,7 +6,7 @@ import StateBuilder from "react-smart-state";
 import { IGlobalState, FileInfo } from "./Types";
 import * as React from "react";
 import TestRunner from "./tests/TestRunner";
-import Html  from "native/Html";
+import Html from "native/Html";
 
 const fileTypesExt = [".json", ".html", ".epub", "zip", "rar", ".jpg", ".gif", ".png", ".jpeg", ".webp"];
 
@@ -70,6 +70,7 @@ declare global {
             attr?: string
         ): string;
         safeSplit(c: string, index: number): string;
+        toCode: () => number[];
     }
 
     interface Number {
@@ -77,6 +78,16 @@ declare global {
         readAble: () => any;
         procent: (index: number) => number;
     }
+}
+
+String.prototype.toCode = function () {
+    let str = new String(this).toString();
+    let code: number[] = [];
+    for (let i = 0; i < str.length; i++) {
+        code.push(str.charCodeAt(i))
+    }
+
+    return code;
 }
 
 String.prototype.onEmpty = function (defaultValue: string) {

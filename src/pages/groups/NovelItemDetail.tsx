@@ -289,7 +289,15 @@ export default ({ ...props }: any) => {
                         {state.novel.tags?.map(
                           (x, i) => (
                             <TouchableOpacity
-                              activeOpacity={1}
+                              onPress={() => {
+                                options
+                                  .nav("Search")
+                                  .add({
+                                    searchTxt: x,
+                                    parserName
+                                  })
+                                  .push();
+                              }}
                               css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8 invert"
                               key={i}>
                               <Text

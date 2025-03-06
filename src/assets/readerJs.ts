@@ -290,14 +290,11 @@ export const JS = `
                 const pageSleeper = (ms) => new Promise(r => setTimeout(r, ms))
                 let createTimer = undefined;
                 const create = async (option) => {
-                        clearTimeout(createTimer);
-                        if (rendering) {
-                                createTimer = setTimeout(() => create(option), 10);
-                                return;
-                        }
+
+                 
                         try {
                                 validateJson(option);
-                                rendering = true;
+                                rendering = false;
                                 options = option;
                                 document.body.innerHTML = "";
                                 div = document.createElement("div");
@@ -836,13 +833,7 @@ export const JS = `
                 }
 
 
-                let resizeTimer = undefined;
-                window.addEventListener("resize", () => {
-                        clearTimeout(resizeTimer)
-                        resizeTimer = setTimeout(() => {
-                                create(options);
-                        }, 200);
-                });
+    
 
                 window.addEventListener("keyup", (e) => {
                         keyDown = false;
@@ -925,6 +916,7 @@ export const JS = `
 
                 const regChar = ("”“-=%+*<>|/[]{}()$#!!&?,:;..'’‘ _").split("").map(x => addString("\\\\", x)).join("|");
                 window.highlight = function (options) {
+                        return;
                         var inputText = document.querySelector(options.selector);
                         if (!options.text)
                                 options.text = inputText.innerText;
@@ -1002,16 +994,30 @@ export const JS = `
                         function sleep(ms) {
                                 return new Promise((r) => setTimeout(r, ms))
                         }
+
+
                         async function psg() {
                                 while (window.postmsg === undefined)
                                         await sleep(200);
                                 window.postmsg("data", true);
                         }
+                        
+                        let resizeTimer = undefined;
+                        const onResize = ()=> {
+                          clearTimeout(resizeTimer)
+                        resizeTimer = setTimeout(() => {
+                                window.create(options);
+                        }, 200);
+                        }
 
+                                    
+            
 
                         window.loadBody = async (readerOption) => {
+                                window.removeEventListener("resize", onResize);
                                 await window.create(readerOption);
                                 window.postmsg("loader", false); // hide loader
+                                window.addEventListener("resize", onResize);
                         }
                         psg();
                 } catch (e) {

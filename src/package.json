@@ -1,14 +1,12 @@
 {
   "name": "novelo",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "update": "eas update --message [dbclick fix]",
     "gradlew": "cd android && gradlew assembleRelease",
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start",
-    "android:dev": "cross-env APP_ENV=development expo run:android --variant developmentDebug",
-    "start:dev": "cross-env APP_ENV=development expo start",
     "android": "npx expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
