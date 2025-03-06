@@ -8,7 +8,8 @@ import {
   invertColor,
   sleep
 } from "../Methods";
-import { IImage } from "../Types"
+import { IImage } from "../Types";
+import Html from "./Html";
 type ViewState =
   | "Default"
   | "Folded"
@@ -74,6 +75,7 @@ class Player {
       return (this.html = html ?? "");
     }
     let txt = html ?? this.currentChapter.content ?? this.html;
+    txt = new Html(txt).remove("script, style").html;
 
     txt = context.appSettings.useSentenceBuilder?.enabled && this.book.parserName != "epub" ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
     try {
