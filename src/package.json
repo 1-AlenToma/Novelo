@@ -23,6 +23,7 @@
     "@react-navigation/native-stack": "^6.9.17",
     "@shopify/flash-list": "1.7.3",
     "advanced-html-parser": "^1.1.0",
+    "bestzip": "^2.2.1",
     "buffer": "^6.0.3",
     "crypto-js": "^4.2.0",
     "expo": "^52.0.32",
