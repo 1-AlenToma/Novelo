@@ -8,7 +8,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "emitDecoratorMetadata": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
   },
   "include": [
     "./Global.ts"

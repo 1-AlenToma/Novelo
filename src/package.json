@@ -3,7 +3,8 @@
   "version": "1.1.9",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "zip": "npx bestzip parsers.zip parsers",
+    "parse": "node parsers/tsc/nodeParser.mjs",
+    "zip": "npm run parse && npx bestzip ../parsers.zip temp/parsers",
     "update": "eas update --message [dbclick fix]",
     "gradlew": "npm run zip && cd android && gradlew assembleRelease",
     "compile": "tsc ./parsers/ReadNovelFull.ts",
@@ -78,14 +79,14 @@
     "rn-fetch-blob": "^0.12.0",
     "rn-update-apk": "^5.0.0",
     "translate-google-api": "^1.0.4",
-    "util": "^0.12.5",
-    "typescript": "~5.3.3"
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/node": "^22.7.5",
     "@types/react": "~18.3.12",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "typescript": "~5.3.3"
   },
   "private": true
 }
