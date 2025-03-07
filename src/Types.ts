@@ -6,7 +6,8 @@ import {
   HttpHandler,
   ImageCache,
   FilesZipper,
-  Notification
+  Notification,
+  Parser
 } from "./native";
 import { AppSettings, dbContext, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
@@ -124,10 +125,12 @@ export type GlobalType =
     nav: any,
     orientation: (value: "Default" | "LANDSCAPE") => void,
     parser: {
+      default: string;
+      parseCode: (code: string) => any;
       current: ParserWrapper,
       find: (name: string) => ParserWrapper,
       set: (p: any) => Promise<void>,
-      all: () => ParserWrapper[],
+      all: ParserWrapper[],
     },
     updater: string,
     selectedThemeIndex: number,

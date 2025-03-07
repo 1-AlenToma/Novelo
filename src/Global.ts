@@ -1,6 +1,7 @@
 import CStyle from "./components/CStyle";
 import { cssTranslator } from "./styles";
 import IDOMParser from "advanced-html-parser";
+import { Element, Node } from "advanced-html-parser/types"
 import * as Methods from "./Methods";
 import StateBuilder from "react-smart-state";
 import { IGlobalState, FileInfo } from "./Types";
@@ -281,10 +282,16 @@ String.prototype.cleanText = function () {
 };
 
 String.prototype.htmlArray = function () {
-    let str = new String(this).toString();
-    const doc = IDOMParser.parse(`<div>${str}</div>`);
-    let elems = [...doc.documentElement.querySelectorAll("p,h1,h2,h3,h4,h5")];
-    return elems.map(x => x.outerHTML);
+    let str = new String(this).toString().replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
+    const doc = IDOMParser.parse(`<div>${str}</div>`, {
+        errorHandler: {
+            error: () => { },
+            warning: () => { },
+            fatalError: () => { }
+        }
+    });
+
+    return doc.documentElement.text().split(/\n/gim).filter(x => !x.empty()).map(x => `<p>${x}</p>`)
 };
 
 String.prototype.htmlImagesSources = function () {

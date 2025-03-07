@@ -5,7 +5,8 @@ import {
   SizeAnimator,
   TextInput,
   Icon,
-  ActionSheetButton
+  ActionSheetButton,
+  Image
 } from "../components";
 import * as React from "react";
 import { proc } from "../Methods";
@@ -28,7 +29,7 @@ export default ({
   ...props
 }: {
   value?: any;
-  title?: boolean;
+  title?: string;
   onInputChange?: (text: string) => void;
   inputEnabled?: boolean;
   css?: string;
@@ -42,7 +43,9 @@ export default ({
   const updater = useUpdate();
   context.hook(
     "KeyboardState",
-    "isFullScreen"
+    "isFullScreen",
+    "parser.all",
+    "parser.current"
   );
   const input = useRef();
   const sourceContainer = useRef({ close: () => { } });
@@ -138,7 +141,7 @@ export default ({
             }}
             style={{
               width:
-                context.parser.all().length > 1
+                context.parser.all.length > 1
                   ? "90%"
                   : "98%"
             }}
@@ -179,7 +182,7 @@ export default ({
               ifTrue={() =>
                 inputEnabled &&
                 !onInputChange &&
-                context.parser.all().length > 1
+                context.parser.all.length > 1
               }
               css="mal:10 bac-transparent"
               size="60%"
@@ -188,12 +191,12 @@ export default ({
               btn={
                 <Icon
                   size={30}
-                  type="MaterialCommunityIcons"
-                  name="source-repository"
+                  type="MaterialIcons"
+                  name="extension"
                 />
               }>
               {context.parser
-                .all()
+                .all
                 .map((x, i) => (
                   <TouchableOpacity
                     key={i}
@@ -202,14 +205,15 @@ export default ({
                       sourceContainer.current.close();
                     }
                     }
-                    css={`listButton pal:5 invert ${x.name ===
+                    css={`listButton pal:5 fld-row invert ${x.name ===
                       context.parser.current.name
                       ? "selectedRow bor:5"
                       : ""
                       }`}>
-                    <Text css="fow:bold invertco">
-                      {x.name} ({x.type})
-                    </Text>
+                    <Image url={`http://www.google.com/s2/favicons?domain=${x.url}`} css="resizeMode:contain he:20 wi:20" />
+                    <Text css="pal-5 invertco header">{x.name} <Text css={"co-primary"}>
+                      ({x.type})
+                    </Text></Text>
                   </TouchableOpacity>
                 ))}
             </ActionSheetButton>

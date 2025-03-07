@@ -10,11 +10,16 @@ import {
     HttpHandler,
     ImageCache,
     FilesZipper,
-    Notification
+    Notification,
+    Value, ChapterInfo, LightInfo, DetailInfo, ParserDetail, SearchDetail, Parser, Html
 } from "./native";
 import { Dimensions, Keyboard, LogBox } from "react-native";
 import StateBuilder from "react-smart-state";
 import { GlobalType, FilesPath } from "./Types";
+import * as ts from "typescript";
+
+
+
 
 LogBox.ignoreLogs([
     "fontFamily",
@@ -30,8 +35,7 @@ import ParserWrapper from "./parsers/ParserWrapper";
 const globalDb = new dbContext();
 const globalHttp = new HttpHandler();
 
-const parsers = ParserWrapper.getAllParsers() as ParserWrapper[];
-let currentParser = parsers[0];
+let currentParser = ParserWrapper.getAllParsers("ReadNovelFull") as ParserWrapper;
 const downloadManager = new DownloadManager();
 const cache = new FileHandler(FilesPath.Cache, "Cache");
 const zip = new FilesZipper();
@@ -89,8 +93,21 @@ const data = StateBuilder<GlobalType>(
             );
         },
         parser: {
+            default: "ReadNovelFull",
+            parseCode: (code: string) => {
+                const parserItem = {
+                    Value, ChapterInfo, LightInfo, DetailInfo, ParserDetail, SearchDetail, Parser, Html, HttpHandler
+                }
+                if (code && code.length > 0) {
+                    let result = ts.transpile(code.replace(/export default/gmi, ""));
+                    let className = code.match(/(class )(\w)+( )/gmi)?.toString().replace("class", "").trim();
+                    let runnalbe: any = eval(`(function(require){ ${result} \n return ${className}})`);
+                    return runnalbe?.(() => parserItem);
+                }
+                return undefined as any
+            },
             current: currentParser,
-            find: (name: string) => parsers.find(x => x.name == name) as ParserWrapper,
+            find: (name: string) => data.parser.all.find(x => x.name == name) as ParserWrapper,
             set: async (p: any) => {
                 p = data.parser.find(p.name)
                 p.settings = await p.load();
@@ -101,7 +118,7 @@ const data = StateBuilder<GlobalType>(
                 // data.updater = newId();
                 //alert(p.name)
             },
-            all: () => parsers
+            all: []
         },
         updater: newId(),
         selectedThemeIndex: 0,
@@ -113,6 +130,39 @@ const data = StateBuilder<GlobalType>(
         init: async () => {
             try {
                 //await globalDb.database.dropTables();
+                let currentParserString: string = "";
+                const loadParsers = async () => {
+                    const defaultParser = ParserWrapper.getAllParsers(data.parser.default) as ParserWrapper;
+                    let settings = data.appSettings;
+                    if (!settings.parsers)
+                        settings.parsers = [];
+                    if (currentParserString == JSON.stringify(settings.parsers))
+                        return;
+                    currentParserString = JSON.stringify(settings.parsers);
+                    let parserObjects = settings.parsers.map(x => data.parser.parseCode(x.content)).filter(x => x != undefined).map((x: any) => new x());
+                    let parsers: ParserWrapper[] = [];
+                    if (!parserObjects.find(x => x.name == data.parser.default))
+                        parsers.push(defaultParser);
+                    parsers.push(...parserObjects.map(x => new ParserWrapper(x)));
+                    parsers = parsers.sort((a, b) => {
+                        if (a.name == data.parser.default) { return -1; }
+                        return 1;
+                    })
+                    data.parser.all = parsers;
+                    if (data.appSettings.currentNovel && !data.appSettings.currentNovel.isEpub && !parsers.find(x => x.name == data.appSettings.currentNovel?.parserName)) {
+                        data.appSettings.currentNovel = {} as any;
+                        await data.appSettings.saveChanges();
+                    }
+                    if (!parsers.find(x => x.name == data.parser.current.name))
+                        await data.parser.set(parsers[0]);
+
+                    if (data.player && !data.player.isEpup && data.player.book && data.player.book.parserName && !parsers.find(x => x.name == data.player.book.parserName)) {
+                        data.player.showPlayer = data.player.hooked = false;
+                        data.player.playing(false);
+                        await context.speech.stop();
+
+                    }
+                }
 
                 const loadVoices = (counter?: number) => {
                     setTimeout(
@@ -144,13 +194,18 @@ const data = StateBuilder<GlobalType>(
                     data.files = new FileHandler(data.appSettings.filesDataLocation.path(FilesPath.File), undefined, true);
                     data.imageCache = new ImageCache(data.appSettings.filesDataLocation.path(FilesPath.Images))
                 }
+                await loadParsers();
                 if (data.parser.find(data.appSettings.selectedParser)) {
                     data.parser.set(data.parser.find(data.appSettings.selectedParser))
                 }
+
                 let appSettingWatcher = globalDb.watch("AppSettings");
                 appSettingWatcher.onSave = async items => {
                     let item = items?.firstOrDefault();
-                    if (item) data.appSettings = item as any;
+                    if (item) {
+                        data.appSettings = item as any;
+                        loadParsers();
+                    }
                 };
                 data.selectedThemeIndex = data.appSettings.selectedTheme ?? 0;
                 loadVoices();
@@ -195,6 +250,7 @@ const data = StateBuilder<GlobalType>(
         "imageCache",
         "cache",
         "parser.current",
+        "parser.all",
         "nav",
         "voices",
         "selection.downloadSelectedItem",
@@ -204,6 +260,8 @@ const data = StateBuilder<GlobalType>(
         "player.novel",
         "zip",
         "notification",
-        "db"
+        "db",
+        "appSettings.currentNovel",
+        "appSettings.parsers"
     ).globalBuild();
 export default data;

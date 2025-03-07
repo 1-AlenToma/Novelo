@@ -2,7 +2,7 @@ import Home from "./Home";
 import Favorit from "./Favorit";
 import Settings from "./Settings";
 import Downloaded from "./Downloaded";
-import Header from "./Header";
+import Libraries from "./Libraries";
 import { TabBar, View } from "../components";
 import * as React from "react";
 
@@ -18,6 +18,7 @@ export default ({ ...props }) => {
           content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
         }
       }}>
+
       <Home
         title="home"
         disableScrolling={true}
@@ -40,6 +41,7 @@ export default ({ ...props }) => {
         }}
         title="Favorit"
       />
+
       <Downloaded
         {...props}
         disableScrolling={true}
@@ -49,6 +51,17 @@ export default ({ ...props }) => {
           css: "invert"
         }}
         title="Downloads"
+      />
+
+      <Libraries
+        {...props}
+        disableScrolling={true}
+        icon={{
+          name: "extension",
+          type: "MaterialIcons",
+          css: "invert"
+        }}
+        title="Sources"
       />
       <Settings
         {...props}

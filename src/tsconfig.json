@@ -10,5 +10,7 @@
     "emitDecoratorMetadata": true,
     "noImplicitAny": false
   },
-  "include": ["./Global.ts"]
+  "include": [
+    "./Global.ts"
+  ]
 }

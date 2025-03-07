@@ -75,7 +75,7 @@ class Player {
       return (this.html = html ?? "");
     }
     let txt = html ?? this.currentChapter.content ?? this.html;
-    txt = new Html(txt).remove("script, style").html;
+    txt = new Html(txt).remove("script, style, iframe").html;
 
     txt = context.appSettings.useSentenceBuilder?.enabled && this.book.parserName != "epub" ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
     try {

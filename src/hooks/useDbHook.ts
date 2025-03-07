@@ -39,6 +39,7 @@ export default (
         if (hasChange(item)) {
           setValues(item);
           updater();
+          break;
         }
       }
     };

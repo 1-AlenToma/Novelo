@@ -29,6 +29,12 @@ class Book extends DBInit {
     super("Books");
   }
 
+  isOnline() {
+    if (this.parserName == "epub")
+      return true;
+    return context.parser.find(this.parserName) != undefined;
+  }
+
   config() {
     return this.TableBuilder<Book, TableNames>("Books")
       .column("name")

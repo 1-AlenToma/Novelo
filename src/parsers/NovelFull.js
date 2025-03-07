@@ -122,7 +122,7 @@ export default class NovelFull extends Parser {
 
     async chapter(url) {
         let html = (await this.http.get_html(url)).html;
-        return html.$(".chapter-c").html;
+        return html.$(".chapter-c").remove(".footer").html;
     }
 
     async detail(url) {

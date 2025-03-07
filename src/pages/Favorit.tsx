@@ -36,20 +36,27 @@ const ItemRender = ({
     }
   );
 
-  useEffect(() => {
-    (async () => {
-      for (let b of books) {
-        if (b.parserName !== "epub") {
-          let novel = await context.parser.find(b.parserName).detail(b.url);
-          if (novel) {
-            context.novelFavoritInfo[b.url] = `(${b.selectedChapterIndex + 1}/${novel.chapters.length})`;
-            context.novelFavoritInfo = { ...context.novelFavoritInfo };
-          }
+  const loadNovelDetail = async () => {
+    for (let b of books) {
+      if (b.parserName !== "epub") {
+        let parser = context.parser.find(b.parserName);
+        let novel = await parser?.detail(b.url);
+        if (novel) {
+          context.novelFavoritInfo[b.url] = `(${b.selectedChapterIndex + 1}/${novel.chapters.length})`;
+          context.novelFavoritInfo = { ...context.novelFavoritInfo };
+        } else if (!parser) {
+          context.novelFavoritInfo[b.url] = `(Missing parser ${b.parserName})`;
+          context.novelFavoritInfo = { ...context.novelFavoritInfo };
         }
-        await sleep(500);
       }
-    })();
+    }
+  }
+
+  useEffect(() => {
+    loadNovelDetail();
   }, [books]);
+
+  context.useEffect(loadNovelDetail, "parser.all")
 
   item = books.find(x => x.url === item.url) ?? item;
 
@@ -100,6 +107,7 @@ const ItemRender = ({
               css="invertco"
             />
           ),
+          ifTrue: item.isOnline?.(),
           text: "Read",
           onPress: () => {
             options
@@ -131,6 +139,7 @@ const ItemRender = ({
               css="invertco"
             />
           ),
+          ifTrue: item.isOnline?.(),
           text: "Info"
         }
       ]}>
@@ -159,8 +168,6 @@ const ItemRender = ({
 export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
-  const updater = useUpdate();
-
   const state = buildState({
     text: "",
     json: "",

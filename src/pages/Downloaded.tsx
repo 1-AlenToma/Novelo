@@ -6,14 +6,8 @@ import {
   Image,
   ItemList,
   Icon,
-  NovelGroup,
-  CheckBox,
-  TextInput,
-  ActionSheet,
   ProgressBar,
-  Modal,
   FoldableItem,
-  FileBrowser,
   AlertDialog
 } from "../components";
 import Header from "./Header";
@@ -24,9 +18,7 @@ import {
   useDbHook,
   useView
 } from "../hooks";
-import * as DocumentPicker from "expo-document-picker";
-import * as DockPicker from "react-native-document-picker"
-import { Book, Chapter } from "../db";
+import { Book } from "../db";
 import {
   FileHandler,
   ZipBook,
@@ -195,6 +187,7 @@ const ItemRender = ({
   options
 }: any) => {
   if (!item) return null;
+  context.hook("parser.all")
   const [books, dataIsLoading] = context
     .db.Books.useQuery(
       context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
@@ -247,8 +240,7 @@ const ItemRender = ({
     }
     loader.hide();
   };
-  item =
-    books.find(x => x.url === item.url) ?? item;
+  item = books.find(x => x.url === item.url) ?? item;
   const novelInfo = fileItems.find(x => item.url === x.url);
   return (
     <FoldableItem
@@ -258,10 +250,8 @@ const ItemRender = ({
       buttons={[
         {
           ifTrue: () =>
-            item.parserName !== "epub" &&
-            !context
-              .downloadManager()
-              .items.has(item.url ?? ""),
+            item.parserName !== "epub" && item.isOnline?.() &&
+            !context.downloadManager().items.has(item.url ?? ""),
           icon: (
             <Icon
               name="update"
@@ -365,7 +355,7 @@ const ItemRender = ({
             />
           ),
           text: "Info",
-          ifTrue: () => item.parserName != "epub"
+          ifTrue: () => item.parserName != "epub" && item.isOnline?.()
         }
       ]}>
       <View
@@ -383,9 +373,8 @@ const ItemRender = ({
           {itemState.info || "loading"}
         </Text>
         <Text css="clearwidth desc co:red bottom bo:5 le:60">
-          {item.parserName != "epub"
-            ? ` (${item.parserName})`
-            : " (Epub)"}
+          {item.parserName != "epub" ? ` (${item.parserName})` : " (Epub)"}
+          {!item.isOnline?.() ? " Missing parser" : ""}
         </Text>
         <View
           ifTrue={urlObj[item.url] ? true : false}
@@ -500,7 +489,7 @@ export default ({ ...props }: any) => {
         parentState={state}
       />
       <Text
-        css="header pa:10 clearwidth">
+        css="desc co-red fow-bold tea-left wi-100% pal-5">
         Downloaded and Added Epubs
       </Text>
 

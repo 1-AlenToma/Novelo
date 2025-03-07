@@ -45,7 +45,7 @@ class AppSettings extends DBInit {
     config() {
         return this.TableBuilder<AppSettings, TableNames>("AppSettings")
             .column("rate").decimal
-            .column("parsers").nullable
+            .column("parsers").json.nullable
             .column("pitch").decimal
             .column("voice")
             .column("fontSize").number

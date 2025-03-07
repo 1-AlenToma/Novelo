@@ -27,21 +27,22 @@ const CurrentItem = ({
   children,
   ...props
 }: any) => {
-  const [_, options, navop] =
-    useNavigation(props);
+
+  const [_, options, navop] = useNavigation(props);
   const [visible, setVisible] = useState(false);
-  const [books, dataIsLoading, reload] = context.db.useQuery("Books",
-    context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg")
-  );
+  context.hook("appSettings.currentNovel")
+  const [books, dataIsLoading, reload] = context.db.useQuery("Books", context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg"));
   useDbHook(
     "AppSettings",
     item => true,
     () => context.appSettings,
     "currentNovel"
-  )(() => reload());
+  )(() => {
+    reload();
+  });
 
   let book: Book = books?.firstOrDefault() ?? {} as any;
-  if (!books?.firstOrDefault()) return children;
+  if (!books?.firstOrDefault() || (context.appSettings.currentNovel == undefined || context.appSettings.currentNovel.parserName == undefined)) return children;
   return (
     <>
       <ActionSheet
@@ -53,6 +54,7 @@ const CurrentItem = ({
           <TouchableOpacity
             css="invert listButton"
             ifTrue={() =>
+              book.isOnline?.() &&
               book.parserName != "epub"
             }
             onPress={() => {
@@ -102,9 +104,8 @@ const CurrentItem = ({
           </TouchableOpacity>
           <TouchableOpacity
             ifTrue={() =>
-              context.appSettings.currentNovel
-                ?.isEpub &&
-              book.parserName != "epub"
+              context.appSettings.currentNovel?.isEpub &&
+              book.parserName != "epub" && book.isOnline?.()
             }
             css="invert listButton"
             onPress={() => {
