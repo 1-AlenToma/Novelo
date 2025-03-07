@@ -16,10 +16,8 @@ import {
 import { Dimensions, Keyboard, LogBox } from "react-native";
 import StateBuilder from "react-smart-state";
 import { GlobalType, FilesPath } from "./Types";
-import * as ts from "typescript";
-
-
-
+import * as ScreenOrientation from "expo-screen-orientation";
+import ParserWrapper from "./parsers/ParserWrapper";
 
 LogBox.ignoreLogs([
     "fontFamily",
@@ -30,8 +28,7 @@ LogBox.ignoreLogs([
     "xmldom warning"
 ]);
 
-import * as ScreenOrientation from "expo-screen-orientation";
-import ParserWrapper from "./parsers/ParserWrapper";
+
 const globalDb = new dbContext();
 const globalHttp = new HttpHandler();
 
@@ -40,8 +37,7 @@ const downloadManager = new DownloadManager();
 const cache = new FileHandler(FilesPath.Cache, "Cache");
 const zip = new FilesZipper();
 const notification = new Notification();
-const privateData = new FileHandler(FilesPath.Private, "File")
-
+const privateData = new FileHandler(FilesPath.Private, "File");
 
 const data = StateBuilder<GlobalType>(
     {
@@ -99,9 +95,9 @@ const data = StateBuilder<GlobalType>(
                     Value, ChapterInfo, LightInfo, DetailInfo, ParserDetail, SearchDetail, Parser, Html, HttpHandler
                 }
                 if (code && code.length > 0) {
-                    let result = ts.transpile(code.replace(/export default/gmi, ""));
-                    let className = code.match(/(class )(\w)+( )/gmi)?.toString().replace("class", "").trim();
-                    let runnalbe: any = eval(`(function(require){ ${result} \n return ${className}})`);
+                    let className = (code.match(/(.*)\.(prototype.detail)/gim)?.firstOrDefault() ?? "") as string;
+                    className = className.safeSplit(".", 0).trim()
+                    let runnalbe: any = eval(`(function(require){ ${code} \n return ${className}})`);
                     return runnalbe?.(() => parserItem);
                 }
                 return undefined as any

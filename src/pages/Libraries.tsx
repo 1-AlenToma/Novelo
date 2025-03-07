@@ -20,7 +20,8 @@ import {
 import { ScrollView, Animated, Linking } from "react-native";
 import JSZip from "jszip";
 import { Parser } from "../native";
-import { sleep } from "Methods";
+
+
 type BtnTextType = "Install" | "Update" | "Uninstall";
 const ListItem = ({ item, zip }) => {
   const state = buildState({
@@ -126,7 +127,7 @@ const ListItem = ({ item, zip }) => {
 }
 
 const Libraries = ({ ...props }) => {
-  const libUrl = "https://raw.githubusercontent.com/1-AlenToma/Novelo/refs/heads/main/src/parsers.zip";
+  const libUrl = "https://raw.githubusercontent.com/1-AlenToma/Novelo/refs/heads/main/parsers.zip";
   const [render, state, loader] = useView({
     component: ItemList,
     loader: {
