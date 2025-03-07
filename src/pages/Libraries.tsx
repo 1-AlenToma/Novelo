@@ -152,10 +152,9 @@ const Libraries = ({ ...props }) => {
       let response = await fetch(libUrl);
       if (!(response.status === 200 || response.status === 0))
         throw "Parsers could not be reached";
-      const blob = await response.arrayBuffer()
+      const blob = await response.arrayBuffer();
       state.refItem.zip = await JSZip.loadAsync(blob);
-      state.parserNames = Object.keys(state.refItem.zip.folder("parsers")?.files ?? {}).filter(x => x.endsWith(".js")).reverse();
-      console.log(state.parserNames);
+      state.parserNames = Object.keys(state.refItem.zip.files ?? {}).filter(x => x.endsWith(".js")).reverse();
     } catch (e) {
       if (!__DEV__)
         AlertDialog.toast({ type: "Info", title: "Network Error", message: "Extensions could no be loaded,Something went wrong when fetching the data, please check your internet connection." });
