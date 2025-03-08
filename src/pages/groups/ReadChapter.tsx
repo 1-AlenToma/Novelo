@@ -3,11 +3,8 @@ import {
   View,
   TouchableOpacity,
   useLoader,
-  Image,
   ItemList,
   Icon,
-  NovelGroup,
-  FText,
   TextInput,
   ActionSheetButton,
   Web,
@@ -17,7 +14,6 @@ import {
   Modal,
   DropdownList,
   ColorPicker,
-  FormGroup,
   FormItem,
   ChapterView,
   ButtonGroup,
@@ -29,15 +25,14 @@ import {
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
 import * as React from "react";
-import translate from "translate-google-api";
 import LANGUAGE_TABLE from "react-native-translator/dist/constants/languageMap";
 import { ScrollView, Linking } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { useNavigation, useUpdate, useTimer, useDbHook, ChapterProcess } from "../../hooks";
+import { useNavigation, useTimer, useDbHook, ChapterProcess } from "../../hooks";
 import { Player, DetailInfo } from "../../native";
 import Header from "../../pages/Header";
-import { Book, Chapter } from "../../db";
-import { arrayBuffer, newId, proc, invertColor, sleep } from "../../Methods";
+import { Book } from "../../db";
+import { invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
 
 const lang = {};

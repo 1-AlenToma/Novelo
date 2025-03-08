@@ -20,6 +20,7 @@ import {
   Table
 } from "./expo-sqlite-wrapper/src";
 import { ReadDirItem } from "react-native-fs";
+import { DimensionValue } from "react-native";
 
 
 
@@ -69,12 +70,31 @@ export type NovelFile = {
 export const OmitType = <T, K extends keyof T>(Class: new () => T, ...keys: K[]): new () => Omit<T, typeof keys[number]> => Class;
 
 
+export abstract class GenericType {
+  static n(...items: any[]) {
+    return {} as any;
+  };
+
+  clone() {
+    return this;
+  }
+
+  set<D extends keyof this>(key: D, value: typeof this[D]) {
+    this[key] = value;
+    return this;
+  }
+}
 
 
 export abstract class DBInit extends Table<TableNames> {
   static n() {
     return {} as any;
   };
+
+  set<D extends keyof this>(key: D, value: typeof this[D]) {
+    this[key] = value;
+    return this;
+  }
 }
 
 type NestedKeyOf<T extends object, D extends any[] = [0, 0, 0, 0, 0]> = D extends [any, ...infer DD] ? {
@@ -87,7 +107,12 @@ type ReturnState<T extends object> = {
 };
 
 type ThemeMode = "light" | "dark";
-export type ISize = { height: number, width: number }
+export type ISize = {
+  height: DimensionValue,
+  width: DimensionValue,
+  x?: number,
+  y?: number
+}
 export type GlobalType =
   {
     lineHeight: number;
@@ -162,7 +187,7 @@ export type DownloadOptions = {
 
 export type Button = {
   text: ReactElement<any, any> | Function;
-  press?: Function;
+  press?: () => void;
   ifTrue?: boolean;
 };
 

@@ -4,14 +4,17 @@ let noImage = require("../assets/noimage.png");
 export default ({
   style,
   url,
-  css
+  css,
+  parserName
 }: {
   style?: any;
   url: string;
   css?: string;
+  parserName?: string;
 }) => {
   const [imgSize, setImgSize] = useState({});
   const [source, setSource] = useState(noImage);
+  const imageSize = parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined;
   let loadImage = () => {
     if (url && url.toString().startsWith("[")) {
       // image selector
@@ -60,7 +63,7 @@ export default ({
             }
           }
       }
-      style={[imgSize, ...st]}
+      style={[imgSize, ...st, imageSize]}
     />
   );
 };

@@ -1,14 +1,13 @@
-import { View, AnimatedView, Text, TouchableOpacity, Modal } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity, Modal } from "./ReactNativeComponents";
 import { invertColor } from "../Methods";
 import * as React from "react";
 import ColorPicker, {
   Panel1,
-  Swatches,
   Preview,
   OpacitySlider,
   HueSlider
 } from "reanimated-color-picker";
-import { ScrollView , GestureHandlerRootView} from 'react-native-gesture-handler';
+import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default ({
   css,

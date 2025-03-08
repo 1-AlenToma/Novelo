@@ -3,22 +3,14 @@ import {
   View,
   TouchableOpacity,
   useLoader,
-  Image,
   ItemList,
-  Icon,
-  NovelGroup,
   HomeNovelItem,
-  FText,
-  TextInput,
-  SizeAnimator,
-  ActionSheet,
   ActionSheetButton,
   ScrollView
 } from "../../components/";
 import * as React from "react";
 import {
-  useNavigation,
-  useUpdate
+  useNavigation
 } from "../../hooks";
 import {
   SearchDetail
@@ -30,9 +22,7 @@ const ActionItem = ({
   selection,
   state
 }) => {
-  let items = {
-    items: state.parser.settings[keyName]
-  };
+  let items = { items: state.parser.settings[keyName] };
   let selected = {};
   items.items?.map(
     x =>
@@ -88,34 +78,30 @@ const ActionItem = ({
 
 export default ({ ...props }: any) => {
   const [{ searchTxt, parserName, genre }, option, navop] = useNavigation(props);
-  const parser = parserName?.has() ? context.parser.find(parserName) : context.parser.current;
+  const parser = context.parser.find(parserName) ?? context.parser.current;
+  const imageSize = parser.settings.imagesSize;
+
+
   const loader = useLoader(
     searchTxt?.has() ?? false
   );
   const state = buildState({
     items: [],
-    text: SearchDetail.n(searchTxt || "")
-      .Page(0)
-      .Genre(
-        genre &&
-          parser.settings.genre.find(x =>
-            x.text.has(genre)
-          )
-          ? [
-            parser.settings.genre.find(x =>
-              x.text.has(genre)
-            )
-          ]
-          : []
-      ),
+    text: undefined as SearchDetail,
     currentPage: 0,
     parser: parser
   }).ignore("parser", "items").build();
+
 
   const fetchData = async (page?: number) => {
     loader.show();
     try {
       let parser = state.parser;
+      if (state.text == undefined) {
+        parser.settings = await parser.load();
+        state.text = new SearchDetail(searchTxt || "").set("page", 0).set("genre", parser.settings.genre?.filter(x => genre && x.text.has(genre)) ?? []);
+      }
+
       if (parser) {
         let txt = state.text.clone();
         if (page === undefined) txt.page++;
@@ -135,15 +121,13 @@ export default ({ ...props }: any) => {
       }
     } finally {
       loader.hide();
+      state.currentPage = state.text.page;
     }
 
   };
 
   useEffect(() => {
-    if (
-      state.text.text.has() ||
-      state.text.genre.has()
-    )
+    if (!state.text || state.text.text.has() || state.text.genre.has())
       fetchData();
   }, []);
 
@@ -224,6 +208,9 @@ export default ({ ...props }: any) => {
     fetchData(1);
   };
 
+  if (!state.text)
+    return loader.elem;
+
   return (
     <View
       css="flex root">
@@ -262,6 +249,7 @@ export default ({ ...props }: any) => {
       </View>
       <View css="clearwidth mih:50 pab-20 flex invert">
         <ItemList
+          page={state.currentPage}
           onPress={item => {
             option
               .nav("NovelItemDetail")
@@ -278,7 +266,7 @@ export default ({ ...props }: any) => {
               fetchData();
             }
           }}
-          itemCss="boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5"
+          itemCss={`boc:#ccc bow:1 overflow he-${imageSize?.height ?? "170"} wi:98% mat:5 mal:5 bor:5`}
           items={state.items}
           container={HomeNovelItem}
         />

@@ -1,20 +1,15 @@
 import {
-  TabBar,
   Text,
   View,
   TouchableOpacity,
   Icon,
-  ProgressBar,
   Modal,
-  CheckBox,
-  ItemList,
   Image,
   useLoader,
   DropdownList,
   AlertDialog,
 } from "../components/";
 import * as React from "react";
-import { Book, Chapter } from "../db";
 import { useLocationSelection, AppUpdate } from "../hooks";
 import WebNovelTester from "../components/WebNovelTester";
 
@@ -79,6 +74,7 @@ export default (props: any) => {
           console.warn("deleting cache")
           await context.cache.deleteDir();
           await context.cache.checkDir();
+          context.parser.set(context.parser.current);// update the parser which will trigger load
           console.warn("Cache Deleted")
 
 
@@ -139,7 +135,6 @@ export default (props: any) => {
         css="mih:99% ali:center bor:5 overflow invert">
         <View css="he:30% juc:center ali:center">
           <Image
-            resizeMode="contain"
             url={require("../assets/ic_launcher_round.png")}
             css="mat:2.5 clearwidth bor:2 miw:100 mih:100"
           />

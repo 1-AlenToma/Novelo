@@ -1,9 +1,6 @@
 import * as React from "react";
-import {
-  removeProps,
-  StyledView
-} from "../Methods";
-import { View, AnimatedView, Text, TouchableOpacity, Icon, Modal, TextInput } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity, Icon, Modal, TextInput } from "./ReactNativeComponents";
+import { ISize } from "Types";
 export default React.forwardRef(
   (
     {
@@ -17,9 +14,9 @@ export default React.forwardRef(
     ref
   ) => {
 
-    const inputRef = React.useRef();
+    const inputRef = React.useRef<typeof TextInput>();
     const [visible, setVisible] = React.useState(inputVisible || false);
-    const [size, setSize] = React.useState();
+    const [size, setSize] = React.useState<ISize>();
     const [txt, setTxt] = React.useState(
       props.defaultValue
     );
@@ -89,7 +86,7 @@ export default React.forwardRef(
                 ref(c);
               else ref.current = c;
             }
-            inputRef.current = c;
+            inputRef.current = c as any;
           }}
           disableFullscreenUI={true}
           textAlignVertical={props.multiline ? "top" : undefined}
@@ -104,7 +101,7 @@ export default React.forwardRef(
                 ? "100%"
                 : undefined,
               height: props.multiline ? "90%" : "auto"
-            },style
+            }, style
           ]}
         />
         <TouchableOpacity

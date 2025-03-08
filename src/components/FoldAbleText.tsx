@@ -1,31 +1,33 @@
 import * as React from "react";
-import { View ,Text ,TouchableOpacity} from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
 
-let getFirstLine = (text: any) => {
+let getLines = (text: any, totalLine: number) => {
   if (!text) return text;
   let txt = "";
+  let lines = 0;
   for (let s of text) {
     if (s == "\r" || s == "\n") continue;
     txt += s;
-    if ((s == "." || s == "!") && txt.length >= 20) break;
+    if ((s == "." || s == "!") && txt.length >= 20) lines++;
+
+    if (lines == totalLine)
+      break;
   }
   return txt;
 };
 export default ({
   style,
   text,
-  invertColor,
   css,
   ifTrue,
   ...props
 }: any) => {
+  const numberofLines = 3;
   const [fState, setFState] = useState(false);
-  const [txt, setTxt] = useState(
-    getFirstLine(text)
-  );
+  const [txt, setTxt] = useState(getLines(text, numberofLines));
 
   useEffect(() => {
-    setTxt(getFirstLine(text));
+    setTxt(getLines(text, numberofLines));
   }, [text]);
   if (ifTrue === null || ifTrue === false)
     return null;
@@ -33,10 +35,7 @@ export default ({
   return (
     <View
       style={{ flex: 1 }}
-      onPress={e => {
-        e.preventDefault();
-        return true;
-      }} css={"invert"}>
+      css={"invert"}>
       <Text
         {...props} css={css} style={style}>
         {txt === text || fState === true ? (

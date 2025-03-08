@@ -191,7 +191,7 @@ export const EpubSettingsLoader = async (
         var chItem = "" as string;
         var chId = x.attr("idref");
         chItem = page.find("item[id='" + chId + "']").attr("href") ?? "";
-        content =file.find(x => x.path.indexOf(chItem) != -1)?.content ?? "";
+        content = file.find(x => x.path.indexOf(chItem) != -1)?.content ?? "";
         var chapter = content.html();
         epubSettings.chapters.push({
           parameter: chapter.$("param").map(
@@ -205,7 +205,7 @@ export const EpubSettingsLoader = async (
           title: chapter.find("title").text ?? "",
           htmlBody: chapter.find("body").html
         });
-        dProgress =(index / parseFloat(len.toString())) * 100;
+        dProgress = (index / parseFloat(len.toString())) * 100;
         localOnProgress?.(dProgress);
         index++;
         await sleep(0);
@@ -230,24 +230,13 @@ export default class EpubFile {
     this.epubSettings = epubSettings;
   }
 
-  async constructEpub(
-    localOnProgress?: (
-      progress: number
-    ) => Promise<void>
-  ) {
+  async constructEpub(localOnProgress?: (progress: number) => Promise<void>) {
     var files = [] as File[];
-    files.push(
-      createFile(
-        "mimetype",
-        "application/epub+zip"
-      )
-    );
+    files.push(createFile("mimetype", "application/epub+zip"));
     var metadata = [];
     var manifest = [];
     var spine = [];
-    this.epubSettings.bookId =
-      this.epubSettings.bookId ??
-      new Date().getUTCMilliseconds().toString();
+    this.epubSettings.bookId = this.epubSettings.bookId ?? new Date().getUTCMilliseconds().toString();
     const len = this.epubSettings.chapters.length;
     var dProgress = 0;
     this.epubSettings.fileName =
@@ -259,10 +248,7 @@ export default class EpubFile {
       ) ||
       this.epubSettings.fileName.endsWith(".opf")
     )
-      this.epubSettings.fileName =
-        this.epubSettings.fileName
-          .replace(".opf", "")
-          .replace(".epub", "");
+      this.epubSettings.fileName = this.epubSettings.fileName.replace(".opf", "").replace(".epub", "");
     files.push(
       createFile(
         "META-INF/container.xml",
@@ -322,34 +308,29 @@ export default class EpubFile {
   </body>
 </html>`;
     metadata.push(
-      `<dc:title class="title">${
-        this.epubSettings.title ?? ""
+      `<dc:title class="title">${this.epubSettings.title ?? ""
       }</dc:title>`
     );
     metadata.push(
-      `<dc:language class="language">${
-        this.epubSettings.language ?? "en"
+      `<dc:language class="language">${this.epubSettings.language ?? "en"
       }</dc:language>`
     );
     metadata.push(
       `<dc:identifier class="identifier" id="BookId">${this.epubSettings.bookId}</dc:identifier>`
     );
     metadata.push(
-      `<dc:description class="description">${
-        this.epubSettings.description ?? ""
+      `<dc:description class="description">${this.epubSettings.description ?? ""
       }</dc:description>`
     );
     metadata.push(
       `<dc:date>${new Date()}</dc:date>`
     );
     metadata.push(
-      `<dc:rights class="rights">${
-        this.epubSettings.author ?? ""
+      `<dc:rights class="rights">${this.epubSettings.author ?? ""
       }</dc:rights>`
     );
     metadata.push(
-      `<dc:source class="source">${
-        this.epubSettings.source ?? ""
+      `<dc:source class="source">${this.epubSettings.source ?? ""
       }</dc:source>`
     );
     metadata.push(
@@ -384,13 +365,11 @@ export default class EpubFile {
       if (!x.fileName.endsWith(".html"))
         x.fileName += ".html";
       manifest.push(
-        `<item id="${x.title + index}" href="${
-          x.fileName
+        `<item id="${x.title + index}" href="${x.fileName
         }" media-type="application/xhtml+xml" />`
       );
       spine.push(
-        `<itemref idref="${
-          x.title + index
+        `<itemref idref="${x.title + index
         }" ></itemref>`
       );
       var param = "";
@@ -402,8 +381,7 @@ export default class EpubFile {
           )
           .join("\n");
       files.push(
-        createFile(
-          `OEBPS/${x.fileName}`,
+        createFile(`OEBPS/${x.fileName}`,
           `
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
@@ -426,12 +404,9 @@ export default class EpubFile {
         `<li><a href="${x.fileName}">${x.title}</a></li>`
       );
       navMap.push(
-        `<navPoint id="${
-          x.title + index
-        }" playOrder="${index}"> <navLabel> <text>${
-          x.title
-        }</text> </navLabel> <content src="${
-          x.fileName
+        `<navPoint id="${x.title + index
+        }" playOrder="${index}"> <navLabel> <text>${x.title
+        }</text> </navLabel> <content src="${x.fileName
         }" /></navPoint>`
       );
       index++;
@@ -479,23 +454,13 @@ export default class EpubFile {
       createFile(
         `OEBPS/${this.epubSettings.fileName}.opf`,
         `<?xml version="1.0" encoding="utf-8"?>\n` +
-          epub
+        epub
       )
     );
-    files.push(
-      createFile(
-        "OEBPS/toc.html",
-        `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n` +
-          htmlToc
-      )
-    );
-    files.push(
-      createFile("OEBPS/toc.ncx", ncxToc)
-    );
+    files.push(createFile("OEBPS/toc.html", `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n` + htmlToc));
+    files.push(createFile("OEBPS/toc.ncx", ncxToc));
     if (localOnProgress)
-      await localOnProgress?.(
-        (len / parseFloat(len.toString())) * 100
-      );
+      await localOnProgress?.((len / parseFloat(len.toString())) * 100);
     return files;
   }
 

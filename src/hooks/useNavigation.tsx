@@ -22,7 +22,7 @@ class Navigator {
     return this;
   }
 }
-export default ({ route, navigation }) => {
+export default ({ route, navigation }: any) => {
   let back = () => navigation.goBack();
 
   let nav = (path: string) =>
@@ -30,8 +30,8 @@ export default ({ route, navigation }) => {
 
   let set = (params: any) =>
     navigation.setParams(params);
-    
-  let canGoBack= ()=> navigation.canGoBack()
+
+  let canGoBack = () => navigation.canGoBack()
 
   return [
     route?.params,
@@ -41,6 +41,6 @@ export default ({ route, navigation }) => {
       set,
       canGoBack
     },
-    {navigation, route}
+    { navigation, route }
   ] as const;
 };

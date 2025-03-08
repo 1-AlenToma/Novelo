@@ -1,4 +1,4 @@
-import { View, AnimatedView, Text, TouchableOpacity } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
 import ItemList from "./ItemList";
 import useLoader from "./Loader";
 import HomeNovelItem from "./HomeNovelItem";
@@ -23,10 +23,9 @@ export default memo(
     const loader = useLoader(true);
     const [items, setItems] = useState([]);
     const page = useRef(0);
-    const item =
-      context.parser.current.settings.group[
-      itemIndex
-      ];
+    const item = context.parser.current.settings.group[itemIndex];
+    const imageSize = context.parser.current.settings.imagesSize;
+
     const getItems = async (refreshing?: boolean) => {
       loader.show();
       try {
@@ -113,7 +112,7 @@ export default memo(
           itemCss={
             !vMode
               ? "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow clb"
-              : "boc:#ccc bow:1 overflow he:170 wi:98% mat:5 mal:5 bor:5 clb"
+              : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
           }
           items={items}
           container={HomeNovelItem}

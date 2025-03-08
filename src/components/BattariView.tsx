@@ -2,9 +2,9 @@ import {
   invertColor
 } from "../Methods";
 import * as React from "react";
-import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
+import { View, Text, Icon } from "./ReactNativeComponents";
 import * as Battery from "expo-battery";
-import { useTimer, useUpdate } from "../hooks";
+import { useTimer } from "../hooks";
 
 export default ({ color }: any) => {
   const [batteryLevel, setBatteryLevel] =
@@ -31,7 +31,7 @@ export default ({ color }: any) => {
       <View
         style={{
           height: height - 14,
-          width: (level - (level > 30 ? 15 : 0) + "%"),
+          width: (level - (level > 30 ? 15 : 0) + "%") as any,
           backgroundColor: "#3b5998"
         }}
         css="absolute le:1 bor:2 flex he:11 bac:#fff zi:1 clb"

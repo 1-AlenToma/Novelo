@@ -2,8 +2,8 @@ import { Icon } from "./ReactNativeComponents";
 import useLoader from "./Loader";
 import ItemList from "./ItemList";
 import * as React from "react";
-import { useUpdate, useTimer } from "../hooks";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
+import { useTimer } from "../hooks";
+import { View, Text } from "./ReactNativeComponents";
 export default ({
   book,
   current,
@@ -60,7 +60,7 @@ export default ({
     });
   }, [book, novel, current]);
 
-  
+
 
   return (
     <View css="clearboth juc:flex-start mah:90% invert">
@@ -77,8 +77,8 @@ export default ({
           container={({ item, index }) => (
             <View
               css={`row di:flex ali:center bor:5 listButton invert ${page == item.index
-                  ? " selectedRow pal:5 par:5"
-                  : ""
+                ? " selectedRow pal:5 par:5"
+                : ""
                 }`}>
               <Text
                 css="desc fos:15">
@@ -111,17 +111,16 @@ export default ({
             loader.show();
             onPress(item);
           }}
+          page={state.index.page != page ? 0 : undefined}
           selectedIndex={
-            state.index.page == page
-              ? state.index.index
-              : 0
+            state.index.page == page ? state.index.index : undefined
           }
           items={state.chArray[page].items}
           container={({ item, index }) => (
             <View
               css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 invert ${current == item.url
-                  ? "selectedRow"
-                  : ""
+                ? "selectedRow"
+                : ""
                 }`}>
               <Text
                 css="desc fos:12 wi:85% tea:left">

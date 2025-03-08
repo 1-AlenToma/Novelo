@@ -38,6 +38,7 @@ const cache = new FileHandler(FilesPath.Cache, "Cache");
 const zip = new FilesZipper();
 const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
+const debugMode = false;
 
 const data = StateBuilder<GlobalType>(
     {
@@ -108,8 +109,10 @@ const data = StateBuilder<GlobalType>(
                 p = data.parser.find(p.name)
                 p.settings = await p.load();
                 data.parser.current = p;
-                data.appSettings.selectedParser = p.name;
-                await data.appSettings.saveChanges();
+                if (data.appSettings.selectedParser != p.name) {
+                    data.appSettings.selectedParser = p.name;
+                    await data.appSettings.saveChanges();
+                }
 
                 // data.updater = newId();
                 //alert(p.name)
@@ -128,6 +131,10 @@ const data = StateBuilder<GlobalType>(
                 //await globalDb.database.dropTables();
                 let currentParserString: string = "";
                 const loadParsers = async () => {
+                    if (debugMode) {
+                        data.parser.all = ParserWrapper.getAllParsers() as ParserWrapper[];
+                        return;
+                    }
                     const defaultParser = ParserWrapper.getAllParsers(data.parser.default) as ParserWrapper;
                     let settings = data.appSettings;
                     if (!settings.parsers)

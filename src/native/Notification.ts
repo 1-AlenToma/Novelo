@@ -2,8 +2,6 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import * as Linking from 'expo-linking'
-import * as IntentLauncher from 'expo-intent-launcher';
 import { NotificationData } from '../Types';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
 

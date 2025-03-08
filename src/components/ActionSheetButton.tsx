@@ -1,6 +1,6 @@
 import { ActionSheet } from "./ReactNativeComponents";
 import * as React from "react";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
+import { Text, TouchableOpacity } from "./ReactNativeComponents";
 import { ifSelector } from "../Methods";
 export default ({
   btn,
@@ -37,7 +37,7 @@ export default ({
   }
   return (
     <>
-      <TouchableOpacity {...tprops} style={{backgroundColor:"transparent"}}>
+      <TouchableOpacity {...tprops} style={{ backgroundColor: "transparent" }}>
         {typeof btn === "string" ? (
           <Text css={css}>{btn}</Text>
         ) : (

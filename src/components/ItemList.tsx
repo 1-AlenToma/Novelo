@@ -22,7 +22,8 @@ export default ({
   updater,
   hooks,
   selectedIndex,
-  onRefresh
+  onRefresh,
+  page
 }: {
   items: any[];
   container: any;
@@ -37,7 +38,8 @@ export default ({
   updater?: any[];
   hooks?: any[];
   selectedIndex?: number;
-  onRefresh?: { loading, onRefresh: () => void }
+  onRefresh?: { loading, onRefresh: () => void },
+  page?: number
 }) => {
   context.hook(
     "selectedThemeIndex",
@@ -81,6 +83,16 @@ export default ({
       });
     }
   };
+
+
+  useEffect(() => {
+    if (page != undefined && page <= 1 && selectedIndex == undefined) {
+      ref.current?.scrollToIndex({
+        index: 0,
+        animated: false
+      });
+    }
+  }, [page, ...(updater ?? [])])
 
   useEffect(() => {
     selected.current = false;

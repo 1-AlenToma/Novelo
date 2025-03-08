@@ -21,6 +21,9 @@ export default class NovelFullCom extends Parser {
         this.settings.searchEnabled = true;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
+        this.settings.imagesSize = {
+            height: 80
+        }
     }
 
     async load() {

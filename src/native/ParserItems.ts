@@ -1,8 +1,8 @@
 import { public_m } from "../Methods";
 import HttpHandler from "./HttpHandler";
-import {NovelFile, OmitType} from "../Types"
+import { GenericType, ISize, NovelFile, OmitType } from "../Types"
 
-class ChapterInfo {
+class ChapterInfo extends GenericType {
   name: string = "";
   url: string = "";
   parserName: string = "";
@@ -25,8 +25,8 @@ class CommentScript {
 public_m(CommentScript);
 
 class DetailInfo extends LightInfo {
-  epub?:any; // temp
-  files?:NovelFile[]; // temp
+  epub?: any; // temp
+  files?: NovelFile[]; // temp
   imagePath?: string; // this is used for downloaded images start path
   rating: string = "";
   novelUpdateRating = "";
@@ -55,20 +55,22 @@ type SearchCombination =
 
 
 
-class SearchDetail {
-    text: string = "";
-    page: number = 1;
-    genre: Value[] = [];
-    status: Value[] = [];
-    group: Value[] = [];
-    genreMultiSelection: boolean = false;
-    constructor(txt?: string) {
-      this.text = txt ?? "";
-    }
+class SearchDetail extends GenericType {
+  text: string = "";
+  page: number = 1;
+  genre: Value[] = [];
+  status: Value[] = [];
+  group: Value[] = [];
+  genreMultiSelection: boolean = false;
+  constructor(txt?: string) {
+    super();
+    this.text = txt ?? "";
   }
+}
 class ParserDetail extends OmitType(SearchDetail, "text", "page") {
   searchCombination: SearchCombination[] = [];
   searchEnabled: boolean = true;
+  imagesSize?: ISize;
 }
 
 

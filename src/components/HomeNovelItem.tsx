@@ -1,4 +1,4 @@
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Icon } from "./ReactNativeComponents";
+import { View, Text, Icon } from "./ReactNativeComponents";
 import Image from "./Image";
 import { LightInfo } from "../native";
 import * as React from "react";
@@ -14,7 +14,7 @@ export default ({
     return (
       <View css="clearboth bor:5 overflow invert">
         <Image
-          resizeMethod="scale"
+          parserName={item.parserName}
           url={item.image}
           css="resizeMode:stretch bor:5 clearwidth wi:100% he:100%"
         />
@@ -34,7 +34,7 @@ export default ({
             {item.name}
           </Text>
           <View ifTrue={() => item.decription?.length > 1}
-            css="row wi:100% pal:5 par:5 di:flex ali:flex-start juc:center clb">
+            css="row wi:100% pal:5 par:5 di:flex ali-center juc:center clb">
             <Icon
               type="EvilIcons"
               name="pencil"
@@ -56,11 +56,14 @@ export default ({
     return (
       <View
         css="invert clearboth di:flex overflow row flex ali:flex-start juc:flex-start">
-        <Image
-          resizeMethod="scale"
-          url={item.image}
-          css="resizeMode:stretch he:100% wi:150 bac:red bor:5"
-        />
+
+        <View css="juc-center ali-center he-100%">
+          <Image
+            parserName={item.parserName}
+            url={item.image}
+            css="resizeMode:stretch he:100% wi:150 bac:red bor:5"
+          />
+        </View>
         <Icon
           ifTrue={item.isNew ?? false}
           flash="white"
@@ -71,10 +74,10 @@ export default ({
         />
         <View css="flex clearboth pa:5 invert">
           <Text
-            css="header">
+            css="header" numberOfLines={1}>
             {item.name}
           </Text>
-          <View ifTrue={() => item.decription?.length > 1} css="row clearwidth ali:center invert">
+          <View ifTrue={() => item.decription?.length > 1} css="row clearwidth ali-center invert">
             <Icon
               type="EvilIcons"
               name="pencil"
@@ -82,12 +85,12 @@ export default ({
               size={15}
             />
             <Text
-              css="desc">
+              css="desc" numberOfLines={1}>
               {item.decription}
             </Text>
           </View>
           <Text
-            css="desc co:#e30505 bottom bo:5 pal:5">
+            css="desc co:#e30505 bottom bo:5 pal:5" numberOfLines={1}>
             {item.info}
           </Text>
         </View>

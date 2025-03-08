@@ -1,13 +1,10 @@
 import SliderRange from "@react-native-community/slider";
 import {
-  removeProps,
   StyledView,
-  newId,
   invertColor as InvertColor
 } from "../Methods";
 import * as React from "react";
-import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
-import { TouchableWithoutFeedback } from "react-native";
+import { View, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
 import { globalData } from "styles/demo/src/theme/ThemeContext";
 const Slider = StyledView(SliderRange, "Slider");
 
@@ -109,7 +106,6 @@ export default ({
               }
             }}>
             <Icon
-              invertColor={invertColor}
               name="plus-square"
               type="FontAwesome"
               size={24}

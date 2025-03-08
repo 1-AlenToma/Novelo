@@ -6,11 +6,7 @@ import {
   Image,
   ItemList,
   Icon,
-  NovelGroup,
   FText,
-  TextInput,
-  SizeAnimator,
-  ActionSheet,
   ActionSheetButton,
   TabBar,
   ChapterView,
@@ -23,12 +19,11 @@ import WebView from "react-native-webview";
 import * as React from "react";
 import {
   ScrollView,
-  Linking,
   RefreshControl
 } from "react-native";
 import { useNavigation } from "../../hooks";
 import Header from "../../pages/Header";
-import { Book, Chapter } from "../../db";
+import { Book } from "../../db";
 import { DetailInfo } from "../../native"
 
 export default ({ ...props }: any) => {
@@ -70,7 +65,7 @@ export default ({ ...props }: any) => {
     try {
       if (parser && url) {
         let novel = await parser.detail(url, true, refresh ? "RenewMemo" : undefined);
-        state.novel = novel ?? {};
+        state.novel = novel ?? {} as any;
         if (novel) {
           state.book = await context
             .db.Books.query.load("chapterSettings")
@@ -188,7 +183,7 @@ export default ({ ...props }: any) => {
               <View css="flex ali:center">
                 <View
                   css="row box invert">
-                  <Image resizeMethod="scale" url={state.novel?.image} css="resizeMode:contain he:100% wi:150 bor:5" />
+                  <Image url={state.novel?.image} css="resizeMode:contain he:100% wi:150 bor:5" />
                   <View css="flex pa:5 invert">
                     <Text
                       selectable={true}
@@ -342,7 +337,7 @@ export default ({ ...props }: any) => {
                         />
                       }
                       title="Chapters"
-                      height="80%">
+                      size="80%">
                       <ChapterView
                         book={state.book}
                         novel={state.novel}
@@ -505,7 +500,7 @@ export default ({ ...props }: any) => {
                               )
                           )
                       ));
-                  await book.Favorit(!book.favorit).saveChanges();
+                  await book.set("favorit", !book.favorit).saveChanges();
                   if (context.player && context.player.book?.id == book.id) {
                     context.player.book.favorit = book.favorit;
                   }

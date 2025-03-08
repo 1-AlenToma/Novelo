@@ -99,11 +99,7 @@ class NovelUpdate extends NovelInfo {
         item.novelUpdateRecommendations =
           item.novelUpdateRecommendations = html_1
             .find('.genre[title*="Recommended"]')
-            .map(x =>
-              LightInfo.n()
-                .Name(x.text)
-                .Url(x.url("href"))
-            );
+            .map(x => new LightInfo().set("name", x.text).set("url", x.url("href")));
       }
     } catch (e) {
       console.error(e);

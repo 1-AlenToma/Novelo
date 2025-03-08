@@ -1,11 +1,11 @@
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Icon } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
 import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";
 
 type Buttons = {
   onPress: Function;
-  icon: typeof Icon | React.ReactElement;
+  icon: ((typeof Icon) | (React.ReactElement));
   text?: string;
   ifTrue?: any;
 };
@@ -15,13 +15,15 @@ export default ({
   value,
   single,
   enabled,
+  css,
   ...props
 }: {
   buttons: Buttons[];
   children: any;
-  value: any;
+  value?: any;
   single: any;
-  enabled?: boolean
+  enabled?: boolean,
+  css?: string;
 }) => {
   let btn = buttons.filter(
     x => methods.ifSelector(x.ifTrue) !== false
@@ -102,7 +104,7 @@ export default ({
                     animateLeft(false);
                 }}
                 key={i}>
-                {x.icon}
+                {x.icon as any}
                 <Text
                   css="desc invertco"
                   ifTrue={() =>
@@ -145,6 +147,7 @@ export default ({
       </AnimatedView>
     </>,
     {
+      css,
       ...props
     }
   );

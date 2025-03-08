@@ -1,19 +1,14 @@
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Icon } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
 import Slider from "./SliderView";
-
 import * as React from "react";
 import {
-  Linking,
   PanResponder,
   Animated
 } from "react-native";
 import {
-  useUpdate,
   useTimer,
   useDbHook
 } from "../hooks";
-import { useNavigation } from "@react-navigation/native";
-import { Player, DetailInfo } from "../native";
 
 export default ({ ...props }: any) => {
   context.hook(

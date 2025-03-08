@@ -11,10 +11,8 @@ import {
 import * as React from "react";
 import Header from "./Header";
 import {
-  useNavigation,
-  useUpdate
+  useNavigation
 } from "../hooks";
-import { sleep } from "../Methods";
 import { Book } from "db";
 
 const ItemRender = ({
@@ -219,7 +217,6 @@ export default ({ ...props }: any) => {
       />
       <View css="flex mih:100">
         <ItemList
-          css="flex"
           items={books?.filter(x =>
             x.name.has(state.text)
           )}

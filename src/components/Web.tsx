@@ -4,13 +4,11 @@ import { CSSStyle, JS } from "../assets/readerJs";
 import * as React from "react";
 import { useTimer, useView } from "../hooks";
 import {
-  arrayBuffer,
-  newId,
   invertColor,
   sleep
 } from "../Methods";
-import { Asset, useAssets } from "expo-asset";
-import { View, AnimatedView, Text as TextView, TouchableOpacity, ProgressBar, AlertDialog } from "./ReactNativeComponents";
+import { Asset } from "expo-asset";
+import { View, Text as TextView, ProgressBar } from "./ReactNativeComponents";
 import BattariView from "./BattariView";
 import WebOptions from "../native/WebOptions";
 

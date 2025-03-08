@@ -93,7 +93,7 @@ export default ({
       <View
         ifTrue={ifTrue}
         css="clearwidth zi:101 he:40 row juc:center ali:center di:flex invert"
-        style={[css?.css()]}>
+        style={[css?.css()] as any}>
         {navOption.canGoBack() ? (
           <TouchableOpacity
             css="absolute le:5"
@@ -152,8 +152,9 @@ export default ({
           </TouchableOpacity>
         ) : title && !title.empty() ? (
           <Text
+            numberOfLines={1}
             css={
-              "header fos:18 fontStyle:italic invertco " +
+              "header fos:18 fontStyle:italic maw-90% tea-center invertco " +
               titleCss
             }>
             {title}
