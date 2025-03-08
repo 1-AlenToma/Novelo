@@ -87,16 +87,8 @@ const ActionItem = ({
 };
 
 export default ({ ...props }: any) => {
-  const update = useUpdate();
-
-  const [
-    { searchTxt, parserName, genre },
-    option,
-    navop
-  ] = useNavigation(props);
-  const parser = parserName?.has()
-    ? context.parser.find(parserName)
-    : context.parser.current;
+  const [{ searchTxt, parserName, genre }, option, navop] = useNavigation(props);
+  const parser = parserName?.has() ? context.parser.find(parserName) : context.parser.current;
   const loader = useLoader(
     searchTxt?.has() ?? false
   );
@@ -133,10 +125,7 @@ export default ({ ...props }: any) => {
         let items = await parser.search(txt, true);
         if (txt.page <= 1) currentItems = items;
         else {
-          currentItems = currentItems.distinct(
-            "url",
-            items
-          );
+          currentItems = currentItems.distinct("url", items);
         }
 
         if (txt.page == 1 || items.length > 0) {

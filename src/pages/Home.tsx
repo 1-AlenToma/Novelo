@@ -195,7 +195,7 @@ const CurrentItem = ({
 export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
-  context.hook("size");
+  context.hook("size", "parser.current");
   context.nav = options;
   let groups =
     context.parser.current.settings.group;

@@ -7,7 +7,7 @@ import { TabBar, View } from "../components";
 import * as React from "react";
 
 export default ({ ...props }) => {
-  context.hook("parser.current");
+
   return (
     <TabBar
       css="root"
