@@ -29,7 +29,7 @@ export default ({
         <View css="clearwidth bottom he:50% overflow invert">
           <View css="blur bottom clearboth" />
           <Text
-            numberOfLines={3}
+            numberOfLines={1}
             css="clearwidth wi:100% header co:#fff pa:4 teA:center">
             {item.name}
           </Text>
