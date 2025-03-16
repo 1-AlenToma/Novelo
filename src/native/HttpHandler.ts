@@ -4,10 +4,7 @@ import MapCacher from "./MapCacher";
 const tempData = new MapCacher<HttpTemp>(300);
 
 const createKey = (...args) => {
-  return JSON.stringify(args).replace(
-    /(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim,
-    ""
-  );
+  return JSON.stringify(args).replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "");
 };
 
 
@@ -204,14 +201,10 @@ class HttpHandler {
     try {
       var formBody: any = [];
       for (var property in item) {
-        var encodedKey =
-          encodeURIComponent(property);
-        var encodedValue = encodeURIComponent(
-          item[property]
-        );
-        formBody.push(
-          encodedKey + "=" + encodedValue
-        );
+        var encodedKey = encodeURIComponent(property);
+        var encodedValue = encodeURIComponent(item[property]);
+
+        formBody.push(encodedKey + "=" + encodedValue);
       }
       formBody = formBody.join("&");
 
@@ -220,10 +213,7 @@ class HttpHandler {
         {
           body: formBody,
           method: "POST",
-          ...this.header({
-            "Content-Type":
-              "application/x-www-form-urlencoded; charset=UTF-8"
-          })
+          ...this.header({ "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" })
         },
         this.ignoreAlert
       );

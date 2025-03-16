@@ -501,13 +501,13 @@ export const TabBar = (props: TabBarProps) => {
                                     style={{
                                         width: "100%",
                                     }}
-                                    contentContainerStyle={[
+                                    contentContainerStyle={
                                         {
                                             flexGrow: 1,
                                             width: "100%",
                                             maxWidth: "100%"
                                         }
-                                    ]}>
+                                    }>
                                     {x}
                                 </ScrollView>
                             ) : (
@@ -519,6 +519,7 @@ export const TabBar = (props: TabBarProps) => {
                 {position !== "Top" && visibleChildren.length > 1 ? (
                     <TabBarMenu children={children} />
                 ) : null}
+                {props.footer}
             </TabBarContext.Provider>
         </View>
     );

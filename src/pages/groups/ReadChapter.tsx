@@ -20,7 +20,8 @@ import {
   TabView,
   AlertDialog,
   Button,
-  ColorSelection
+  ColorSelection,
+  PlayerView
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -1302,6 +1303,7 @@ export default (props: any) => {
   return (
     <>
       {loader.elem}
+
       <View
         css="flex"
         style={{
@@ -1312,6 +1314,7 @@ export default (props: any) => {
         <Modoles />
         <Controller state={state} {...props} />
         <InternalWeb state={state} {...props} />
+        <PlayerView />
       </View>
     </>
   );

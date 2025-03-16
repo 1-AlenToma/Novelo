@@ -3,13 +3,15 @@ import Favorit from "./Favorit";
 import Settings from "./Settings";
 import Downloaded from "./Downloaded";
 import Libraries from "./Libraries";
-import { TabBar, View } from "../components";
+import { TabBar, View, PlayerView } from "../components";
 import * as React from "react";
+
 
 export default ({ ...props }) => {
 
   return (
     <TabBar
+      footer={<PlayerView isMenu={true} />}
       css="root"
       header={{
         style: "invert",

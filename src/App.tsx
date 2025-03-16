@@ -135,7 +135,7 @@ const App = () => {
         context.isFullScreen = false;
         return () => {
             // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
-            if (!__DEV__ && !(Platform?.constants?.Model?.has("Subsystem for Android") ?? false))
+            if (!__DEV__ && !((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
                 RNExitApp.exitApp?.();
             itemToRemove?.forEach(x => x.remove());
         };
@@ -151,7 +151,6 @@ const App = () => {
             selectedIndex={context.selectedThemeIndex}>
             <NavigationContainer>
                 <AppStack />
-                <PlayerView />
             </NavigationContainer>
             <StatusBar style={context.selectedThemeIndex == 0 ? "dark" : "light"} />
             <GlobalFileBrowse />

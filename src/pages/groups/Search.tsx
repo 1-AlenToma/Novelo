@@ -98,8 +98,13 @@ export default ({ ...props }: any) => {
     try {
       let parser = state.parser;
       if (state.text == undefined) {
-        parser.settings = await parser.load();
+        parser.settings = await parser.load("RenewMemo");
         state.text = new SearchDetail(searchTxt || "").set("page", 0).set("genre", parser.settings.genre?.filter(x => genre && x.text.has(genre)) ?? []);
+      }
+
+      if (state.text.text?.empty() && !state.text.genre?.has() && !state.text.status?.has() && !state.text.group?.has()) {
+        state.items = [];
+        return;
       }
 
       if (parser) {
@@ -108,7 +113,7 @@ export default ({ ...props }: any) => {
         else txt.page = page;
         let currentItems =
           txt.page > 1 ? [...state.items] : [];
-        let items = await parser.search(txt, true);
+        let items = await parser.search(txt);
         if (txt.page <= 1) currentItems = items;
         else {
           currentItems = currentItems.distinct("url", items);
@@ -247,7 +252,11 @@ export default ({ ...props }: any) => {
           keyName="genre"
         />
       </View>
-      <View css="clearwidth mih:50 pab-20 flex invert">
+      <View css="clearwidth mih:50 pab-20 flex invert juc-center ali-center" ifTrue={() => state.items.length <= 0}>
+        <Text css="fos-18 fow-bold">No Result Found..</Text>
+
+      </View>
+      <View css="clearwidth mih:50 pab-20 flex invert" ifTrue={() => state.items.length > 0}>
         <ItemList
           page={state.currentPage}
           onPress={item => {

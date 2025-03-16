@@ -162,7 +162,7 @@ export default class ParserWrapper extends Parser {
         data.genre?.has() ||
         data.group?.has())
   })
-  async load() {
+  async load(renewMemo?: "RenewMemo" | undefined) {
     try {
       return await this.parser.load();
     } catch (e) {

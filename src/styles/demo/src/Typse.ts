@@ -1,12 +1,16 @@
-import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, TextStyle, ViewStyle, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps, ScrollViewProps } from "react-native";
-import { NestedStyleSheet } from "./styles";
+import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps, ScrollViewProps } from "react-native";
+import * as ReactNative from "react-native"
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
-import * as Icons from "@expo/vector-icons/build/createIconSet";
+
 
 type TextCustomInputProps = StyledProps & TextInputProps & {
     mode: "Outlined" | "Flat" | "Normal"
 }
+
+type ViewStyle = ReactNative.StyleProp<ReactNative.ViewStyle>;
+
+type TextStyle = ReactNative.StyleProp<ReactNative.TextStyle>;
 
 export type ICSS = {
     props: string[]; // .button etc
@@ -240,7 +244,7 @@ export type ProgressBarProps = StyledProps & {
 }
 
 export type MenuChildren = React.ReactNode & {
-    props: TabItemProps
+    props: TabItemProps;
 }
 
 export type TabItemProps = StyledProps & {
@@ -260,6 +264,7 @@ export type TabBarProps = StyledProps & {
     position?: "Top" | "Bottom";
     onTabChange?: (index: number) => void;
     disableScrolling?: boolean;
+    footer?: React.ReactNode;
     header?: {
         style?: GenericCSS<ViewStyle, CSS_String>;
         textStyle?: GenericCSS<TextStyle, CSS_String>;

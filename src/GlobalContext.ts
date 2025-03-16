@@ -107,7 +107,7 @@ const data = StateBuilder<GlobalType>(
             find: (name: string) => data.parser.all.find(x => x.name == name) as ParserWrapper,
             set: async (p: any) => {
                 p = data.parser.find(p.name)
-                p.settings = await p.load();
+                p.settings = await p.load("RenewMemo");
                 data.parser.current = p;
                 if (data.appSettings.selectedParser != p.name) {
                     data.appSettings.selectedParser = p.name;

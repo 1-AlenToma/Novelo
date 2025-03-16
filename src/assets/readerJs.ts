@@ -407,6 +407,7 @@ export const JS = `
                                                                                         mock.innerHTML = old;
                                                                                         continue;
                                                                                 }
+                                                                                        
                                                                                 index++;
                                                                                 mock.style.overflowY = "auto";
                                                                                 mock.style.maxHeight = "100%";
@@ -956,9 +957,7 @@ export const JS = `
                         }
 
                         window.getId = ()=> {
-
                                 return Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
-
                         }
 
                         window.onImageLoadError = (img)=> {
@@ -967,6 +966,7 @@ export const JS = `
                           {
                                 return;
                           }
+
                           if (window.isValidUrl(src))
                                 return; // it is an external image, cant do anything to load it.
                           

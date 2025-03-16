@@ -135,6 +135,7 @@ export default ({
           onEndReachedCalledDuringMomentum.current =
             false;
         }}
+
         extraData={[
           ...(updater ?? []),
           selectedIndex,

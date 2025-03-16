@@ -113,7 +113,7 @@ export default ({ ...props }: any) => {
   return (
     <View
       css="flex root">
-      <Modal addCloser={true} css="he-90%" isVisible={state.showNovelUpdateWebView} onHide={() => state.showNovelUpdateWebView = false}>
+      <Modal addCloser={true} css="he-90% wi-95%" isVisible={state.showNovelUpdateWebView} onHide={() => state.showNovelUpdateWebView = false}>
         <View css="flex mat-30 mab-10">
           <WebView
             injectedJavaScript={methods.injectCSS(`.pgAdWrapper, #div-gpt-ad-noid_blank {
@@ -316,10 +316,10 @@ export default ({ ...props }: any) => {
                   />
                   <View css="botw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center invert">
                     <Text
-                      ifTrue={() => state.novel.chapters?.has()}
+                      ifTrue={() => state.novel.chapters?.has() ?? false}
                       css="desc fos:15">
-                      {state.novel.chapters
-                        ?.length + " Chapter "}
+                      {(state.novel.chapters
+                        ?.length ?? "") + " Chapter "}
                       {(
                         state.novel.status || ""
                       ).has("Completed")

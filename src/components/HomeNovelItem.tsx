@@ -30,7 +30,7 @@ export default ({
           <View css="blur bottom clearboth" />
           <Text
             numberOfLines={1}
-            css="clearwidth wi:100% header co:#fff pa:4 teA:center">
+            css="clearwidth wi:99% header co:#fff pal-5 par-5 pat-5 tea:center">
             {item.name}
           </Text>
           <View ifTrue={() => item.decription?.length > 1}
