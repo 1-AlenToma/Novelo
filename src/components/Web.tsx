@@ -351,7 +351,7 @@ export default ({
 
       let scrollType = context.player.novel.type?.isManga() ? "PaginationScroll" : (context.player.showPlayer ? "Player" : (context.appSettings.navigationType == "Snap" ? "Pagination" : (context.appSettings.navigationType == "ScrollSnap" ? "PaginationScroll" : "Scroll")));
       options.content = content.content;
-      options.scrollDisabled = context.player.showPlayer;
+      options.scrollDisabled = false;
       options.scrollValue = content.scroll;
       options.scrollType = scrollType as any;
       options.addNext = context.player.hasNext();
@@ -476,7 +476,7 @@ export default ({
         inline: "start",
         all: !(context.appSettings.voiceWordSelectionsSettings?.appendSelection ?? false),
         scroll: true,
-        selector: ".sliderView >p",
+        selector: ".HTMLcontent >p",
         text: context.player.highlightedText.text,
         index: context.player.highlightedText.index,
         length: context.player.highlightedText.length

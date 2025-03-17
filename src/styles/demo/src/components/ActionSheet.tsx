@@ -16,19 +16,38 @@ import {
 } from "react-native";
 import { ActionSheetProps } from "../Typse";
 import { Blur } from "./Blur";
+import { ISize } from "Types";
 export const ActionSheet = (props: ActionSheetProps) => {
     globalData.hook("containerSize")
     let position = props.position;
     if (props.position == undefined)
         position = "Bottom";
     const isVertical = ["Top", "Bottom"].includes(position);
-    let getHeight = () => {
-        let h = props.size ?? "50%";
-        if ((typeof h === "string")) {
-            h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), isVertical ?
-                globalData.containerSize.height : globalData.containerSize.width);
+    const state = StateBuilder({
+        id: newId(),
+        size: undefined as ISize | undefined,
+        refItem: {
+            startValue: 0,
+            isVisible: false,
+            panResponse: undefined,
+            isTouched: false,
+            interpolate: [],
+            show: false
         }
-        return Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 80));
+    }).ignore("refItem").build();
+
+
+    let getHeight = () => {
+        let h: any = props.size ?? "50%";
+        if (props.size == "content") {
+            h = (isVertical ? state.size?.height : state.size.width) ?? 1;
+        }
+
+
+        if ((typeof h === "string")) {
+            h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), (isVertical ? globalData.containerSize.height : globalData.containerSize.width));
+        }
+        return Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 90));
     }
 
     let context = useContext(InternalThemeContext);
@@ -43,20 +62,10 @@ export const ActionSheet = (props: ActionSheetProps) => {
 
     const blurAnimation = useAnimate();
 
-    const state = StateBuilder({
-        id: newId(),
-        refItem: {
-            startValue: 0,
-            isVisible: false,
-            panResponse: undefined,
-            isTouched: false,
-            interpolate: [],
-            show: false
-        }
-    }).ignore("refItem").build();
+
 
     const setSize = () => {
-        let size =  globalData.containerSize;
+        let size = globalData.containerSize;
         let containerHeight = size.height;
         let sheetHeight = Math.abs(containerHeight - getHeight());
 
@@ -118,10 +127,10 @@ export const ActionSheet = (props: ActionSheetProps) => {
         );
     };
 
-    globalData.useEffect(() => {
+    const screenSizeUpdated = () => {
         timer(() => {
             setSize();
-            
+
             if (state.refItem.isVisible) {
                 state.refItem.panResponse = undefined;
                 renderUpdate();
@@ -129,7 +138,15 @@ export const ActionSheet = (props: ActionSheetProps) => {
                 toggle(true)
             }
         })
+    }
+
+    globalData.useEffect(() => {
+        screenSizeUpdated();
     }, "screen");
+
+    state.useEffect(() => {
+        screenSizeUpdated();
+    }, "size")
 
 
     React.useEffect(() => {
@@ -269,10 +286,22 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         },
                     ]}  {...state.refItem.panResponse.panHandlers}>
                     <View
-                        style={{ flexDirection: !isVertical ? "row" : undefined }}
+                        style={{
+                            flexDirection: !isVertical ? "row" : undefined
+                        }}
                         css="wi:100% he:100% pa:10 flex:1">
                         {position == "Bottom" || position == "Right" ? handle : null}
-                        <View ifTrue={state.refItem.show || !props.lazyLoading} style={props.style} css={`flex:1 flg:1 zi:5 maw:99% _overflow mat:5 bac-transparent ${optionalStyle(props.css).c}`}>
+                        <View ifTrue={state.refItem.show || !props.lazyLoading}
+                            style={[optionalStyle(props.css).o, (props.size != "content" ? {
+                                flex: 1,
+                                flexGrow: 1
+                            } : undefined)]} onLayout={({ nativeEvent }) => {
+                                if (props.size == "content") {
+                                    state.size = nativeEvent.layout;
+                                    state.size.height += 50 as any;
+                                    state.size.width += 50 as any;
+                                }
+                            }} css={`zi:5 maw:99% _overflow mat:5 bac-transparent ${optionalStyle(props.css).c}`}>
                             {props.children}
                         </View>
                         {position == "Top" || position == "Left" ? handle : null}

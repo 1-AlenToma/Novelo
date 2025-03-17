@@ -67,14 +67,9 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </TouchableOpacity>
         <View
-          css="wi:40 he:30 invert juc:center ali:center invert">
-          <Text
-            css="bold fos:10 tea:center invertco">
-            {context.player
-              .currentChapterSettings
-              .audioProgress + 1}
-            /
-            {context.player.chapterArray.length}
+          css="wi:50 he:30 invert juc:center ali:center invert">
+          <Text css="bold fos:10 tea:center invertco" numberOfLines={1}>
+            {context.player.currentChapterSettings.audioProgress + 1}/{context.player.chapterArray.length}
           </Text>
         </View>
         <View

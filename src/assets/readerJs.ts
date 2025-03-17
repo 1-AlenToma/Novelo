@@ -368,12 +368,12 @@ export const JS = `
                                         for (let k in style)
                                                 scrollPerview.style[k] = style[k] + (typeof style[k] == "number" && k != "opacity" ? "px" : "");
                                         scrollPerview.innerHTML = "Next Page";
-                                        if (["Pagination", "PaginationScroll"].includes(option.scrollType))
+                                        if (["Pagination", "PaginationScroll", "Player"].includes(option.scrollType))
                                                 document.body.appendChild(scrollPerview)
                                 }
                                 createScrollPreview();
 
-                                if (option.addPrev && ["Pagination", "PaginationScroll"].includes(option.scrollType)) {
+                                if (option.addPrev && ["Pagination", "PaginationScroll", "Player"].includes(option.scrollType)) {
                                         const mock = createView();
                                         mock.classList.add("emptyView");
                                         mock.innerHTML = addString("<p>", option.prevText, "</p>");
@@ -384,6 +384,7 @@ export const JS = `
                                         try {
                                                 const height = Math.min(window.innerHeight, sliderContainer.clientHeight, div.clientHeight) - (bottomPadding);
                                                 const mock = createView();
+                                                mock.classList.add("HTMLcontent");
                                                 let viewHeight = 0;
                                                 slider.appendChild(mock);
                                                 if (option.scrollType == "Pagination") {
@@ -421,9 +422,10 @@ export const JS = `
                                                 } else {
                                                         mock.innerHTML = text;
                                                         
-                                                        if (option.scrollType != "PaginationScroll")
+                                                        if (!["Player", "PaginationScroll"].includes(option.scrollType))
                                                                 slider.classList.remove("slider");
                                                         else {
+
                                                                 scrollabeView = mock;
                                                                 scrollabeView.style.overflowY = "auto";
                                                                 scrollabeView.style.maxHeight = "100%";
@@ -437,7 +439,7 @@ export const JS = `
                                 validateImages();
 
                                 window.cleanStyle(".sliderView");
-                                if (option.addNext && ["Pagination", "PaginationScroll"].includes(option.scrollType)) {
+                                if (option.addNext && ["Pagination", "PaginationScroll", "Player"].includes(option.scrollType)) {
                                         const mock = createView();
                                         mock.classList.add("emptyView");
                                         mock.innerHTML = addString("<p>", option.nextText, "</p>");
@@ -461,7 +463,8 @@ export const JS = `
                                                 sliderContainer.scrollTo({ left: closestIndex * childWidth, behavior: "smooth" });
                                         else sliderContainer.scrollLeft = closestIndex * childWidth;
                                 };
-                                if (["Pagination", "PaginationScroll"].includes(option.scrollType)) {
+
+                                if (["Pagination", "PaginationScroll", "Player"].includes(option.scrollType)) {
                                         slider.style.width = (slider.children.length * window.innerWidth) + "px";
                                         slider.style.display = "flex";
 
@@ -604,7 +607,7 @@ export const JS = `
                                                 if ((sliderContainer.scrollWidth < option.scrollValue || Math.abs(sliderContainer.scrollWidth - sliderContainer.clientWidth - option.scrollValue) <= (sliderContainer.clientWidth / 2)) && option.addNext)
                                                         option.scrollValue = sliderContainer.scrollWidth - (sliderContainer.clientWidth * 2);
 
-                                        } else if (option.scrollType == "PaginationScroll") {
+                                        } else if (["PaginationScroll", "Player"].includes(option.scrollType)) {
                                                 if (option.addPrev) {
                                                         sliderContainer.scrollLeft = sliderContainer.clientWidth;
                                                         snapToNearest();
@@ -613,14 +616,14 @@ export const JS = `
 
                                         if (option.scrollValue > 0 && option.scrollType == "Pagination") {
                                                 scrollabeView.scrollLeft = option.scrollValue;
-                                        } else scrollabeView.scrollTop = option.scrollValue;
+                                        } else if (!["Player"].includes(option.scrollType)) scrollabeView.scrollTop = option.scrollValue;
                                 }
 
                                 const endReached = () => {
                                         if (!option.addNext)
                                                 return false;
                                         let value = Math.abs(sliderContainer.scrollHeight - sliderContainer.clientHeight - sliderContainer.scrollTop);
-                                        if (["Pagination", "PaginationScroll"].includes(option.scrollType)) {
+                                        if (["Pagination", "PaginationScroll", "Player"].includes(option.scrollType)) {
                                                 value = Math.abs(sliderContainer.scrollWidth - sliderContainer.clientWidth - sliderContainer.scrollLeft);
                                         }
                                         if (value <= 30) {
@@ -639,7 +642,7 @@ export const JS = `
                                 const startReached = () => {
                                         if (!option.addPrev)
                                                 return false;
-                                        if ((["Pagination", "PaginationScroll"].includes(option.scrollType) && sliderContainer.scrollLeft <= 30) || (option.scrollType == "Scroll" && sliderContainer.scrollTop <= 10)) {
+                                        if ((["Pagination", "PaginationScroll", "Player"].includes(option.scrollType) && sliderContainer.scrollLeft <= 30) || (option.scrollType == "Scroll" && sliderContainer.scrollTop <= 10)) {
                                                 if (option.onStart) {
                                                         option.onStart();
                                                         return true;
@@ -651,11 +654,9 @@ export const JS = `
                                 }
 
                                 const validateScroll = () => {
-                                        if (option.scrollType == "Player")
-                                                return false; // single page 
                                         if (sliderContainer.scrollHeight <= sliderContainer.offsetHeight && ["Scroll"].includes(option.scrollType))
                                                 return false;
-                                        if (sliderContainer.scrollWidth <= sliderContainer.offsetWidth && ["Pagination", "PaginationScroll"].includes(option.scrollType))
+                                        if (sliderContainer.scrollWidth <= sliderContainer.offsetWidth && ["Pagination", "PaginationScroll", "Player"].includes(option.scrollType))
                                                 return false;
                                         return (startReached() || endReached())
                                 }
@@ -693,6 +694,7 @@ export const JS = `
                                                 }, 500);
                                         });
                                 }
+                                
                                 const onSliderScroll = (e) => {
                                         if (option.scrollDisabled || rendering)
                                                 return;
@@ -700,7 +702,7 @@ export const JS = `
                                         if (option.scrollPercentageValue && option.scrollType != "PaginationScroll") {
                                                 option.scrollPercentageValue(getScrollProcent());
                                         }
-                                        if (!["Player", "Scroll"].includes(option.scrollType)) {
+                                        if (!["Scroll"].includes(option.scrollType)) {
                                                 let endValue = Math.abs(sliderContainer.scrollWidth - sliderContainer.clientWidth - sliderContainer.scrollLeft);
                                                 if (option.addNext && endValue <= sliderContainer.clientWidth - 30) {
                                                         scrollPerview.style.display = "flex";
@@ -733,6 +735,7 @@ export const JS = `
 
                                         }, 500);
                                 }
+                                        
                                 if (!option.scrollDisabled)
                                         sliderContainer.addEventListener("scroll", onSliderScroll);
 

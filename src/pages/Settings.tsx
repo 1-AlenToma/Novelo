@@ -119,7 +119,7 @@ export default (props: any) => {
   };
 
   return (
-    <View css="flex clb">
+    <View css="flex clb ma-5">
       <Modal css="he-80%" isVisible={state.showWebTester} onHide={() => state.showWebTester = false} addCloser={true}>
         <WebNovelTester />
       </Modal>

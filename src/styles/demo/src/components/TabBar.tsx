@@ -6,7 +6,8 @@ import {
     PanResponder,
     ViewProps,
     TextStyle,
-    Platform
+    Platform,
+    ActivityIndicator
 } from "react-native";
 import * as React from "react";
 
@@ -40,7 +41,7 @@ export class TabView extends React.PureComponent<TabItemProps, {}> {
     render(): React.ReactNode {
         const props = this.props;
         const context: ITabBarContext = this.context as any;
-        let css = optionalStyle(props.css)
+        let css = optionalStyle(props.css);
         return (
             <View {...props} css={`fl:1 wi:100% he:100% bac-transparent ${css.c}`} />
         )
@@ -55,7 +56,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
     let menuItems = children.filter(
         x => ifSelector(x.props.ifTrue) !== false
     );
-    let timer = useTimer(10);
+
     const state = StateBuilder({
         selectedIndex: context.selectedIndex,
         manuItemSize: undefined as Size | undefined,
@@ -132,9 +133,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                     transform: [
                         {
                             translateX: context.animated.x.interpolate({
-                                inputRange: interpolate.sort(
-                                    (a, b) => a - b
-                                ),
+                                inputRange: interpolate.sort((a, b) => a - b),
                                 outputRange: interpolate,
                                 extrapolate: "clamp"
                             })
@@ -232,11 +231,14 @@ export const TabBar = (props: TabBarProps) => {
     );
     const { animate, animateX, currentValue } = useAnimate();
     const menuAnimation = useAnimate();
+    const temp = {};
+    temp[props.selectedTabIndex ?? 0] = true;
     const state = StateBuilder({
         size: { width: globalData.window.width, height: globalData.window.height } as Size,
         index: props.selectedTabIndex ?? 0,
         refItem: {
             rItems: children.map(x => { }) as any as MenuChildren[],
+            loadedViews: temp,
             menuInterpolate: undefined,
             menuItemWidth: undefined,
             startValue: undefined,
@@ -271,6 +273,7 @@ export const TabBar = (props: TabBarProps) => {
         speed?: number,
         fn?: any
     ) => {
+
         let value = state.refItem.interpolate.find(x => x.index == index)?.value ?? 0;
         if (state.refItem.menuInterpolate && state.refItem.menuInterpolate.length > 0)
             menuAnimation.animateX(
@@ -300,10 +303,19 @@ export const TabBar = (props: TabBarProps) => {
             animateLeft(i);
         }
         if (!state.refItem.rItems[i] && children[i]) {
+            state.refItem.loadedViews[i] = true;
             if (children[i].props.onLoad)
                 children[i].props.onLoad();
         }
     };
+
+    const getView = (index, view) => {
+        if (props.lazyLoading && !state.refItem.loadedViews[index])
+            return (<View css="flex-1 juc-center ali-center">
+                <ActivityIndicator size={"large"} />
+            </View>)
+        return view;
+    }
 
     React.useEffect(() => {
         loadChildren(props.selectedTabIndex ?? 0);
@@ -333,7 +345,11 @@ export const TabBar = (props: TabBarProps) => {
             gestureState: any
         ) => {
 
-            if (state.refItem.handled) return;
+            if (state.refItem.handled) {
+                //  console.warn(state.refItem.handled)
+                // tAnimate(state.index, 0);
+                return;
+            }
             state.refItem.handled = true;
             currentValue.x = undefined;
             menuAnimation.currentValue.x = undefined;
@@ -341,11 +357,11 @@ export const TabBar = (props: TabBarProps) => {
             let diff = newValue - state.refItem.startValue;
             let width = state.size.width;
             let i = state.index ?? 0;
-            // console.log(newValue)
             let speed = 200;
+            menuAnimation.animate.flattenOffset();
+            animate.flattenOffset();
+
             if (Math.abs(diff) > width / 3) {
-                menuAnimation.animate.flattenOffset();
-                animate.flattenOffset();
                 if (diff < 0) {
                     if (i + 1 < children.length)
                         loadChildren(i + 1);
@@ -358,6 +374,8 @@ export const TabBar = (props: TabBarProps) => {
             } else {
                 tAnimate(i, speed); // reset to start value
             }
+
+
             globalData.activePan = false;
             state.refItem.handled = true;
         };
@@ -453,6 +471,7 @@ export const TabBar = (props: TabBarProps) => {
     }
 
 
+
     return (
         <View onLayout={({ nativeEvent }) => {
             state.size = nativeEvent.layout;
@@ -508,10 +527,10 @@ export const TabBar = (props: TabBarProps) => {
                                             maxWidth: "100%"
                                         }
                                     }>
-                                    {x}
+                                    {getView(i, x)}
                                 </ScrollView>
                             ) : (
-                                x
+                                getView(i, x)
                             )}
                         </View>
                     ))}

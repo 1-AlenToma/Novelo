@@ -168,7 +168,7 @@ export type ModalProps = {
 }
 
 export type ActionSheetProps = Omit<ModalProps, "animationStyle"> & {
-    size: Percentage;
+    size: Percentage | "content";
     lazyLoading?: boolean;
     position?: "Bottom" | "Top" | "Left" | "Right";
 }

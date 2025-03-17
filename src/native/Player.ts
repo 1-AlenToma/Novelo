@@ -75,20 +75,20 @@ class Player {
       return (this.html = html ?? "");
     }
     let txt = html ?? this.currentChapter.content ?? this.html;
+
     txt = new Html(txt).remove("script, style, iframe").html;
 
     txt = context.appSettings.useSentenceBuilder?.enabled && this.book.parserName != "epub" ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
     try {
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(t.edit.escapeRegExp(), "gim");
-
         let className = t.comments?.has() ? "comments" : "";
         let click = className.has() ? `window.postmsg('Comments', ${this.book.textReplacements.findIndex(x => x == t)})` : "";
         let spn = `<span onclick="${click}" class="custom ${className}" {#style}>${t.editWith}</span>`;
         if (t.bgColor) {
           spn = spn.replace("{#style}", `style="background-color:${t.bgColor}; color:${invertColor(t.bgColor)}"`)
         } else spn = spn.replace("{#style}", "")
-        txt = txt.replace(rg, spn);
+        txt = txt.replace(/<(\/)?(strong|i)>/gmi, "").replace(rg, spn);
       }
     } catch (e) {
       console.error(e);

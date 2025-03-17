@@ -54,8 +54,9 @@ export const useAnimate = ({
         onFinished?: Function,
         sp?: any
     ) => {
-        if (value == currentValue.x)
+        if (value == currentValue.x) {
             return;
+        }
         currentValue.x = value;
         run(
             value,
