@@ -6,7 +6,8 @@ import {
   TextInput,
   Icon,
   ActionSheetButton,
-  Image
+  Image,
+  ScrollView
 } from "../components";
 import * as React from "react";
 import { proc } from "../Methods";
@@ -186,7 +187,7 @@ export default ({
                 context.parser.all.length > 1
               }
               css="mal:10 bac-transparent"
-              size="60%"
+              size="50%"
               title="Choose Parser"
               refItem={sourceContainer}
               btn={
@@ -196,27 +197,29 @@ export default ({
                   name="extension"
                 />
               }>
-              {context.parser
-                .all
-                .map((x, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() => {
-                      context.parser.set(x);
-                      sourceContainer.current.close();
-                    }
-                    }
-                    css={`listButton pal:5 fld-row invert ${x.name ===
-                      context.parser.current.name
-                      ? "selectedRow bor:5"
-                      : ""
-                      }`}>
-                    <Image url={`http://www.google.com/s2/favicons?domain=${x.url}`} css="resizeMode:contain he:20 wi:20" />
-                    <Text css="pal-5 invertco header">{x.name} <Text css={"co-primary"}>
-                      ({x.type})
-                    </Text></Text>
-                  </TouchableOpacity>
-                ))}
+              <ScrollView>
+                {context.parser
+                  .all
+                  .map((x, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      onPress={() => {
+                        context.parser.set(x);
+                        sourceContainer.current.close();
+                      }
+                      }
+                      css={`listButton pal:5 fld-row invert ${x.name ===
+                        context.parser.current.name
+                        ? "selectedRow bor:5"
+                        : ""
+                        }`}>
+                      <Image url={`http://www.google.com/s2/favicons?domain=${x.url}`} css="resizeMode:contain he:20 wi:20" />
+                      <Text css="pal-5 invertco header">{x.name} <Text css={"co-primary"}>
+                        ({x.type})
+                      </Text></Text>
+                    </TouchableOpacity>
+                  ))}
+              </ScrollView>
             </ActionSheetButton>
           </>
         </View>

@@ -12,6 +12,7 @@ export default ({ ...props }) => {
   return (
     <TabBar
       lazyLoading={true}
+      loadingText="Loading, please wait.."
       footer={<PlayerView isMenu={true} />}
       css="root"
       header={{

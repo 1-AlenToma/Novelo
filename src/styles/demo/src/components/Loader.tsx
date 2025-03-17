@@ -1,16 +1,9 @@
-import { Slider as SliderView, SliderProps } from '@miblanchard/react-native-slider';
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
+import { View, Text } from "./ReactNativeComponents";
 import * as React from "react";
-import {
-    useAnimate,
-    useTimer
-} from "../hooks";
-import { ifSelector, proc, readAble, setRef } from "../config";
-import { LoaderProps, LoaderRef, Size, StyledProps } from "../Typse";
-import { Button } from "./Button";
-import { Icon } from './Icon';
+import { setRef } from "../config";
+import { LoaderProps, LoaderRef } from "../Typse";
 import StateBuilder from 'react-smart-state';
-import { ViewStyle, ActivityIndicator } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { Blur } from './Blur';
 
 export const Loader = React.forwardRef<LoaderRef, LoaderProps>((props, ref) => {
@@ -42,4 +35,4 @@ export const Loader = React.forwardRef<LoaderRef, LoaderProps>((props, ref) => {
             {props.children}
         </View>
     </View>)
-})
+});

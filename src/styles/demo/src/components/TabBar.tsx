@@ -11,8 +11,7 @@ import {
 } from "react-native";
 import * as React from "react";
 
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, CreateView } from "./ReactNativeComponents";
-import * as Icons from "@expo/vector-icons";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import {
     ifSelector,
     optionalStyle
@@ -23,6 +22,7 @@ import { MenuChildren, MenuIcon, MouseProps, Size, TabBarProps, TabItemProps, IC
 import StateBuilder from "react-smart-state";
 import { Icon } from "./Icon";
 import { globalData } from "../theme/ThemeContext";
+import { Loader } from "./Loader";
 
 
 type ITabBarContext = {
@@ -311,9 +311,7 @@ export const TabBar = (props: TabBarProps) => {
 
     const getView = (index, view) => {
         if (props.lazyLoading && !state.refItem.loadedViews[index])
-            return (<View css="flex-1 juc-center ali-center">
-                <ActivityIndicator size={"large"} />
-            </View>)
+            return (<Loader loading={true} text={props.loadingText} />)
         return view;
     }
 

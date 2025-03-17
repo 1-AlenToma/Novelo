@@ -260,6 +260,7 @@ export type TabItemProps = StyledProps & {
 export type TabBarProps = StyledProps & {
     children: MenuChildren | MenuChildren[];
     lazyLoading?: boolean;
+    loadingText?: string | React.ReactNode;
     selectedTabIndex?: number;
     position?: "Top" | "Bottom";
     onTabChange?: (index: number) => void;
