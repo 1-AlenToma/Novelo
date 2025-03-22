@@ -91,10 +91,8 @@ export default ({ ...props }: any) => {
       //return;
       state.infoLoading = true;
       if (novel && (novel.name?.has() ?? false)) {
-        let item = await context.parser
-          .find(parserName)
-          .novelInfo(novel, true);
-        if (item) {
+        let item = await context.parser.find(parserName).novelInfo(novel, true);
+        if (item && item.name) {
           state.novel = item;
         }
       }
@@ -183,7 +181,8 @@ export default ({ ...props }: any) => {
               <View css="flex ali:center">
                 <View
                   css="row box invert">
-                  <Image url={state.novel?.image} css="resizeMode:contain he:100% wi:150 bor:5" />
+                  <Image url={state.novel?.image} css="resizeMode:contain he:100% wi:150 bor:5 zi-1" />
+                  <Text css="absolute le-15 to-10 pa-2 bor-5 bac-#ffa000 co-white zi-2" ifTrue={state.novel.langType?.has() ?? false}>{state.novel.langType}</Text>
                   <View css="flex pa:5 invert">
                     <Text
                       selectable={true}
@@ -288,7 +287,7 @@ export default ({ ...props }: any) => {
                                 options
                                   .nav("Search")
                                   .add({
-                                    searchTxt: x,
+                                    searchTxt: `#${x}`,
                                     parserName
                                   })
                                   .push();
@@ -307,14 +306,15 @@ export default ({ ...props }: any) => {
                   </View>
                 </View>
                 <View
-                  css="box pal:10 par:10 invert">
+                  css={`box pal:10 par:10 invert ${state.novel.decription?.has() ? "" : "mih-20"}`}    >
                   <FText
+                    ifTrue={state.novel.decription?.has() ?? false}
                     css="desc fos:14 lih:20 pab:10 invert"
                     invertColor={true}
                     selectable={true}
                     text={state.novel.decription?.cleanHtml()}
                   />
-                  <View css="botw:1 row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center invert">
+                  <View css={`botw-${state.novel.decription?.has() ? "1" : "0"} row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center invert`}>
                     <Text
                       ifTrue={() => state.novel.chapters?.has() ?? false}
                       css="desc fos:15">
@@ -344,7 +344,7 @@ export default ({ ...props }: any) => {
                         onPress={item => {
                           chapterRef.current?.close();
                           options
-                            .nav("ReadChapter")
+                            .nav(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
                             .add({
                               name: state.novel.name,
                               chapter: item.url,
@@ -403,24 +403,36 @@ export default ({ ...props }: any) => {
                   </Text>
                   <ItemList
                     onPress={item => {
-                      options
-                        .nav("Search")
-                        .add({
-                          searchTxt: item.name,
-                          parserName
-                        })
-                        .push();
+                      if (!item.parserName) {
+                        options
+                          .nav("Search")
+                          .add({
+                            searchTxt: item.name,
+                            parserName
+                          })
+                          .push();
+                      } else {
+                        options
+                          .nav("NovelItemDetail")
+                          .add({
+                            url: item.url,
+                            parserName: item.parserName
+                          })
+                          .push();
+                      }
                     }}
-                    itemCss="wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray"
-                    container={({ item, index }) => (
-                      <Text css="fow-bold fos-15 pal-10">{item.name}</Text>
-                    )
+                    itemCss={!((state.novel.novelUpdateRecommendations?.firstOrDefault("image") ?? "").toString().has()) ? "wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray" : "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"}
+                    container={({ item, index }) => {
+                      if (item.image?.has())
+                        return <HomeNovelItem item={item} vMode={false} />
+                      return <Text css="fow-bold fos-15 pal-10">{item.name}</Text>
+                    }
                     }
                     items={
                       state.novel.novelUpdateRecommendations
                     }
                     nested={true}
-                    vMode={true}
+                    vMode={!((state.novel.novelUpdateRecommendations?.firstOrDefault("image") ?? "").toString().has())}
                   />
                 </View>
               </View>
@@ -430,14 +442,14 @@ export default ({ ...props }: any) => {
             <View
               css="row flex he:90% juc:center ali:center"
               ifTrue={
-                state.novel.url?.has() ?? false
+                (state.novel.url?.has() ?? false)
               }>
               <TouchableOpacity
+                ifTrue={["Novel", "Manga"].includes(context.parser.find(state.novel.parserName)?.type)}
                 css="button mar:5 clearheight juc:center invert"
                 onPress={async () => {
                   context
-                    .downloadManager()
-                    .download(
+                    .downloadManager().download(
                       state.novel.url,
                       state.novel.parserName
                     );
@@ -460,7 +472,7 @@ export default ({ ...props }: any) => {
                 css="mar:5 button pa:5 wi:65% clearheight invert"
                 onPress={() => {
                   options
-                    .nav("ReadChapter")
+                    .nav(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
                     .add({
                       name: state.novel.name,
                       url: state.novel.url,

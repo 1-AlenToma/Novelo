@@ -10,28 +10,12 @@ import EpubBuilder from "./EpubBuilder";
 import EventEmitter from "./EventEmitter";
 import FilesZipper from "./Zip";
 import Notification from "./Notification";
+export * from "./ParserItems";
 
-import {
-  LightInfo,
-  ChapterInfo,
-  DetailInfo,
-  Value,
-  ParserDetail,
-  SearchDetail,
-  Parser,
-  NovelInfo
-} from "./ParserItems";
+
 export {
   HttpHandler,
   Html,
-  LightInfo,
-  ChapterInfo,
-  DetailInfo,
-  Value,
-  ParserDetail,
-  SearchDetail,
-  Parser,
-  NovelInfo,
   FileHandler,
   Player,
   BGService,

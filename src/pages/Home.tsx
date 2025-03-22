@@ -78,7 +78,7 @@ const CurrentItem = ({
             css="invert listButton"
             onPress={() => {
               options
-                .nav("ReadChapter")
+                .nav(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
                 .add({
                   name: book.name,
                   url: book.url,
@@ -94,7 +94,7 @@ const CurrentItem = ({
               css="invertco"
             />
             <Text>
-              Read
+              {context.parser.find(book.parserName)?.type == "Anime" ? "Watch" : "Read"}
               {context.appSettings.currentNovel
                 ?.isEpub &&
                 book.parserName != "epub"
@@ -110,7 +110,7 @@ const CurrentItem = ({
             css="invert listButton"
             onPress={() => {
               options
-                .nav("ReadChapter")
+                .nav(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
                 .add({
                   name: book.name,
                   url: book.url,
@@ -153,7 +153,7 @@ const CurrentItem = ({
           onLongPress={() => setVisible(true)}
           onPress={() => {
             options
-              .nav("ReadChapter")
+              .nav(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
               .add({
                 name: book.name,
                 url: book.url,
@@ -179,7 +179,7 @@ const CurrentItem = ({
             </Text>
             <Text
               css="desc co:red bottom le:35%">
-              READING NOW
+              {context.parser.find(book.parserName)?.type == "Anime" ? "Watching" : "READING"} NOW
               {context.appSettings.currentNovel
                 ?.isEpub &&
                 book.parserName != "epub"

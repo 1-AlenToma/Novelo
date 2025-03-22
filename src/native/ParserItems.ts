@@ -9,12 +9,16 @@ class ChapterInfo extends GenericType {
   content?: string; // only used in player
 }
 
+type ParserType = "Novel" | "Manga" | "Anime";
+type LangType = "" | "Sub" | "Dub" | "Raw";
+
 class LightInfo extends ChapterInfo {
   decription: string = "";
   image: string = "";
   info: string = "";
   isNew: boolean = false;
-  type: string = "Novel";
+  langType: LangType = "";
+  type: ParserType = "Novel";
 }
 
 class CommentScript {
@@ -40,8 +44,7 @@ class DetailInfo extends LightInfo {
   status: string = "";
   chapters: ChapterInfo[] = [];
   lastUpdated: string = "";
-  commentScript: CommentScript =
-    new CommentScript();
+  commentScript: CommentScript = new CommentScript();
 }
 
 class Value {
@@ -54,6 +57,11 @@ type SearchCombination =
   | "Group";
 
 
+interface ChapterDetail {
+  css: string;
+  script: string;
+  clickExceptions: string[];
+}
 
 class SearchDetail extends GenericType {
   text: string = "";
@@ -89,19 +97,22 @@ abstract class NovelInfo {
   ): Promise<DetailInfo>;
 }
 
+export type InfoGeneratorName = "" | "NovelUpdate";
+
 abstract class Parser {
   url: string;
   http: HttpHandler;
   name: string;
   icon: string;
   settings: ParserDetail;
+  infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   protectedChapter: boolean = false;
-  type: string = "Novel";
+  type: ParserType = "Novel";
   constructor(
     url: string,
     name: string,
     icon: string,
-    type?: string
+    type?: ParserType
   ) {
     this.url = url;
     this.http = new HttpHandler();
@@ -130,7 +141,7 @@ abstract class Parser {
     url: string
   ): Promise<LightInfo[]>;
 
-  abstract chapter(url: string): Promise<string>;
+  abstract chapter(url: string): Promise<string | ChapterDetail>;
 }
 public_m(
   DetailInfo,
@@ -148,5 +159,6 @@ export {
   ParserDetail,
   SearchDetail,
   Parser,
-  NovelInfo
+  NovelInfo,
+  ChapterDetail
 };

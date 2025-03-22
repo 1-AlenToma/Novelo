@@ -3,7 +3,7 @@ import useLoader from "./Loader";
 import ItemList from "./ItemList";
 import * as React from "react";
 import { useTimer } from "../hooks";
-import { View, Text } from "./ReactNativeComponents";
+import { View, Text, SafeAreaView } from "./ReactNativeComponents";
 export default ({
   book,
   current,
@@ -63,7 +63,7 @@ export default ({
 
 
   return (
-    <View css="clearboth juc:flex-start mah:90% invert">
+    <SafeAreaView css="clearboth juc:flex-start mah:90% invert po:relative">
       <View
         ifTrue={() => state.chArray.length > 1}
         css="clearwidth he:50 mat:10">
@@ -104,7 +104,7 @@ export default ({
           vMode={false}
         />
       </View>
-      <View css="clearwidth mih:50 flex invert">
+      <View css="clearwidth mih:50 flex invert po-relative">
         <ItemList
           updater={[page, id]}
           onPress={item => {
@@ -159,6 +159,6 @@ export default ({
         />
       </View>
       {loader.elem}
-    </View>
+    </SafeAreaView>
   );
 };

@@ -106,10 +106,10 @@ const ItemRender = ({
             />
           ),
           ifTrue: item.isOnline?.(),
-          text: "Read",
+          text: context.parser.find(item.parserName)?.type == "Anime" ? "Watch" : "Read",
           onPress: () => {
             options
-              .nav("ReadChapter")
+              .nav(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
               .add({
                 name: item.name,
                 url: item.url,
@@ -156,7 +156,7 @@ const ItemRender = ({
             "loading"}
         </Text>
         <Text css="clearwidth desc co:red bottom bo:5 le:60">
-          ({item.parserName})
+          ({item.parserName} | {context.parser.find(item.parserName)?.type})
         </Text>
       </View>
     </FoldableItem>

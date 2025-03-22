@@ -1180,7 +1180,6 @@ export default (props: any) => {
   context.hook("appSettings.backgroundColor");
 
   const loadData = async () => {
-    //  console.warn({ name, url, parserName, epub, chapter })
     try {
 
       loader.show();
@@ -1191,7 +1190,7 @@ export default (props: any) => {
       state.novel = parserName == "epub" || epub
         ? files.fileItems.find(x => x.url === url)
         : await state.parser?.detail(url, true);
-      // console.warn([state.novel].niceJson("chapters"))
+
       if (!state.novel || !state.novel.name)
         return;
       if (

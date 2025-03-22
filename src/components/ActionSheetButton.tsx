@@ -1,4 +1,4 @@
-import { ActionSheet } from "./ReactNativeComponents";
+import { ActionSheet, Modal } from "./ReactNativeComponents";
 import * as React from "react";
 import { Text, TouchableOpacity } from "./ReactNativeComponents";
 import { ifSelector } from "../Methods";
@@ -8,6 +8,7 @@ export default ({
   onPress,
   ifTrue,
   refItem,
+  controller,
   ...props
 }: {
   onPress?: any;
@@ -15,6 +16,7 @@ export default ({
   btn?: any;
   ifTrue: any;
   refItem?: any;
+  controller?: "Modal" | "ActionSheet"
 } & any) => {
   if (ifSelector(ifTrue) === false) return null;
   const [visible, setVisible] = useState(false);
@@ -25,16 +27,23 @@ export default ({
   };
 
   if (refItem) {
-    refItem.current = {
-      close: () => setVisible(false),
-      show: () => setVisible(true)
-    }
+    if (!refItem.current)
+      refItem.current = {};
+    refItem.current.close = () => setVisible(false);
+    refItem.current.show = () => setVisible(true);
   }
+
+  useEffect(() => {
+    if (refItem)
+      refItem.current?.onChange?.(visible)
+  }, [visible])
 
   if (onPress) {
     tprops.onPress = onPress;
     tprops.onLongPress = () => setVisible(true);
   }
+
+  const CN = controller == "Modal" ? Modal : ActionSheet;
   return (
     <>
       <TouchableOpacity {...tprops} style={{ backgroundColor: "transparent" }}>
@@ -44,7 +53,7 @@ export default ({
           btn
         )}
       </TouchableOpacity>
-      <ActionSheet
+      <CN
         {...props}
         speed={400}
         isVisible={visible}

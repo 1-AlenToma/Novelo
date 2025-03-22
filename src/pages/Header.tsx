@@ -7,7 +7,8 @@ import {
   Icon,
   ActionSheetButton,
   Image,
-  ScrollView
+  ScrollView,
+  useLoader
 } from "../components";
 import * as React from "react";
 import { proc } from "../Methods";
@@ -58,6 +59,7 @@ export default ({
       } as any
     }
   ).ignore("inputAnimator").build();
+  const parserLoader = useLoader();
 
   useEffect(() => {
     if (value === "") {
@@ -197,15 +199,19 @@ export default ({
                   name="extension"
                 />
               }>
+              {parserLoader.elem}
               <ScrollView>
                 {context.parser
                   .all
                   .map((x, i) => (
                     <TouchableOpacity
                       key={i}
-                      onPress={() => {
-                        context.parser.set(x);
+                      onPress={async () => {
+                        parserLoader.show();
+                        await context.parser.set(x);
+                        parserLoader.hide();
                         sourceContainer.current.close();
+
                       }
                       }
                       css={`listButton pal:5 fld-row invert ${x.name ===

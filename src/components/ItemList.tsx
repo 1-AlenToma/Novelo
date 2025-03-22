@@ -8,6 +8,7 @@ import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactN
 import { useUpdate, useTimer } from "../hooks";
 import { newId } from "../Methods";
 
+
 export default ({
   items,
   container,
@@ -109,11 +110,12 @@ export default ({
         height: "100%",
         flex: 0
       }}
-      css="flg:1 mah:100% bac-transparent">
+      css="flg:1 mah:100% bac-transparent po-relative">
       <FlashList
         ref={c => {
           ref.current = c;
         }}
+
         onContentSizeChange={() => {
           time(() => scrollTo());
         }}

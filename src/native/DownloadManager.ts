@@ -108,10 +108,10 @@ export default class DownloadManager {
           let chapterIndex = novel.chapters.indexOf(ch).toString();
           let cn = ch.content;
           if (cn === undefined) {
-            cn = await parser.chapter(ch.url);
+            cn = (await parser.chapter(ch.url)) as string
             while (parser.getError() && parser.getError()?.isNetwork()) {
               await sleep(10000);
-              cn = await parser.chapter(ch.url);
+              cn = (await parser.chapter(ch.url)) as string;
             }
           }
 

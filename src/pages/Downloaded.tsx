@@ -325,7 +325,7 @@ const ItemRender = ({
           text: "Read",
           onPress: () => {
             options
-              .nav("ReadChapter")
+              .nav(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
               .add({
                 name: item.name,
                 url: item.url,

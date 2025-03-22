@@ -10,6 +10,7 @@ export default ({
   item: LightInfo;
   vMode?: boolean;
 }) => {
+
   if (!vMode) {
     return (
       <View css="clearboth bor:5 overflow invert">
@@ -26,6 +27,8 @@ export default ({
           name="fiber-new"
           type="MaterialIcons"
         />
+
+        <Text css="absolute le-2 to-2 pa-2 bor-5 bac-#ffa000 co-white" ifTrue={item.langType?.has() ?? false}>{item.langType}</Text>
         <View css="clearwidth bottom he:50% overflow invert">
           <View css="blur bottom clearboth" />
           <Text
@@ -72,6 +75,8 @@ export default ({
           name="fiber-new"
           type="MaterialIcons"
         />
+
+        <Text css="absolute le-2 to-2 pa-2 bor-5 bac-#ffa000 co-white" ifTrue={item.langType?.has() ?? false}>{item.langType}</Text>
         <View css="flex clearboth pa:5 invert">
           <Text
             css="header" numberOfLines={1}>

@@ -383,6 +383,8 @@ String.prototype.query = function (item: any) {
     if (url.endsWith("/")) url = url.substring(0, url.length - 1);
     Object.keys(item).forEach(x => {
         let v = item[x];
+        if (x.startsWith("$"))
+            x = x.substring(2)
         if (!url.has("?")) url += "?";
         if (url.endsWith("&") || url.endsWith("&&") || url.endsWith("?"))
             url += `${x}=${v}`;

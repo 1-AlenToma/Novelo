@@ -2,7 +2,8 @@ import {
   Parser,
   SearchDetail,
   Value,
-  DetailInfo
+  DetailInfo,
+  InfoGeneratorName
 } from "../native";
 
 import ReadNovelFull from "./ReadNovelFull";
@@ -11,6 +12,7 @@ import NovelFullCom from "./NovelFullCom";
 import MangaBerri from "./MangaBerri";
 import NovelBin from "./Novelbin";
 import NovelBinCom from "./NovelBinCom";
+import GogoAnime from "./GogoAnime";
 
 import NovelUpdate from "./infos/NovelUpdates";
 import Memo from "../attr/Memo";
@@ -19,6 +21,7 @@ const debugg = false;
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
+  infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   infoEnabled: boolean = true;
   constructor(parser: Parser) {
     super(parser.url, parser.name, parser.icon, parser.type);
@@ -26,6 +29,7 @@ export default class ParserWrapper extends Parser {
     this.settings = parser.settings;
     this.novelUpdate = new NovelUpdate();
     this.protectedChapter = parser.protectedChapter;
+    this.infoGeneratorName = parser.infoGeneratorName;
   }
 
   getContext() {
@@ -48,8 +52,8 @@ export default class ParserWrapper extends Parser {
   }
 
   static getAllParsers(parserName?: string) {
-    let prs = [ReadNovelFull, NovelFullCom, NovelFull, NovelBinCom, NovelBin, MangaBerri].map(
-      x => new ParserWrapper(new x())
+    let prs = [ReadNovelFull, NovelFullCom, NovelFull, NovelBinCom, NovelBin, MangaBerri, GogoAnime].map(
+      x => new ParserWrapper(new (x as any)())
     );
     if (parserName)
       return prs.find(x => x.name === parserName);
@@ -109,7 +113,16 @@ export default class ParserWrapper extends Parser {
     item: DetailInfo,
     alertOnError?: boolean
   ) {
-    let novel = await this.novelUpdate.search(item);
+    let novel = item;
+    switch (this.infoGeneratorName) {
+      case "NovelUpdate":
+        novel = await this.novelUpdate.search(item);
+        break;
+      default:
+        novel = null;
+        break;
+    }
+
     if (alertOnError) this.showError();
     return novel;
   }
