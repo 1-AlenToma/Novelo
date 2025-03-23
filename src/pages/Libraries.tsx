@@ -1,11 +1,7 @@
 import {
   Text,
   View,
-  TouchableOpacity,
   Image,
-  NovelGroup,
-  AnimatedView,
-  ActionSheet,
   AlertDialog,
   ItemList,
   Button,
@@ -14,10 +10,8 @@ import {
 } from "../components";
 import * as React from "react";
 import Header from "./Header";
-import {
-  useView
-} from "../hooks";
-import { ScrollView, Animated, Linking } from "react-native";
+import { useView } from "../hooks";
+import { Linking } from "react-native";
 import JSZip from "jszip";
 import { Parser } from "../native";
 
@@ -76,6 +70,8 @@ const ListItem = ({ item, zip }) => {
     appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser.name);
     appSettings.parsers.push({ name: state.parser.name, content: state.parserCode });
     await appSettings.saveChanges();
+    await context.cache.deleteDir();
+    await context.cache.checkDir();
     loader.hide();
   }
 

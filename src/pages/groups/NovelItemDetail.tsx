@@ -201,39 +201,44 @@ export default ({ ...props }: any) => {
 
                     <Text
                       ifTrue={() => state.novel.novelUpdateRating?.has()}
-                      css="desc">
+                      css="desc" numberOfLines={1}>
                       {context.parser.find(state.novel.parserName)?.infoGeneratorName}Rating:
-                      {state.novel?.novelUpdateRating?.sSpace()}
+                      {state.novel?.novelUpdateRating?.normilzeStr().sSpace()}
                     </Text>
                     <Text
+                      numberOfLines={1}
                       ifTrue={() => state.novel.rating?.has()}
                       css="desc">
                       Rating:
-                      {state.novel?.rating?.sSpace()}
+                      {state.novel?.rating?.normilzeStr().sSpace()}
                     </Text>
                     <Text
+                      numberOfLines={1}
                       ifTrue={() => state.novel.status?.has()}
                       css="desc">
                       Status:
-                      {state.novel?.status?.sSpace()}
+                      {state.novel?.status?.normilzeStr().sSpace()}
                     </Text>
                     <Text
+                      numberOfLines={2}
                       ifTrue={() => state.novel.alternativeNames?.has()}
                       css="desc">
                       AlternativeNames:
                       {state.novel?.alternativeNames?.toString()?.sSpace()}
                     </Text>
                     <Text
+                      numberOfLines={1}
                       ifTrue={() => state.novel.author?.has()}
                       css="desc">
                       Created By:
-                      {state.novel?.author?.sSpace()}
+                      {state.novel?.author?.normilzeStr().sSpace()}
                     </Text>
                     <Text
+                      numberOfLines={1}
                       ifTrue={() => state.novel.lastUpdated?.has()}
                       css="desc">
                       Last Update:
-                      {state.novel?.lastUpdated?.sSpace()}
+                      {state.novel?.lastUpdated?.normilzeStr().sSpace()}
                     </Text>
                   </View>
                 </View>

@@ -6,9 +6,7 @@ import { Functions } from "expo-sqlite-wrapper/src/UsefullMethods";
 function generateText(html, minLength) {
   try {
     html = html.replace(/<( )?(\/)?strong( )?>/gim, "");
-    const doc = IDOMParser.parse(
-      `<div>${html}</div>`
-    ).documentElement;
+    const doc = IDOMParser.parse(`<div>${html}</div>`).documentElement;
     while (true) {
       let breakIt = true;
       let headers = [

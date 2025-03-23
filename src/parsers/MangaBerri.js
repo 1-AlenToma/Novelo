@@ -22,6 +22,7 @@ export default class MangaFire extends Parser {
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
+
     }
 
     async load() {
@@ -145,11 +146,7 @@ export default class MangaFire extends Parser {
                     .parent.find("span:last-child").text.replace("rating", "").trim().onEmpty("0.00")
             )
             .LastUpdated(
-                body
-                    .find(
-                        '.text:contains("Updated On")'
-                    )
-                    .parent.find("span:last-child").text
+                body.first('.text:contains("Updated On")').parent.find("span:last-child").text
             )
             .ParserName(this.name);
 

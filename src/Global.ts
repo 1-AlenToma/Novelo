@@ -63,6 +63,7 @@ declare global {
         htmlArray(): string[];
         html(): Html;
         htmlImagesSources(): string[];
+        normilzeStr(): string;
         splitSearch(searchFor: string): boolean;
         displayName(): string;
         imageFetchBuilder(
@@ -79,6 +80,25 @@ declare global {
         readAble: () => any;
         procent: (index: number) => number;
     }
+}
+
+String.prototype.normilzeStr = function () {
+    let str = new String(this).toString();
+    let index = 0;
+    let r = "";
+    while (index < str.length) {
+        let c = str.charAt(index);
+        index++;
+
+        if ((c.trim() == "" && r.endsWith(" ")))
+            continue;
+        else if (c == "\n" || c == "\r") {
+            r = r.trim() + " ";
+        } else
+            r += c;
+
+    }
+    return r;
 }
 
 String.prototype.toCode = function () {

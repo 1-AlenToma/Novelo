@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
 
 let getLines = (text: any, totalLine: number) => {
   if (!text) return text;
+
   let txt = "";
   let lines = 0;
   for (let s of text) {
@@ -40,7 +41,7 @@ export default ({
         {...props} css={css} style={style}>
         {txt === text || fState === true ? (
           <Text>
-            {text}
+            {methods.generateText(text ?? "", 100).replace(/<p>/g, "").replace(/<\/p>/g, "\n").trimStr("\n")}
           </Text>
         ) : (
           <>
