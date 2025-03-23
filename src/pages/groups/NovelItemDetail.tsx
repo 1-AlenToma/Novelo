@@ -202,7 +202,7 @@ export default ({ ...props }: any) => {
                     <Text
                       ifTrue={() => state.novel.novelUpdateRating?.has()}
                       css="desc">
-                      NovelUpdateRating:
+                      {context.parser.find(state.novel.parserName)?.infoGeneratorName}Rating:
                       {state.novel?.novelUpdateRating?.sSpace()}
                     </Text>
                     <Text

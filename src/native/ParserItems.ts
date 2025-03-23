@@ -97,7 +97,7 @@ abstract class NovelInfo {
   ): Promise<DetailInfo>;
 }
 
-export type InfoGeneratorName = "" | "NovelUpdate";
+export type InfoGeneratorName = "" | "NovelUpdate" | "MyAnimeList";
 
 abstract class Parser {
   url: string;

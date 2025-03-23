@@ -15,12 +15,15 @@ import NovelBinCom from "./NovelBinCom";
 import GogoAnime from "./GogoAnime";
 
 import NovelUpdate from "./infos/NovelUpdates";
+import MyAnimeList from "./infos/MyAnimeList";
 import Memo from "../attr/Memo";
 import { AlertDialog } from "styles";
+
 const debugg = false;
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
+  animeInfo: MyAnimeList;
   infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   infoEnabled: boolean = true;
   constructor(parser: Parser) {
@@ -28,6 +31,7 @@ export default class ParserWrapper extends Parser {
     this.parser = parser;
     this.settings = parser.settings;
     this.novelUpdate = new NovelUpdate();
+    this.animeInfo = new MyAnimeList();
     this.protectedChapter = parser.protectedChapter;
     this.infoGeneratorName = parser.infoGeneratorName;
   }
@@ -117,6 +121,9 @@ export default class ParserWrapper extends Parser {
     switch (this.infoGeneratorName) {
       case "NovelUpdate":
         novel = await this.novelUpdate.search(item);
+        break;
+      case "MyAnimeList":
+        novel = await this.animeInfo.search(item);
         break;
       default:
         novel = null;

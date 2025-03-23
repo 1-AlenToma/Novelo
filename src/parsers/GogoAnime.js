@@ -22,7 +22,7 @@ export default class GogoAnime extends Parser {
         );
         this.settings.searchEnabled = true;
         this.settings.genreMultiSelection = false;
-        this.infoGeneratorName = "";
+        this.infoGeneratorName = "MyAnimeList";
         this.settings.searchCombination = ["Genre", "Status", "Group"];
     }
 
