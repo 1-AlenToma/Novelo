@@ -152,11 +152,12 @@ export default class GogoAnime extends Parser {
             .Genre(body.find('.genxed a').map(x => x.text))
             .Status(body.find('.spe b:contains("Status")').parent.remove("b").text)
             .LastUpdated(body.find("time[itemprop='dateModified']").text?.trim())
+            .Decription(body.find(".infox .ninfo").text)
             .ParserName(this.name)
             .Chapters(body.find(".episodes-container a").map(a => ChapterInfo.n()
                 .Name(a.text)
                 .Url(a.url("href"))
-                .ParserName(this.name)).reverse());
+                .ParserName(this.name)).reverse()).set
         item.novelUpdateRecommendations =
             item.novelUpdateRecommendations = body
                 .find('.listupd a')
