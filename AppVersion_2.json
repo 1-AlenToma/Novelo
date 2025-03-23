@@ -1,6 +1,6 @@
 {
-  "versionName":"1.1.5",
-  "apkUrl":"https://github.com/1-AlenToma/Novelo/releases/download/1.0.5/app-production-release.apk",
+  "versionName":"2.0.2",
+  "apkUrl":"https://github.com/1-AlenToma/Novelo/releases/download/2.0.2/app-release.apk",
   "forceUpdate": false,
-  "whatsNew": "<< Design and Performance Improvments >>"
+  "whatsNew": "<< Design and Performance Improvments and new added parsers >>"
 }
