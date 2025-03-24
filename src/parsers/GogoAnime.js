@@ -28,7 +28,7 @@ export default class GogoAnime extends Parser {
 
     async load() {
         let html = (
-            await this.http.get_html(this.url)
+            await this.http.get_html(this.url.join("series"))
         ).html;
 
         this.settings.Genre(
@@ -95,9 +95,7 @@ export default class GogoAnime extends Parser {
                         return LightInfo.n()
                             .Name(f.find("h2").text)
                             .Url(f.url("href"))
-                            .Image(
-                                f.find("img").url("src|data-src")
-                            )
+                            .Image(f.find("img").url("src|data-src"))
                             .Info(f.find(".typez").text)
                             .LangType(f.find(".sb").text)
                             .ParserName(this.name);

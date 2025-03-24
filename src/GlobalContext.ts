@@ -38,7 +38,7 @@ const cache = new FileHandler(FilesPath.Cache, "Cache");
 const zip = new FilesZipper();
 const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
-const debugMode = false;
+const debugMode = __DEV__;
 
 const data = StateBuilder<GlobalType>(
     {
@@ -106,7 +106,7 @@ const data = StateBuilder<GlobalType>(
             current: currentParser,
             find: (name: string) => data.parser.all.find(x => x.name == name) as ParserWrapper,
             set: async (p: any) => {
-                p = data.parser.find(p.name)
+                p = data.parser.find(p.name);
                 p.settings = await p.load("RenewMemo");
                 data.parser.current = p;
                 if (data.appSettings.selectedParser != p.name) {
