@@ -5,7 +5,7 @@ import { StatusBar, setStatusBarHidden } from "expo-status-bar";
 import * as React from "react";
 import {
     useLoader,
-    PlayerView,
+    HtmlGetter,
 } from "./components";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
@@ -140,15 +140,16 @@ const App = () => {
             itemToRemove?.forEach(x => x.remove());
         };
     }, []);
+    if (loader.loading) return (<><HtmlGetter />{loader.elem}</>)
+    if (fontLoader.loading) return (<><HtmlGetter />{fontLoader.elem}</>)
 
-    if (loader.loading) return loader.elem;
-    if (fontLoader.loading) return fontLoader.elem;
 
     return (
         <ThemeContainer
             themes={[lightTheme, darkTheme]}
             defaultTheme={CStyle}
             selectedIndex={context.selectedThemeIndex}>
+            <HtmlGetter />
             <NavigationContainer>
                 <AppStack />
             </NavigationContainer>

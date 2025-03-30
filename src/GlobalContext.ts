@@ -57,6 +57,21 @@ const data = StateBuilder<GlobalType>(
                 });
             },
         },
+        html: {
+            data: [],
+            get_html: (url: string) => {
+                return new Promise<{ text: () => string, ok: boolean, status: number }>((success) => {
+                    const id = newId();
+                    data.html.data = [...data.html.data, {
+                        url: url, id, func: async (str: string) => {
+                            success({ text: () => str, ok: true, status: 0 })
+                            data.html.data = data.html.data.filter(x => x.id !== id);
+                        }
+                    }] as any;
+                })
+
+            }
+        },
         lineHeight: 2.5,
         selectedFoldItem: "",
         panEnabled: true,
@@ -265,6 +280,7 @@ const data = StateBuilder<GlobalType>(
         "notification",
         "db",
         "appSettings.currentNovel",
-        "appSettings.parsers"
+        "appSettings.parsers",
+        "html.data"
     ).globalBuild();
 export default data;

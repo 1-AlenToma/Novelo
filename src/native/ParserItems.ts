@@ -75,11 +75,7 @@ class SearchDetail extends GenericType {
     this.text = txt ?? "";
   }
 }
-class ParserDetail extends OmitType(SearchDetail, "text", "page") {
-  searchCombination: SearchCombination[] = [];
-  searchEnabled: boolean = true;
-  imagesSize?: ISize;
-}
+
 
 
 
@@ -98,6 +94,25 @@ abstract class NovelInfo {
 }
 
 export type InfoGeneratorName = "" | "NovelUpdate" | "MyAnimeList";
+
+class ParserDetail extends OmitType(SearchDetail, "text", "page") {
+  searchCombination: SearchCombination[] = [];
+  searchEnabled: boolean = true;
+  imagesSize?: ISize;
+  protected: {
+    search: string;
+    load: string;
+    getByAuthor: string;
+    chapter: string;
+    detail: string;
+  } = {
+      search: "",
+      load: "",
+      getByAuthor: "",
+      chapter: "",
+      detail: ""
+    }
+}
 
 abstract class Parser {
   url: string;

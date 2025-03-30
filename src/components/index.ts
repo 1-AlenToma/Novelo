@@ -18,6 +18,7 @@ import FoldableItem from "./FoldableItem";
 import FileBrowser from "./FileBrowser";
 import ColorSelection from "./ColorSelection";
 export * from "./ReactNativeComponents";
+import HtmlGetter from "./HtmlGetter";
 
 
 
@@ -39,5 +40,6 @@ export {
   ColorSelection,
   ChapterView,
   FoldableItem,
-  FileBrowser
+  FileBrowser,
+  HtmlGetter
 };

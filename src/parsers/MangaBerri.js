@@ -18,7 +18,6 @@ export default class MangaFire extends Parser {
             "/favicon.ico",
             "Manga"
         );
-        this.protectedChapter = false;
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];

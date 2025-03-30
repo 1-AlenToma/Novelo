@@ -115,6 +115,11 @@ export type ISize = {
 }
 export type GlobalType =
   {
+    html: {
+      data: { url: string, func: (str: string) => void, id: string }[];
+      get_html: (url: string) => Promise<{ text: () => string, ok: boolean, status: number }>;
+    }
+
     lineHeight: number;
     selectedFoldItem: string;
     panEnabled: boolean;

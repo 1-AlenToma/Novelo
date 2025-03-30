@@ -8,17 +8,17 @@ const createKey = (...args) => {
 };
 
 
-
 const getFetch = async (
   url: string,
   options: any,
-  ignoreAlert: boolean
+  ignoreAlert: boolean,
+  fromWebView?: boolean
 ) => {
   let key = createKey({ url, options });
   try {
     if (tempData.has(key))
       return tempData.get(key);
-    let data = await fetch(url, {
+    let data = fromWebView ? await context.html.get_html(url) : await fetch(url, {
       ...options
     });
     if (data.ok) {
@@ -162,6 +162,27 @@ class HttpHandler {
       if (item) url = this.queryString(url, item);
       console.info("get_html", url);
       const data = await getFetch(url, this.header(), this.ignoreAlert);
+      return new HttpValue(data ? await data.text() : "", baseurl || url);
+    } catch (e) {
+      console.error("httget", e);
+      this.httpError = new HttpError(e);
+      return new HttpValue(
+        "<div></div>",
+        url,
+        this.httpError
+      );
+    }
+  }
+
+  async web_view(
+    url: string,
+    baseurl?: string,
+    item?: any
+  ) {
+    try {
+      if (item) url = this.queryString(url, item);
+      console.info("web_view", url);
+      const data = await getFetch(url, this.header(), this.ignoreAlert, true);
       return new HttpValue(data ? await data.text() : "", baseurl || url);
     } catch (e) {
       console.error("httget", e);
