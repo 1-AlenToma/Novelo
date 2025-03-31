@@ -8,6 +8,8 @@ The app is totally free, if you are a developer then feel free to participate in
 <img width="24%"  src="https://raw.githubusercontent.com/1-AlenToma/Novelo/main/Screenshots/Screenshot_20240225-062719_Novelo.png" />
 <img width="24%" src="https://raw.githubusercontent.com/1-AlenToma/Novelo/main/Screenshots/Screenshot_20240225-062742_Novelo.png" />
 <img width="24%" src="https://raw.githubusercontent.com/1-AlenToma/Novelo/main/Screenshots/Screenshot_20240225-062812_Novelo.png" />
+<img width="24%" src="https://raw.githubusercontent.com/1-AlenToma/Novelo/main/Screenshots/5.png" />
+<img width="24%" src="https://raw.githubusercontent.com/1-AlenToma/Novelo/main/Screenshots/6.png" />
 </p>
 
 # How to make a new parser
