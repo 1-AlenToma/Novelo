@@ -75,14 +75,13 @@ export default class DownloadManager {
       if (this.items.has(url)) return;
       this.items.set(url, 0.1);
 
-      let parser = ParserWrapper.getAllParsers(parserName) as ParserWrapper;
+      let parser = context.parser.clone(parserName);
       parser.http = new HttpHandler(true); // to ignore alert
       let novel = await parser.detail(url);
       let book = await context.db.Books.query
         .where.column(x => x.url)
         .equalTo(url)
-        .and
-        .column(x => x.parserName)
+        .and.column(x => x.parserName)
         .equalTo(parserName)
         .findOrSave(
           Book.n()

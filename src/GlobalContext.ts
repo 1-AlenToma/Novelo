@@ -122,6 +122,19 @@ const data = StateBuilder<GlobalType>(
                 }
                 return undefined as any
             },
+            clone: (name: string) => {
+                let all = ParserWrapper.getAllParsers() as ParserWrapper[];
+                let parsers = (context.appSettings.parsers && context.appSettings.parsers.length > 0 ? context.appSettings.parsers.map(x => {
+                    let Item = data.parser.parseCode(x.content);
+                    if (Item) return new Item();
+                    return undefined;
+                }) : all).filter(x => x != undefined);
+                let parser = parsers.find(x => x.name == name);
+                if (!parser)
+                    parser = all.find(x => x.name == name);
+                return parser as ParserWrapper;
+
+            },
             current: currentParser,
             find: (name: string) => data.parser.all.find(x => x.name == name) as ParserWrapper,
             set: async (p: any) => {

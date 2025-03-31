@@ -168,6 +168,7 @@ export type GlobalType =
       default: string;
       parseCode: (code: string) => any;
       current: ParserWrapper,
+      clone: (name: string) => ParserWrapper,
       find: (name: string) => ParserWrapper,
       set: (p: any) => Promise<void>,
       all: ParserWrapper[],

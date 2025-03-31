@@ -53,7 +53,6 @@ export default class ParserWrapper extends Parser {
   showError() {
     if (this.getError())
       AlertDialog.toast({ title: "OFFLINE", message: this.getError()?.toString(), type: "Error" });
-
   }
 
   static getAllParsers(parserName?: string) {
