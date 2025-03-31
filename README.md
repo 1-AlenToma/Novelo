@@ -1,6 +1,6 @@
 ## Novelo
 
-Novelo is an app that parse, manage, download and read/watch Novels, Manga and Anime from websites using html scraapping.
+Novelo is an app that parse, download and read/watch Novels, Manga and Anime from websites using html scraapping.
 
 The app is totally free, if you are a developer then feel free to participate in implementing new parser or even make improvments, simple, open an issue to review it.
 <p class="flex">
