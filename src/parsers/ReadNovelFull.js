@@ -28,6 +28,8 @@ export default class ReadNovelFull extends Parser {
       await this.http.get_html(this.url)
     ).html;
 
+
+
     this.settings.Genre(
       html
         .$(".dropdown-menu a")
@@ -59,7 +61,6 @@ export default class ReadNovelFull extends Parser {
             .Value(x.attr("href"))
         )
     );
-
     return this.settings;
   }
 

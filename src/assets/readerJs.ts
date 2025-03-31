@@ -963,18 +963,34 @@ export const JS = `
                                 return Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
                         }
 
-                        window.onImageLoadError = (img)=> {
+                        window.onImageLoadError = async (img)=> {
+                        try{
+                          const setId =()=> {
+                                if (img && !img.id){
+                                 img.id = window.getId();
+                                }
+                          }
                           let src = img.getAttribute("src");
+              
                           if (!src || src.trim().length<=0)
                           {
                                 return;
                           }
-
+                  
+                        
+                          if (src && typeof src == "string" && src.indexOf("header") != -1) {
+                                 setId();
+                                  window.postmsg("Image", [{src, id: img.id}]);    
+                                  return;
+                           }
                           if (window.isValidUrl(src))
                                 return; // it is an external image, cant do anything to load it.
                           
-                          img.id = window.getId();
+                          setId();
                           window.postmsg("Image", [{src, id: img.id}]);
+                        }catch(e){
+                         window.postmsg("log", e.toString());
+                        }
                         }
                           
                         window.renderImage = (items) => {
@@ -984,8 +1000,12 @@ export const JS = `
                                                 if (!item)
                                                   continue;
                                                         img = document.getElementById(item.id);
-                                                        if (img && img.setAttribute)
+                                                        if (!img)
+                                                         img=  [...document.querySelectorAll("img")].find(x=> x.getAttribute("src") == item.src)
+                                                        if (img && img.setAttribute){
                                                            img.setAttribute("src", item.cn);
+                                                        }
+                                                        else window.postmsg("log", "img not found "+ item.id);
                                                 
                                         }
                                 } catch (e) {

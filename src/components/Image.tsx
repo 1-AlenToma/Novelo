@@ -1,6 +1,8 @@
 import { Image } from "react-native";
+import { HttpHandler } from "../native"
 import * as React from "react";
 let noImage = require("../assets/noimage.png");
+const https = new HttpHandler();
 export default ({
   style,
   url,
@@ -14,8 +16,13 @@ export default ({
 }) => {
   const [imgSize, setImgSize] = useState({});
   const [source, setSource] = useState(noImage);
+  const header = useRef({
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    Referer: undefined
+  }).current
   const imageSize = parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined;
-  let loadImage = () => {
+  let loadImage = async () => {
     if (url && url.toString().startsWith("[")) {
       // image selector
       context.parser
@@ -29,6 +36,13 @@ export default ({
           setSource(x)
       });
     } else if (url && url.toString().has()) {
+
+      if (typeof url == "string" && url.has("header")) {
+        let h = JSON.parse(url.split("header")[1].substring(1));
+        url = url.split("header")[0].trim();
+        for (let k in h)
+          header[k] = h[k];
+      }
       setSource(url);
     }
   };
@@ -58,8 +72,7 @@ export default ({
             uri: source,
             method: "GET",
             headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
+              ...header
             }
           }
       }

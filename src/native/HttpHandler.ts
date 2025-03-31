@@ -1,3 +1,4 @@
+import { Ajax, WebViewProps } from "Types";
 import Html from "./Html";
 import MapCacher from "./MapCacher";
 
@@ -12,13 +13,14 @@ const getFetch = async (
   url: string,
   options: any,
   ignoreAlert: boolean,
-  fromWebView?: boolean
+  fromWebView?: boolean,
+  props?: WebViewProps
 ) => {
   let key = createKey({ url, options });
   try {
     if (tempData.has(key))
       return tempData.get(key);
-    let data = fromWebView ? await context.html.get_html(url) : await fetch(url, {
+    let data = fromWebView ? await context.html.get_html(url, props) : await fetch(url, {
       ...options
     });
     if (data.ok) {
@@ -136,10 +138,10 @@ class HttpHandler {
     this.httpError = undefined;
     return {
       headers: {
-        ...options,
         cache: 'no-store',
         "User-Agent":
-          "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"
+          "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36",
+        ...options
       }
     };
   }
@@ -177,12 +179,15 @@ class HttpHandler {
   async web_view(
     url: string,
     baseurl?: string,
-    item?: any
+    item?: { props?: WebViewProps }
   ) {
     try {
+      const props = item?.props;
+      if (props)
+        delete item.props;
       if (item) url = this.queryString(url, item);
       console.info("web_view", url);
-      const data = await getFetch(url, this.header(), this.ignoreAlert, true);
+      const data = await getFetch(url, this.header(), this.ignoreAlert, true, props);
       return new HttpValue(data ? await data.text() : "", baseurl || url);
     } catch (e) {
       console.error("httget", e);
@@ -247,7 +252,7 @@ class HttpHandler {
     }
   }
 
-  imageUrlToBase64(url: string) {
+  imageUrlToBase64(url: string, header?: any) {
     try {
       console.log(
         "getting image for",
@@ -257,11 +262,18 @@ class HttpHandler {
         console.info("url is a base64 or empty");
         return url;
       }
+      header = header ?? {};
+      if (typeof url == "string" && url.has("header")) {
+        let h = JSON.parse(url.split("header")[1].substring(1));
+        url = url.split("header")[0].trim();
+        for (let k in h)
+          header[k] = h[k];
+      }
       return new Promise(
         async (onSuccess, onError) => {
           try {
             const response = await fetch(url, {
-              ...this.header()
+              ...this.header(header),
             });
             const blob = await response.blob();
             const reader = new FileReader();

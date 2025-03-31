@@ -154,7 +154,7 @@ class Html {
     let value = "";
     key.split("|").forEach(k => {
       if (value == "") {
-        let v = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length>0)?.getAttribute(k);
+        let v = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length > 0)?.getAttribute(k);
         if (v && v.length > 0) {
           value = v;
         }
@@ -163,16 +163,18 @@ class Html {
     return value || "";
   }
 
-  url(key: string) {
+  url(key: string, header?: any) {
     let value: any = "";
     key.split("|").forEach(k => {
       if (!value || value.empty()) {
-        value = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length>0)?.getAttribute(k);
+        value = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length > 0)?.getAttribute(k);
         if (value && !value.empty() && this.uurl) {
           value = this.uurl.join(value);
         }
       }
     });
+    if (header && value && value.length > 0)
+      value += ` header=${JSON.stringify(header)}`
     return value || "";
   }
 }

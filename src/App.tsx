@@ -95,7 +95,6 @@ async function onFetchUpdateAsync(itemToRemove?: any) {
 
 const App = () => {
     const fontLoader = useFonts();
-    const timer = useTimer(500);
     context.hook("size", "selectedThemeIndex", "isFullScreen", "updater", "files");
 
     context.useEffect(
@@ -140,8 +139,6 @@ const App = () => {
             itemToRemove?.forEach(x => x.remove());
         };
     }, []);
-    if (loader.loading) return (<><HtmlGetter />{loader.elem}</>)
-    if (fontLoader.loading) return (<><HtmlGetter />{fontLoader.elem}</>)
 
 
     return (
@@ -150,11 +147,19 @@ const App = () => {
             defaultTheme={CStyle}
             selectedIndex={context.selectedThemeIndex}>
             <HtmlGetter />
-            <NavigationContainer>
-                <AppStack />
-            </NavigationContainer>
-            <StatusBar style={context.selectedThemeIndex == 0 ? "dark" : "light"} />
-            <GlobalFileBrowse />
+            {
+                loader.loading ? loader.elem : fontLoader.loading ? fontLoader.elem : (
+                    <>
+                        <NavigationContainer>
+                            <AppStack />
+                        </NavigationContainer>
+                        <StatusBar style={context.selectedThemeIndex == 0 ? "dark" : "light"} />
+                        <GlobalFileBrowse />
+                    </>
+                )
+            }
+
+
         </ThemeContainer>
     );
 }

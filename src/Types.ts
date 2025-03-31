@@ -113,11 +113,19 @@ export type ISize = {
   x?: number,
   y?: number
 }
+
+export type Ajax = { url: string, type: "post" | "get", query: object };
+export type WebViewProps = {
+  type?: "base64" | "webp";
+  selector: string;
+  ajax?: Ajax;
+  protectionIdentifier?: string[];
+}
 export type GlobalType =
   {
     html: {
-      data: { url: string, func: (str: string) => void, id: string }[];
-      get_html: (url: string) => Promise<{ text: () => string, ok: boolean, status: number }>;
+      data: { url: string, props?: WebViewProps, func: (str: string) => void, id: string }[];
+      get_html: (url: string, props?: WebViewProps) => Promise<{ text: () => string, ok: boolean, status: number }>;
     }
 
     lineHeight: number;

@@ -115,9 +115,6 @@ class Player {
         this.book.parserName
       ) as any;
       parser?.clearError();
-      if (parser?.protectedChapter) {
-        return;
-      }
 
       let str =
         this.novel.epub ||
@@ -146,16 +143,25 @@ class Player {
     let path = this.novel.imagePath as string;
     if (path) {
       for (let image of href) {
+        if (image.src && image.src?.has(" header")) {
+          imgs.push({ ...image, cn: await context.parser.current.http.imageUrlToBase64(image.src) });
+          continue;
+        }
+
         let src = this.book.parserName != "epub" ? path.path(this.currentChapterIndex.toString(), image.src).trimEnd("/") : path.path(getFileInfoFromUrl(image.src)).trimEnd("/");
         let imageData = await context.imageCache.read(src);
         if (!imageData || imageData.empty())
           console.warn("could not find", src, "-", image.src)
         imgs.push({ ...image, path, cn: imageData });
-
+      }
+    } else {
+      for (let image of href) {
+        if (image.src && image.src?.has(" header")) {
+          imgs.push({ ...image, cn: (await context.parser.current.http.imageUrlToBase64(image.src)) });
+          continue;
+        }
       }
     }
-
-
     return imgs;
   };
 

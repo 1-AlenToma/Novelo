@@ -13,6 +13,7 @@ import MangaBerri from "./MangaBerri";
 import NovelBin from "./Novelbin";
 import NovelBinCom from "./NovelBinCom";
 import GogoAnime from "./GogoAnime";
+import MangaKakalot from "./MangaKakalot";
 
 import NovelUpdate from "./infos/NovelUpdates";
 import MyAnimeList from "./infos/MyAnimeList";
@@ -32,7 +33,6 @@ export default class ParserWrapper extends Parser {
     this.settings = parser.settings;
     this.novelUpdate = new NovelUpdate();
     this.animeInfo = new MyAnimeList();
-    this.protectedChapter = parser.protectedChapter;
     this.infoGeneratorName = parser.infoGeneratorName;
   }
 
@@ -56,7 +56,7 @@ export default class ParserWrapper extends Parser {
   }
 
   static getAllParsers(parserName?: string) {
-    let prs = [ReadNovelFull, NovelFullCom, NovelFull, NovelBinCom, NovelBin, MangaBerri, GogoAnime].map(
+    let prs = [ReadNovelFull, NovelFullCom, NovelFull, NovelBinCom, NovelBin, MangaKakalot, MangaBerri, GogoAnime].map(
       x => new ParserWrapper(new (x as any)())
     );
     if (parserName)

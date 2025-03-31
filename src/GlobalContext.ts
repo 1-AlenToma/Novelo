@@ -15,7 +15,7 @@ import {
 } from "./native";
 import { Dimensions, Keyboard, LogBox } from "react-native";
 import StateBuilder from "react-smart-state";
-import { GlobalType, FilesPath } from "./Types";
+import { GlobalType, FilesPath, Ajax, WebViewProps } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
 
@@ -59,12 +59,13 @@ const data = StateBuilder<GlobalType>(
         },
         html: {
             data: [],
-            get_html: (url: string) => {
+            get_html: (url: string, props?: WebViewProps) => {
                 return new Promise<{ text: () => string, ok: boolean, status: number }>((success) => {
                     const id = newId();
                     data.html.data = [...data.html.data, {
+                        props,
                         url: url, id, func: async (str: string) => {
-                            success({ text: () => str, ok: true, status: 0 })
+                            await success({ text: () => str, ok: true, status: 0 })
                             data.html.data = data.html.data.filter(x => x.id !== id);
                         }
                     }] as any;

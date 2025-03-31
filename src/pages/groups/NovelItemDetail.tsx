@@ -486,8 +486,8 @@ export default ({ ...props }: any) => {
                     .push();
                 }}>
                 <Text
-                  css="fos:30">
-                  READ
+                  css="fos:30 tea-center wi-100%">
+                  {state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "Watch" : "Read"}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -563,6 +563,9 @@ export default ({ ...props }: any) => {
             `}
             nestedScrollEnabled={true}
             cacheEnabled={true}
+            thirdPartyCookiesEnabled={true}
+            mixedContentMode='always'
+            sharedCookiesEnabled={true}
             source={{
               uri: state.novel.commentScript?.url
             }}
