@@ -126,7 +126,7 @@ const data = StateBuilder<GlobalType>(
                 let all = ParserWrapper.getAllParsers() as ParserWrapper[];
                 let parsers = (context.appSettings.parsers && context.appSettings.parsers.length > 0 ? context.appSettings.parsers.map(x => {
                     let Item = data.parser.parseCode(x.content);
-                    if (Item) return new Item();
+                    if (Item) return new ParserWrapper(new Item());
                     return undefined;
                 }) : all).filter(x => x != undefined);
                 let parser = parsers.find(x => x.name == name);
