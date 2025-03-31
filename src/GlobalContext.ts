@@ -18,6 +18,7 @@ import StateBuilder from "react-smart-state";
 import { GlobalType, FilesPath, Ajax, WebViewProps } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
+import { version } from "./package.json"
 
 LogBox.ignoreLogs([
     "fontFamily",
@@ -42,6 +43,8 @@ const debugMode = __DEV__;
 
 const data = StateBuilder<GlobalType>(
     {
+        versionName: version,
+        version: parseInt(version.replace(/\./g, "")),
         notification,
         zip,
         browser: {
@@ -144,6 +147,7 @@ const data = StateBuilder<GlobalType>(
         },
         init: async () => {
             try {
+
                 //await globalDb.database.dropTables();
                 let currentParserString: string = "";
                 const loadParsers = async () => {

@@ -19,7 +19,7 @@ class NovelUpdate extends NovelInfo {
         order: "desc"
       });
 
-      let html_0 = (await this.http.get_html(url, this.url)).html.$("body");
+      let html_0 = (await this.http.web_view(url, this.url)).html.$("body");
       let serUrl = "";
       html_0
         .find(".search_title a")

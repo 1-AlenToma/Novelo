@@ -19,12 +19,25 @@ if (window.__DEV__)
 `;
 
 const debug = false;
+const maxCalls = 3;
+
+const baseUrl = (url: string) => {
+    if (!url)
+        return "";
+    var pathArray = url.split('/');
+    let hasProtocol = /(http)(s)?/gim.test(url);
+    var protocol = hasProtocol ? pathArray[0] : "";
+    var host = hasProtocol ? pathArray[2] : pathArray[0];
+    if (host.indexOf("?") != -1)
+        host = host.substring(0, host.indexOf("?"))
+    return protocol + (hasProtocol ? '//' : "") + host;
+}
 
 export default () => {
     context.hook("html.data");
     const state = buildState({
-        protection: ""
-    }).build();
+        protection: [] as { url: string, id: string }[]
+    }).ignore("protection").build();
 
     useEffect(() => {
         return () => {
@@ -32,8 +45,7 @@ export default () => {
         }
     }, [])
 
-    let data = context.html.data;
-
+    let data = context.html.data.filter(d => !state.protection.find(x => baseUrl(d.url) == baseUrl(x.url))).filter((x, index) => index <= maxCalls);
 
     let jsCode = (x: any) => {
         let data = `
@@ -137,7 +149,7 @@ export default () => {
         return data;
     };
 
-
+    const protection = state.protection.firstOrDefault() as { url: string, id: string } | undefined;
     return (
         <View style={!debug ? {
             position: "absolute",
@@ -147,19 +159,21 @@ export default () => {
             height: 0,
             overflow: "hidden"
         } : { flex: 1, height: 200 }}>
-            <Modal addCloser={true} css="wi-90% he-90%" isVisible={state.protection.has()} onHide={() => state.protection = ""}>
+            <Modal addCloser={true} css="wi-90% he-90%" isVisible={state.protection.has()} onHide={() => state.protection = state.protection.filter(x => x.id !== protection.id)}>
                 <View style={{ flex: 1, marginTop: 15 }}>
                     <Text css="fos-15 fow-bold co-red">
-                        This site/parser containe ICloude protection, so you need to validate from time to time.
+                        This {baseUrl(protection?.url)} containe ICloude protection, so you need to validate it from time to time.
                         {"\n"}
-                        Found ICloude protection, please check in the box and close the modal and then reload the page
                         {"\n"}
-                        note: if you dont find the ICloude protection, then simple close it and continue.
+                        Found ICloude protection, please check in the box and close the modal and then reload the page if needed
+                        {"\n"}
+                        {"\n"}
+                        Note: if you dont find the ICloude protection, then simple close it and continue.
                     </Text>
                     <WebView
                         cacheEnabled={true}
                         source={{
-                            uri: state.protection
+                            uri: protection?.url
                         }}
                         contentMode="mobile"
                         originWhitelist={["*"]}
@@ -196,8 +210,11 @@ export default () => {
                                     break;
                                 case "protection":
                                     console.warn("Icloude found")
-                                    context.html.data.find(x => x.id == data.id)?.func("<div></div>")
-                                    state.protection = data.data;
+                                    if (!state.protection.find(x => baseUrl(data.data) == baseUrl(x.url))) {
+                                        if (!protection)
+                                            state.protection = [{ url: data.data, id: data.id }]
+                                        else state.protection.push({ url: data.data, id: data.id });
+                                    }
                                     break;
                                 default:
                                     console.warn(data)

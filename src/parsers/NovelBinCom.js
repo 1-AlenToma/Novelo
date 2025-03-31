@@ -157,7 +157,7 @@ export default class NovelBinCom extends Parser {
   async chapter(url) {
     let html = (await this.http.get_html(url))
       .html;
-    return html.$(".chr-c").html;
+    return html.$(".chr-c").remove(".unlock-buttons").html;
   }
 
   async detail(url) {

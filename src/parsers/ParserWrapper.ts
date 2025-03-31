@@ -34,6 +34,7 @@ export default class ParserWrapper extends Parser {
     this.novelUpdate = new NovelUpdate();
     this.animeInfo = new MyAnimeList();
     this.infoGeneratorName = parser.infoGeneratorName;
+    this.minVersion = parser.minVersion;
   }
 
   getContext() {

@@ -138,7 +138,7 @@ export default class DownloadManager {
 
           if (!savedItem.chapters.find(x => x.url == ch.url))
             savedItem.chapters.push(ch);
-          if (index % 50 === 0 || savedItem.chapters.length == 1 || !this.items.has(savedItem.url)) {
+          if (index % 10 === 0 || savedItem.chapters.length == 1 || !this.items.has(savedItem.url)) {
             if (savedItem.files.length > 0) {
               for (let image of savedItem.files) {
                 await context.imageCache.write(image.fileName, image.content);

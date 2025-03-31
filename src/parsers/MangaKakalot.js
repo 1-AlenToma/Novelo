@@ -22,6 +22,7 @@ export default class MangaKakalot extends Parser {
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
+        this.minVersion = 122;
 
     }
 

@@ -138,6 +138,7 @@ export default (props: any) => {
             url={require("../assets/ic_launcher_round.png")}
             css="mat:2.5 clearwidth bor:2 miw:100 mih:100"
           />
+          <Text css="desc co-red fow-bold">Version:{context.versionName}</Text>
         </View>
         {dataLocation.elem}
         <AppUpdate />

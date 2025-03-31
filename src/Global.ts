@@ -472,6 +472,8 @@ global.folderValidName = (name: string) => {
 }
 
 global.getFileInfoFromUrl = (url: string) => {
+    if (url?.has(" header"))
+        url = url.substring(0, url.indexOf(" header"))
     return url.trimEnd("/").split("/").pop() as string;
 }
 

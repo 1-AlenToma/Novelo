@@ -67,11 +67,15 @@ const ListItem = ({ item, zip }) => {
     let appSettings = context.appSettings;
     if (!appSettings.parsers)
       appSettings.parsers = [];
-    appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser.name);
-    appSettings.parsers.push({ name: state.parser.name, content: state.parserCode });
-    await appSettings.saveChanges();
-    await context.cache.deleteDir();
-    await context.cache.checkDir();
+    if (state.parser.minVersion != undefined && state.parser.minVersion > context.version) {
+      AlertDialog.alert({ message: `The new parser require app version to at least be ${state.parser.minVersion}, and the current app version is ${context.version} \n please update your app to the newset version`, title: "App Version error" });
+    } else {
+      appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser.name);
+      appSettings.parsers.push({ name: state.parser.name, content: state.parserCode });
+      await appSettings.saveChanges();
+      await context.cache.deleteDir();
+      await context.cache.checkDir();
+    }
     loader.hide();
   }
 
@@ -108,11 +112,12 @@ const ListItem = ({ item, zip }) => {
   return (
     <>
       {loader.elem}
-      <View css="flex he-40 invert wi-100% fld-row ali-center pal-5">
+      <View css="flex he-45 invert wi-100% fld-row ali-center pal-5">
         <Image url={`http://www.google.com/s2/favicons?domain=${state.parser.url}`} css="resizeMode:contain he:20 wi:20" />
-        <Text css="pal-5 header">{state.parser.name} <Text css="co-primary">
-          ({state.parser.type})
-        </Text></Text>
+        <Text css="pal-5 header">{state.parser.name}
+          <Text css="co-primary"> ({state.parser.type})</Text>
+          <Text ifTrue={state.parser.minVersion != undefined && context.version < state.parser.minVersion} css="co-red fos-10 fow-bold">{"\n"}MinAppVersion:{state.parser.minVersion}</Text>
+        </Text>
         <View css="fld-row _abc ri-0 juc-space-between ali-center he-100% wi-150 ">
           <Button css="he-100% juc-center bor-0 mab-0" onPress={() => Linking.openURL(state.parser.url)} icon={<Icon name="browser" type="Entypo" css={"co-#fff mal-0 pa-0"} size={15} />} />
           <Button textCss="co-#fff fow-bold" css="miw-90 he-100% bor-0 mab-0" icon={btnIcon} onPress={state.btnText != "Uninstall" ? install : unistall} text={state.btnText} />
