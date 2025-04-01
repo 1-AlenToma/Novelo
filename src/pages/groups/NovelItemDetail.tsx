@@ -27,7 +27,7 @@ import { Book } from "../../db";
 import { DetailInfo } from "../../native"
 
 export default ({ ...props }: any) => {
-  const [{ url, parserName }, options, navop] =
+  const [{ url, parserName }] =
     useNavigation(props);
   const loader = useLoader(true);
   const chapterRef = useRef();
@@ -256,13 +256,11 @@ export default ({ ...props }: any) => {
                           (x, i) => (
                             <TouchableOpacity
                               onPress={() => {
-                                options
-                                  .nav("Search")
-                                  .add({
+                                context
+                                  .nav.navigate("Search", {
                                     genre: x,
                                     parserName
-                                  })
-                                  .push();
+                                  });
                               }}
                               css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8 invert"
                               key={i}>
@@ -289,13 +287,11 @@ export default ({ ...props }: any) => {
                           (x, i) => (
                             <TouchableOpacity
                               onPress={() => {
-                                options
-                                  .nav("Search")
-                                  .add({
+                                context
+                                  .nav.navigate("Search", {
                                     searchTxt: `#${x}`,
                                     parserName
-                                  })
-                                  .push();
+                                  });
                               }}
                               css="bor:10 flex juc:center mar:5 boc:#c5bebe bow:0.5 pal:8 par:8 invert"
                               key={i}>
@@ -348,14 +344,13 @@ export default ({ ...props }: any) => {
                         novel={state.novel}
                         onPress={item => {
                           chapterRef.current?.close();
-                          options
-                            .nav(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
-                            .add({
+                          context
+                            .nav.navigate(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                               name: state.novel.name,
                               chapter: item.url,
                               url: state.novel.url,
                               parserName: state.novel.parserName
-                            }).push();
+                            });
                         }}
                         current={
                           state.novel?.chapters?.at(
@@ -368,33 +363,25 @@ export default ({ ...props }: any) => {
                   </View>
                 </View>
                 <View
-                  ifTrue={() => state.authorNovels?.has()}
+                  ifTrue={() => (state.authorNovels ?? []).filter(x => x.url != state.novel?.url).has()}
                   css="box he:265 pal:10 par:10 juc:flex-start invert">
                   <Text
                     css="header fos:18 pab:5">
-                    Authors Novels
+                    Authors Others Novels
                   </Text>
                   <ItemList
                     onPress={item => {
-                      if (
-                        item.url ==
-                        state.novel.url
-                      )
-                        return;
-                      options
-                        .nav("NovelItemDetail")
-                        .add({
-                          url: item.url,
-                          parserName: item.parserName
-                        })
-                        .push();
+                      context.nav.navigate("NovelItemDetail", {
+                        url: item.url,
+                        parserName: item.parserName
+                      });
                     }}
                     vMode={false}
                     itemCss={
                       "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"
                     }
                     items={
-                      state.authorNovels ?? []
+                      (state.authorNovels ?? []).filter(x => x.url != state.novel?.url)
                     }
                     container={HomeNovelItem}
                   />
@@ -409,21 +396,17 @@ export default ({ ...props }: any) => {
                   <ItemList
                     onPress={item => {
                       if (!item.parserName) {
-                        options
-                          .nav("Search")
-                          .add({
+                        context
+                          .nav.navigate("Search", {
                             searchTxt: item.name,
                             parserName
-                          })
-                          .push();
+                          });
                       } else {
-                        options
-                          .nav("NovelItemDetail")
-                          .add({
+                        context
+                          .nav.navigate("NovelItemDetail", {
                             url: item.url,
                             parserName: item.parserName
-                          })
-                          .push();
+                          });
                       }
                     }}
                     itemCss={!((state.novel.novelUpdateRecommendations?.firstOrDefault("image") ?? "").toString().has()) ? "wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray" : "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"}
@@ -476,14 +459,12 @@ export default ({ ...props }: any) => {
               <TouchableOpacity
                 css="mar:5 button pa:5 wi:65% clearheight invert"
                 onPress={() => {
-                  options
-                    .nav(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
-                    .add({
+                  context
+                    .nav.navigate(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                       name: state.novel.name,
                       url: state.novel.url,
                       parserName: state.novel.parserName
-                    })
-                    .push();
+                    });
                 }}>
                 <Text
                   css="fos:30 tea-center wi-100%">

@@ -155,11 +155,11 @@ export default class FileHandler {
     return files;
   }
 
-  async search(fileName: string){
+  async search(fileName: string) {
     let lst = await this.allFilesInfos();
-    let item = lst.find(x=> x.isFile() && x.name.has(fileName));
+    let item = lst.find(x => x.isFile() && x.name.has(fileName));
     if (item)
-        return await this.read(item.path);
+      return await this.read(item.path);
     return undefined;
   }
 
@@ -180,6 +180,7 @@ export default class FileHandler {
 
   async deleteDir() {
     await RNF.unlink(this.dir);
+    this.trigger("onClear", "", "", true);
   }
 
   public async checkDir(fullPath?: string) {
@@ -206,6 +207,23 @@ export default class FileHandler {
     }
   }
 
+  onDirDelete(func: () => void) {
+    const id = useRef(newId()).current;
+
+    this.events[id] = (op) => {
+      if (op == "onClear")
+        func();
+    }
+
+    useEffect(() => {
+      return () => {
+        if (this.events[id]) {
+          delete this.events[id];
+        }
+      };
+    }, [])
+  }
+
   useFile(
     globalType?: EncodingType,
     validator?: (x: any) => boolean,
@@ -230,7 +248,7 @@ export default class FileHandler {
           return;
         }
       }
-     // await loader.show();
+      // await loader.show();
       files.current = await this.allFiles();
       await loadItems();
     };

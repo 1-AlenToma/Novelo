@@ -6,8 +6,7 @@ import {
   Icon,
   NovelGroup,
   AnimatedView,
-  ActionSheet,
-  AlertDialog,
+  ActionSheet
 } from "../components";
 import * as React from "react";
 import Header from "./Header";
@@ -27,8 +26,6 @@ const CurrentItem = ({
   children,
   ...props
 }: any) => {
-
-  const [_, options, navop] = useNavigation(props);
   const [visible, setVisible] = useState(false);
   context.hook("appSettings.currentNovel")
   const [books, dataIsLoading, reload] = context.db.useQuery("Books", context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg"));
@@ -58,13 +55,11 @@ const CurrentItem = ({
               book.parserName != "epub"
             }
             onPress={() => {
-              options
-                .nav("NovelItemDetail")
-                .add({
+              context
+                .nav.navigate("NovelItemDetail", {
                   url: book.url,
                   parserName: book.parserName
-                })
-                .push();
+                });
               setVisible(false);
             }}>
             <Icon
@@ -77,15 +72,13 @@ const CurrentItem = ({
           <TouchableOpacity
             css="invert listButton"
             onPress={() => {
-              options
-                .nav(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
-                .add({
+              context
+                .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                   name: book.name,
                   url: book.url,
                   parserName: book.parserName,
                   epub: book.parserName == "epub" || context.appSettings.currentNovel?.isEpub
-                })
-                .push();
+                });
               setVisible(false);
             }}>
             <Icon
@@ -109,14 +102,12 @@ const CurrentItem = ({
             }
             css="invert listButton"
             onPress={() => {
-              options
-                .nav(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
-                .add({
+              context
+                .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                   name: book.name,
                   url: book.url,
                   parserName: book.parserName
-                })
-                .push();
+                });
               setVisible(false);
             }}>
             <Icon
@@ -152,9 +143,8 @@ const CurrentItem = ({
           css="flex pa:5 row"
           onLongPress={() => setVisible(true)}
           onPress={() => {
-            options
-              .nav(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
-              .add({
+            context
+              .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                 name: book.name,
                 url: book.url,
                 parserName: book.parserName,
@@ -162,8 +152,7 @@ const CurrentItem = ({
                   book.parserName == "epub" ||
                   context.appSettings.currentNovel
                     ?.isEpub
-              })
-              .push();
+              });
           }}>
           <Image
             url={book.imageBase64}
@@ -196,7 +185,7 @@ export default ({ ...props }: any) => {
   const [_, options, navop] =
     useNavigation(props);
   context.hook("size", "parser.current");
-  context.nav = options;
+  context.nav.option = options;
   let groups =
     context.parser.current.settings.group;
   let scrollAnimation = useRef(

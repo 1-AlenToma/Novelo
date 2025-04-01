@@ -26,7 +26,6 @@ import {
 } from "../native";
 import { ReadDirItem } from "react-native-fs";
 const EpubHandler = ({
-  navop,
   parentState
 }: any) => {
   const [render, state, loader] = useView({
@@ -155,7 +154,6 @@ const EpubHandler = ({
         </View>
       </View>
       <Header
-        {...navop}
         buttons={[
           {
             text: () => (
@@ -183,8 +181,7 @@ const EpubHandler = ({
 };
 const ItemRender = ({
   item,
-  state,
-  options
+  state
 }: any) => {
   if (!item) return null;
   context.hook("parser.all")
@@ -324,27 +321,23 @@ const ItemRender = ({
           ),
           text: "Read",
           onPress: () => {
-            options
-              .nav(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
-              .add({
+            context
+              .nav.navigate(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                 name: item.name,
                 url: item.url,
                 parserName: item.parserName,
                 epub: true
-              })
-              .push();
+              });
             return true;
           }
         },
         {
           onPress: () => {
-            options
-              .nav("NovelItemDetail")
-              .add({
+            context
+              .nav.navigate("NovelItemDetail", {
                 url: item.url,
                 parserName: item.parserName
-              })
-              .push();
+              });
             return true;
           },
           icon: (
@@ -403,9 +396,6 @@ const ItemRender = ({
 };
 
 export default ({ ...props }: any) => {
-  const [_, options, navop] =
-    useNavigation(props);
-  const updater = useUpdate();
   const state = buildState({
     text: "",
     selectedItem: undefined,
@@ -484,10 +474,7 @@ export default ({ ...props }: any) => {
         {loader.elem ?? elem}
       </View>
 
-      <EpubHandler
-        navop={navop}
-        parentState={state}
-      />
+      <EpubHandler parentState={state} />
       <Text
         css="desc co-red fow-bold tea-left wi-100% pal-5">
         Downloaded and Added Epubs
@@ -500,7 +487,6 @@ export default ({ ...props }: any) => {
           )}
           container={({ item }) => (
             <ItemRender
-              options={options}
               state={state}
               item={item}
             />

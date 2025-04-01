@@ -40,8 +40,6 @@ export default ({
   buttons?: Button[];
   ifTrue?: any;
 }) => {
-  const [params, navOption] =
-    useNavigation(props);
   const updater = useUpdate();
   context.hook(
     "KeyboardState",
@@ -97,12 +95,12 @@ export default ({
         ifTrue={ifTrue}
         css="clearwidth zi:101 he:40 row juc:center ali:center di:flex invert"
         style={[css?.css()] as any}>
-        {navOption.canGoBack() ? (
+        {context.nav.option.canGoBack() ? (
           <TouchableOpacity
             css="absolute le:5"
             onPress={() => {
               if (!onBack || onBack())
-                navOption.back();
+                context.nav.option.back();
             }}>
             <Icon
               type="Ionicons"
@@ -140,7 +138,7 @@ export default ({
         ) : inputEnabled ? (
           <TouchableOpacity
             onPress={() => {
-              navOption.nav("Search").push();
+              context.nav.navigate("Search");
             }}
             style={{
               width:

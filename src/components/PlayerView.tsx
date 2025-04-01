@@ -48,16 +48,12 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
         <TouchableOpacity
           onPress={() => {
             context.nav
-              .nav("ReadChapter")
-              .add({
+              .navigate("ReadChapter", {
                 name: context.player.novel.name,
                 url: context.player.novel.url,
-                parserName:
-                  context.player.novel
-                    .parserName,
+                parserName: context.player.novel.parserName,
                 epub: context.player.isEpup
-              })
-              .push();
+              });
           }}
           css="wi:30"
           ifTrue={isMenu == true}>

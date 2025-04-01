@@ -75,6 +75,8 @@ const ListItem = ({ item, zip }) => {
       await appSettings.saveChanges();
       await context.cache.deleteDir();
       await context.cache.checkDir();
+      if (context.parser.current.name == state.parser.name)
+        context.parser.set(context.parser.find(state.parser.name));
     }
     loader.hide();
   }

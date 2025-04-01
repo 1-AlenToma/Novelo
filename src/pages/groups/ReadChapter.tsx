@@ -508,7 +508,7 @@ const Controller = ({ state, ...props }) => {
                           }}
                         />
                       </FormItem>
-                      <FormItem title="NavigationMethod">
+                      <FormItem title="NavigationMethod" ifTrue={() => !(state.novel.type?.isManga())}>
                         <ButtonGroup
                           buttons={["Scroll", "Snap", "ScrollSnap"]}
                           onPress={(_, items) => {

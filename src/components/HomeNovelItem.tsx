@@ -5,10 +5,12 @@ import * as React from "react";
 
 export default ({
   item,
-  vMode
+  vMode,
+  showParserName
 }: {
   item: LightInfo;
   vMode?: boolean;
+  showParserName?: boolean
 }) => {
 
   if (!vMode) {
@@ -94,10 +96,17 @@ export default ({
               {item.decription}
             </Text>
           </View>
-          <Text
-            css="desc co:#e30505 bottom bo:5 pal:5" numberOfLines={1}>
-            {item.info}
-          </Text>
+          <View css="invert bottom bo-5 pal-5">
+            <Text
+              ifTrue={showParserName == true}
+              css="desc fow-bold" numberOfLines={1}>
+              Parser:{item.parserName}
+            </Text>
+            <Text
+              css="desc co:#e30505" numberOfLines={1}>
+              {item.info}
+            </Text>
+          </View>
         </View>
       </View>
     );

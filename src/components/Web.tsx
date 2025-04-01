@@ -232,11 +232,11 @@ export default ({
           background-color: ${context.appSettings.voiceWordSelectionsSettings?.color ?? inverted} !important;
         }
         
-        *:not(.selection-menu):not(.selection-menu *):not(.italic):not(i) {
+        *:not(.selection-menu):not(.selection-menu *):not(.italic):not(i):not(.ScollPreview) {
           font-style:${(context.appSettings.fontStyle ?? "normal").toLowerCase()} !important;
         }
         
-        *:not(.selection-menu):not(.selection-menu *) {
+        *:not(.selection-menu):not(.selection-menu *):not(.ScollPreview) {
           font-family: "${context.appSettings.fontName}" !important;
           font-size-adjust: 1;
           ${context.appSettings.use3D ? ` text-shadow: 1px ${shadowLength}px 1px ${shadow};` : ""}
@@ -254,7 +254,7 @@ export default ({
           overflow: hidden;
         }
 
-        *:not(.selection-menu):not(.selection-menu *):not(.custom):not(blur):not(blur *):not(.highlight) {
+        *:not(.selection-menu):not(.selection-menu *):not(.custom):not(blur):not(blur *):not(.highlight):not(.ScollPreview) {
           background-color: transparent;
           color: ${inverted} !important;
         }

@@ -60,7 +60,7 @@ export const ProgressBar = ({
             css={x => x.cls("_progressBar").joinRight(css)}>
             <Blur css="zi:1" />
             <View
-                css="zi:3 bac:transparent">
+                css="zi:3 bac:transparent wi-100% juc-center ali-center fld-row">
                 {children}
             </View>
             <AnimatedView

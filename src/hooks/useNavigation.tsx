@@ -8,7 +8,8 @@ class Navigator {
   }
 
   add(param: any) {
-    this.params = { ...this.params, ...param };
+    if (param)
+      this.params = { ...this.params, ...param };
     return this;
   }
 

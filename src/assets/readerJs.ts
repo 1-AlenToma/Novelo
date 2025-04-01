@@ -352,16 +352,19 @@ export const JS = `
                                                 position: "fixed",
                                                 left: "0px",
                                                 top: "10%",
-                                                height: "40px",
+                                                height: "50px",
                                                 width: "100vw",
                                                 display: "none",
                                                 alignItems: "center",
                                                 justifyContent: "center",
                                                 backgroundColor: "#000",
-                                                color: "white",
+                                                color: "white", 
                                                 fontWeight: "bold",
-                                                fontSize: 25,
-                                                opacity: 0.8
+                                                fontSize: "25px",
+                                                opacity: 0.8,
+                                                paddingTop:"5px",
+                                                paddingBottom: "5px",
+                                                textShadow: "2px 2px 2px red"
 
                                         }
 

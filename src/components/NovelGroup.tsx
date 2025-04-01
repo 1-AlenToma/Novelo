@@ -18,8 +18,6 @@ export default memo(
     itemIndex: number;
     vMode?: boolean;
   }) => {
-    const [params, option, navs] =
-      useNavigation(props);
     const loader = useLoader(true);
     const [items, setItems] = useState([]);
     const page = useRef(0);
@@ -44,6 +42,10 @@ export default memo(
         loader.hide();
       }
     };
+
+    context.cache.onDirDelete(() => {
+      getItems(true);
+    })
 
     useEffect(() => {
       getItems();
@@ -71,12 +73,10 @@ export default memo(
             <TouchableOpacity
               css="clb"
               onPress={() => {
-                option
-                  .nav("GroupDetail")
-                  .add({
+                context
+                  .nav.navigate("GroupDetail", {
                     groupIndex: itemIndex
                   })
-                  .push();
               }}>
               <Text
                 css="desc fos:14 invertco">
@@ -87,20 +87,16 @@ export default memo(
         </View>
         {vMode ? (
           <Header
-            {...navs}
             title={item.text}
           />
         ) : null}
         <ItemList
           onRefresh={{ loading: loader.loading, onRefresh: () => getItems(true) }}
           onPress={item => {
-            option
-              .nav("NovelItemDetail")
-              .add({
-                url: item.url,
-                parserName: item.parserName
-              })
-              .push();
+            context.nav.navigate("NovelItemDetail", {
+              url: item.url,
+              parserName: item.parserName
+            });
           }}
           vMode={vMode}
           onEndReached={() => {

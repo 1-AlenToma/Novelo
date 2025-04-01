@@ -205,6 +205,7 @@ export type AlertViewFullProps = AlertViewProps & {
 
 export type CheckBoxProps = StyledProps & {
     onChange?: (isChecked: boolean) => void;
+    onPress?: () => void;
     label?: string;
     checked: boolean;
     disabled?: boolean;
@@ -215,13 +216,13 @@ export type CheckBoxProps = StyledProps & {
 
 }
 
-export type ICheckBox<T> = (props: T) => React.ReactNode;
+export type ICheckBox<T> = React.ReactElement<T>
+export type CheckBoxListChild = ICheckBox<Omit<CheckBoxProps, "selectionType" | "checkBoxType" | "onChange">>;
 
 export type CheckBoxListProps = {
     onChange: (checkBoxes: { checked: boolean, checkBoxIndex: number }[]) => void;
     label?: string;
-    children: (ICheckBox<Omit<CheckBoxProps, "selectionType" | "checkBoxType" | "onChange">>) |
-    (ICheckBox<Omit<CheckBoxProps, "selectionType" | "checkBoxType" | "onChange">>)[];
+    children: CheckBoxListChild | CheckBoxListChild[]
 } & Omit<CheckBoxProps, "checked" | "onChange">
 
 export type MenuIcon = {

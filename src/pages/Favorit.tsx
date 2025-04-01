@@ -16,13 +16,11 @@ import {
 import { Book } from "db";
 
 const ItemRender = ({
-  options,
   item,
   state,
   loader
 }: {
   item: Book,
-  options: any,
   state: any,
   loader: any
 }) => {
@@ -108,26 +106,22 @@ const ItemRender = ({
           ifTrue: item.isOnline?.(),
           text: context.parser.find(item.parserName)?.type == "Anime" ? "Watch" : "Read",
           onPress: () => {
-            options
-              .nav(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter")
-              .add({
+            context
+              .nav.navigate(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                 name: item.name,
                 url: item.url,
                 parserName: item.parserName
-              })
-              .push();
+              });
             return true;
           }
         },
         {
           onPress: () => {
-            options
-              .nav("NovelItemDetail")
-              .add({
+            context
+              .nav.navigate("NovelItemDetail", {
                 url: item.url,
                 parserName: item.parserName
-              })
-              .push();
+              });
             return true;
           },
           icon: (
@@ -164,16 +158,12 @@ const ItemRender = ({
 };
 
 export default ({ ...props }: any) => {
-  const [_, options, navop] =
-    useNavigation(props);
   const state = buildState({
     text: "",
     json: "",
     infoNovel: {}
   }).build();
-  const { fileItems } = context
-    .files
-    .useFile("json");
+
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
@@ -202,13 +192,12 @@ export default ({ ...props }: any) => {
         return false;
       }
     );
+  context.cache.onDirDelete(() => reload());
   const loader = useLoader(dataIsLoading);
-
   return (
     <View css="flex mih:100">
       {loader.elem}
       <Header
-        {...navop}
         value={state.text}
         inputEnabled={true}
         onInputChange={txt => {
@@ -223,7 +212,6 @@ export default ({ ...props }: any) => {
           container={({ item }) => (
             <ItemRender
               loader={loader}
-              options={options}
               state={state}
               item={item}
             />

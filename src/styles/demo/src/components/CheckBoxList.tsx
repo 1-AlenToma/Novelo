@@ -93,7 +93,7 @@ export const CheckBoxList = (props: CheckBoxListProps) => {
                 {
                     items.map((x, i) => (
                         <View key={i}>
-                            {x}
+                            {x as any}
                         </View>
                     ))
                 }
@@ -176,10 +176,13 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
 
     return (
         <>
-            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`} ifTrue={checkBoxType == "CheckBox"} onPress={() => {
-                if (!disabled)
-                    state.checked = !state.checked
-            }}>
+            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`}
+                ifTrue={checkBoxType == "CheckBox"}
+                onPress={() => {
+                    if (!disabled && !props.onPress)
+                        state.checked = !state.checked;
+                    props.onPress?.();
+                }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
                 <View style={{ backgroundColor: color(state.checked) }} css={`_checkBox_${labelPostion}`} >
                     <Icon ifTrue={state.checked} type="AntDesign" css={x => x.co("$co-light")} name="check" size={24} />

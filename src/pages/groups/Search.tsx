@@ -6,11 +6,13 @@ import {
   ItemList,
   HomeNovelItem,
   ActionSheetButton,
-  ScrollView
+  ScrollView,
+  ProgressBar
 } from "../../components/";
 import * as React from "react";
 import {
-  useNavigation
+  useNavigation,
+  useParserSelector
 } from "../../hooks";
 import {
   SearchDetail
@@ -32,6 +34,7 @@ const ActionItem = ({
       ? "selected"
       : "")
   );
+
   return (
     <View
       ifTrue={items.items?.has() ?? false}
@@ -79,8 +82,6 @@ const ActionItem = ({
 export default ({ ...props }: any) => {
   const [{ searchTxt, parserName, genre }, option, navop] = useNavigation(props);
   const parser = context.parser.find(parserName) ?? context.parser.current;
-  const imageSize = parser.settings.imagesSize;
-
 
   const loader = useLoader(
     searchTxt?.has() ?? false
@@ -89,16 +90,31 @@ export default ({ ...props }: any) => {
     items: [],
     text: undefined as SearchDetail,
     currentPage: 0,
-    parser: parser
-  }).ignore("parser", "items").build();
-
+    parser: parser,
+    loadedParser: {},
+    procent: {
+      parser: "",
+      value: 0
+    }
+  }).ignore("parser", "items", "loadedParser").build();
+  const globalParser = useParserSelector(() => {
+    if (globalParser.hasSelection()) {
+      state.text = new SearchDetail(state.text.text ?? "");
+      state.items = [];
+      state.currentPage = 0;
+      if (!state.text.text.empty())
+        fetchData(1);
+    }
+  });
 
   const fetchData = async (page?: number) => {
     loader.show();
     try {
       let parser = state.parser;
+      state.procent.value = 0;
       if (state.text == undefined) {
         parser.settings = await parser.load("RenewMemo");
+        state.loadedParser[parser.name] = true;
         state.text = new SearchDetail(searchTxt || "").set("page", 0).set("genre", parser.settings.genre?.filter(x => genre && x.text.has(genre)) ?? []);
       }
 
@@ -107,22 +123,30 @@ export default ({ ...props }: any) => {
         return;
       }
 
-      if (parser) {
-        let txt = state.text.clone();
-        if (page === undefined) txt.page++;
-        else txt.page = page;
-        let currentItems =
-          txt.page > 1 ? [...state.items] : [];
-        let items = await parser.search(txt);
-        if (txt.page <= 1) currentItems = items;
+      const prs = globalParser.hasSelection() ? context.parser.all.filter(x => globalParser.selectedParser.find(f => f.name == x.name && f.selected)) : [parser];
+      let txt = state.text.clone();
+      if (page === undefined) txt.page++;
+      else txt.page = page;
+      let currentItems = txt.page > 1 ? [...state.items] : [];
+
+      for (let p of prs) {
+        state.procent.parser = p.name;
+        if (!state.loadedParser[p.name]) {
+          await p.load("RenewMemo");
+          state.loadedParser[p.name] = true;
+        }
+
+        let items = await p.search(txt);
+        state.procent.value = prs.length.procent(prs.indexOf(p) + 1) / 100;
+        if (txt.page <= 1 && !globalParser.hasSelection()) currentItems = items;
         else {
           currentItems = currentItems.distinct("url", items);
         }
+      }
 
-        if (txt.page == 1 || items.length > 0) {
-          state.items = currentItems;
-          state.text = txt;
-        }
+      if (txt.page == 1 || currentItems.length > 0) {
+        state.items = currentItems;
+        state.text = txt;
       }
     } finally {
       loader.hide();
@@ -219,7 +243,7 @@ export default ({ ...props }: any) => {
   return (
     <View
       css="flex root">
-      {loader.elem}
+
       <Header
         {...navop}
         value={state.text.text}
@@ -231,8 +255,17 @@ export default ({ ...props }: any) => {
           else fetchData();
         }}
       />
-
+      <View css="invert pal-10 par-10" style={{
+        height: globalParser.hasSelection() ? 60 : undefined
+      }}>
+        {globalParser.elem}
+        <ProgressBar ifTrue={loader.loading && globalParser.hasSelection()} value={state.procent.value} css="wi-100% he-30 position-relative" >
+          <Text css="_abc le-5 co-red fow-bold wi-100%">Searching {state.procent.parser}</Text>
+          <Text css="co-red fow-bold">{(state.procent.value * 100).readAble()}%</Text>
+        </ProgressBar>
+      </View>
       <View
+        ifTrue={globalParser.hasSelection() == false}
         css="row juc:space-between ali:center invert">
         <ActionItem
           state={state}
@@ -252,33 +285,36 @@ export default ({ ...props }: any) => {
           keyName="genre"
         />
       </View>
-      <View css="clearwidth mih:50 pab-20 flex invert juc-center ali-center" ifTrue={() => state.items.length <= 0}>
-        <Text css="fos-18 fow-bold">No Result Found..</Text>
-
-      </View>
-      <View css="clearwidth mih:50 pab-20 flex invert" ifTrue={() => state.items.length > 0}>
-        <ItemList
-          page={state.currentPage}
-          onPress={item => {
-            option
-              .nav("NovelItemDetail")
-              .add({
-                url: item.url,
-                parserName: item.parserName
-              })
-              .push();
-          }}
-          vMode={true}
-          onEndReached={() => {
-            if (!loader.loading) {
-              loader.show();
-              fetchData();
-            }
-          }}
-          itemCss={`boc:#ccc bow:1 overflow he-${imageSize?.height ?? "170"} wi:98% mat:5 mal:5 bor:5`}
-          items={state.items}
-          container={HomeNovelItem}
-        />
+      <View css="flex clearwidth mih:50 bac-transparent">
+        {loader.elem}
+        <View css="clearwidth mih:50 pab-20 flex invert juc-center ali-center" ifTrue={() => state.items.length <= 0}>
+          <Text css="fos-18 fow-bold">No Result Found..</Text>
+        </View>
+        <View css="clearwidth mih:50 pab-20 flex invert" ifTrue={() => state.items.length > 0}>
+          <ItemList
+            page={state.currentPage}
+            onPress={item => {
+              context.nav
+                .navigate("NovelItemDetail", {
+                  url: item.url,
+                  parserName: item.parserName
+                });
+            }}
+            vMode={true}
+            onEndReached={() => {
+              if (!loader.loading) {
+                loader.show();
+                fetchData();
+              }
+            }}
+            itemCss={(item) => {
+              const imageSize = context.parser.find(item.parserName).settings.imagesSize;
+              return `boc:#ccc bow:1 overflow he-${imageSize?.height ?? "170"} wi:98% mat:5 mal:5 bor:5`
+            }}
+            items={state.items}
+            container={({ item }) => <HomeNovelItem item={item} vMode={true} showParserName={globalParser.hasSelection()} />}
+          />
+        </View>
       </View>
     </View>
   );

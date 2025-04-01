@@ -9,6 +9,7 @@ import WatchAnime from "./groups/WatchAnime";
 
 const Stack = createNativeStackNavigator();
 
+
 export default () => {
   return (
     <Stack.Navigator

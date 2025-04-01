@@ -30,7 +30,7 @@ export default ({
   container: any;
   onLongPress?: any;
   props?: any;
-  itemCss?: string;
+  itemCss?: string | ((item: any) => string);
   vMode?: boolean;
   onPress?: (item: any) => void;
   onEndReached?: () => void;
@@ -59,9 +59,10 @@ export default ({
       onPress || onLongPress
         ? TouchableOpacity
         : View;
+    let cnCSS = typeof itemCss == "string" ? itemCss as string : itemCss?.(item);
     return (
       <CN
-        css={itemCss}
+        css={cnCSS}
         onLongPress={() => onLongPress?.(item)}
         onPress={e => {
           onPress?.(item);

@@ -13,7 +13,7 @@ class AppSettings extends DBInit {
     lineHeight: number = 30;
     fontName: string = "SourceSans3-Black";
     textAlign: string = "left";
-    backgroundColor: string = "#ffffff";
+    backgroundColor: string = "#FFF8E7";
     isBold: boolean = false;
     lockScreen: boolean = false;
     margin?: number = 37;

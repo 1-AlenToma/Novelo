@@ -22,7 +22,18 @@ import {
 import { ReadDirItem } from "react-native-fs";
 import { DimensionValue } from "react-native";
 
+export type NavigationPage = "WatchAnime" | "AppMenu" | "GroupDetail" | "NovelItemDetail" | "Search" | "ReadChapter";
 
+export type NavigationObject = {
+  parserName?: string;
+  url?: string;
+  name?: string;
+  epub?: boolean;
+  groupIndex?: number;
+  searchTxt?: string;
+  genre?: string;
+  chapter?: string;
+}
 
 export type FileInfo = {
   name?: string;
@@ -162,7 +173,10 @@ export type GlobalType =
     files: FileHandler,
     imageCache: ImageCache,
     speech: typeof Speech,
-    nav: any,
+    nav: {
+      option: any;
+      navigate: (page: NavigationPage, item?: NavigationObject) => void;
+    },
     orientation: (value: "Default" | "LANDSCAPE") => void,
     parser: {
       default: string;

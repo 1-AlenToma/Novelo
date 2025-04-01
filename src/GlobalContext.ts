@@ -100,7 +100,12 @@ const data = StateBuilder<GlobalType>(
         files: new FileHandler(FilesPath.File, "File", true),
         imageCache: new ImageCache(),
         speech: Speech,
-        nav: undefined,
+        nav: {
+            option: undefined,
+            navigate: (page, item) => {
+                data.nav.option?.nav(page).add(item).push();
+            }
+        },
         orientation: (value: "Default" | "LANDSCAPE") => {
             ScreenOrientation.lockAsync(
                 value === "Default"
@@ -137,7 +142,7 @@ const data = StateBuilder<GlobalType>(
             },
             current: currentParser,
             find: (name: string) => data.parser.all.find(x => x.name == name) as ParserWrapper,
-            set: async (p: any) => {
+            set: async (p) => {
                 p = data.parser.find(p.name);
                 p.settings = await p.load("RenewMemo");
                 data.parser.current = p;
@@ -161,7 +166,7 @@ const data = StateBuilder<GlobalType>(
         init: async () => {
             try {
 
-                //await globalDb.database.dropTables();
+                // await globalDb.dropTables();
                 let currentParserString: string = "";
                 const loadParsers = async () => {
                     if (debugMode) {
