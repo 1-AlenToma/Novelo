@@ -100,9 +100,10 @@ export default ({
             <Text
               ifTrue={showParserName == true}
               css="desc fow-bold" numberOfLines={1}>
-              Parser:{item.parserName}
+              Parser:{item.parserName} ({item.type ?? context.parser.find(item.parserName)?.type})
             </Text>
             <Text
+              ifTrue={item.info && !item.info.empty()}
               css="desc co:#e30505" numberOfLines={1}>
               {item.info}
             </Text>

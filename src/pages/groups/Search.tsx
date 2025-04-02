@@ -7,7 +7,9 @@ import {
   HomeNovelItem,
   ActionSheetButton,
   ScrollView,
-  ProgressBar
+  ProgressBar,
+  Button,
+  Icon
 } from "../../components/";
 import * as React from "react";
 import {
@@ -80,7 +82,7 @@ const ActionItem = ({
 };
 
 export default ({ ...props }: any) => {
-  const [{ searchTxt, parserName, genre }, option, navop] = useNavigation(props);
+  const [{ searchTxt, parserName, genre }] = useNavigation(props);
   const parser = context.parser.find(parserName) ?? context.parser.current;
 
   const loader = useLoader(
@@ -94,7 +96,9 @@ export default ({ ...props }: any) => {
     loadedParser: {},
     procent: {
       parser: "",
-      value: 0
+      value: 0,
+      found: 0,
+      stop: false
     }
   }).ignore("parser", "items", "loadedParser").build();
   const globalParser = useParserSelector(() => {
@@ -130,6 +134,8 @@ export default ({ ...props }: any) => {
       let currentItems = txt.page > 1 ? [...state.items] : [];
 
       for (let p of prs) {
+        if (state.procent.stop && globalParser.hasSelection())
+          break;
         state.procent.parser = p.name;
         if (!state.loadedParser[p.name]) {
           await p.load("RenewMemo");
@@ -138,10 +144,12 @@ export default ({ ...props }: any) => {
 
         let items = await p.search(txt);
         state.procent.value = prs.length.procent(prs.indexOf(p) + 1) / 100;
+        state.procent.found += items.length;
         if (txt.page <= 1 && !globalParser.hasSelection()) currentItems = items;
         else {
           currentItems = currentItems.distinct("url", items);
         }
+
       }
 
       if (txt.page == 1 || currentItems.length > 0) {
@@ -151,6 +159,7 @@ export default ({ ...props }: any) => {
     } finally {
       loader.hide();
       state.currentPage = state.text.page;
+      state.procent.stop = false;
     }
 
   };
@@ -243,25 +252,30 @@ export default ({ ...props }: any) => {
   return (
     <View
       css="flex root">
-
       <Header
-        {...navop}
         value={state.text.text}
         inputEnabled={true}
         onInputChange={txt => {
-          state.text =
-            SearchDetail.n(txt).Page(0);
-          if (txt === "") state.items = [];
-          else fetchData();
+          state.text = SearchDetail.n(txt).Page(0);
+          state.items = [];
+          if (txt.has())
+            fetchData();
         }}
       />
       <View css="invert pal-10 par-10" style={{
-        height: globalParser.hasSelection() ? 60 : undefined
+        height: globalParser.hasSelection() && loader.loading ? 60 : undefined
       }}>
         {globalParser.elem}
         <ProgressBar ifTrue={loader.loading && globalParser.hasSelection()} value={state.procent.value} css="wi-100% he-30 position-relative" >
-          <Text css="_abc le-5 co-red fow-bold wi-100%">Searching {state.procent.parser}</Text>
-          <Text css="co-red fow-bold">{(state.procent.value * 100).readAble()}%</Text>
+          <Text css="_abc le-5 co-red fow-bold wi-100%">Searching {state.procent.parser} Found {state.procent.found} Items</Text>
+          <TouchableOpacity css="_abc ri-10 bac-transparent" onPress={() => state.procent.stop = true}>
+            <Icon
+              name="controller-stop"
+              type="Entypo"
+              size={35}
+              css="co-red"
+            />
+          </TouchableOpacity>
         </ProgressBar>
       </View>
       <View
@@ -272,7 +286,6 @@ export default ({ ...props }: any) => {
           selection={item => selection(item)}
           keyName="status"
         />
-
         <ActionItem
           state={state}
           selection={item => selection(item)}

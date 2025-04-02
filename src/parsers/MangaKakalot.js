@@ -69,7 +69,7 @@ export default class MangaKakalot extends Parser {
                     .Url(name.url("href"))
                     .Type("Manga")
                     .Image(f.find("img").url("src", { Referer: this.url + "/" }))
-                    .Info(f.findAll(".story_chapter:last-child, .list-story-item-wrap-chapter").text)
+                    .Info(f.first(".story_item_right .story_chapter, .list-story-item-wrap-chapter").text)
                     .ParserName(this.name);
             });
 
@@ -85,6 +85,10 @@ export default class MangaKakalot extends Parser {
         if (options.genre?.has()) {
             url = this.url.join(options.genre.lastOrDefault("value"));
         }
+
+        url = url.query({
+            page: options.page
+        })
 
         let html = (
             await this.http.web_view(url, this.url)
