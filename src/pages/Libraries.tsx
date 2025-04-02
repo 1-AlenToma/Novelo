@@ -73,7 +73,7 @@ const ListItem = ({ item, zip }) => {
       appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser.name);
       appSettings.parsers.push({ name: state.parser.name, content: state.parserCode });
       await appSettings.saveChanges();
-      await context.cache.deleteDir();
+      await context.cache.deleteDir(state.parser.name);
       await context.cache.checkDir();
       if (context.parser.current.name == state.parser.name)
         context.parser.set(context.parser.find(state.parser.name));

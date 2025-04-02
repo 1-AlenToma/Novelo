@@ -43,9 +43,10 @@ export default memo(
       }
     };
 
-    context.cache.onDirDelete(() => {
-      getItems(true);
-    })
+    context.cache.onDirDelete((parserName) => {
+      if (!parserName || parserName == context.parser.current.name)
+        getItems(true);
+    });
 
     useEffect(() => {
       getItems();

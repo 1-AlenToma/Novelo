@@ -66,6 +66,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 5,
+    folder: (target: Parser) => target.name,
     isDebug: debugg,
     argsOverride: (args: any[]) => {
       return args;
@@ -96,6 +97,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 4,
+    folder: (target: Parser) => target.name,
     isDebug: false,
     argsOverride: (args: any[]) => {
       return [args.firstOrDefault("url")];
@@ -137,6 +139,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: 5,
     isDebug: debugg,
+    folder: (target: Parser) => target.name,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
     validator: (data: any) =>
@@ -174,6 +177,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: 20,
     isDebug: debugg,
+    folder: (target: Parser) => target.name,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
     validator: (data: any) =>
@@ -193,6 +197,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: 2,
     isDebug: debugg,
+    folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `${key}${target.name}`,
     validator: (data: any) => data && data.has() && !data[0].name.empty() && !data[0].url.empty()
   })

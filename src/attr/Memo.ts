@@ -45,12 +45,16 @@ export default function Memorize(
     descriptor.value = async function (...args: any[]) {
       let RenewMemo = args.some(x => x == "RenewMemo");
       args = args.filter(x => x != "RenewMemo");
-      const key = getKey(
+      const folder = option.folder ? option.folder(this) : "";
+      let key = getKey(
         option,
         propertyKey,
         this,
         args
       );
+
+      if (folder && folder.has())
+        key = folder.path(key);
       while (callingFun.has(key)) await sleep(100);
       let data = null as DataCache | null;
       callingFun.set(key, true);

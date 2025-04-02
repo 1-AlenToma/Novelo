@@ -156,7 +156,7 @@ export default class FileHandler {
   }
 
   async search(fileName: string) {
-    let lst = await this.allFilesInfos();
+    let lst = await this.allFilesInfos(true);
     let item = lst.find(x => x.isFile() && x.name.has(fileName));
     if (item)
       return await this.read(item.path);
@@ -178,9 +178,14 @@ export default class FileHandler {
     } else return text;
   }
 
-  async deleteDir() {
-    await RNF.unlink(this.dir);
-    this.trigger("onClear", "", "", true);
+  async deleteDir(folder?: string) {
+    let path = this.dir;
+    if (folder)
+      path = path.path(folder);
+    if (await RNF.exists(path)) {
+      await RNF.unlink(path);
+      this.trigger("onClear", folder, "", true);
+    }
   }
 
   public async checkDir(fullPath?: string) {
@@ -207,12 +212,12 @@ export default class FileHandler {
     }
   }
 
-  onDirDelete(func: () => void) {
+  onDirDelete(func: (path?: string) => void) {
     const id = useRef(newId()).current;
 
-    this.events[id] = (op) => {
+    this.events[id] = (op, folder) => {
       if (op == "onClear")
-        func();
+        func(folder);
     }
 
     useEffect(() => {

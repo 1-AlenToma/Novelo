@@ -32,6 +32,11 @@ const ItemRender = ({
     }
   );
 
+  context.cache.onDirDelete((parserName) => {
+    if (!parserName || parserName == item.parserName)
+      loadNovelDetail();
+  });
+
   const loadNovelDetail = async () => {
     for (let b of books) {
       if (b.parserName !== "epub") {
@@ -192,7 +197,7 @@ export default ({ ...props }: any) => {
         return false;
       }
     );
-  context.cache.onDirDelete(() => reload());
+
   const loader = useLoader(dataIsLoading);
   return (
     <View css="flex mih:100">

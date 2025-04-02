@@ -239,6 +239,7 @@ export type MemorizeOptions = {
   isDebug?: boolean;
   storage?: IStorage;
   daysToSave: number;
+  folder?: (target: any) => string
   argsOverride?: (...args: any[]) => any[];
   updateIfTrue?: (args: any) => boolean;
   keyModifier?: (
