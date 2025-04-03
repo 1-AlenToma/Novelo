@@ -923,7 +923,6 @@ export const JS = `
 
                 const regChar = ("”“-=%+*<>|/[]{}()$#!!&?,:;..'’‘ _").split("").map(x => addString("\\\\", x)).join("|");
                 window.highlight = function (options) {
-                        return;
                         var inputText = document.querySelector(options.selector);
                         if (!options.text)
                                 options.text = inputText.innerText;

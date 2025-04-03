@@ -471,6 +471,7 @@ export default ({
     () => {
       if (!context.player.showPlayer || !context.player.highlightedText || !context.player.highlightedText.text)
         return;
+      console.warn(context.player.highlightedText)
       let json = JSON.stringify({
         block: "nearest",
         inline: "start",
