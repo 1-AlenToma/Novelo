@@ -38,7 +38,7 @@ export default class GogoAnime extends Parser {
                     Value.n()
                         .Text(x.attr("value"))
                         .Value(x.attr("value"))
-                ).filter(x => x.text.length > 0)
+                ).filter((x, index, array) => x.text.length > 0 && array.findIndex(f => f.text == x.text) === index)
         );
 
         this.settings.Status(html
@@ -47,7 +47,7 @@ export default class GogoAnime extends Parser {
                 Value.n()
                     .Text(x.attr("value"))
                     .Value(x.attr("value"))
-            ).filter(x => x.text.length > 0));
+            ).filter((x, index, array) => x.text.length > 0 && array.findIndex(f => f.text == x.text) === index))
 
         this.settings.Group(
             html
@@ -56,8 +56,10 @@ export default class GogoAnime extends Parser {
                     Value.n()
                         .Text(x.attr("value"))
                         .Value(x.attr("value"))
-                ).filter(x => x.text.length > 0)
+                ).filter((x, index, array) => x.text.length > 0 && array.findIndex(f => f.text == x.text) === index)
         );
+
+        this.settings.group.unshift(Value.n().Text("Latest Release").Value('{"order":"update"}'))
 
 
 
@@ -81,8 +83,14 @@ export default class GogoAnime extends Parser {
         if (options.status.has())
             q.status = options.status.lastOrDefault("value");
 
-        if (options.group.has())
-            q.type = options.group.lastOrDefault("value");
+        if (options.group.has()) {
+            let v = options.group.lastOrDefault("value");
+            if (v.has("{")) {
+                v = JSON.parse(v);
+                q = { ...q, ...v };
+            } else
+                q.type = options.group.lastOrDefault("value");
+        }
 
         url = url.query({ page: (1).sureValue(options.page), ...q });
 

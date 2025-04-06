@@ -351,16 +351,12 @@ class Player {
     this.currentTextSpeacking = text;
     context.speech.speak(this.currentTextSpeacking, {
       onBoundary: boundaries => {
-        let { charIndex, charLength } =
-          boundaries;
-        let char = "";
-        let length = charLength;
+        let { charIndex, charLength } = boundaries;
 
-        // if (length + 1 < text.length) length++;
         this.highlightedText = {
           text: text,
           index: charIndex,
-          length: length
+          length: charLength
         };
       },
       language: undefined,
