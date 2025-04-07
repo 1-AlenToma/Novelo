@@ -7,11 +7,16 @@ import Player from "./Player";
 import { FilesPath, ZipFileItem } from "../Types";
 import { unzip, zip as ZipFile } from 'react-native-zip-archive';
 import FileHandler from "./FileHandler";
+import { NativeModules } from 'react-native';
+const { EpubZipper } = NativeModules;
 
 export const createEpub = async (novel: DetailInfo, book: Book, path: string, onUpdate: (item: {
   percent: number;
   currentFile: string | null;
 }) => void) => {
+
+  const folder = RNFS.CachesDirectoryPath.path(newId());
+  let fileHandler = new FileHandler(folder);
   try {
     const zip = {
       files: {} as {
@@ -90,7 +95,6 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
          .italic, i {
            display:inline !important;
            font-style: italic !important;
-           font-size: ${context.appSettings.fontSize - 4}px !important;
          }
 `.trim();
 
@@ -222,8 +226,6 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     // Step 4: Generate ZIP as base64
     console.log("Generating Zip");
 
-    const folder = RNFS.CachesDirectoryPath.path(newId());
-    let fileHandler = new FileHandler(folder);
 
     path = path.path(`${novel.name}.epub`);
     let writeFile = true;
@@ -254,7 +256,9 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
         percent: 0.9,
         currentFile: `Genereting Epub`
       });
-      await ZipFile(folder, path);
+      //  await ZipFile(folder, path);
+      const result = await EpubZipper.zipEpubFolder(folder, path);
+      console.log(result);
       await fileHandler.deleteDir();
 
     }
@@ -270,6 +274,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     }
     console.log('EPUB saved at:', path.path(`${novel.name}.epub`));
   } catch (e) {
+    await fileHandler.deleteDir();
     console.error(e)
   }
 };

@@ -653,7 +653,7 @@ const Controller = ({ state, ...props }) => {
                               lineHeight
                             });
                           }}
-                          minimumValue={(context.appSettings.fontSize * context.lineHeight) - 8}
+                          minimumValue={Math.max((context.appSettings.fontSize * context.lineHeight) - 20, 10)}
                           maximumValue={(context.appSettings.fontSize * context.lineHeight) + 20}
                         />
                       </FormItem>

@@ -2,6 +2,7 @@ import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeC
 import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";
+import { Easing } from "react-native";
 
 type Buttons = {
   onPress: Function;
@@ -29,7 +30,9 @@ export default ({
     x => methods.ifSelector(x.ifTrue) !== false
   );
 
-  const { animateX, animate } = useAnimate();
+  const { animateX, animate } = useAnimate({
+    easing: Easing.bounce
+  });
   const [render, state, loader] = useView({
     component: View,
     state: {
@@ -42,11 +45,11 @@ export default ({
   if (
     state.buttonsSize &&
     state.size.width > 0 &&
-    !isNaN(state.buttonsSize.width)
+    !isNaN(state.buttonsSize.width as number)
   ) {
     interpolate = [
       0,
-      -Math.max(state.buttonsSize.width + 10, 10)
+      -Math.max((state.buttonsSize.width as number) + 10, 10)
     ];
   }
 
@@ -81,7 +84,7 @@ export default ({
       <View
         style={{
           height:
-            (state.childSize?.height ?? 0) - 10,
+            ((state.childSize?.height ?? 0) as number) - 10,
           width: state.buttonsSize?.width ?? 0
         }}
         css="wi:98% ri:5 to:5 overflow bor:5 absolute zi:1 ali:flex-end juc:flex-end">

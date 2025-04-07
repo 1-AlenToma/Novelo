@@ -5,6 +5,7 @@
   "scripts": {
     "parse": "node parsers/tsc/nodeParser.mjs",
     "zip": "npm run parse && npx bestzip ../parsers.zip temp/parsers",
+    "androidFiles": "node parsers/tsc/writeAndroidFiles.mjs",
     "update": "eas update --message [dbclick fix]",
     "gradlew": "npm run zip && cd android && gradlew assembleRelease",
     "compile": "tsc ./parsers/ReadNovelFull.ts",
