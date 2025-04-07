@@ -1,14 +1,210 @@
 import { AlertDialog, newId } from "components";
-import { Book } from "../db";
+import { Book, dbContext } from "../db";
 import { DetailInfo } from "./ParserItems";
 import RNFS from 'react-native-fs';
 import IDOMParser from "advanced-html-parser";
 import Player from "./Player";
-import { FilesPath, ZipFileItem } from "../Types";
-import { unzip, zip as ZipFile } from 'react-native-zip-archive';
+import { FilesPath, ZipFileItem, OPFContent } from "../Types";
+import { unzip, subscribe } from 'react-native-zip-archive';
 import FileHandler from "./FileHandler";
 import { NativeModules } from 'react-native';
 const { EpubZipper } = NativeModules;
+
+class ZipBase {
+  name: string = "";
+  url: string = newId();
+  fileName?: string; // used only in dbContext
+  epub: boolean = true;
+  playOrder: number = 0;
+  id?: string;
+  text?: string;
+}
+class ZipFile extends ZipBase {
+  content: string;
+  type: "Image" | "CSS" | "HTML" | "None"
+}
+export class ZipBook extends ZipBase {
+  chapters: ZipFile[] = [];
+  epub: boolean = true;
+  imagePath?: string;
+  type: string;
+
+}
+
+export const readEpub = async (uri: string, onUpdate: (item: {
+  percent: number;
+  currentFile: string | null;
+}) => void) => {
+  const event = subscribe(({ progress, filePath }) => {
+    onUpdate({
+      percent: progress * 100,
+      currentFile: "Parsing the epub File"
+    })
+  });
+
+  const tempPath = RNFS.CachesDirectoryPath.join(FilesPath.Temp, newId());
+  const fileHandler = new FileHandler(tempPath);
+  const book = new ZipBook();
+  try {
+    await context.db.disableHooks();
+    await context.db.disableWatchers();
+    context.files.disable();
+
+    const zip = {
+      files: {} as {
+        [key: string]: ZipFileItem
+      },
+      file: (filePath: string, content: string, base64: boolean = false) => {
+        const type = filePath.isImage() ? "base64" : undefined;
+        zip.files[filePath] = {
+          path: filePath,
+          content,
+          base64,
+          load: async () => await fileHandler.read(filePath, type),
+          write: async () => {
+            let content = await zip.files[filePath].load();
+            if (filePath.isImage() && book.imagePath) {
+              await context.imageCache.write(book.imagePath.path(filePath.safeSplit("/", -1)), content)
+            }
+          }
+        } as ZipFileItem;
+      }
+    }
+
+    let cleanNames = (n: string) => {
+      n = n.split("\\").reverse()[0];
+      if (/\..*$/.test(n))
+        n = n
+          .split(".")
+          .reverse()
+          .skip(0)
+          .reverse()
+          .join(".");
+      return n;
+    };
+
+    const search = (name: string) => {
+      let item = Object.keys(zip.files).find(x => x.toLowerCase().endsWith(name.trimStr("..", "../").toLowerCase()));
+      if (item) {
+        return zip.files[item];
+      }
+
+      console.warn(name, "could not be found");
+      return undefined;
+    }
+
+    await fileHandler.checkDir();
+    await unzip(uri, tempPath);
+    for (let file of await fileHandler.allFilesInfos(true)) {
+      zip.file(file.path, "");
+    }
+
+    let opfFile = search(".opf");
+    if (!opfFile) {
+      return undefined;
+
+    }
+    const opfHtml = (await opfFile.load()).html();
+    let oPFContent = { manifest: {}, spine: {} } as OPFContent;
+    oPFContent.title = opfHtml.find("metadata").byTag("dc:title").text;
+    oPFContent.creator = opfHtml.find("metadata").byTag("dc:creator").text;
+    oPFContent.description = opfHtml.find("metadata").byTag("dc:description").text;
+    oPFContent.identifier = opfHtml.find("metadata").byTag("dc:identifier").text;
+    oPFContent.novelType = opfHtml.find("metadata").byTag("dc:noveltype").text;
+    oPFContent.manifest.item = opfHtml.find("manifest item").map(x => ({
+      id: x.attr("id"),
+      href: x.attr("href"),
+      mediaType: x.attr("media-type")
+    }));
+    oPFContent.spine.itemref = opfHtml.find("spine itemref").map(x => ({
+      idref: x.attr("idref")
+    }));
+    oPFContent.coverImage = oPFContent.manifest.item.find(x => opfHtml.find('meta[name="cover"]').attr("content").has(x.id))?.href;
+    let cover = "";
+    if (oPFContent.coverImage) {
+      let coverFile = search(oPFContent.coverImage);
+      if (coverFile && coverFile.path.isImage())
+        cover = (await coverFile.load()).toBase64Url();
+    }
+    if (!cover || !cover.has()) { // Find any image and set it as cover.
+      let coverFile = Object.keys(zip.files).map(x => zip.files[x]).find(x => x.path.isImage());
+      if (coverFile)
+        cover = (await coverFile.load()).toBase64Url();
+    }
+    const length = Object.keys(zip.files).length * 2;
+    let index = 0;
+    book.type = oPFContent.novelType && oPFContent.novelType.has() ? oPFContent.novelType : "Unknown";
+    book.name = oPFContent.title && oPFContent.title.has() ? oPFContent.title : cleanNames(uri);
+    book.fileName = "".fileName(book.name, "epub");
+    if (await context.files.exists(book.fileName))
+      throw "The current Epub Already exists, please remove the existing one to upload the current one";
+    book.imagePath = folderValidName(book.name);
+    for (let ch of oPFContent.spine.itemref) {
+      let href = oPFContent.manifest.item.find(x => x.id == ch.idref);
+      if (href) {
+        if (href.href.toLowerCase().endsWith("xhtml") || href.href.toLowerCase().endsWith("html")) {
+          let file = search(href.href);
+          if (!file) {
+            console.warn(href, "Could not be found, will skip it");
+            continue;
+          }
+          let zipFile = new ZipFile();
+          zipFile.type = "HTML";
+          zipFile.content = (await file.load()).html().find("body").html
+          zipFile.name = href.href.trimStr("..", "../").split("/").lastOrDefault()?.toString().split(".").reverse().filter((_, i) => i > 0).reverse().join(".")
+          book.chapters.push(zipFile);
+        }
+      }
+      onUpdate({
+        percent: length.procent(index),
+        currentFile: "Reading Chapter"
+      });
+      index++;
+    }
+
+    for (let key in zip.files) {
+      let file = zip.files[key];
+      await file.write();
+      onUpdate({
+        percent: length.procent(index),
+        currentFile: "Wring Images"
+      });
+      index++;
+    }
+
+    await context.files.write(book.fileName, JSON.stringify(book));
+
+    let dbBook = Book.n()
+      .Name(book.name)
+      .Url(book.url)
+      .Favorit(false)
+      .InlineStyle("").ImageBase64(cover)
+      .ParserName("epub");
+    await context.db.Books.save(dbBook);
+
+  } catch (e) {
+    if (book.imagePath) {
+      await context.imageCache.deleteDir(book.imagePath);
+    }
+
+    if (book.fileName)
+      await context.files.delete(book.fileName);
+    if (book.url) {
+      await context.db.Books.query.where.column(x => x.url).equalTo(book.url).delete();
+    }
+    console.error(e);
+  } finally {
+    await fileHandler.deleteDir();
+    event?.remove();
+    context.db.enableWatchers();
+    context.db.enableHooks();
+    context.files.enable();
+    onUpdate({
+      percent: 100,
+      currentFile: "Wring Images"
+    });
+  }
+}
 
 export const createEpub = async (novel: DetailInfo, book: Book, path: string, onUpdate: (item: {
   percent: number;
@@ -26,16 +222,20 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
         zip.files[path] = {
           path,
           content,
-          base64
+          base64,
+          load: async () => content
         } as ZipFileItem;
       }
     }
     let player = new Player(novel, book, {}, true);
-    let cover = novel.image ? (await player.getImage({ src: novel.image, id: "" })).firstOrDefault("cn") : undefined;
+    let cover = book.imageBase64 ? book.imageBase64 : undefined;
     function extractBase64(rawDataUrl: string): string {
-      const match = rawDataUrl.match(/^data:image\/[^;]+;base64,(.*)$/);
-      if (!match) throw new Error("Invalid base64 image string");
-      return match[1];
+      if (rawDataUrl.isBase64String()) {
+        const match = rawDataUrl.match(/^data:image\/[^;]+;base64,(.*)$/);
+        if (!match) return rawDataUrl;
+        return match[1];
+      }
+      return rawDataUrl;
     }
     // Step 1: Add mimetype (must be first, uncompressed)
     zip.file("mimetype", "application/epub+zip");
@@ -149,6 +349,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
         <dc:language>en</dc:language>
         <dc:identifier id="BookId">${novel.url}</dc:identifier>
         <dc:description>${novel.decription}</dc:description>
+        <dc:noveltype>${novel.type}</dc:noveltype>
         <meta name="cover" content="cover-image"/>
       </metadata>
       <manifest>
@@ -243,7 +444,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
       for (let key in zip.files) {
         let file = zip.files[key];
         if (file) {
-          await fileHandler.write(folder.path(file.path), file.content, file.base64 ? "base64" : undefined);
+          await fileHandler.write(folder.path(file.path), file.content as string, file.base64 ? "base64" : undefined);
         }
         onUpdate({
           percent: length.procent(fileIndex),

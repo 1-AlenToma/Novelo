@@ -37,8 +37,31 @@ export type NavigationObject = {
 
 export type ZipFileItem = {
   path: string;
-  content: string;
+  content: string | (() => Promise<string>);
+  load: () => Promise<string>;
+  write?: () => Promise<void>
   base64?: boolean
+}
+
+export type OPFContent = {
+  title: string;
+  identifier: string;
+  description: string;
+  coverImage: string;
+  creator: string;
+  novelType: string;
+  manifest: {
+    item: {
+      id: string,
+      href: string;
+      mediaType: string;
+    }[]
+  };
+  spine: {
+    itemref: {
+      idref: string;
+    }[]
+  }
 }
 
 export type FileInfo = {

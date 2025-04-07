@@ -6,11 +6,11 @@ import HttpHandler from "./HttpHandler";
 import { DetailInfo } from "./ParserItems";
 
 export default class DownloadManager {
-  events: any = {};
+  events: { [key: string]: Function } = {};
   items: Map<string, number> = new Map();
-  change() {
+  change(url: string) {
     for (let k in this.events) {
-      this.events[k]();
+      this.events[k](url);
     }
   }
 
@@ -19,15 +19,24 @@ export default class DownloadManager {
     return this;
   }
 
-  useDownload() {
-    let [infos, setInfos] = useState<any[]>([]);
+  useDownload(parentUrl: string) {
+    let [infos, setInfos] = useState<number>(0);
     let id = useRef(newId()).current;
-    this.events[id] = () => {
-      let tms: any[] = [];
+    if (!parentUrl)
+      return 0;
+    this.events[id] = (url: string) => {
+      if (parentUrl !== url)
+        return;
+      let item = undefined;
+      let tms: { [key: string]: number } = {}
       this.items.forEach((p, url) => {
-        tms.push({ url, p });
+        if (!parentUrl || parentUrl == url)
+          item = p;
       });
-      setInfos(tms);
+      if (item == undefined)
+        setInfos(0)
+      else
+        setInfos(item);
     };
 
     useEffect(() => {
@@ -100,7 +109,8 @@ export default class DownloadManager {
       let tries = 0;
       if (!file)
         await context.files.write(key, JSON.stringify(savedItem));
-      this.change();
+      this.items.set(url, Math.max(novel.chapters.length.procent(savedItem.chapters.length), 1));
+      this.change(url);
       for (let ch of novel.chapters.filter(x => !savedItem.chapters.find(a => a.url == x.url))) {
         try {
           index++;
@@ -148,8 +158,8 @@ export default class DownloadManager {
           }
           if (!this.items.has(savedItem.url))
             break; // stop btn pressed
-          this.items.set(url, (100 * savedItem.chapters.length + 1) / novel.chapters.length);
-          this.change();
+          this.items.set(url, novel.chapters.length.procent(savedItem.chapters.length));
+          this.change(url);
           // so that it gets not to heavy on the website
           await sleep(5000);
         } catch (e) {
@@ -162,6 +172,6 @@ export default class DownloadManager {
     }
 
     this.items.delete(url);
-    this.change();
+    this.change(url);
   }
 }

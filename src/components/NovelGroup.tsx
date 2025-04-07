@@ -56,7 +56,7 @@ export default memo(
       <View
         css={
           !vMode
-            ? "he:240 mab:10 clearwidth invert"
+            ? `he-240 mab:10 clearwidth invert`
             : "flex mab:10 root"
         }>
         {loader.elem}
@@ -108,7 +108,7 @@ export default memo(
           }}
           itemCss={
             !vMode
-              ? "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow clb"
+              ? `boc:#ccc bow:1 he-220 wi:170 mal:5 bor:5 overflow clb`
               : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
           }
           items={items}

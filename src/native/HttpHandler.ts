@@ -258,7 +258,7 @@ class HttpHandler {
         "getting image for",
         url?.substring(0, 150)
       );
-      if (!url || url.has("data:image")) {
+      if (!url || url.isBase64String()) {
         console.info("url is a base64 or empty");
         return url;
       }

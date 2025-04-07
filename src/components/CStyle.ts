@@ -54,8 +54,8 @@ export default NestedStyleSheet.create({
   },
 
   blur: {
-    opacity: 0.7,
-    backgroundColor: "#000000"
+    opacity: 0.5,
+    backgroundColor: "black"
   },
 
   overflow: {
@@ -108,11 +108,11 @@ export default NestedStyleSheet.create({
   Slider: "clearboth",
   band: "clearwidth absolute he:50 zi:100 di:flex",
   form: "clearwidth row di:flex juc:space-between ali:center mab:5",
-  "form.Text":"desc fos:13 tea:left par:10 wi:130",
+  "form.Text": "desc fos:13 tea:left par:10 wi:130",
   "formlist.Text": "wi:90%",
   "form.chackBox": "ali:center mar:10",
 
   formRow: "clearwidth mab:5",
-  "formRow.Text":"desc fos:13 tea:left par:10 wi:100",
+  "formRow.Text": "desc fos:13 tea:left par:10 wi:100",
   "formRow.chackBox": "ali:center mar:10"
 });

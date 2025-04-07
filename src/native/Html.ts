@@ -57,6 +57,14 @@ class Html {
     return new Html(this.getItems(selector), this.uurl);
   }
 
+  // this method are for special tags like dc:identifier where it containe :
+  byTag(tag: string) {
+    return new Html(
+      this.elements.map(x => [...x.children].filter(x => (x.tagName ?? "").has(tag))).flatMap(x => x),
+      this.uurl
+    );
+  }
+
   map(fn: (x: Html, index: number) => any) {
     let items: any[] = [];
     this.elements.forEach((x, index) => {

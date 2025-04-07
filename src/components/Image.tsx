@@ -7,7 +7,8 @@ export default ({
   style,
   url,
   css,
-  parserName
+  parserName,
+  ...props
 }: {
   style?: any;
   url: string;
@@ -42,7 +43,8 @@ export default ({
         url = url.split("header")[0].trim();
         for (let k in h)
           header[k] = h[k];
-      }
+      } else if (url && typeof url == "string" && url.isBase64String())
+        url = url.toBase64Url();
       setSource(url);
     }
   };
@@ -64,6 +66,7 @@ export default ({
 
   return (
     <Image
+      {...props}
       onError={() => setSource(noImage)}
       source={
         typeof source == "number"

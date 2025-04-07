@@ -2,6 +2,7 @@ import { View, Text, Icon } from "./ReactNativeComponents";
 import Image from "./Image";
 import { LightInfo } from "../native";
 import * as React from "react";
+import { BlurView } from "components";
 
 export default ({
   item,
@@ -21,6 +22,7 @@ export default ({
           url={item.image}
           css="resizeMode:stretch bor:5 clearwidth wi:100% he:100%"
         />
+
         <Icon
           ifTrue={item.isNew ?? false}
           flash="white"
@@ -31,29 +33,31 @@ export default ({
         />
 
         <Text css="absolute le-2 to-2 pa-2 bor-5 bac-#ffa000 co-white" ifTrue={item.langType?.has() ?? false}>{item.langType}</Text>
-        <View css="clearwidth bottom he:50% overflow invert">
-          <View css="blur bottom clearboth" />
-          <Text
-            numberOfLines={1}
-            css="clearwidth wi:99% header co:#fff pal-5 par-5 pat-5 tea:center">
-            {item.name}
-          </Text>
-          <View ifTrue={() => item.decription?.length > 1}
-            css="row wi:100% pal:5 par:5 di:flex ali-center juc:center clb">
-            <Icon
-              type="EvilIcons"
-              name="pencil"
-              size={15}
-              css="co-#FFFFFF"
-            />
-            <Text numberOfLines={1} css="desc co:#fff fos:8 tea:center">
-              {item.decription}
+        <View css="wi-100% ali-center bottom he:50% overflow invert bac-transparent">
+          <BlurView css="bottom" />
+          <View css="bac-transparent overflow-hidden wi-95% mal-5 mar-5 he-100%">
+            <Text
+              numberOfLines={1}
+              css="clearwidth wi:99% header co:#fff pal-5 par-5 pat-5 tea:center">
+              {item.name}
+            </Text>
+            <View ifTrue={() => item.decription?.length > 1}
+              css="row wi:100% pal:5 par:5 di:flex ali-center juc:center clb bac-transparent">
+              <Icon
+                type="EvilIcons"
+                name="pencil"
+                size={15}
+                css="co-#FFFFFF"
+              />
+              <Text numberOfLines={1} css="desc co:#fff fos:8 tea:center">
+                {item.decription}
+              </Text>
+            </View>
+
+            <Text numberOfLines={2} css="desc co:#e30505 clearwidth bottom bo-5 pa:4 tea:center">
+              {item.info}
             </Text>
           </View>
-
-          <Text numberOfLines={2} css="desc co:#e30505 clearwidth bottom pa:4 tea:center">
-            {item.info}
-          </Text>
         </View>
       </View>
     );
@@ -66,7 +70,7 @@ export default ({
           <Image
             parserName={item.parserName}
             url={item.image}
-            css="resizeMode:stretch he:100% wi:150 bac:red bor:5"
+            css="resizeMode:stretch he:100% wi:150 bor:5"
           />
         </View>
         <Icon

@@ -63,7 +63,7 @@ export default ({
 
 
   return (
-    <SafeAreaView css="clearboth juc:flex-start mah:90% invert po:relative">
+    <SafeAreaView css="clearboth juc:flex-start mah:98% invert po:relative">
       <View
         ifTrue={() => state.chArray.length > 1}
         css="clearwidth he:50 mat:10">

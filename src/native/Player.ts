@@ -147,8 +147,11 @@ class Player {
           imgs.push({ ...image, cn: await context.parser.current.http.imageUrlToBase64(image.src) });
           continue;
         }
+        if (image.src.isBase64String()) {
+          imgs.push({ ...image, path, cn: image.src.toBase64Url() });
+          continue;
+        }
         const chapterIndex = image.chapterIndex == undefined ? this.currentChapterIndex.toString() : image.chapterIndex;
-
         let src = this.book.parserName != "epub" ? path.path(chapterIndex.toString(), image.src).trimEnd("/") : path.path(getFileInfoFromUrl(image.src)).trimEnd("/");
         let imageData = await context.imageCache.read(src);
         if (!imageData || imageData.empty())

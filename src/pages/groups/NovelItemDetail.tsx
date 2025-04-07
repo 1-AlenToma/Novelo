@@ -6,14 +6,14 @@ import {
   Image,
   ItemList,
   Icon,
-  FText,
   ActionSheetButton,
   TabBar,
   ChapterView,
   HomeNovelItem,
   TabView,
   AlertDialog,
-  Modal
+  Modal,
+  ExpandableDescription
 } from "../../components/";
 import WebView from "react-native-webview";
 import * as React from "react";
@@ -307,14 +307,9 @@ export default ({ ...props }: any) => {
                   </View>
                 </View>
                 <View
-                  css={`box pal:10 par:10 invert ${state.novel.decription?.has() ? "" : "mih-20"}`}    >
-                  <FText
-                    ifTrue={state.novel.decription?.has() ?? false}
-                    css="desc fos:14 lih:20 pab:10 invert"
-                    invertColor={true}
-                    selectable={true}
-                    text={state.novel.decription?.cleanHtml()}
-                  />
+                  css={`box pal:10 par:10 invert ${state.novel.decription?.has() ? "" : "mih-20"}`}>
+                  <ExpandableDescription ifTrue={state.novel.decription?.has() ?? false} text={state.novel.decription} numberOfLines={5} />
+
                   <View css={`botw-${state.novel.decription?.has() ? "1" : "0"} row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center invert`}>
                     <Text
                       ifTrue={() => state.novel.chapters?.has() ?? false}
@@ -520,7 +515,7 @@ export default ({ ...props }: any) => {
         </TabView>
 
         <TabView
-          css="flex"
+          css="flex ali-center invert pat-10 pab-10"
           disableScrolling={true}
           ifTrue={() =>
             state.novel.commentScript?.script?.has()
@@ -530,8 +525,9 @@ export default ({ ...props }: any) => {
             type: "FontAwesome",
             css: "invert"
           }}>
-          <WebView
-            injectedJavaScript={`
+          <View css="flex wi-95% bac-transparent">
+            <WebView
+              injectedJavaScript={`
             window.sleep=(ms)=> {
               return new Promise((r)=> setTimeout(r,ms))
             }
@@ -542,34 +538,36 @@ export default ({ ...props }: any) => {
             }
             true;
             `}
-            nestedScrollEnabled={true}
-            cacheEnabled={true}
-            thirdPartyCookiesEnabled={true}
-            mixedContentMode='always'
-            sharedCookiesEnabled={true}
-            source={{
-              uri: state.novel.commentScript?.url
-            }}
-            contentMode="mobile"
-            scalesPageToFit={true}
-            originWhitelist={["*"]}
-            scrollEnabled={true}
-            userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
-            setSupportMultipleWindows={false}
-            style={[
-              {
-                flexGrow: 1,
-                zIndex: 70,
-                flex: 1
+              nestedScrollEnabled={true}
+              cacheEnabled={true}
+              thirdPartyCookiesEnabled={true}
+              mixedContentMode='always'
+              sharedCookiesEnabled={true}
+              source={{
+                uri: state.novel.commentScript?.url
+              }}
+              contentMode="mobile"
+              scalesPageToFit={true}
+              originWhitelist={["*"]}
+              scrollEnabled={true}
+              userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+              setSupportMultipleWindows={false}
+              style={[
+                {
+                  flexGrow: 1,
+                  zIndex: 70,
+                  flex: 1,
+
+                }
+              ]}
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={
+                true
               }
-            ]}
-            allowFileAccess={true}
-            allowFileAccessFromFileURLs={true}
-            allowUniversalAccessFromFileURLs={
-              true
-            }
-            javaScriptEnabled={true}
-          />
+              javaScriptEnabled={true}
+            />
+          </View>
         </TabView>
       </TabBar>
     </View>

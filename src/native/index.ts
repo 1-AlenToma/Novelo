@@ -4,7 +4,6 @@ import FileHandler from "./FileHandler";
 import ImageCache from "./ImageCache";
 import Player from "./Player";
 import BGService from "./BackgroundService";
-import ZipBook from "./ZipBook";
 //import DownloadManager from "./DownloadManager";
 import EventEmitter from "./EventEmitter";
 import FilesZipper from "./Zip";
@@ -19,7 +18,6 @@ export {
   FileHandler,
   Player,
   BGService,
-  ZipBook,
   EventEmitter,
   ImageCache,
   FilesZipper,

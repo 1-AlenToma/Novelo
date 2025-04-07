@@ -413,14 +413,13 @@ const Controller = ({ state, ...props }) => {
             maximumValue={context.player.novel.chapters.length - 1}
           />
         </View>
-        <View css="clearwidth ali:center juc:center ">
+        <View css="clearwidth maw-95% overflow-hidden ali:center juc:center ">
           <Text
             numberOfLines={1}
-            css="header bold fos:18 fontStyle:italic invertco"
-          >
+            css="header bold fos:16 fontStyle:italic invertco">
             {state.book.name}
           </Text>
-          <Text numberOfLines={1} css="desc color:red">
+          <Text numberOfLines={1} css="desc color:red fos-12">
             {context.player.currentChapterSettings?.name}
           </Text>
         </View>
@@ -1156,7 +1155,7 @@ export default (props: any) => {
   const [{ name, url, parserName, epub, chapter }, nav] = useNavigation(props);
   const loader = useLoader(true);
   useKeepAwake();
-  const files = context.files.useFile(
+  const files = context.files.useFile<DetailInfo>(
     "json",
     x => {
       return x.has(

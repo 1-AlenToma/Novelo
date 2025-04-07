@@ -147,14 +147,15 @@ const ItemRender = ({
           css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
         />
         <Text
+          numberOfLines={1}
           css="header pa:5 maw:80% overflow">
           {item.name}
         </Text>
-        <Text css="desc co:red absolute bo:5 right:10">
+        <Text css="desc co:red fow-bold fos-12 absolute bo:5 right:10">
           {context.novelFavoritInfo[item.url] ||
             "loading"}
         </Text>
-        <Text css="clearwidth desc co:red bottom bo:5 le:60">
+        <Text css="clearwidth desc fow-bold fos-12 co:red bottom bo:5 le:60">
           ({item.parserName} | {context.parser.find(item.parserName)?.type})
         </Text>
       </View>
@@ -206,13 +207,13 @@ export default ({ ...props }: any) => {
         value={state.text}
         inputEnabled={true}
         onInputChange={txt => {
-          state.text = txt;
+          state.text = txt ?? "";
         }}
       />
       <View css="flex mih:100">
         <ItemList
           items={books?.filter(x =>
-            x.name.has(state.text)
+            !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)
           )}
           container={({ item }) => (
             <ItemRender

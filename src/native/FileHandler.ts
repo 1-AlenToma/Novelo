@@ -130,6 +130,7 @@ export default class FileHandler {
     let fileUri = path ?? this.getName("");
     let dirs: ReadDirItem[] = [];
     dirs = await RNF.readDir(fileUri);
+    console.log("getting fileInfos for ", fileUri)
     if (recrusive)
       for (let item of dirs.filter(x => x.isDirectory()))
         dirs = [...dirs, ...(await this.allFilesInfos(recrusive, item.path))]
@@ -171,7 +172,7 @@ export default class FileHandler {
     if (this.enableCaching && this.DownloadedFiles.has(fileUri))
       return this.DownloadedFiles.get(fileUri) as string;
     if (await this.exists(file)) {
-      text = await RNFetchBlob.fs.readFile(fileUri, (type || "utf8") as any)
+      text = await RNFetchBlob.fs.readFile(fileUri, (type ?? "utf8") as any)
       if (this.enableCaching)
         this.DownloadedFiles.set(fileUri, text);
       return text as string;
@@ -229,14 +230,14 @@ export default class FileHandler {
     }, [])
   }
 
-  useFile(
+  useFile<T extends {}>(
     globalType?: EncodingType,
     validator?: (x: any) => boolean,
     updateState?: "New" | "NewDelete"
   ) {
     const id = useRef(newId()).current;
     const files = useRef([] as string[]);
-    const [fileItems, setItems] = useState<any[]>([]);
+    const [fileItems, setItems] = useState<(T & { deleteFile: () => Promise<void> })[]>([]);
     const loader = useLoader(true);
     this.events[id] = async (
       op,
@@ -309,7 +310,7 @@ export default class FileHandler {
           tm.deleteFile = async () => {
             await context.imageCache.clearImages(tm.files ?? []);
             if (tm.imagePath)
-              await this.RNF.unlink(context.imageCache.dir.path(tm.imagePath).trimEnd("/"));
+              await context.imageCache.deleteDir(tm.imagePath);
             await this.delete(file);
           };
           return tm;

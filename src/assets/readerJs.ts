@@ -94,7 +94,7 @@ export const CSSStyle = `
 
         }
 
-        .sliderView>* {
+        .sliderView:not(img)>* {
             display: block;
             position: relative;
             text-wrap: wrap;
@@ -974,7 +974,7 @@ export const JS = `
                           }
                           let src = img.getAttribute("src");
               
-                          if (!src || src.trim().length<=0)
+                          if (!src || src.trim().length<=0 || src == "undefined")
                           {
                                 return;
                           }
@@ -989,7 +989,7 @@ export const JS = `
                                 return; // it is an external image, cant do anything to load it.
                           
                           setId();
-                          window.postmsg("Image", [{src, id: img.id}]);
+                        window.postmsg("Image", [{src, id: img.id}]);
                         }catch(e){
                          window.postmsg("log", e.toString());
                         }

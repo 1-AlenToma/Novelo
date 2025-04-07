@@ -18,17 +18,6 @@ export default (props: any) => {
   let loader = useLoader();
   const dataLocation = useLocationSelection();
   context.zip.on("Loading")
-  const { fileItems, elem } = context
-    .files
-    .useFile("json", undefined, "NewDelete");
-  const [books, dataIsLoading] = context
-    .db
-    .useQuery(
-      "Books",
-      context
-        .db.Books.query.load("chapterSettings")
-        .where.column(x => x.favorit).equalTo(true)
-    );
   const state = buildState(
     {
       all: true,
@@ -130,7 +119,7 @@ export default (props: any) => {
         css="he:30 clearwidth zi:99999 clb">
         <context.zip.ProgressBar />
       </View>
-      {loader.elem ?? elem}
+      {loader.elem}
       <View
         css="mih:99% ali:center bor:5 overflow invert">
         <View css="he:30% juc:center ali:center">

@@ -14,11 +14,8 @@ export default class ImageCache extends FileHandler {
     for (let file of files) {
       let url = this.getName(file.content);
       let fileInfo = getFileInfo(url);
-      if (
-        file.type == "Image" &&
-        (url.startsWith("file") || url.startsWith("/"))
-      ) {
-       // console.info("Clearing Images", [fileInfo].niceJson());
+      if (file.type == "Image" && (url.startsWith("file") || url.startsWith("/"))) {
+        // console.info("Clearing Images", [fileInfo].niceJson());
         if (await this.RNF.exists(fileInfo.folder))
           await this.RNF.unlink(fileInfo.folder)
         // await this.delete(fileInfo.folder);

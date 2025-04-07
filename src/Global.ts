@@ -8,8 +8,8 @@ import { IGlobalState, FileInfo } from "./Types";
 import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
-
-const fileTypesExt = [".json", ".html", ".epub", "zip", "rar", ".jpg", ".gif", ".png", ".jpeg", ".webp", "jpg", "mimetype", "xhtml", "css", "xml", "opf", "html", "ncx"];
+const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
+const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
 
 declare global {
     var fileTypes: string[];
@@ -43,7 +43,10 @@ declare global {
     interface String {
         isManga(): boolean;
         fileName(name: string, parserName: string): string;
+        isImage: () => boolean;
         isLocalPath(incBase64?: boolean): boolean;
+        isBase64String(): boolean;
+        toBase64Url(): string;
         escapeRegExp(): string;
         join(...relative: String[]): string;
         path(...relative: string[]): string;
@@ -80,6 +83,11 @@ declare global {
         readAble: () => any;
         procent: (index: number) => number;
     }
+}
+
+String.prototype.isImage = function () {
+    let path = new String(this).toString();
+    return imageFileTypes.find(x => path.toLowerCase().endsWith(x.toLowerCase())) != undefined;
 }
 
 String.prototype.normilzeStr = function () {
@@ -124,10 +132,24 @@ String.prototype.isManga = function () {
 }
 
 String.prototype.fileName = function (name: string, parserName: string) {
-    return parserName.path(name
-        .replace(/(\/|\.|:|"|'|\{|\}|\[|\]|\,|\’)/gim, "")
-        .toLowerCase() + ".json").trimEnd("/");
+    return parserName.path(name.replace(/(\/|\.|:|"|'|\{|\}|\[|\]|\,|\’)/gim, "").toLowerCase() + ".json").trimEnd("/");
 };
+
+String.prototype.isBase64String = function () {
+    const str = new String(this).toString();
+    var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+    return /data\:image/g.test(str) || base64regex.test(str);
+}
+
+String.prototype.toBase64Url = function () {
+    const str = new String(this).toString();
+    if (str.isBase64String()) {
+        if (/data\:image/g.test(str))
+            return str;
+        return `data:image/jpg;base64,${str}`;
+    }
+    return str;
+}
 
 String.prototype.isLocalPath = function (base64?: boolean) {
     const str = new String(this).toString();
@@ -392,7 +414,7 @@ String.prototype.trimEnd = function (...items) {
 String.prototype.trimStr = function (...items) {
     let str = new String(this).toString().trim();
     items.forEach(x => {
-        if (str.startsWith(x)) str = str.substring(1);
+        if (str.startsWith(x)) str = str.substring(x.length);
     });
 
     return str;
@@ -485,7 +507,7 @@ global.getFileInfo = (path: string, dir?: string) => {
         filePath: "",
     } as FileInfo;
 
-    if (fileTypes.find(x => path.endsWith(x))) {
+    if (fileTypes.find(x => path.toLowerCase().endsWith(x.toLowerCase()))) {
         item.name = path.split("/").pop();
     }
 
@@ -518,21 +540,14 @@ global.getFileInfo = (path: string, dir?: string) => {
 }
 global.getFileName = (file: string, dir?: string) => {
     // its full path 
-    if (
-        file &&
-        file.has() &&
-        !fileTypes.find(x => file.has(x))
+    if (file && file.trim().length > 0 && !fileTypes.find(x => file.has(x))
     ) {
         file += ".json";
     }
     if (file.startsWith("/") || file.startsWith("file")) return file;
 
     if (dir)
-        file = dir + file;
-    /* if (file.startsWith("/"))
-         file = `file://${file}`;
-     else if (!file.startsWith("file"))
-         file = `file:///${file}`;*/
+        file = dir.join(file)
     return file;
 }
 

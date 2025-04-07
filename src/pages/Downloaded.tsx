@@ -20,9 +20,11 @@ import {
 } from "../hooks";
 import { Book } from "../db";
 import {
+  DetailInfo,
   FileHandler,
   ZipBook,
-  createEpub
+  createEpub,
+  readEpub
 } from "../native";
 import { ReadDirItem } from "react-native-fs";
 const EpubHandler = ({
@@ -32,113 +34,23 @@ const EpubHandler = ({
     component: false,
     state: {
       skipImages: false,
-      browserVisible: false
+      progress: {
+        percent: 0,
+        currentFile: ""
+      }
     }
   });
   const loadEpub = async (item: ReadDirItem) => {
-    let fileName = "";
     try {
-      /* let item = await DockPicker.pickSingle({
-         copyTo: "cachesDirectory",
-         type: "application/epub+zip"
-       });
- 
-       if (!item || !item.fileCopyUri) return;*/
-      state.browserVisible = false;
-      AlertDialog.confirm(
-        {
-          message: `When parsing the epub, saving images may couse the app to crash so ignoring those may help in parsing the epub file. Recomended to use!\nShould I skip them?`,
-          title: "Please Confirm"
-        }
-      )
-        .then(async answer => {
-          state.skipImages = answer;
-          try {
-            loader.show();
-            await context.db.disableHooks();
-            await context.db.disableWatchers();
-            context.files.disable();
-            let uri: any = item.path;
-            let name: any = item.name;
-            console.log("loading Epub")
-            let bk = await ZipBook.load(uri, name, p => {
-              loader.show(p);
-            },
-              state.skipImages
-            );
-
-            console.log("finished Loading epub")
-            let images = bk.files.filter(
-              x => x.type === "Image"
-            );
-            let total = images.length;
-            let count = 0;
-            const calc = async () => {
-              count++;
-              loader.show((100 * count) / total);
-            };
-            let displayImage: any = undefined;
-            if (!state.skipImages) {
-              bk.imagePath = folderValidName(bk.name);
-              for (let file of images) {
-
-                await calc();
-                if (file.url && !file.url.empty()) {
-                  let path = await context.imageCache
-                    .write(bk.imagePath.path(getFileInfoFromUrl(file.fileName ?? file.url)).trimEnd("/"), file.content);
-                  file.content = path;
-                  if (!displayImage)
-                    displayImage = bk.imagePath.path(getFileInfoFromUrl(file.fileName ?? file.url)).trimEnd("/");
-                }
-              }
-
-              let chImage =
-                ZipBook.createImageChapter(
-                  images
-                );
-              if (chImage)
-                bk.chapters = [
-                  chImage,
-                  ...bk.chapters
-                ];
-            }
-
-            let img = bk.files.find(
-              x => x.type === "Image"
-            );
-
-            if (!displayImage)
-              displayImage = img?.content;
-            let book = Book.n()
-              .Name(bk.name)
-              .Url(bk.url)
-              .Favorit(false)
-              .InlineStyle(
-                bk.files
-                  .filter(x => x.type === "CSS")
-                  .map(x => x.content)
-                  .join("\n")
-              ).ImageBase64(displayImage ?? "")
-              .ParserName("epub");
-            bk.files = []; // clear files as it is not needed anymore
-            fileName = "".fileName(bk.name, "epub")
-            await context.files.write("".fileName(bk.name, "epub"), JSON.stringify(bk));
-            await context.db.save(book);
-          } catch (e) {
-            AlertDialog.alert({ message: e.message });
-            console.error(e);
-            if (fileName.has())
-              context.files.delete(fileName);
-          } finally {
-            context.db.enableWatchers();
-            context.db.enableHooks();
-            context.files.enable();
-            loader.hide();
-          }
-        });
+      loader.show();
+      await readEpub(item.path, (info) => {
+        state.progress = { ...info, percent: info.percent / 100 }
+      });
     } catch (e) {
       AlertDialog.alert({ message: e.message });
       console.error(e);
+    } finally {
+      loader.hide();
     }
   };
 
@@ -151,8 +63,12 @@ const EpubHandler = ({
         css="absolute clearboth zi:500 clb">
         <View css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40% clb">
           {loader.elem}
+          <ProgressBar css="_abc he-100% bac-red" ifTrue={state.progress.percent > 0 && state.progress.percent < 1 && loader.loading} value={state.progress.percent}>
+            <Text css="fos-12 bold co-#FFFFFF">{state.progress.currentFile}</Text>
+          </ProgressBar>
         </View>
       </View>
+
       <Header
         buttons={[
           {
@@ -173,7 +89,7 @@ const EpubHandler = ({
         value={parentState.text}
         inputEnabled={true}
         onInputChange={txt => {
-          parentState.text = txt;
+          parentState.text = txt ?? "";
         }}
       />
     </>
@@ -182,7 +98,10 @@ const EpubHandler = ({
 const ItemRender = ({
   item,
   state
-}: any) => {
+}: {
+  state: any,
+  item: Book
+}) => {
   if (!item) return null;
   context.hook("parser.all")
   const [books, dataIsLoading] = context
@@ -197,7 +116,7 @@ const ItemRender = ({
     );
   const { fileItems, elem } = context
     .files
-    .useFile("json", x => {
+    .useFile<DetailInfo>("json", x => {
       return x.has(
         "".fileName(
           item.name,
@@ -206,13 +125,8 @@ const ItemRender = ({
       );
     });
   const loader = useLoader(true);
-  const urls = context
-    .downloadManager()
-    .useDownload();
-  let urlObj = urls.reduce((c, v) => {
-    c[v.url] = v;
-    return c;
-  }, {});
+  const downloadProgress = context.downloadManager().useDownload(item.url);
+
   const itemState = buildState({
     info: undefined as string | undefined,
     downloadFileInfo: {
@@ -250,11 +164,13 @@ const ItemRender = ({
     );
     if (file) {
       const path = await context.browser.pickFolder("Choose where to save the file");
-      loader.show();
-      await createEpub(file, item, path.path, (info) => {
-        if (info)
-          itemState.downloadFileInfo = { ...info, percent: info.percent / 100 };
-      });
+      if (path) {
+        loader.show();
+        await createEpub(file, item, path.path, (info) => {
+          if (info)
+            itemState.downloadFileInfo = { ...info, percent: info.percent / 100 };
+        });
+      }
 
       loader.hide();
     }
@@ -265,7 +181,7 @@ const ItemRender = ({
   return (
     <FoldableItem
       single={true}
-      enabled={(novelInfo?.chapters.length ?? 0) > 0}
+      enabled={(novelInfo?.chapters.length ?? 0) > 0 && downloadProgress <= 0}
       css="wi:98% overflow"
       buttons={[
         {
@@ -399,22 +315,24 @@ const ItemRender = ({
           css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
         />
         <Text
+          numberOfLines={1}
           css="header pa:5 maw:80% overflow">
           {item.name}
         </Text>
-        <Text css="desc co:red absolute bo:5 right:10 zi:6">
+        <Text css="desc co:red fow-bold fos-12 absolute bo:5 right:10 zi:6">
           {itemState.info || "loading"}
         </Text>
-        <Text css="clearwidth desc co:red bottom bo:5 le:60">
-          {item.parserName != "epub" ? ` (${item.parserName})` : " (Epub)"}
+        <Text css="clearwidth desc fow-bold fos-12 co:red bottom bo:5 le:60">
+          Source:{item.parserName != "epub" ? ` ${item.parserName}` : " Epub"}
+          {novelInfo?.type ? ` | ${novelInfo?.type}` : ""}
           {!item.isOnline?.() ? " Missing parser" : ""}
         </Text>
         <View
-          ifTrue={urlObj[item.url] ? true : false}
+          ifTrue={downloadProgress > 0 ? true : false}
           css="clearboth absolute row juc:flex-end ali:center">
 
-          <ProgressBar value={(urlObj[item.url]?.p ?? 0) / 100}>
-            <Text css="fos-12 bold co-#FFFFFF">{(urlObj[item.url]?.p ?? 0).readAble()}%</Text>
+          <ProgressBar css="_abc he-100%" value={downloadProgress / 100}>
+            <Text css="fos-12 bold co-#FFFFFF">{downloadProgress.readAble()}%</Text>
           </ProgressBar>
 
           <TouchableOpacity
@@ -443,9 +361,7 @@ export default ({ ...props }: any) => {
     skipImages: false
   }).build();
 
-  const { fileItems, elem } = context
-    .files
-    .useFile("json", undefined, "NewDelete");
+  const { fileItems, elem } = context.files.useFile<DetailInfo>("json", undefined, "NewDelete");
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
@@ -484,8 +400,10 @@ export default ({ ...props }: any) => {
 
       <View css="flex mih:100">
         <ItemList
-          items={books?.filter(x =>
-            x.name.has(state.text)
+          items={books?.filter(x => {
+            const file = fileItems.find(x => x.url == x.url)
+            return !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text) || file?.type?.has(state.text)
+          }
           )}
           container={({ item }) => (
             <ItemRender
