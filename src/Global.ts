@@ -9,7 +9,7 @@ import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
 
-const fileTypesExt = [".json", ".html", ".epub", "zip", "rar", ".jpg", ".gif", ".png", ".jpeg", ".webp"];
+const fileTypesExt = [".json", ".html", ".epub", "zip", "rar", ".jpg", ".gif", ".png", ".jpeg", ".webp", "jpg", "mimetype", "xhtml", "css", "xml", "opf", "html", "ncx"];
 
 declare global {
     var fileTypes: string[];

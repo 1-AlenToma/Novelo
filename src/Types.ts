@@ -35,6 +35,12 @@ export type NavigationObject = {
   chapter?: string;
 }
 
+export type ZipFileItem = {
+  path: string;
+  content: string;
+  base64?: boolean
+}
+
 export type FileInfo = {
   name?: string;
   folders: string[];
@@ -59,6 +65,7 @@ export type FileFnc = (
 export type IImage = {
   src: string;
   id: string;
+  chapterIndex?: number;
 }
 
 export type SelectionType = "Folder" | "File";
@@ -69,7 +76,8 @@ export const FilesPath = {
   File: "noveloFiles",
   Cache: "Memo",
   Images: "Images",
-  Private: "Private"
+  Private: "Private",
+  Temp: "Temp"
 }
 
 export type NovelFile = {

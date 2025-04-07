@@ -100,7 +100,7 @@ export default class FileHandler {
     this.trigger("Delete", file, fileUri);
   }
 
-  async write(file: string, content: string | number[]) {
+  async write(file: string, content: string | number[], options?: any) {
     let fileUri = this.getName(file);
     await this.checkDir(fileUri);
     console.log(
@@ -114,7 +114,7 @@ export default class FileHandler {
     await RNFetchBlob.fs.writeFile(
       fileUri,
       content,
-      "utf8"
+      options ?? "utf8"
     );
 
     console.log("Finished Wrting", fileUri)

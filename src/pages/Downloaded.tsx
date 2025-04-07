@@ -22,7 +22,7 @@ import { Book } from "../db";
 import {
   FileHandler,
   ZipBook,
-  EpubBuilder
+  createEpub
 } from "../native";
 import { ReadDirItem } from "react-native-fs";
 const EpubHandler = ({
@@ -214,8 +214,12 @@ const ItemRender = ({
     return c;
   }, {});
   const itemState = buildState({
-    info: undefined as string | undefined
-  }).build();
+    info: undefined as string | undefined,
+    downloadFileInfo: {
+      percent: 0,
+      currentFile: ""
+    }
+  }).ignore("downloadFileInfo").build();
 
   useEffect(() => {
     getInfo(
@@ -237,7 +241,26 @@ const ItemRender = ({
     }
     loader.hide();
   };
+
   item = books.find(x => x.url === item.url) ?? item;
+
+  const downloadEpub = async () => {
+    let file = fileItems.find(
+      x => x.url === item.url
+    );
+    if (file) {
+      const path = await context.browser.pickFolder("Choose where to save the file");
+      loader.show();
+      await createEpub(file, item, path.path, (info) => {
+        if (info)
+          itemState.downloadFileInfo = { ...info, percent: info.percent / 100 };
+      });
+
+      loader.hide();
+    }
+  };
+
+
   const novelInfo = fileItems.find(x => item.url === x.url);
   return (
     <FoldableItem
@@ -245,6 +268,20 @@ const ItemRender = ({
       enabled={(novelInfo?.chapters.length ?? 0) > 0}
       css="wi:98% overflow"
       buttons={[
+        {
+          icon: (
+            <Icon
+              name="file-download"
+              type="MaterialIcons"
+              css="invertco"
+            />
+          ),
+          text: "Download",
+          onPress: () => {
+            downloadEpub();
+            return true;
+          }
+        },
         {
           ifTrue: () =>
             item.parserName !== "epub" && item.isOnline?.() &&
@@ -354,6 +391,9 @@ const ItemRender = ({
       <View
         css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start invert">
         {loader.elem ?? elem}
+        <ProgressBar css="_abc he-100% bac-red" ifTrue={itemState.downloadFileInfo.percent > 0 && itemState.downloadFileInfo.percent < 1 && loader.loading} value={itemState.downloadFileInfo.percent}>
+          <Text css="fos-12 bold co-#FFFFFF">{itemState.downloadFileInfo.currentFile}</Text>
+        </ProgressBar>
         <Image
           url={item.imageBase64}
           css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
@@ -376,6 +416,7 @@ const ItemRender = ({
           <ProgressBar value={(urlObj[item.url]?.p ?? 0) / 100}>
             <Text css="fos-12 bold co-#FFFFFF">{(urlObj[item.url]?.p ?? 0).readAble()}%</Text>
           </ProgressBar>
+
           <TouchableOpacity
             css="button zi:6 miw:30 clb"
             onPress={() =>
@@ -423,46 +464,7 @@ export default ({ ...props }: any) => {
     reload();
   }, [fileItems]);
 
-  const downloadEpub = async (book: any) => {
-    let file = fileItems.find(
-      x => x.url === book.url
-    );
-    let builder = new EpubBuilder({
-      title: book.name,
-      fileName: book.name,
-      language: "en",
-      description: "",
-      stylesheet: {
-        novel: {
-          width: "95%",
-          "min-height": "50%",
-          position: "relative",
-          overflow: "hidden",
-          "text-align-vertical": "top",
-          "font-size":
-            context.appSettings.fontSize + "px",
-          "line-height":
-            context.appSettings.fontSize * 1.7 +
-            "px",
-          "text-align":
-            context.appSettings.textAlign,
-          "font-weight": context.appSettings
-            .isBold
-            ? "bold"
-            : "normal"
-        }
-      },
-      chapters: file.chapters.map(x => {
-        return {
-          fileName: x.name,
-          title: x.name,
-          htmlBody: x.content
-        };
-      })
-    });
 
-    let items = await builder.constructEpub();
-  };
 
   return (
     <View css="flex mih:100">
