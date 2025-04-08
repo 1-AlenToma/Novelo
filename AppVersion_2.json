@@ -1,6 +1,6 @@
 {
-  "versionName": "1.2.3",
-  "apkUrl": "https://github.com/1-AlenToma/Novelo/releases/download/2.0.3/app-release.apk",
+  "versionName": "1.2.4",
+  "apkUrl": "https://github.com/1-AlenToma/Novelo/releases/download/2.0.4/app-release.apk",
   "forceUpdate": false,
-  "whatsNew": "<< Design and Performance Improvments and new added parsers >>"
+  "whatsNew": "Download novel or manga as valid epub, you could use on other apps.\nDesign Improvments.\nBug fixes"
 }
