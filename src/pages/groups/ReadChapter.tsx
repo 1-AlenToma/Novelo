@@ -122,7 +122,7 @@ const Modoles = () => {
                   x)
                 }
                 invertColor={false}
-                css="pa:5 bor:2 flg:1"
+                css="pa:5 bor:2 flg:1 he-40"
                 multiline={true}
                 defaultValue={
                   context.player.menuOptions.textEdit
@@ -447,7 +447,7 @@ const Controller = ({ state, ...props }) => {
             text: (
               <ActionSheetButton
                 title="Chapters"
-                size="95%"
+                size="90%"
                 btn={
                   <Icon
                     type="MaterialCommunityIcons"
@@ -469,7 +469,7 @@ const Controller = ({ state, ...props }) => {
           {
             text: () => (
               <ActionSheetButton
-                size="99%"
+                size="90%"
                 btn={
                   <Icon
                     type="Ionicons"

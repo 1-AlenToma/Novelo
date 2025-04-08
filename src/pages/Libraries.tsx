@@ -120,9 +120,9 @@ const ListItem = ({ item, zip }) => {
           <Text css="co-primary"> ({state.parser.type})</Text>
           <Text ifTrue={state.parser.minVersion != undefined && context.version < state.parser.minVersion} css="co-red fos-10 fow-bold">{"\n"}MinAppVersion:{state.parser.minVersion}</Text>
         </Text>
-        <View css="fld-row _abc ri-0 juc-space-between ali-center he-100% wi-150 ">
-          <Button css="he-100% juc-center bor-0 mab-0" onPress={() => Linking.openURL(state.parser.url)} icon={<Icon name="browser" type="Entypo" css={"co-#fff mal-0 pa-0"} size={15} />} />
-          <Button textCss="co-#fff fow-bold" css="miw-90 he-100% bor-0 mab-0" icon={btnIcon} onPress={state.btnText != "Uninstall" ? install : unistall} text={state.btnText} />
+        <View css="fld-row _abc ri-0 juc-space-between ali-center he-100% wi-170">
+          <Button css="he-100% juc-center bor-0 mab-0 miw-50" onPress={() => Linking.openURL(state.parser.url)} icon={<Icon name="browser" type="Entypo" css={"co-#fff mal-0 pa-0"} size={15} />} />
+          <Button textCss="co-#fff fow-bold" css="miw-120 he-100% bor-0 mab-0 pal-10" icon={btnIcon} onPress={state.btnText != "Uninstall" ? install : unistall} text={state.btnText} />
         </View>
       </View>
     </>
@@ -174,14 +174,18 @@ const Libraries = ({ ...props }) => {
         title="Extensions"
       />
       {loader.elem}
-      <Text css="desc co-red fow-bold tea-left wi-100% pal-5">Browse between installed parsers in Home tab </Text>
-      <View css="flex pa-5">
-        {render(undefined, {
-          items: state.parserNames,
-          container: ({ item }) => <ListItem zip={state.refItem.zip} item={item} />,
-          itemCss: "clearwidth ali:center juc:center mab:5 overflow bor:5",
-          vMode: true
-        })}
+
+      <View css="flex pa-5 invert ali-center">
+
+        <View css="itemListContainer">
+          <Text css="desc fos-12 co-red fow-bold tea-left wi-100% pal-5">Browse between installed parsers in Home tab </Text>
+          {render(undefined, {
+            items: state.parserNames,
+            container: ({ item }) => <ListItem zip={state.refItem.zip} item={item} />,
+            itemCss: "clearwidth ali:center juc:center mab:5 overflow bor:5",
+            vMode: true
+          })}
+        </View>
       </View>
     </>
   )

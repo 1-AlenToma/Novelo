@@ -294,7 +294,7 @@ class HttpHandler {
         }
       );
     } catch (e) {
-      console.error(e);
+      console.error("HttpError", e);
       return new HttpError(e);
     }
   }

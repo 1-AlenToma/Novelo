@@ -114,16 +114,14 @@ const ItemRender = ({
         )
       }
     );
-  const { fileItems, elem } = context
-    .files
-    .useFile<DetailInfo>("json", x => {
-      return x.has(
-        "".fileName(
-          item.name,
-          item.parserName
-        )
-      );
-    });
+  const { fileItems, elem } = context.files.useFile<DetailInfo>("json", x => {
+    return x.has(
+      "".fileName(
+        item.name,
+        item.parserName
+      )
+    );
+  });
   const loader = useLoader(true);
   const downloadProgress = context.downloadManager().useDownload(item.url);
 
@@ -163,7 +161,7 @@ const ItemRender = ({
       x => x.url === item.url
     );
     if (file) {
-      const path = await context.browser.pickFolder("Choose where to save the file");
+      const path = await context.browser.pickFolder("Choose where to save the file", ["epub"]);
       if (path) {
         loader.show();
         await createEpub(file, item, path.path, (info) => {
@@ -329,7 +327,7 @@ const ItemRender = ({
         </Text>
         <View
           ifTrue={downloadProgress > 0 ? true : false}
-          css="clearboth absolute row juc:flex-end ali:center">
+          css="clearboth wi-102% absolute row juc:flex-end ali:center">
 
           <ProgressBar css="_abc he-100%" value={downloadProgress / 100}>
             <Text css="fos-12 bold co-#FFFFFF">{downloadProgress.readAble()}%</Text>
@@ -380,25 +378,18 @@ export default ({ ...props }: any) => {
     reload();
   }, [fileItems]);
 
-
-
   return (
-    <View css="flex mih:100">
-      <View
-        ifTrue={() =>
-          loader.elem ?? elem ? true : false
-        }
-        css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
-        {loader.elem ?? elem}
-      </View>
+    <View css="flex mih:100 invert ali-center">
+
 
       <EpubHandler parentState={state} />
-      <Text
-        css="desc co-red fow-bold tea-left wi-100% pal-5">
-        Downloaded and Added Epubs
-      </Text>
 
-      <View css="flex mih:100">
+
+      <View css="itemListContainer">
+        <Text
+          css="desc fos-12 co-red fow-bold tea-left wi-100% pal-10">
+          Downloaded and Added Epubs
+        </Text>
         <ItemList
           items={books?.filter(x => {
             const file = fileItems.find(x => x.url == x.url)
@@ -414,6 +405,13 @@ export default ({ ...props }: any) => {
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
           vMode={true}
         />
+        <View
+          ifTrue={() =>
+            loader.elem ?? elem ? true : false
+          }
+          css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+          {loader.elem ?? elem}
+        </View>
       </View>
     </View>
   );

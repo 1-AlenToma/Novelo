@@ -85,10 +85,7 @@ export default ({
       else state.inputAnimator.hide();
     }
   }, "KeyboardState");
-  let inputWidth = proc(
-    50,
-    context.size.screen?.width
-  );
+
   return (
     <>
       <View
@@ -111,9 +108,10 @@ export default ({
         {inputEnabled && onInputChange ? (
           <SizeAnimator
             blur={true}
-            css="wi:50% mat:4 zi:101 clearheight juc:center maw:80%"
+            css="wi:50% mat:4 zi:101 he-100% ali-center juc:center maw:80%"
             refItem={state.inputAnimator}>
             <TextInput
+              serachBar={true}
               ref={x => {
                 input.current = x;
               }}

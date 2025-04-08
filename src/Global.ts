@@ -1,7 +1,6 @@
 import CStyle from "./components/CStyle";
 import { cssTranslator } from "react-native-short-style";
 import IDOMParser from "advanced-html-parser";
-import { Element, Node } from "advanced-html-parser/types"
 import * as Methods from "./Methods";
 import StateBuilder from "react-smart-state";
 import { IGlobalState, FileInfo } from "./Types";

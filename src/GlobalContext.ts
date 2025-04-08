@@ -54,9 +54,9 @@ const data = StateBuilder<GlobalType>(
                     data.browser.data = { desc, func: (f) => success(f), onCancel: success, props: { selectionType: "File", ext } }
                 })
             },
-            pickFolder: (desc) => {
+            pickFolder: (desc, ext) => {
                 return new Promise<any | undefined>((success) => {
-                    data.browser.data = { func: (f) => success(f), onCancel: success, desc, props: { selectionType: "Folder" } }
+                    data.browser.data = { func: (f) => success(f), onCancel: success, desc, props: { selectionType: "Folder", ext } }
                 });
             },
         },

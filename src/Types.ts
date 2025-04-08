@@ -180,7 +180,7 @@ export type GlobalType =
     browser: {
       data?: { func: Function, onCancel: (value?: any) => void, desc?: string, props: { selectionType: SelectionType, ext?: EXT[] } };
       pickFile: (eXT: EXT[], desc?: string) => Promise<ReadDirItem | undefined>;
-      pickFolder: (desc?: string) => Promise<ReadDirItem | undefined>;
+      pickFolder: (desc?: string, ext?: EXT[]) => Promise<ReadDirItem | undefined>;
     },
     selection: {
       downloadSelectedItem: any,

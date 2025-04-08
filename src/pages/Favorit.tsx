@@ -201,8 +201,8 @@ export default ({ ...props }: any) => {
 
   const loader = useLoader(dataIsLoading);
   return (
-    <View css="flex mih:100">
-      {loader.elem}
+    <View css="flex ali-center mih:100 invert">
+
       <Header
         value={state.text}
         inputEnabled={true}
@@ -210,7 +210,7 @@ export default ({ ...props }: any) => {
           state.text = txt ?? "";
         }}
       />
-      <View css="flex mih:100">
+      <View css="itemListContainer">
         <ItemList
           items={books?.filter(x =>
             !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)
@@ -225,6 +225,7 @@ export default ({ ...props }: any) => {
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
           vMode={true}
         />
+        {loader.elem}
       </View>
     </View>
   );

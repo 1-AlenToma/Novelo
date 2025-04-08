@@ -24,28 +24,32 @@ export default ({
   }).current
   const imageSize = parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined;
   let loadImage = async () => {
-    if (url && url.toString().startsWith("[")) {
-      // image selector
-      context.parser
-        .current
-        .fetchSelectorImage(url)
-        .then(x => setSource(x))
-        .catch(x => { });
-    } else if (url && typeof url === "string" && url.toString().isLocalPath(true)) {
-      context.imageCache.read(url.trimStr("/")).then(x => {
-        if (x && !x.empty())
-          setSource(x)
-      });
-    } else if (url && url.toString().has()) {
+    try {
+      if (url && url.toString().startsWith("[")) {
+        // image selector
+        context.parser
+          .current
+          .fetchSelectorImage(url)
+          .then(x => setSource(x))
+          .catch(x => { });
+      } else if (url && typeof url === "string" && url.toString().isLocalPath(true)) {
+        context.imageCache.read(url.trimStr("/")).then(x => {
+          if (x && !x.empty())
+            setSource(x)
+        });
+      } else if (url && url.toString().has()) {
 
-      if (typeof url == "string" && url.has("header")) {
-        let h = JSON.parse(url.split("header")[1].substring(1));
-        url = url.split("header")[0].trim();
-        for (let k in h)
-          header[k] = h[k];
-      } else if (url && typeof url == "string" && url.isBase64String())
-        url = url.toBase64Url();
-      setSource(url);
+        if (typeof url == "string" && url.has("header")) {
+          let h = JSON.parse(url.split("header")[1].substring(1));
+          url = url.split("header")[0].trim();
+          for (let k in h)
+            header[k] = h[k];
+        } else if (url && typeof url == "string" && url.isBase64String())
+          url = url.toBase64Url();
+        setSource(url);
+      }
+    } catch (e) {
+      console.error("imageErro", e)
     }
   };
   useEffect(() => {

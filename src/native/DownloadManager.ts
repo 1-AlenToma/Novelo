@@ -22,15 +22,13 @@ export default class DownloadManager {
   useDownload(parentUrl: string) {
     let [infos, setInfos] = useState<number>(0);
     let id = useRef(newId()).current;
-    if (!parentUrl)
-      return 0;
     this.events[id] = (url: string) => {
-      if (parentUrl !== url)
+      if (!url.has(parentUrl))
         return;
       let item = undefined;
       let tms: { [key: string]: number } = {}
       this.items.forEach((p, url) => {
-        if (!parentUrl || parentUrl == url)
+        if (!parentUrl || url.has(parentUrl))
           item = p;
       });
       if (item == undefined)
@@ -109,7 +107,6 @@ export default class DownloadManager {
       let tries = 0;
       if (!file)
         await context.files.write(key, JSON.stringify(savedItem));
-      this.items.set(url, Math.max(novel.chapters.length.procent(savedItem.chapters.length), 1));
       this.change(url);
       for (let ch of novel.chapters.filter(x => !savedItem.chapters.find(a => a.url == x.url))) {
         try {

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { View, Text, TouchableOpacity, Icon, Modal, TextInput } from "./ReactNativeComponents";
 import { ISize } from "Types";
+import { StyleSheet } from "react-native";
 export default React.forwardRef(
   (
     {
@@ -9,6 +10,7 @@ export default React.forwardRef(
       css,
       isModole,
       inputVisible,
+      serachBar,
       ...props
     }: any,
     ref
@@ -16,7 +18,7 @@ export default React.forwardRef(
 
     const inputRef = React.useRef<typeof TextInput>();
     const [visible, setVisible] = React.useState(inputVisible || false);
-    const [size, setSize] = React.useState<ISize>();
+    const [size, setSize] = React.useState<ISize | undefined>();
     const [txt, setTxt] = React.useState(
       props.defaultValue
     );
@@ -72,10 +74,11 @@ export default React.forwardRef(
 
     return (
       <View
-        style={{
+        style={[styles.container, {
           flex: props.multiline ? 1 : undefined
-        }}
-        css={`wi:100% ali:center fl-1 juc-center he-100%`}>
+        }]}
+        css={`wi:100% ali:center fl-1 juc-center he-30 bor-2 View`}>
+        <Icon ifTrue={serachBar == true} name="search" type="Ionicons" css="Text" size={20} style={styles.icon} />
         <TextInput
           onLayout={e => {
             setSize(e.nativeEvent.layout);
@@ -94,7 +97,9 @@ export default React.forwardRef(
           placeholderTextColor={context.selectedThemeIndex == 0 ? "#000000" : "#FFFFFF"}
           {...props}
           style={[
+            styles.input,
             {
+              paddingLeft: serachBar ? 0 : 5,
               zIndex: 1,
               fontSize: 12,
               width: props.multiline
@@ -104,10 +109,11 @@ export default React.forwardRef(
             }, style
           ]}
         />
+
         <TouchableOpacity
           style={{
-            marginTop: ((size?.height ?? 1) - 24) / 2,
-            left: (size?.width ?? 0) + (size?.x ?? 0) - 24
+            marginTop: ((size?.height ?? 1) as number - 24) / 2,
+            left: (size?.width ?? 0) as number + (size?.x ?? 0) - 24
           }}
           css="absolute zi-2 bac-transparent"
           ifTrue={() => (
@@ -134,3 +140,26 @@ export default React.forwardRef(
     );
   }
 );
+
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 1,
+    paddingVertical: 2,
+    margin: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  icon: {
+    marginHorizontal: 5,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16
+  },
+});

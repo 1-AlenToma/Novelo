@@ -27,7 +27,8 @@ let colors = NestedStyleSheet.create({
     darkbg: "bac-#15181f",
 
     dark: "darkco darkbg",
-    ActionSheet: "invert",
+    ActionSheet: "maw-95% le-2.5% bac-transparent !important",
+
     ActionSheet$View$$ViewView: "invert",
     FormItem: "invert",
     FormItem$View$$View$View$$View$View$Text: "invert",
@@ -42,7 +43,6 @@ const lightTheme = NestedStyleSheet.create({
     ...colors,
     View: "lightbg",
     TouchableOpacity: "lightbg",
-
     Text: "bac-transparent lightco",
     Icon: "darkco fos-24",
     TextInput: "light pal-5 par-5",

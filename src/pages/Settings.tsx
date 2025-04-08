@@ -31,7 +31,7 @@ export default (props: any) => {
   context.hook("selectedThemeIndex");
 
   const download = async () => {
-    const location = await context.browser.pickFolder("Select where to save the backup file");
+    const location = await context.browser.pickFolder("Select where to save the backup file", ["zip"]);
     if (!location)
       return;
     loader.show();

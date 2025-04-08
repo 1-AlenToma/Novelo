@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Icon, Modal, AlertDialog, TextInput } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity, ScrollView, Icon, Modal, AlertDialog, TextInput, ActionSheet } from "./ReactNativeComponents";
 import { FileHandler } from "../native";
 import { EXT, SelectionType } from "../Types";
 import { ReadDirItem } from "react-native-fs";
@@ -42,10 +42,9 @@ const FileBrowser = (
         let fileHandler = new FileHandler(state.containerPath);
         let files = await fileHandler.RNF.readDir(state.containerPath);
         state.containerDirItem = root == state.containerPath ? undefined : (await fileHandler.RNF.readDir(state.containerPath.split("/").reverse().skip(0).reverse().join("/"))).find(x => x.path == state.containerPath)
-        files = files.filter(x => x.isDirectory() || (x.isFile() && selectionType == "File" && ext?.find(e => x.name.toLowerCase().endsWith("." + e))));
+        files = files.filter(x => x.isDirectory() || (x.isFile() && ext?.find(e => x.name.toLowerCase().endsWith("." + e))));
         state.files = files;
         state.handler = fileHandler;
-        // console.warn(state.files, files, state.containerPath);
     }
 
     useEffect(() => {
@@ -95,6 +94,14 @@ const FileBrowser = (
 
     return (
         <View css="flex:1 mat:10 pa:5 invert">
+            <ActionSheet size={200} css="wi-90%" isVisible={state.selectedPath != undefined && selectionType === "Folder"} onHide={() => state.selectedPath = undefined}>
+                <View css="flex invert">
+                    <TouchableOpacity css="listButton pal:5 fld-row" onPress={deleteItem} ifTrue={() => state.selectedPath != undefined && selectionType === "Folder"}>
+                        <Icon type="MaterialIcons" css="invertco" name="folder-delete" />
+                        <Text css="pal-5 invertco header">Delete</Text>
+                    </TouchableOpacity>
+                </View>
+            </ActionSheet>
             <View ifTrue={() => state.managedFiles} css="he:50 invert">
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
                     <View css="flex:0 he:50 fld:row juc:flex-end ali:center invert">
@@ -112,10 +119,7 @@ const FileBrowser = (
                             <Icon type="MaterialIcons" css="invertco" name="select-all" />
                             <Text css="invertco">Use this Folder</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity css="fileButton invert" onPress={deleteItem} ifTrue={() => state.selectedPath != undefined && selectionType === "Folder"}>
-                            <Icon type="MaterialIcons" css="invertco" name="folder-delete" />
-                            <Text css="invert">Delete</Text>
-                        </TouchableOpacity>
+
                         <TouchableOpacity css="fileButton invert" ifTrue={() => selectionType == "Folder"} onPress={() => state.create = true}>
                             <Icon type="MaterialIcons" css="invertco" name="create-new-folder" />
                             <Text css="invertco">New Folder</Text>
