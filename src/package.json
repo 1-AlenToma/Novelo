@@ -2,29 +2,6 @@
   "name": "novelo",
   "version": "1.2.4",
   "main": "node_modules/expo/AppEntry.js",
-  "expo": {
-    "doctor": {
-      "reactNativeDirectoryCheck": {
-        "exclude": [
-          "advanced-html-parser",
-          "jszip",
-          "manage-external-storage",
-          "react-native-exit-app",
-          "react-native-short-style",
-          "react-native-ts-sqlite-orm",
-          "react-native-uuid",
-          "react-smart-state",
-          "rn-update-apk",
-          "react-native-background-actions",
-          "react-native-fs",
-          "react-native-translator",
-          "react-native-zip-archive",
-          "rn-fetch-blob",
-          "util"
-        ]
-      }
-    }
-  },
   "scripts": {
     "parse": "node parsers/tsc/nodeParser.mjs",
     "zip": "npm run parse && npx bestzip ../parsers.zip temp/parsers",

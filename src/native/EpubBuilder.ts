@@ -1,5 +1,5 @@
 import { AlertDialog, newId } from "components";
-import { Book, dbContext } from "../db";
+import { Book } from "../db";
 import { DetailInfo } from "./ParserItems";
 import RNFS from 'react-native-fs';
 import IDOMParser from "advanced-html-parser";

@@ -5,7 +5,7 @@ import {
 } from "../Methods";
 import * as React from "react";
 import { View, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
-import { globalData } from "styles/demo/src/theme/ThemeContext";
+import { globalData } from "react-native-short-style/dist/demo/src/theme/ThemeContext";
 const Slider = StyledView(SliderRange, "Slider");
 
 export default ({

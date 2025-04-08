@@ -9,11 +9,11 @@ import {
   Notification,
   Parser
 } from "./native";
-import { AppSettings, dbContext, TableNames } from "./db";
+import { AppSettings, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
 import DownloadManager from "./native/DownloadManager";
 import * as Speech from 'expo-speech';
-import DbContext from "./db/dbContext";
+import dbContext from "./db/dbContext";
 
 import {
   IDatabase,

@@ -10,6 +10,7 @@ export default {
   "icon": "./assets/ic_launcher_round.png",
   "scheme": "novels",
   "userInterfaceStyle": "automatic",
+  "newArchEnabled": true,
   "splash": {
     "image": "./assets/sp.png",
     "resizeMode": "contain",
