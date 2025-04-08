@@ -1,5 +1,5 @@
 import CStyle from "./components/CStyle";
-import { cssTranslator } from "./styles";
+import { cssTranslator } from "react-native-short-style";
 import IDOMParser from "advanced-html-parser";
 import { Element, Node } from "advanced-html-parser/types"
 import * as Methods from "./Methods";

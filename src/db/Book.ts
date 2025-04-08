@@ -1,6 +1,6 @@
 import {
   IQueryResultItem
-} from "../expo-sqlite-wrapper/src";
+} from "react-native-ts-sqlite-orm";
 import TableNames from "./TableNames";
 import { public_m } from "../Methods";
 import Chapter from "./Chapter";

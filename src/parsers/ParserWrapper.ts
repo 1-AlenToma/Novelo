@@ -18,7 +18,7 @@ import MangaKakalot from "./MangaKakalot";
 import NovelUpdate from "./infos/NovelUpdates";
 import MyAnimeList from "./infos/MyAnimeList";
 import Memo from "../attr/Memo";
-import { AlertDialog } from "styles";
+import { AlertDialog } from "react-native-short-style";
 
 const debugg = false;
 export default class ParserWrapper extends Parser {

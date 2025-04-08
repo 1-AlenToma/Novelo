@@ -8,7 +8,7 @@ import AppSettings from "./AppSettings";
 import {
   IDatabase,
   IQueryResultItem
-} from "../expo-sqlite-wrapper/src";
+} from "react-native-ts-sqlite-orm";
 
 export {
   TableNames,

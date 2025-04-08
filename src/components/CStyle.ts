@@ -1,5 +1,5 @@
 import { StatusBar } from "react-native";
-import { NestedStyleSheet } from "../styles";
+import { NestedStyleSheet } from "react-native-short-style";
 const font = "SourceSans3-Bold";
 const font0 = "SourceSans3-BlackItalic";
 export default NestedStyleSheet.create({

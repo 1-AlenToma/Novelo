@@ -1,7 +1,7 @@
 import uuid from "react-native-uuid";
-import { Styleable } from "./styles";
+import { Styleable } from "react-native-short-style";
 import IDOMParser from "advanced-html-parser";
-import { Functions } from "expo-sqlite-wrapper/src/UsefullMethods";
+import { Functions } from "react-native-ts-sqlite-orm/src/UsefullMethods";
 
 function generateText(html, minLength) {
   try {

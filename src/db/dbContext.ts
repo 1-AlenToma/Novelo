@@ -1,9 +1,6 @@
-import { Database, DatabaseDrive, encrypt, decrypt, oEncypt, oDecrypt } from "../expo-sqlite-wrapper/src";
+import { Database, DatabaseDrive, encrypt, decrypt, oEncypt, oDecrypt } from "react-native-ts-sqlite-orm";
 import {
-  openDatabaseAsync,
-  SQLiteProvider,
-  useSQLiteContext,
-  addDatabaseChangeListener
+  openDatabaseAsync
 } from "expo-sqlite";
 import {
   Book,

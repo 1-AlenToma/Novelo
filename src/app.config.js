@@ -47,12 +47,6 @@ export default {
   },
   "plugins": [
     [
-      "expo-updates",
-      {
-        "username": "alentoma"
-      }
-    ],
-    [
       "expo-screen-orientation",
       {
         "initialOrientation": "DEFAULT"
@@ -67,6 +61,7 @@ export default {
         }
       }
     ],
+    "expo-sqlite",
     "expo-font",
     "expo-asset"
   ],

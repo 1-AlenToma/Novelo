@@ -18,7 +18,7 @@ import DbContext from "./db/dbContext";
 import {
   IDatabase,
   Table
-} from "./expo-sqlite-wrapper/src";
+} from "react-native-ts-sqlite-orm";
 import { ReadDirItem } from "react-native-fs";
 import { DimensionValue } from "react-native";
 

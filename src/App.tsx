@@ -11,12 +11,11 @@ import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 import { useFonts } from "./hooks";
-import { AlertDialog, NestedStyleSheet, ThemeContainer, useTimer } from "./styles";
+import { AlertDialog, NestedStyleSheet, ThemeContainer, useTimer } from "react-native-short-style";
 import AppTest from "./App.test";
 import GlobalFileBrowse from "./components/GlobalFileBrowse";
 import CStyle from "./components/CStyle";
 import { Platform } from "react-native";
-import * as Updates from 'expo-updates';
 
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
@@ -72,26 +71,6 @@ const darkTheme = NestedStyleSheet.create({
 
 
 const testning = false;
-
-async function onFetchUpdateAsync(itemToRemove?: any) {
-    try {
-        const update = await Updates.checkForUpdateAsync();
-
-        if (update.isAvailable) {
-            const answer = await AlertDialog.confirm({ message: "There is an update available, do you want to update? You may have to restart the app after this.", title: "APP Update", okText: "Update" });
-            if (!answer)
-                return;
-            await Updates.fetchUpdateAsync();
-            try {
-                itemToRemove?.forEach(x => x.remove());
-            } catch { }
-            await Updates.reloadAsync();
-        }
-    } catch (error) {
-        // You can also add an alert() to see the error message in case of an error when fetching updates.
-        //  alert(`Error fetching latest Expo update: ${error}`);
-    }
-}
 
 const App = () => {
     const fontLoader = useFonts();
