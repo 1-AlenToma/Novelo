@@ -13,7 +13,7 @@ export default () => {
             fileProviderAuthority: `${Application.applicationId}.provider`,
             needUpdateApp: (needUpdate, whatsNew) => {
                 AlertDialog.confirm({
-                    message: `New version released, do you want to update?\n ${whatsNew}`,
+                    message: `New version released, do you want to update?\n\n${whatsNew}`,
                     title: "Update Available"
                 }).then((c) => {
                     if (c)
