@@ -25,16 +25,12 @@ import {
     SafeAreaView
 } from "../../components/";
 import WebView from "react-native-webview";
-import Fonts from "../../assets/Fonts";
 import * as React from "react";
-import LANGUAGE_TABLE from "react-native-translator/dist/constants/languageMap";
-import { ScrollView, Linking } from "react-native";
-import * as Clipboard from "expo-clipboard";
-import { useNavigation, useTimer, useDbHook } from "../../hooks";
-import { Player, DetailInfo, ChapterDetail, ChapterInfo } from "../../native";
+import { useNavigation } from "../../hooks";
+import { DetailInfo, ChapterDetail, ChapterInfo } from "../../native";
 import Header from "../../pages/Header";
 import { Book } from "../../db";
-import { invertColor, sleep } from "../../Methods";
+import { invertColor } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
 
 const WatchAnime = (props: any) => {

@@ -16,6 +16,7 @@ import AppTest from "./App.test";
 import GlobalFileBrowse from "./components/GlobalFileBrowse";
 import CStyle from "./components/CStyle";
 import { Platform } from "react-native";
+import * as icons from '@expo/vector-icons';
 
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
@@ -122,6 +123,7 @@ const App = () => {
 
     return (
         <ThemeContainer
+            icons={icons}
             themes={[lightTheme, darkTheme]}
             defaultTheme={CStyle}
             selectedIndex={context.selectedThemeIndex}>
