@@ -17,9 +17,10 @@ export default ({ ...props }) => {
       css="root"
       header={{
         style: "invert",
-        textStyle: "invert",
+        textStyle: "invert desc fow-bold",
+        selectedTextStyle: "invert desc fow-bold",
         overlayStyle: {
-          content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
+          content: `bac-${context.selectedThemeIndex == 1 ? "#000" : "#CCCCCC"}`
         }
       }}>
 

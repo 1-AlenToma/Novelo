@@ -4,15 +4,22 @@ import ItemList from "./ItemList";
 import * as React from "react";
 import { useTimer } from "../hooks";
 import { View, Text, SafeAreaView } from "./ReactNativeComponents";
+import { Book } from "db";
+import { DetailInfo, ChapterInfo } from "native";
 export default ({
   book,
   current,
   novel,
   onPress
-}: any) => {
+}: {
+  book: Book,
+  novel: DetailInfo,
+  current: any,
+  onPress: ((item: ChapterInfo) => Promise<void>) | ((item: ChapterInfo) => void)
+}) => {
   let state = buildState(
     {
-      chArray: [] as any[],
+      chArray: [] as { index: number, items: ChapterInfo[] }[],
       index: { page: 0, index: 0 },
       current: ""
     }).ignore(
@@ -33,7 +40,7 @@ export default ({
           index: state.chArray.length,
           items: []
         });
-      state.chArray.lastOrDefault().items.push(x);
+      (state.chArray.lastOrDefault() as { index: number; items: ChapterInfo[]; } | undefined)?.items.push(x);
     });
 
   useEffect(() => {
@@ -107,9 +114,13 @@ export default ({
       <View css="clearwidth mih:50 flex invert po-relative">
         <ItemList
           updater={[page, id]}
-          onPress={item => {
-            loader.show();
-            onPress(item);
+          onPress={async (item: ChapterInfo) => {
+
+            if (current != item.url) {
+              loader.show();
+              onPress(item);
+
+            }
           }}
           page={state.index.page != page ? 0 : undefined}
           selectedIndex={
@@ -119,11 +130,11 @@ export default ({
           container={({ item, index }) => (
             <View
               css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 invert ${current == item.url
-                ? "selectedRow"
+                ? "selectedRow pal-5 par-5"
                 : ""
                 }`}>
               <Text
-                css="desc fos:12 wi:85% tea:left">
+                css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}`}>
                 {item.name.safeSplit("/", -1)}
               </Text>
               <View css="row clb">

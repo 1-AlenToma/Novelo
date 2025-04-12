@@ -21,7 +21,9 @@ import {
   AlertDialog,
   Button,
   ColorSelection,
-  PlayerView
+  PlayerView,
+  SliderView,
+  ContextContainer
 } from "../../components/";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -295,14 +297,13 @@ const Controller = ({ state, ...props }) => {
     "player.currentChapter",
     "player._playing",
     "size",
+    "player.currentChapterIndex",
     "appSettings"
   );
 
   const Timer = useTimer(100);
-  const audioProgressTimer = useTimer(100);
   const thisState = buildState({
     cText: "",
-    chapterSliderValue: undefined
   }).build();
 
   useEffect(() => {
@@ -388,31 +389,35 @@ const Controller = ({ state, ...props }) => {
     <>
       <View
         ifTrue={context.player.showController}
-        css={`band he:110 bottom juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(
+        css={`band he:110 bottom maw-100% juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(
           context.appSettings.backgroundColor
         )}`}>
-        <Text css="desc fos:13">
-          {context.player.procent(thisState.chapterSliderValue)}
-        </Text>
-        <View css="clearwidth juc:center ali:center">
-          <Slider
-            invertColor={true}
-            buttons={true}
-            disableTimer={true}
-            value={context.player.currentChapterIndex}
-            onValueChange={v => {
-              thisState.chapterSliderValue = v;
-            }}
-            onSlidingComplete={index => {
-              Timer(() => {
-                context.player.jumpTo(index);
-                thisState.chapterSliderValue = undefined;
-              });
-            }}
-            minimumValue={0}
-            maximumValue={context.player.novel.chapters.length - 1}
-          />
-        </View>
+        <ContextContainer keys="selection.chapterSliderValue">
+          <Text css="desc fos:13">
+            {context.player.procent(context.selection.chapterSliderValue)}
+          </Text>
+          <View css="wi-100% juc:center fld-row position-relative left-1 ali:center">
+            <Slider
+              css="invert"
+              disableTimer={true}
+              buttons={true}
+              value={context.selection.chapterSliderValue == undefined ? context.player.currentChapterIndex : context.selection.chapterSliderValue}
+              onValueChange={v => {
+                Timer.clear();
+                context.selection.chapterSliderValue = parseInt(v.toString())
+              }}
+              animationType="spring"
+              onSlidingComplete={index => {
+                Timer(() => {
+                  context.player.jumpTo(parseInt(index.toString()));
+                  context.selection.chapterSliderValue = undefined;
+                });
+              }}
+              minimumValue={0}
+              maximumValue={context.player.novel.chapters.length - 1}
+            />
+          </View>
+        </ContextContainer>
         <View css="clearwidth maw-95% overflow-hidden ali:center juc:center ">
           <Text
             numberOfLines={1}

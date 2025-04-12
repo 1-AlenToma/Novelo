@@ -29,6 +29,7 @@ let colors = NestedStyleSheet.create({
 
     dark: "darkco darkbg",
     ActionSheet: "maw-95% le-2.5% bac-transparent !important",
+    _sliderThump: "_abc to:-35 le:-15 fos-sm bor:5 fow:bold bow:1 boc:#CCC miw:50 pat:2 pab:2 tea:center zi:100 invert",
 
     ActionSheet$View$$ViewView: "invert",
     FormItem: "invert",

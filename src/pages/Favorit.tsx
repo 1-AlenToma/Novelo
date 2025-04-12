@@ -24,6 +24,7 @@ const ItemRender = ({
   state: any,
   loader: any
 }) => {
+  const itemLoader = useLoader(false)
   context.hook("novelFavoritInfo");
   const [books, dataIsLoading] = context.db.Books.useQuery(
     context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
@@ -37,11 +38,12 @@ const ItemRender = ({
       loadNovelDetail();
   });
 
-  const loadNovelDetail = async () => {
+  const loadNovelDetail = async (refresh?: boolean) => {
+    itemLoader.show();
     for (let b of books) {
       if (b.parserName !== "epub") {
         let parser = context.parser.find(b.parserName);
-        let novel = await parser?.detail(b.url);
+        let novel = await parser?.detail(b.url, undefined, refresh === true ? "RenewMemo" : undefined);
         if (novel) {
           context.novelFavoritInfo[b.url] = `(${b.selectedChapterIndex + 1}/${novel.chapters.length})`;
           context.novelFavoritInfo = { ...context.novelFavoritInfo };
@@ -51,115 +53,136 @@ const ItemRender = ({
         }
       }
     }
+    itemLoader.hide();
   }
 
   useEffect(() => {
     loadNovelDetail();
   }, [books]);
 
-  context.useEffect(loadNovelDetail, "parser.all")
+  context.useEffect(() => loadNovelDetail(), "parser.all")
 
   item = books.find(x => x.url === item.url) ?? item;
 
   return (
-    <FoldableItem
-      single={true}
-      css="wi:98% overflow"
-      buttons={[
-        {
-          text: "Delete",
-          icon: (
-            <Icon
-              name="delete"
-              type="MaterialIcons"
-              css="invertco"
-            />
-          ),
-          onPress: () => {
-            AlertDialog
-              .confirm(
-                {
-                  message: `You will be deleting this novel.\nAre you sure?`,
-                  title: "Please Confirm"
-                }
-              )
-              .then(async answer => {
-                loader.show();
-                if (answer) {
-                  try {
-                    let file = context.files.exists("".fileName(item.name, item.parserName));
-                    if (file) {
-                      item.favorit = false;
-                      await item.saveChanges();
-                    } else await context.db.deleteBook(item.id);
-                  } catch (e) {
-                    console.error(e);
+    <>
+      {itemLoader.elem}
+
+      <FoldableItem
+        single={true}
+        css="wi:98% overflow"
+        buttons={[
+          {
+            text: "Delete",
+            icon: (
+              <Icon
+                name="delete"
+                type="MaterialIcons"
+                css="invertco"
+              />
+            ),
+            onPress: () => {
+              AlertDialog
+                .confirm(
+                  {
+                    message: `You will be deleting this novel.\nAre you sure?`,
+                    title: "Please Confirm"
                   }
-                }
-                loader.hide();
-              });
-          }
-        },
-        {
-          icon: (
-            <Icon
-              name="book-reader"
-              type="FontAwesome5"
-              css="invertco"
-            />
-          ),
-          ifTrue: item.isOnline?.(),
-          text: context.parser.find(item.parserName)?.type == "Anime" ? "Watch" : "Read",
-          onPress: () => {
-            context
-              .nav.navigate(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                name: item.name,
-                url: item.url,
-                parserName: item.parserName
-              });
-            return true;
-          }
-        },
-        {
-          onPress: () => {
-            context
-              .nav.navigate("NovelItemDetail", {
-                url: item.url,
-                parserName: item.parserName
-              });
-            return true;
+                )
+                .then(async answer => {
+                  loader.show();
+                  if (answer) {
+                    try {
+                      let file = context.files.exists("".fileName(item.name, item.parserName));
+                      if (file) {
+                        item.favorit = false;
+                        await item.saveChanges();
+                      } else await context.db.deleteBook(item.id);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }
+                  loader.hide();
+                });
+            }
           },
-          icon: (
-            <Icon
-              name="info-circle"
-              type="FontAwesome5"
-              css="invertco"
-            />
-          ),
-          ifTrue: item.isOnline?.(),
-          text: "Info"
-        }
-      ]}>
-      <View
-        css="clearwidth bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start invert">
-        <Image
-          url={item.imageBase64}
-          css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
-        />
-        <Text
-          numberOfLines={1}
-          css="header pa:5 maw:80% overflow">
-          {item.name}
-        </Text>
-        <Text css="desc co:red fow-bold fos-12 absolute bo:5 right:10">
-          {context.novelFavoritInfo[item.url] ||
-            "loading"}
-        </Text>
-        <Text css="clearwidth desc fow-bold fos-12 co:red bottom bo:5 le:60">
-          ({item.parserName} | {context.parser.find(item.parserName)?.type})
-        </Text>
-      </View>
-    </FoldableItem>
+          {
+            icon: (
+              <Icon
+                name="refresh"
+                type="FontAwesome"
+                css="invertco"
+              />
+            ),
+            ifTrue: item.isOnline?.(),
+            text: "Refresh",
+            onPress: () => {
+
+              loadNovelDetail(true)
+              return true;
+            }
+          },
+          {
+            icon: (
+              <Icon
+                name="book-reader"
+                type="FontAwesome5"
+                css="invertco"
+              />
+            ),
+            ifTrue: item.isOnline?.(),
+            text: context.parser.find(item.parserName)?.type == "Anime" ? "Watch" : "Read",
+            onPress: () => {
+              context
+                .nav.navigate(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                  name: item.name,
+                  url: item.url,
+                  parserName: item.parserName
+                });
+              return true;
+            }
+          },
+          {
+            onPress: () => {
+              context
+                .nav.navigate("NovelItemDetail", {
+                  url: item.url,
+                  parserName: item.parserName
+                });
+              return true;
+            },
+            icon: (
+              <Icon
+                name="info-circle"
+                type="FontAwesome5"
+                css="invertco"
+              />
+            ),
+            ifTrue: item.isOnline?.(),
+            text: "Info"
+          }
+        ]}>
+        <View
+          css="clearwidth bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start invert">
+          <Image
+            url={item.imageBase64}
+            css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
+          />
+          <Text
+            numberOfLines={1}
+            css="header pa:5 maw:80% overflow">
+            {item.name}
+          </Text>
+          <Text css="desc co:red fow-bold fos-12 absolute bo:5 right:10">
+            {context.novelFavoritInfo[item.url] ||
+              "loading"}
+          </Text>
+          <Text css="clearwidth desc fow-bold fos-12 co:red bottom bo:5 le:60">
+            ({item.parserName} | {context.parser.find(item.parserName)?.type})
+          </Text>
+        </View>
+      </FoldableItem>
+    </>
   );
 };
 

@@ -1,8 +1,9 @@
-import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Icon, ScrollView } from "./ReactNativeComponents";
 import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";
 import { Easing } from "react-native";
+
 
 type Buttons = {
   onPress: Function;
@@ -83,17 +84,21 @@ export default ({
     <>
       <View
         style={{
-          height:
-            ((state.childSize?.height ?? 0) as number) - 10,
+          height: ((state.childSize?.height ?? 0) as number) - 10,
           width: state.buttonsSize?.width ?? 0
         }}
         css="wi:98% ri:5 to:5 overflow bor:5 absolute zi:1 ali:flex-end juc:flex-end">
-        <View
-          onLayout={event => {
-            state.buttonsSize =
-              event.nativeEvent.layout;
+
+        <ScrollView horizontal={true}
+          onContentSizeChange={(width, h) => {
+            state.buttonsSize = { width } as any
           }}
-          css="row zi:1 clearheight">
+          style={{ maxWidth: "100%" }}
+          showsHorizontalScrollIndicator={true}
+          onLayout={event => {
+            // state.buttonsSize = event.nativeEvent.layout;
+          }}
+          css="zi:1 clearheight">
           {Array.isArray(buttons)
             ? buttons.map((x, i) => (
               <TouchableOpacity
@@ -118,7 +123,7 @@ export default ({
               </TouchableOpacity>
             ))
             : buttons}
-        </View>
+        </ScrollView>
       </View>
       <AnimatedView
         css="clearboth zi:2 "

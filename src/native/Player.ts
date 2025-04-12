@@ -192,8 +192,7 @@ class Player {
       !context.appSettings.currentNovel ||
       context.appSettings.currentNovel.url !=
       this.book.url ||
-      context.appSettings.currentNovel
-        .parserName != this.book.parserName ||
+      context.appSettings.currentNovel.parserName != this.book.parserName ||
       context.appSettings.currentNovel.isEpub !=
       this.isEpup
     ) {
@@ -215,8 +214,7 @@ class Player {
 
     this.currentChapterIndex = index as number
     this.book.selectedChapterIndex = index;
-    this.currentChapter =
-      this.novel.chapters[index];
+    this.currentChapter = this.novel.chapters[index];
     if (
       this.book.chapterSettings.find(
         x => x.name === this.currentChapter.name

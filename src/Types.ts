@@ -184,7 +184,9 @@ export type GlobalType =
     },
     selection: {
       downloadSelectedItem: any,
-      favoritItem: any
+      favoritItem: any,
+      sliderValue: number | undefined,
+      chapterSliderValue: number | undefined
     },
     alertMessage: {
       msg: any;

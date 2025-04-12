@@ -81,7 +81,9 @@ const data = StateBuilder<GlobalType>(
         panEnabled: true,
         selection: {
             downloadSelectedItem: undefined,
-            favoritItem: undefined
+            favoritItem: undefined,
+            sliderValue: undefined,
+            chapterSliderValue: undefined
         },
         alertMessage: {
             msg: undefined,
@@ -298,6 +300,7 @@ const data = StateBuilder<GlobalType>(
         "selection.favoritItem",
         "player.currentChapterSettings.scrollProgress",
         "player.book.chapterSettings",
+        "player.currentChapter",
         "player.novel",
         "zip",
         "notification",

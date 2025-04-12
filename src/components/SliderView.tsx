@@ -1,17 +1,11 @@
-import SliderRange from "@react-native-community/slider";
-import {
-  StyledView,
-  invertColor as InvertColor
-} from "../Methods";
 import * as React from "react";
-import { View, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
-import { globalData } from "react-native-short-style/dist/demo/src/theme/ThemeContext";
-const Slider = StyledView(SliderRange, "Slider");
+import { View, Text, TouchableOpacity, Icon, SliderView } from "./ReactNativeComponents";
+import { useTimer } from "hooks";
+
 
 export default ({
   style,
   children,
-  invertColor,
   css,
   ifTrue,
   buttons,
@@ -19,24 +13,25 @@ export default ({
   renderValue,
   ...props
 }: any) => {
-  const timer = useRef();
+  const timer = useTimer(500);
   const [value, setValue] = useState(props.value);
   if (ifTrue === false) return null;
 
   useEffect(() => {
-    setValue(props.value);
+    if (props.value !== value)
+      setValue(props.value);
   }, [props.value]);
 
   const change = (v: any) => {
+    if (Array.isArray(v))
+      v = v[0]
     setValue(v);
     if (disableTimer) {
       props.onValueChange?.(v);
       return;
     }
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      props.onValueChange?.(v);
-    }, 100);
+
+    timer(() => props.onValueChange?.(v));
   };
   return (
     <View
@@ -44,7 +39,7 @@ export default ({
       <>
         {buttons ? (
           <TouchableOpacity
-            css="flex maw:24 mal:10"
+            css="flex maw:35 mal:10"
             onPress={() => {
               let step = props.step ?? 1;
               if (
@@ -52,14 +47,13 @@ export default ({
                 props.minimumValue
               ) {
                 let v = props.value - step;
-                props.onValueChange?.(v) ??
-                  props.onSlidingComplete?.(v);
+                props.onValueChange?.(v) ?? props.onSlidingComplete?.(v);
               }
             }}>
             <Icon
               name="minus-square"
               type="FontAwesome"
-              size={24}
+              css="fos-35"
             />
           </TouchableOpacity>
         ) : null}
@@ -68,24 +62,22 @@ export default ({
           ifTrue={() => renderValue == true}>
           <Text
             css="desc fos:10 tea:center">
-            {(0).sureValue(value).readAble()}
+            {(value ?? 0).readAble()}
           </Text>
         </View>
-        <View css={`flex`}>
-          <Slider
+        <View css={`flex invert`} style={{ maxWidth: buttons ? "75%" : "90%" }}>
+          <SliderView
             onStartShouldSetResponder={event =>
               false
             }
-            onTouchStart={e => {
-              globalData.panEnabled = false;
-            }}
-            onTouchEnd={e => {
-              globalData.panEnabled = true;
-            }}
             minimumTrackTintColor="#f17c7c"
             maximumTrackTintColor="#000000"
             step={1}
+            enableButtons={false}
             {...props}
+            containerStyle={{ maxWidth: "99%" }}
+            value={value}
+            onSlidingComplete={(v) => props.onSlidingComplete?.(v[0])}
             onValueChange={change}
             style={style}
             css={css}
@@ -93,7 +85,7 @@ export default ({
         </View>
         {buttons ? (
           <TouchableOpacity
-            css="flex maw:24"
+            css="flex maw:35"
             onPress={() => {
               let step = props.step ?? 1;
               if (
@@ -101,14 +93,13 @@ export default ({
                 props.maximumValue
               ) {
                 let v = props.value + step;
-                props.onValueChange?.(v) ??
-                  props.onSlidingComplete?.(v);
+                props.onValueChange?.(v) ?? props.onSlidingComplete?.(v);
               }
             }}>
             <Icon
               name="plus-square"
               type="FontAwesome"
-              size={24}
+              css="fos-35"
             />
           </TouchableOpacity>
         ) : null}

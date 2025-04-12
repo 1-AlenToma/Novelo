@@ -419,11 +419,13 @@ export default ({
         break;
       case "bottomReched":
       case "Next":
-        bottomReched?.();
+        if (!loader.loading)
+          bottomReched?.();
         break;
       case "topReched":
       case "Prev":
-        topReched?.();
+        if (!loader.loading)
+          topReched?.();
         break;
       case "click":
         click?.(data.data);
