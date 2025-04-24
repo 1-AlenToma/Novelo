@@ -384,11 +384,9 @@ String.prototype.count = function (nr: number) {
     return str.length >= nr;
 };
 
-String.prototype.has = function (selector: any) {
-    if (!selector) return !(new String(this).toString().empty());
+String.prototype.has = function (selector: string) {
+    if (!selector || selector.trim().length <= 0) return !(new String(this).toString().empty());
     return (
-        selector &&
-        !selector.empty() &&
         new String(this)
             .toString()
             .toLowerCase()
