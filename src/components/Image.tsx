@@ -1,6 +1,7 @@
-import { Image } from "react-native";
+
 import { HttpHandler } from "../native"
 import * as React from "react";
+import { Image } from "react-native-short-style";
 let noImage = require("../assets/noimage.png");
 const https = new HttpHandler();
 export default ({
@@ -18,8 +19,7 @@ export default ({
   const [imgSize, setImgSize] = useState({});
   const [source, setSource] = useState(noImage);
   const header = useRef({
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
     Referer: undefined
   }).current
   const imageSize = parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined;
@@ -52,11 +52,7 @@ export default ({
       console.error("imageErro", e)
     }
   };
-  useEffect(() => {
-    loadImage();
-    // https://www.novelupdates.com/?s=super_gene&post_type=seriesplans
-    //https://www.novelupdates.com/?s=Reincarnation+Of+The+Strongest+Sword+God&post_type=seriesplans
-  }, []);
+
   useEffect(() => {
     setSource(noImage);
     loadImage();
@@ -66,7 +62,6 @@ export default ({
     style && Array.isArray(style)
       ? [...style]
       : [style || {}];
-  if (css) st.push(css.css());
 
   return (
     <Image
@@ -83,6 +78,7 @@ export default ({
             }
           }
       }
+      css={css}
       style={[imgSize, ...st, imageSize]}
     />
   );

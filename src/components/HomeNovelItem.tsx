@@ -20,7 +20,7 @@ export default ({
         <Image
           parserName={item.parserName}
           url={item.image}
-          css="resizeMode:stretch bor:5 clearwidth wi:100% he:100%"
+          css="resizeMode:stretch bor:5 wi:100% he:100%"
         />
 
         <Icon

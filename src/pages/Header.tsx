@@ -90,8 +90,7 @@ export default ({
     <>
       <View
         ifTrue={ifTrue}
-        css="clearwidth zi:101 he:40 row juc:center ali:center di:flex invert"
-        style={[css?.css()] as any}>
+        css={x => x.joinLeft("clearwidth zi:101 he:40 row juc:center ali:center di:flex invert").joinRight(css)}>
         {context.nav.option.canGoBack() ? (
           <TouchableOpacity
             css="absolute le:5"

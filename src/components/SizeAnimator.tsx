@@ -1,6 +1,6 @@
-import { Animated } from "react-native";
 import * as React from "react";
 import { useAnimate } from "../hooks";
+import { AnimatedView } from "react-native-short-style";
 
 export default ({
   children,
@@ -41,12 +41,10 @@ export default ({
     style && Array.isArray(style)
       ? [...style]
       : [style || {}];
-  if (css) {
-    st.push(css.css());
-  }
 
   return (
-    <Animated.View
+    <AnimatedView
+      css={css}
       style={[
         { backgroundColor: "transparent" },
         ...st,
@@ -65,6 +63,6 @@ export default ({
         }
       ]}>
       {children}
-    </Animated.View>
+    </AnimatedView>
   );
 };

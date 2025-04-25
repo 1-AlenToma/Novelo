@@ -414,7 +414,7 @@ const Controller = ({ state, ...props }) => {
                 });
               }}
               minimumValue={0}
-              maximumValue={context.player.novel.chapters.length - 1}
+              maximumValue={context.player.novel.chapters.length}
             />
           </View>
         </ContextContainer>

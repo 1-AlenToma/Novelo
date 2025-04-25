@@ -380,11 +380,7 @@ export default ({ ...props }: any) => {
 
   return (
     <View css="flex mih:100 invert ali-center">
-
-
       <EpubHandler parentState={state} />
-
-
       <View css="itemListContainer">
         <Text
           css="desc fos-12 co-red fow-bold tea-left wi-100% pal-10">
