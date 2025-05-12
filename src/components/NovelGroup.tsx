@@ -52,6 +52,9 @@ export default memo(
       getItems();
     }, []);
 
+    if (!item || !item.text)
+      return null;
+
     return (
       <View
         css={
