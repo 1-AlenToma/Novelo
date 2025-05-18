@@ -1,12 +1,10 @@
-import { FlatList } from "react-native";
 import {
   memo
 } from "react";
 import * as React from "react";
 import { FlashList } from "@shopify/flash-list";
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
-import { useUpdate, useTimer } from "../hooks";
-import { newId } from "../Methods";
+import { useTimer } from "../hooks";
 
 
 export default ({
@@ -24,7 +22,8 @@ export default ({
   hooks,
   selectedIndex,
   onRefresh,
-  page
+  page,
+  numColumns
 }: {
   items: any[];
   container: any;
@@ -40,7 +39,8 @@ export default ({
   hooks?: any[];
   selectedIndex?: number;
   onRefresh?: { loading, onRefresh: () => void },
-  page?: number
+  page?: number,
+  numColumns?: number;
 }) => {
   context.hook(
     "selectedThemeIndex",
@@ -102,6 +102,8 @@ export default ({
   }, [selectedIndex]);
 
   if (!items || !items.has()) return null;
+  if (numColumns == 0)
+    numColumns = undefined;
 
   return (
     <View
@@ -123,6 +125,8 @@ export default ({
         contentContainerStyle={{
           padding: 1
         }}
+        numColumns={numColumns}
+
         onScrollBeginDrag={() => {
           selected.current = true;
         }}

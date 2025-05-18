@@ -37,6 +37,7 @@ import Header from "../../pages/Header";
 import { Book } from "../../db";
 import { invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
+import { text } from "stream/consumers";
 
 const lang = {};
 
@@ -301,10 +302,22 @@ const Controller = ({ state, ...props }) => {
     "appSettings"
   );
 
+  const oSettings = useRef({
+    fonts: Object.keys(Fonts).map(x => { return { label: x, value: x } }),
+    fontStyles: [
+      "normal",
+      "italic",
+      "oblique"
+    ],
+    textAlign: [
+      "align-left",
+      "align-center",
+      "align-justify",
+      "align-right"
+    ]
+  }).current
+
   const Timer = useTimer(100);
-  const thisState = buildState({
-    cText: "",
-  }).build();
 
   useEffect(() => {
     if (context.appSettings.lockScreen) context.orientation("LANDSCAPE");
@@ -452,7 +465,7 @@ const Controller = ({ state, ...props }) => {
             text: (
               <ActionSheetButton
                 title="Chapters"
-                size="90%"
+                size="80%"
                 btn={
                   <Icon
                     type="MaterialCommunityIcons"
@@ -474,7 +487,7 @@ const Controller = ({ state, ...props }) => {
           {
             text: () => (
               <ActionSheetButton
-                size="90%"
+                size="80%"
                 btn={
                   <Icon
                     type="Ionicons"
@@ -483,7 +496,7 @@ const Controller = ({ state, ...props }) => {
                 }
               >
                 <View css="flex">
-                  <TabBar position="Top" header={{
+                  <TabBar lazyLoading={true} position="Top" header={{
                     style: "invert",
                     overlayStyle: {
                       content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
@@ -525,33 +538,20 @@ const Controller = ({ state, ...props }) => {
                       </FormItem>
                       <FormItem title="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
                         <ButtonGroup
-                          buttons={[
-                            "normal",
-                            "italic",
-                            "oblique"
-                          ]}
+                          buttons={oSettings.fontStyles}
                           onPress={(_, items) => {
                             editSettings({
                               fontStyle: items[0]
                             });
                           }}
                           selectedIndex={(
-                            [[
-                              "normal",
-                              "italic",
-                              "oblique"
-                            ].findIndex(x => x == context.appSettings.fontStyle)].filter(x => x >= 0)
+                            [oSettings.fontStyles.findIndex(x => x == context.appSettings.fontStyle)].filter(x => x >= 0)
                           )}
                         />
                       </FormItem>
                       <FormItem title="TextAlign" ifTrue={() => !(state.novel.type?.isManga())}>
                         <ButtonGroup
-                          buttons={[
-                            "align-left",
-                            "align-center",
-                            "align-justify",
-                            "align-right"
-                          ]}
+                          buttons={oSettings.textAlign}
                           onPress={(_, items) => {
                             editSettings({
                               textAlign:
@@ -579,33 +579,21 @@ const Controller = ({ state, ...props }) => {
                               }}
                             />)
                           }
-                          selectedIndex={[[
-                            "align-left",
-                            "align-center",
-                            "align-justify",
-                            "align-right"
-                          ].findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0)}
+                          selectedIndex={[oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0)}
                         />
                       </FormItem>
-                      <FormItem title="Background">
-                        <ColorSelection selectedValue={context.appSettings.backgroundColor} onChange={(hex) => {
-                          editSettings({
-                            backgroundColor: hex
-                          })
-                        }} />
 
-                      </FormItem>
 
                       <FormItem title="Font" ifTrue={() => !(state.novel.type?.isManga())}>
                         <DropdownList
                           mode="Modal"
                           size={"80%"}
                           css={"invert"}
-                          items={Object.keys(Fonts).map(x => { return { label: x, value: x } })}
+                          items={oSettings.fonts}
                           render={item => {
                             return (
                               <View
-                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between mih:24`}>
+                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between he-30`}>
                                 <Text css={`header invertco fontFamily-${item.value}`}>
                                   {item.label}
                                 </Text>
@@ -701,6 +689,15 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={40}
                         />
                       </FormItem>
+                      <View css="flg-1 fl-0 wi-100% mat-10 invert">
+                        <Text css="fow-bold">BackgroundColor</Text>
+                        <ColorSelection selectedValue={context.appSettings.backgroundColor} onChange={(hex) => {
+                          editSettings({
+                            backgroundColor: hex
+                          })
+                        }} />
+
+                      </View>
                     </TabView>
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
@@ -971,24 +968,9 @@ const Controller = ({ state, ...props }) => {
                           maximumValue={3}
                         />
                       </FormItem>
-                      <FormItem labelPosition="Top" css="mah:200 invert" title="Words Highlight Settings">
-                        <FormItem
-                          css="invert"
-                          title="Color"
-                          labelPosition="Left"
+                      <View css="wi-100% flg-1 invert">
+                        <Text>Words Highlight Settings</Text>
 
-                        >
-                          <ColorSelection selectedValue={context.appSettings.voiceWordSelectionsSettings?.color} onChange={(hex) => {
-                            editSettings({
-                              voiceWordSelectionsSettings:
-                              {
-                                color: hex,
-                                appendSelection: context.appSettings.voiceWordSelectionsSettings?.appendSelection
-                              }
-                            })
-                          }} />
-
-                        </FormItem>
                         <FormItem title="Only Word:" labelPosition="Left">
                           <CheckBox
                             css="pal:1 invert"
@@ -1019,7 +1001,23 @@ const Controller = ({ state, ...props }) => {
                             }}
                           />
                         </FormItem>
-                      </FormItem>
+                        <View css="flg-1 fl-0 wi-100% mat-10 invert">
+                          <Text css="fow-bold">
+                            Word Color
+                          </Text>
+                          <ColorSelection selectedValue={context.appSettings.voiceWordSelectionsSettings?.color} onChange={(hex) => {
+                            editSettings({
+                              voiceWordSelectionsSettings:
+                              {
+                                color: hex,
+                                appendSelection: context.appSettings.voiceWordSelectionsSettings?.appendSelection
+                              }
+                            })
+                          }} />
+
+                        </View>
+                      </View>
+
                     </TabView>
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
