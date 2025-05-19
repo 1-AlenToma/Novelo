@@ -6,7 +6,7 @@ import {
   Modal,
   Image,
   useLoader,
-  DropdownList,
+  DropDownLocalList,
   AlertDialog,
 } from "../components/";
 import * as React from "react";
@@ -180,12 +180,12 @@ export default (props: any) => {
             name="theme-light-dark"
             css="invertco"
           />
-          <DropdownList
-            mode="Modal"
+          <DropDownLocalList
             selectedValue={context.selectedThemeIndex}
             css="invert wi-90%"
-            size={120}
+            size={130}
             items={[{ label: "Light", value: 0, }, { label: "Dark", value: 1 }]}
+
             render={item => {
               return (
                 <View
@@ -204,6 +204,7 @@ export default (props: any) => {
 
               context.selectedThemeIndex = theme.value;
               context.appSettings.saveChanges();
+              return false;
               //Updates.reloadAsync();
             }}
           />

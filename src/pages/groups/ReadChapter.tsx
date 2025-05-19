@@ -12,7 +12,7 @@ import {
   Slider,
   CheckBox,
   Modal,
-  DropdownList,
+  DropDownLocalList,
   ColorPicker,
   FormItem,
   ChapterView,
@@ -185,20 +185,23 @@ const Modoles = () => {
       >
         <View css="flex mat:20 invert">
           <FormItem title="TranslateTo:" labelPosition="Left">
-            <DropdownList
+            <DropDownLocalList
               size={"80%"}
               css={"invert"}
               items={Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } })}
               render={item => {
                 return (
-                  <Text css="desc fos:13 invertco">
-                    {item.label}
-                  </Text>
+                  <View css="fl-1 bac-transparent juc-center pal-10">
+                    <Text css="desc fos:13 invertco">
+                      {item.label}
+                    </Text>
+                  </View>
                 );
               }}
               onSelect={language => {
                 context.appSettings.lang = language.value;
                 context.appSettings.saveChanges();
+                return false;
               }}
               selectedValue={
                 context.appSettings.lang ?? "English"
@@ -305,9 +308,9 @@ const Controller = ({ state, ...props }) => {
   const oSettings = useRef({
     fonts: Object.keys(Fonts).map(x => { return { label: x, value: x } }),
     fontStyles: [
-      "normal",
-      "italic",
-      "oblique"
+      "Normal",
+      "Italic",
+      "Oblique"
     ],
     textAlign: [
       "align-left",
@@ -541,11 +544,11 @@ const Controller = ({ state, ...props }) => {
                           buttons={oSettings.fontStyles}
                           onPress={(_, items) => {
                             editSettings({
-                              fontStyle: items[0]
+                              fontStyle: items[0].toLowerCase()
                             });
                           }}
                           selectedIndex={(
-                            [oSettings.fontStyles.findIndex(x => x == context.appSettings.fontStyle)].filter(x => x >= 0)
+                            [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle.toLowerCase())].filter(x => x >= 0)
                           )}
                         />
                       </FormItem>
@@ -585,8 +588,7 @@ const Controller = ({ state, ...props }) => {
 
 
                       <FormItem title="Font" ifTrue={() => !(state.novel.type?.isManga())}>
-                        <DropdownList
-                          mode="Modal"
+                        <DropDownLocalList
                           size={"80%"}
                           css={"invert"}
                           items={oSettings.fonts}
@@ -604,6 +606,7 @@ const Controller = ({ state, ...props }) => {
                             editSettings({
                               fontName: fontName.value
                             });
+                            return false;
                           }}
                           selectedValue={
                             context.appSettings.fontName || "SourceSans3-Black"
@@ -862,8 +865,7 @@ const Controller = ({ state, ...props }) => {
                       }}
                     >
                       <FormItem title="Voices">
-                        <DropdownList
-                          mode="Modal"
+                        <DropDownLocalList
                           size={"80%"}
                           enableSearch={true}
                           css="invert"
@@ -888,15 +890,13 @@ const Controller = ({ state, ...props }) => {
                           render={item => {
                             return (
                               <View
-                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between
-                                                                `}
+                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between`}
                               >
-                                <Text
-                                  css={`desc invertco fos:13`}
-                                >
+                                <Text css={`desc invertco fos:13`}>
                                   {item.label}
                                 </Text>
                                 <TouchableOpacity
+                                  css={`bac:transparent`}
                                   onPress={() =>
                                     context.player.testPlaying(
                                       item.value
@@ -912,7 +912,7 @@ const Controller = ({ state, ...props }) => {
                                         ? "stop-circle"
                                         : "play-circle"
                                     }
-                                    css="invert"
+                                    css="invert bac-transparent"
                                     type="Ionicons"
                                     size={
                                       35
@@ -926,6 +926,7 @@ const Controller = ({ state, ...props }) => {
                             editSettings({
                               voice: voice.value
                             });
+                            return false;
                           }}
                         />
                       </FormItem>

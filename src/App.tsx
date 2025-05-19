@@ -39,6 +39,7 @@ let colors = NestedStyleSheet.create({
     DropDownListItem: "invert",
     DropdownList$View$Icon: "invertco",
     Modal: "invert !important",
+
 })
 
 const lightTheme = NestedStyleSheet.create({
