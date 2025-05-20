@@ -26,6 +26,9 @@ const ActionItem = ({
   selection,
   state
 }) => {
+  const localState = buildState({
+    width: 0
+  }).timeout(1000).build();
   let items = { items: state.parser.settings[keyName] };
   let selected = {};
   items.items?.map(
@@ -36,6 +39,8 @@ const ActionItem = ({
       ? "selected"
       : "")
   );
+
+  const numColumns = localState.width > 0 ? Math.floor(localState.width / 120) : 0;
 
   return (
     <View
@@ -54,27 +59,31 @@ const ActionItem = ({
             Search by {keyName}
           </Text>
         }>
-        <View css="flex invert">
-          <ScrollView horizontal={false}>
-            <View css="wi:100% invert">
-              {items.items?.map((x, i) => (
-                <TouchableOpacity
-                  css={`bor:10 he-25 clearwidth flex juc:center mar:5 boc:#c5bebe bobw:0.5 pal:8 par:8`}
-                  key={i}
-                  onPress={() => {
-                    let item = {};
-                    item[keyName] = x;
-                    selection(item);
-                  }}>
+        <View css="flex invert" onLayout={({ nativeEvent }) => {
+          localState.width = nativeEvent.layout.width;
+        }}>
+          {localState.width > 0 && numColumns > 0 ? (
+            <ItemList items={items.items}
+              itemCss={(item) => {
+                return `he-30 wi-120 bor-2 juc-center ali-center pa-5 bac-blue mat-2 overflow-hidden`
+              }}
+              onPress={x => {
+                let item = {};
+                item[keyName] = x;
+                selection(item);
+              }}
+              vMode={true}
+              numColumns={numColumns}
+              container={({ item }) => {
+                return (
                   <Text
-                    css={`desc bold fos:15 invertco ${selected[x.text]
+                    css={`desc bold fos:15 co-white ${selected[item.text]
                       }`}>
-                    {x.text}
+                    {item.text}
                   </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
+                )
+              }}
+            />) : null}
         </View>
       </ActionSheetButton>
     </View>
