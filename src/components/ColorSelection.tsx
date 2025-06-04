@@ -62,9 +62,12 @@ const colors = [
 const ColorSelection = ({ selectedValue, onChange }: { onChange: (color: string) => void, selectedValue: string }) => {
   const settings = useNumColumns();
 
-
   return (
-    <ReadyView >
+    <View style={React.useMemo(() => ({
+      flex: 1,
+      width: "100%",
+      minHeight: Math.ceil(colors.length / settings.numColumns) * 50
+    }), [settings.numColumns])}>
       <VirtualScroller
         updateOn={[selectedValue]}
         style={{ width: "100%", flexGrow: 1, maxWidth: "95%" }}
@@ -83,7 +86,7 @@ const ColorSelection = ({ selectedValue, onChange }: { onChange: (color: string)
         numColumns={settings.numColumns}
         horizontal={false}
       />
-    </ReadyView>
+    </View>
   )
 }
 
