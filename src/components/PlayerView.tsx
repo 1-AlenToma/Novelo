@@ -36,7 +36,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
       style={[
         {
           zIndex: 100,
-          top: context.player.hooked && context.player.showController && !isMenu ? 41 : (isMenu ? 0 : 1),
+          top: context.player.hooked && context.player.showController && !isMenu ? 48 : (isMenu ? 0 : 1),
           position: isMenu ? "relative" : "absolute",
           borderBottomWidth: isMenu ? 0 : 0,
           borderRadius: isMenu ? 0 : 0,

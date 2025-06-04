@@ -37,14 +37,15 @@ export default function <T>({
     gProps.loader?.value ?? false,
     gProps.loader?.text
   );
-  const itemState = buildState<ViewState<T>>(
+  const itemState = buildState<ViewState<T>>(() =>
+  (
     {
       ...(state ?? {}),
       size: { width: 0, height: 0 },
       update: () => update(),
       refItem: gProps.refItem ?? {},
       id: methods.newId()
-    }).ignore(
+    })).ignore(
       "refItem", "size", ...(gProps.ignore ?? [])
     ).build();
 

@@ -17,6 +17,7 @@ import GlobalFileBrowse from "./components/GlobalFileBrowse";
 import CStyle from "./components/CStyle";
 import { Platform } from "react-native";
 import * as icons from '@expo/vector-icons';
+import { useKeepAwake } from "expo-keep-awake";
 
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
@@ -77,6 +78,7 @@ const testning = false;
 
 const App = () => {
     const fontLoader = useFonts();
+    useKeepAwake();
     context.hook("size", "selectedThemeIndex", "isFullScreen", "updater", "files");
 
     context.useEffect(
@@ -105,7 +107,7 @@ const App = () => {
         (async () => {
             try {
                 loader.show();
-                itemToRemove = await context.init();
+                itemToRemove = await context.AppStart();
                 context.isFullScreen = false;
             } catch (e) {
                 console.error(e);

@@ -12,7 +12,6 @@ import Web from "./Web";
 import Slider from "./SliderView";
 import PlayerView from "./PlayerView";
 import ColorPicker from "./ColorPicker";
-import ChapterView from "./ChapterView";
 import FoldableItem from "./FoldableItem";
 import FileBrowser from "./FileBrowser";
 import ColorSelection from "./ColorSelection";
@@ -22,6 +21,8 @@ export * from "./BlurView";
 export * from "./ExpandableDescription";
 export * from "./ContextContainer";
 export * from "./DropDownList";
+export * from "./ReadyView";
+export * from "./ChapterView";
 
 export {
   useLoader,
@@ -38,7 +39,6 @@ export {
   PlayerView,
   ColorPicker,
   ColorSelection,
-  ChapterView,
   FoldableItem,
   FileBrowser,
   HtmlGetter

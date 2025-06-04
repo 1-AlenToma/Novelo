@@ -31,7 +31,8 @@ export default ({ ...props }: any) => {
     useNavigation(props);
   const loader = useLoader(true);
   const chapterRef = useRef();
-  const state = buildState(
+  const state = buildState(() =>
+  (
     {
       novel: {} as DetailInfo,
       viewChapters: false,
@@ -40,7 +41,7 @@ export default ({ ...props }: any) => {
       book: {} as Book | undefined,
       authorNovels: [] as any[],
       showNovelUpdateWebView: false
-    }).ignore(
+    })).ignore(
       "book",
       "novel",
       "authorNovels"
@@ -323,6 +324,7 @@ export default ({ ...props }: any) => {
                         : "Updated"}
                     </Text>
                     <ActionSheetButton
+                      ready={false}
                       refItem={chapterRef}
                       btn={
                         <Icon

@@ -10,6 +10,7 @@ import {
 } from "../Methods";
 import { IImage } from "../Types";
 import Html from "./Html";
+import { useLoader } from "components";
 type ViewState =
   | "Default"
   | "Folded"
@@ -38,7 +39,7 @@ class Player {
     index: number;
     length: number;
   } = undefined;
-  menuOptions: any = {
+  menuOptions = {
     textToTranslate: undefined,
     translationLanguage: "English",
     textEdit: undefined,
@@ -49,19 +50,39 @@ class Player {
   constructor(
     novel: DetailInfo,
     book: Book,
-    loader: any,
     isEpup
   ) {
     this.book = book;
     this.novel = novel;
-    this.loader = loader;
     this.isEpup = isEpup;
   }
 
+  usePlayerLoader = () => {
+    const loader = useLoader(this.isloading);
+    useEffect(() => {
+      this.loader = {
+        hide: () => {
+          this.isloading = false;
+          loader.hide();
+        },
+        show: () => {
+          loader.show();
+          this.isloading = true;
+        }
+      }
+
+      return () => this.loader = undefined;
+    }, [])
+
+    return loader;
+  }
+
   show() {
+    this.isloading = true;
     this.loader?.show();
   }
   hide() {
+    this.isloading = false;
     this.loader?.hide();
   }
 
@@ -297,8 +318,7 @@ class Player {
     this.stop();
     if (this.testVoice === voice) this.stop();
     else if (voice) this.testPlay(voice);
-    this.testVoice =
-      this.testVoice === voice ? "" : voice;
+    this.testVoice = this.testVoice === voice ? "" : voice;
     return this.testVoice;
   }
 

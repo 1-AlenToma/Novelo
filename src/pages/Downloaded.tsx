@@ -125,13 +125,14 @@ const ItemRender = ({
   const loader = useLoader(true);
   const downloadProgress = context.downloadManager().useDownload(item.url);
 
-  const itemState = buildState({
+  const itemState = buildState(() =>
+  ({
     info: undefined as string | undefined,
     downloadFileInfo: {
       percent: 0,
       currentFile: ""
     }
-  }).ignore("downloadFileInfo").build();
+  })).ignore("downloadFileInfo").build();
 
   useEffect(() => {
     getInfo(
@@ -353,11 +354,12 @@ const ItemRender = ({
 };
 
 export default ({ ...props }: any) => {
-  const state = buildState({
+  const state = buildState(() =>
+  ({
     text: "",
     selectedItem: undefined,
     skipImages: false
-  }).build();
+  })).build();
 
   const { fileItems, elem } = context.files.useFile<DetailInfo>("json", undefined, "NewDelete");
   const [books, dataIsLoading, reload] = context

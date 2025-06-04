@@ -1,6 +1,7 @@
-import { ButtonGroup, View, Text } from "./ReactNativeComponents";
+import { VirtualScroller, DropdownList, View, Text } from "./ReactNativeComponents";
 import * as React from "react";
-import ItemList from "./ItemList";
+import { useNumColumns } from "hooks";
+import { ReadyView } from "./ReadyView";
 
 const colors = [
   {
@@ -56,52 +57,33 @@ const colors = [
 ]
 
 
-const ColorNames = colors.map(x => x.name);
+
 
 const ColorSelection = ({ selectedValue, onChange }: { onChange: (color: string) => void, selectedValue: string }) => {
-  const state = buildState({
-    viewSize: {
-      width: 0,
-      height: 0
-    },
-  }).build();
-  const getColorByValue = (color: string) => {
-    const c = colors.find(x => x.name == color || x.hex == color);
-    if (c)
-      return c.hex;
-    return colors[0].hex;
-  }
+  const settings = useNumColumns();
 
-  const getColorIndexByValue = (color: string) => {
-    const c = colors.findIndex(x => x.hex == color);
-    if (c !== -1)
-      return c;
-    return undefined
-  }
-  const numColumns = Math.floor(state.viewSize.width / 120);
+
   return (
-    <View css="wi-100% he-100% bac-transparent juc-start ali-flex-start" onLayout={({ nativeEvent }) => {
-      state.viewSize = nativeEvent.layout;
-    }}>
-      {state.viewSize.width > 0 ? (
-        <ItemList
-          container={({ item }) => {
-            return (<View css={`fl-1 bac-white pa-5 juc-center ali-center bac-${(item.hex)} `}>
-              <Text css={`co-${methods.invertColor(item.hex)} fos-12 fof-${context.appSettings.fontName}`}>{item.name}</Text>
-              <View css="wi-10 he-10 _abc to-2 ri-5 bor-5 bac-red" ifTrue={selectedValue == item.hex}></View>
-            </View>) as any
-          }}
-          items={colors}
-          itemCss={(item) => {
-            return `co-${methods.invertColor(item.hex)} wi-120 he-50 invert mab-5`;
-          }}
-          onPress={(item) => {
-            onChange(item.hex);
-          }}
-          vMode={true}
-          numColumns={numColumns}
-        />) : null}
-    </View>
+    <ReadyView >
+      <VirtualScroller
+        updateOn={[selectedValue]}
+        style={{ width: "100%", flexGrow: 1, maxWidth: "95%" }}
+        renderItem={({ item }) => {
+          return (<View css={`fl-1 bac-white pa-5 juc-center ali-center bac-${(item.hex)} `}>
+            <Text css={`co-${methods.invertColor(item.hex)} fos-12 fof-${context.appSettings.fontName}`}>{item.name}</Text>
+            <View css="wi-10 he-10 _abc to-2 ri-5 bor-5 bac-red" ifTrue={selectedValue == item.hex}></View>
+          </View>) as any
+        }}
+        items={colors}
+        itemSize={{ size: 50 }}
+        itemStyle={{ width: settings.width - 10, marginRight: 5, marginBottom: 5 }}
+        onItemPress={({ item }) => {
+          onChange(item.hex);
+        }}
+        numColumns={settings.numColumns}
+        horizontal={false}
+      />
+    </ReadyView>
   )
 }
 

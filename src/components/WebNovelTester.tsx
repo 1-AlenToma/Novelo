@@ -5,10 +5,10 @@ import TextInput from "./TextInputView";
 import WebView from "react-native-webview";
 import { HttpHandler } from "../native";
 
-const stringToArray = (str: string)=> {
+const stringToArray = (str: string) => {
     let arr = [];
-    for(let i=0; i< str.length; i++){
-       arr.push(str.charCodeAt(i))
+    for (let i = 0; i < str.length; i++) {
+        arr.push(str.charCodeAt(i))
     }
 
     return arr;
@@ -68,23 +68,24 @@ function setData(data){
 `
 
 const WebNoverTester = () => {
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         text: "https://www.lightnovelpub.com/novel/is-it-bad-that-the-main-characters-a-roleplayer",
         url: "",
-        refItem: {html:""}
-    }).ignore("refItem").build();
+        refItem: { html: "" }
+    })).ignore("refItem").build();
 
     let webView = useRef<WebView>()
 
     const getHtml = async () => {
         let handler = new HttpHandler();
         const html = await handler.get_html(state.url);
-        state.refItem.html =html.text;
+        state.refItem.html = html.text;
         if (!webView.current)
             alert("eeror")
         let jsonString = JSON.stringify(stringToArray(state.refItem.html))
         console.log("length", state.refItem.html.length)
-        
+
         webView.current.injectJavaScript(`
         setData(${jsonString});
          true;
@@ -98,29 +99,29 @@ const WebNoverTester = () => {
         <View css="invert flex mat-20">
             <View css="row wi-100% juc-center ali-center he-20 bo-2 boc-gray ma-5">
                 <View css="wi-90%">
-                <TextInput
-                    defaultValue={state.text}
-                    onChangeText={txt => {
-                        state.text = txt;
-                    }}
-                    disableFullscreenUI={true}
-                    enterKeyHint="search"
-                    inputMode="search"
-                    onSubmitEditing={() => {
-                        state.url = state.text;
-                        getHtml();
-                    }
-                    }
-                    placeholder="Search Novels"
-                    style={{ width: "100%", height: "70%" }}
-                    css="he:90% clearwidth bow:1 bor:3 desc fos:14 boc:#ccc pal:10"
-                />
+                    <TextInput
+                        defaultValue={state.text}
+                        onChangeText={txt => {
+                            state.text = txt;
+                        }}
+                        disableFullscreenUI={true}
+                        enterKeyHint="search"
+                        inputMode="search"
+                        onSubmitEditing={() => {
+                            state.url = state.text;
+                            getHtml();
+                        }
+                        }
+                        placeholder="Search Novels"
+                        style={{ width: "100%", height: "70%" }}
+                        css="he:90% clearwidth bow:1 bor:3 desc fos:14 boc:#ccc pal:10"
+                    />
                 </View>
                 <Button text="Seacrh" css="mal-10" onPress={() => {
-                        state.url = state.text;
-                        getHtml();
-                    }
-                    } />
+                    state.url = state.text;
+                    getHtml();
+                }
+                } />
             </View>
             <View css="clearwidth mih:50 he-95% overflow invert">
                 <WebView
@@ -131,8 +132,8 @@ const WebNoverTester = () => {
                         html: webHtml
                     }}
                     onMessage={({ nativeEvent }) => {
-                      alert(nativeEvent.data)
-                      //  webView.current?.postMessage(state.html)
+                        alert(nativeEvent.data)
+                        //  webView.current?.postMessage(state.html)
                     }}
                     contentMode="mobile"
                     scalesPageToFit={true}
@@ -140,13 +141,13 @@ const WebNoverTester = () => {
                     scrollEnabled={true}
                     userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
                     setSupportMultipleWindows={false}
-                    style={[
+                    style={
                         {
                             flexGrow: 1,
                             zIndex: 70,
                             flex: 1
                         }
-                    ]}
+                    }
                     allowFileAccess={true}
                     allowFileAccessFromFileURLs={true}
                     allowUniversalAccessFromFileURLs={

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity, Icon, SliderView } from "./ReactNativeComponents";
+import { View, Text, Button, Icon, SliderView } from "./ReactNativeComponents";
 import { useTimer } from "hooks";
 
 
@@ -13,19 +13,22 @@ export default ({
   renderValue,
   ...props
 }: any) => {
-  const timer = useTimer(500);
-  const [value, setValue] = useState(props.value);
-  if (ifTrue === false) return null;
+  const timer = useTimer(1000);
+  const pressedTimer = useTimer(1000)
+  const state = buildState({
+    value: props.value ?? 0
+  }).build();
+
 
   useEffect(() => {
-    if (props.value !== value)
-      setValue(props.value);
+    if (props.value !== state.value)
+      state.value = props.value;
   }, [props.value]);
 
   const change = (v: any) => {
     if (Array.isArray(v))
       v = v[0]
-    setValue(v);
+    state.value = (v);
     if (disableTimer) {
       props.onValueChange?.(v);
       return;
@@ -33,77 +36,88 @@ export default ({
 
     timer(() => props.onValueChange?.(v));
   };
+
+  const increase = (isPress?: boolean) => {
+    let step = props.step ?? 1;
+    if (state.value + step <= props.maximumValue) {
+      let v = state.value + step;
+      state.value = v;
+      if (disableTimer)
+        props.onValueChange?.(v)
+      pressedTimer(() => {
+        props.onValueChange?.(v) ?? props.onSlidingComplete?.(v);
+      }, isPress ? 0 : undefined);
+    }
+
+  }
+
+  const decrease = (isPress?: boolean) => {
+    let step = props.step ?? 1;
+    if (state.value - step >= props.minimumValue) {
+      let v = state.value - step;
+      state.value = v;
+      if (disableTimer)
+        props.onValueChange?.(v)
+      pressedTimer(() => {
+        props.onValueChange?.(v) ?? props.onSlidingComplete?.(v);
+      }, isPress ? 0 : undefined);
+
+    }
+  }
   return (
     <View
-      css={`clearwidth mah:40 row ali:center juc:space-between invert ${css}`}>
-      <>
-        {buttons ? (
-          <TouchableOpacity
-            css="flex maw:35 mal:10"
-            onPress={() => {
-              let step = props.step ?? 1;
-              if (
-                props.value - step >=
-                props.minimumValue
-              ) {
-                let v = props.value - step;
-                props.onValueChange?.(v) ?? props.onSlidingComplete?.(v);
-              }
-            }}>
-            <Icon
-              name="minus-square"
-              type="FontAwesome"
-              css="fos-35"
-            />
-          </TouchableOpacity>
-        ) : null}
-        <View
-          css="wi:35 he:20 pal:5 par:5 juc:center ali:center invert"
-          ifTrue={() => renderValue == true}>
-          <Text
-            css="desc fos:10 tea:center">
-            {(value ?? 0).readAble()}
-          </Text>
-        </View>
-        <View css={`flex invert`} style={{ maxWidth: buttons ? "75%" : "90%" }}>
-          <SliderView
-            onStartShouldSetResponder={event =>
-              false
-            }
-            minimumTrackTintColor="#f17c7c"
-            maximumTrackTintColor="#000000"
-            step={1}
-            enableButtons={false}
-            {...props}
-            containerStyle={{ maxWidth: "99%" }}
-            value={value}
-            onSlidingComplete={(v) => props.onSlidingComplete?.(v[0])}
-            onValueChange={change}
-            style={style}
-            css={css}
-          />
-        </View>
-        {buttons ? (
-          <TouchableOpacity
-            css="flex maw:35"
-            onPress={() => {
-              let step = props.step ?? 1;
-              if (
-                props.value + step <=
-                props.maximumValue
-              ) {
-                let v = props.value + step;
-                props.onValueChange?.(v) ?? props.onSlidingComplete?.(v);
-              }
-            }}>
-            <Icon
-              name="plus-square"
-              type="FontAwesome"
-              css="fos-35"
-            />
-          </TouchableOpacity>
-        ) : null}
-      </>
+      css={`clearwidth mah:40 row ali:center juc:space-between invert ${css}`} ifTrue={ifTrue}>
+      <Button
+        ifTrue={buttons === true}
+        css="flex miw-40 maw:40 mal:10 invert he-40 sh-none"
+        icon={<Icon
+          name="minus-square"
+          type="FontAwesome"
+          css="fos-35 invert"
+        />}
+        onPress={() => decrease(true)}
+        whilePressed={decrease}>
+      </Button>
+
+      <View
+        css="wi:35 he:20 pal:5 par:5 juc:center ali:center invert"
+        ifTrue={renderValue == true}>
+        <Text
+          css="desc fos:10 tea:center">
+          {state.value}
+        </Text>
+      </View>
+      <View css={`flex invert`} style={{ maxWidth: buttons ? "75%" : "90%" }}>
+        <SliderView
+          onStartShouldSetResponder={event =>
+            false
+          }
+          minimumTrackTintColor="#f17c7c"
+          maximumTrackTintColor="#000000"
+          step={1}
+          enableButtons={false}
+          {...props}
+          containerStyle={{ maxWidth: "99%" }}
+          value={state.value}
+          onSlidingComplete={(v) => props.onSlidingComplete?.(v[0])}
+          onValueChange={change}
+          style={style}
+          css={css}
+        />
+      </View>
+
+      <Button
+        ifTrue={buttons === true}
+        css="flex miw-40 maw:40 he-40 invert sh-none"
+        icon={<Icon
+          name="plus-square"
+          type="FontAwesome"
+          css="fos-35 invert"
+        />}
+        onPress={() => increase(true)}
+        whilePressed={increase}>
+
+      </Button>
     </View>
   );
 };

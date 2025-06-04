@@ -3,7 +3,8 @@ import * as React from "react";
 
 
 export const useParserSelector = (onDone: () => void) => {
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         selectedParser: context.parser.all.map(x => ({ name: x.name, selected: false })),
         visible: false,
         clear: () => {
@@ -11,7 +12,7 @@ export const useParserSelector = (onDone: () => void) => {
             state.selectedParser = [...state.selectedParser];
         },
         hasSelection: () => state.selectedParser.some(x => x.selected)
-    }).build();
+    })).ignore("selectedParser").build();
 
 
 

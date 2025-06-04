@@ -14,7 +14,8 @@ const FileBrowser = (
         :
         { selectionType: SelectionType, ext?: EXT[], path?: string, use: (uri: (ReadDirItem)) => void }) => {
     const root = context.files.RNF.ExternalStorageDirectoryPath;
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         containerPath: path ?? root,
         containerDirItem: undefined as ReadDirItem | undefined,
         selectedPath: undefined as ReadDirItem | undefined,
@@ -23,7 +24,7 @@ const FileBrowser = (
         handler: undefined as FileHandler | undefined,
         newFolderName: "",
         managedFiles: false
-    }).ignore("handler", "files", "containerDirItem", "selectedPath").build();
+    })).ignore("handler", "containerDirItem", "selectedPath").build();
 
 
     const back = () => {

@@ -16,10 +16,11 @@ import { FilesPath } from "../Types";
 
 export default () => {
     context.hook("appSettings.filesDataLocation", "appSettings.filesDataLocation");
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         uri: context.appSettings.filesDataLocation ?? context.files.dir,
         progress: 0
-    }).build();
+    })).build();
     const loader = useLoader()
 
     const browse = async () => {

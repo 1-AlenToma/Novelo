@@ -1,12 +1,10 @@
 import { Icon } from "./ReactNativeComponents";
 import useLoader from "./Loader";
-import ItemList from "./ItemList";
 import * as React from "react";
-import { useTimer } from "../hooks";
-import { View, Text, SafeAreaView } from "./ReactNativeComponents";
+import { View, Text, SafeAreaView, VirtualScroller, VirtualScrollerViewRefProps } from "./ReactNativeComponents";
 import { Book } from "db";
 import { DetailInfo, ChapterInfo } from "native";
-export default ({
+export const ChapterView = ({
   book,
   current,
   novel,
@@ -17,147 +15,140 @@ export default ({
   current: any,
   onPress: ((item: ChapterInfo) => Promise<void>) | ((item: ChapterInfo) => void)
 }) => {
-  let state = buildState(
-    {
-      chArray: [] as { index: number, items: ChapterInfo[] }[],
-      index: { page: 0, index: 0 },
-      current: ""
-    }).ignore(
-      "chArray"
-    ).build();
-  const loader = useLoader(
-    current && current.has(),
-    "Loading Chapter"
-  );
-  let [id, setId] = useState("");
-  let timer = useTimer(100);
-  let size = 100;
-  const [page, setPage] = useState(0);
-  if (!state.chArray.has())
-    novel.chapters.forEach((x, i) => {
-      if (i == 0 || i % size === 0)
-        state.chArray.push({
-          index: state.chArray.length,
-          items: []
-        });
-      (state.chArray.lastOrDefault() as { index: number; items: ChapterInfo[]; } | undefined)?.items.push(x);
-    });
+  let state = buildState(() =>
+  ({
+    index: { page: 0, index: 0 },
+    pager: { scrollToIndex: undefined } as VirtualScrollerViewRefProps,
+    chapterScroll: { scrollToIndex: undefined } as VirtualScrollerViewRefProps,
+    currentPage: 0
+  })).build();
+  const size = 100;
+  const loader = useLoader(true, "Loading Chapter");
+  const getChapterItems = (chunkIndex: number) => {
+    const chapters = novel?.chapters ?? [];
+    const start = chunkIndex * size;
+    return chapters.slice(start, start + size);
+  };
+
+
+  const chArray = React.useMemo(() => {
+    const chapters = novel?.chapters;
+    if (!Array.isArray(chapters) || chapters.length === 0) return [];
+    const totalChunks = Math.ceil(chapters.length / size);
+    return Array.from({ length: totalChunks }, (_, chunkIndex) => ({
+      index: chunkIndex,
+      items: undefined
+    }));
+  }, [novel?.chapters?.length]);
+
 
   useEffect(() => {
-    timer(() => {
-      if (current && current.has()) {
-        loader.show();
-        for (let item of state.chArray) {
-          let i = item.items.findIndex(
-            x => x.url == current
-          );
-          if (i !== -1) {
-            state.index = {
-              page: item.index,
-              index: i
-            };
-            setPage(item.index);
-            break;
-          }
-        }
-        state.current = current;
-      }
-      setId(methods.newId());
-      loader.hide();
-    });
-  }, [book, novel, current]);
+    loader.show();
+
+    const chapters = novel?.chapters ?? [];
+    const flatIndex = chapters.findIndex(x => x.url === current);
+
+    if (flatIndex !== -1) {
+      const page = Math.floor(flatIndex / size);
+      const index = flatIndex % size;
+
+      state.batch(() => {
+        state.index = { page, index };
+        state.currentPage = page;
+      });
+    }
+
+    loader.hide();
+  }, [current]);
 
 
+
+  useEffect(() => {
+    if (state.pager.scrollToIndex)
+      state.pager.scrollToIndex(state.currentPage, true);
+  }, [state.currentPage, state.pager.scrollToIndex])
+
+  useEffect(() => {
+    if (state.chapterScroll.scrollToIndex) {
+      state.chapterScroll.scrollToIndex(state.index.page == state.currentPage ? state.index.index : 0, true);
+    }
+  }, [state.currentPage, state.index.index, state.chapterScroll.scrollToIndex])
+
+  const settingsMap = React.useMemo(() => {
+    const map = new Map<string, { scrollProgress?: number; isFinished?: boolean }>();
+    for (const s of book?.chapterSettings ?? []) map.set(s.url, s);
+    return map;
+  }, [book?.chapterSettings]);
+
+  if (chArray[state.currentPage] && !chArray[state.currentPage].items && chArray.length > 0)
+    chArray[state.currentPage].items = getChapterItems(state.currentPage);
 
   return (
     <SafeAreaView css="clearboth juc:flex-start mah:98% invert po:relative">
       <View
-        ifTrue={() => state.chArray.length > 1}
+        ifTrue={chArray.length > 1}
         css="clearwidth he:50 mat:10">
-        <ItemList
-          updater={[page]}
-          items={state.chArray}
-          onPress={item => {
-            setPage(item.index);
+        <VirtualScroller
+          updateOn={[state.currentPage]}
+          ref={state.pager as any}
+          items={chArray}
+          itemSize={{ size: 115 }}
+          onItemPress={({ item }) => {
+            state.currentPage = item.index;
           }}
-          selectedIndex={page}
-          container={({ item, index }) => (
-            <View
-              css={`row di:flex ali:center bor:5 listButton invert ${page == item.index
-                ? " selectedRow pal:5 par:5"
-                : ""
-                }`}>
-              <Text
-                css="desc fos:15">
-                {item.index > 0
-                  ? item.index * size + 1 + " - "
-                  : "1 - "}
-                {((item.index + 1) * size) > novel.chapters.length ? novel.chapters.length : ((item.index + 1) * size)}
-              </Text>
-              <Icon
-                ifTrue={
-                  item.index == state.index.page
-                }
-                color="yellow"
-                flash="green"
-                css="absolute le:0 to:0"
-                size={16}
-                type="MaterialIcons"
-                name="star"
-              />
-            </View>
-          )}
-          itemCss="pa:5 clearwidth bobw:1 boc:gray invert"
-          vMode={false}
+          renderItem={({ item, index }) => {
+            return (
+              <View
+                css={`row di:flex ali:center bor:5 listButton invert ${state.currentPage === item.index ? " selectedRow pal:5 par:5" : ""}`}>
+                <Text
+                  css="desc fos:15 wi-100% tea-center">
+                  {item.index > 0 ? item.index * size + 1 + " - " : "1 - "}
+                  {((item.index + 1) * size) > novel.chapters.length ? novel.chapters.length : ((item.index + 1) * size)}
+                </Text>
+                <Icon
+                  ifTrue={item.index == state.index.page}
+                  color="yellow"
+                  flash="green"
+                  css="absolute le:0 to:0"
+                  size={16}
+                  type="MaterialIcons"
+                  name="star"
+                />
+              </View>
+            )
+          }}
+          itemStyle={{ padding: 5, width: "100%", borderBottomWidth: 1, borderColor: "gray" }}
+          horizontal={true}
         />
       </View>
       <View css="clearwidth mih:50 flex invert po-relative">
-        <ItemList
-          updater={[page, id]}
-          onPress={async (item: ChapterInfo) => {
-
+        <VirtualScroller
+          updateOn={[current]}
+          onItemPress={async ({ item }: { item: ChapterInfo }) => {
             if (current != item.url) {
               loader.show();
-              onPress(item);
-
+              await onPress(item);
             }
           }}
-          page={state.index.page != page ? 0 : undefined}
-          selectedIndex={
-            state.index.page == page ? state.index.index : undefined
-          }
-          items={state.chArray[page].items}
-          container={({ item, index }) => (
+          itemSize={{ size: 45 }}
+          ref={state.chapterScroll as any}
+          items={chArray[state.currentPage]?.items ?? []}
+          renderItem={({ item, index }) => (
             <View
-              css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 invert ${current == item.url
-                ? "selectedRow pal-5 par-5"
-                : ""
-                }`}>
+              css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 invert ${current == item.url ? "selectedRow pal-5 par-5" : ""}`}>
               <Text
                 css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}`}>
                 {item.name.safeSplit("/", -1)}
               </Text>
               <View css="row clb">
                 <Icon
-                  css={
-                    book?.chapterSettings?.find(
-                      x => x.url == item.url
-                    )?.scrollProgress >= 200
-                      ? "co-green"
-                      : undefined
-                  }
+                  css={settingsMap.get(item.url)?.scrollProgress >= 200 ? "co-green" : undefined}
                   size={20}
                   type="MaterialIcons"
                   name="preview"
                 />
                 <Icon
-                  css={
-                    book?.chapterSettings?.find(
-                      x => x.url == item.url
-                    )?.isFinished
-                      ? "co-green"
-                      : undefined
-                  }
+                  css={settingsMap.get(item.url)?.isFinished ? "co-green" : undefined}
                   size={20}
                   type="AntDesign"
                   name="checkcircle"
@@ -165,8 +156,7 @@ export default ({
               </View>
             </View>
           )}
-          itemCss="pa:5 clearwidth bobw:1 boc:gray invert"
-          vMode={true}
+          itemStyle={{ padding: 5, width: "100%", borderBottomWidth: 1, borderColor: "gray" }}
         />
       </View>
       {loader.elem}

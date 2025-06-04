@@ -4,7 +4,8 @@ import * as React from "react";
 import * as Application from 'expo-application';
 
 export default () => {
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         progress: 0,
         downloading: false,
         updater: new UpdateAPK({
@@ -37,7 +38,7 @@ export default () => {
                 //    console.error(e)
             }
         })
-    }).ignore("updater").build();
+    })).ignore("updater").build();
 
     return (
         <TouchableOpacity

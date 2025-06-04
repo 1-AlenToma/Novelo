@@ -8,6 +8,7 @@ import useView from "./useView";
 import useLocationSelection from "./useLocationSelection";
 import AppUpdate from "./AppUpdate";
 export * from "./useParserSelector";
+export * from "./useNumColumns";
 export {
   useUpdate,
   useNavigation,

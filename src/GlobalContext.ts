@@ -41,7 +41,7 @@ const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
 const debugMode = __DEV__;
 
-const data = StateBuilder<GlobalType>(
+const data = StateBuilder<GlobalType>(() => (
     {
         versionName: version,
         version: parseInt(version.replace(/\./g, "")),
@@ -83,7 +83,6 @@ const data = StateBuilder<GlobalType>(
             downloadSelectedItem: undefined,
             favoritItem: undefined,
             sliderValue: undefined,
-            chapterSliderValue: undefined
         },
         alertMessage: {
             msg: undefined,
@@ -165,7 +164,7 @@ const data = StateBuilder<GlobalType>(
             window: Dimensions.get("window"),
             screen: Dimensions.get("screen")
         },
-        init: async () => {
+        AppStart: async () => {
             try {
 
                 // await globalDb.dropTables();
@@ -288,7 +287,7 @@ const data = StateBuilder<GlobalType>(
 
             return [];
         }
-    }).ignore(
+    })).timeout(0).ignore(
         "files",
         "imageCache",
         "cache",
@@ -296,6 +295,7 @@ const data = StateBuilder<GlobalType>(
         "parser.all",
         "nav",
         "voices",
+        "speech",
         "selection.downloadSelectedItem",
         "selection.favoritItem",
         "player.currentChapterSettings.scrollProgress",
@@ -307,6 +307,7 @@ const data = StateBuilder<GlobalType>(
         "db",
         "appSettings.currentNovel",
         "appSettings.parsers",
-        "html.data"
+        "html.data",
+        "size"
     ).globalBuild();
 export default data;

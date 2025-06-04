@@ -35,9 +35,10 @@ const baseUrl = (url: string) => {
 
 export default () => {
     context.hook("html.data");
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         protection: [] as { url: string, id: string }[]
-    }).ignore("protection").build();
+    })).build();
 
     useEffect(() => {
         return () => {

@@ -18,7 +18,8 @@ export default (props: any) => {
   let loader = useLoader();
   const dataLocation = useLocationSelection();
   context.zip.on("Loading")
-  const state = buildState(
+  const state = buildState(() =>
+  (
     {
       all: true,
       appSettings: true,
@@ -27,7 +28,7 @@ export default (props: any) => {
       added: {},
       showWebTester: false
     }
-  ).ignore("items").build();
+  )).build();
   context.hook("selectedThemeIndex");
 
   const download = async () => {

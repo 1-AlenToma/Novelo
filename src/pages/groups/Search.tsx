@@ -10,25 +10,24 @@ import {
   ProgressBar,
   Button,
   Icon
-} from "../../components/";
+} from "components";
 import * as React from "react";
 import {
   useNavigation,
-  useParserSelector
-} from "../../hooks";
+  useParserSelector,
+  useNumColumns
+} from "hooks";
 import {
   SearchDetail
-} from "../../native";
-import Header from "../../pages/Header";
+} from "native";
+import Header from "pages/Header";
 
 const ActionItem = ({
   keyName,
   selection,
   state
 }) => {
-  const localState = buildState({
-    width: 0
-  }).timeout(1000).build();
+  const settings = useNumColumns();
   let items = { items: state.parser.settings[keyName] };
   let selected = {};
   items.items?.map(
@@ -40,14 +39,12 @@ const ActionItem = ({
       : "")
   );
 
-  const numColumns = localState.width > 0 ? Math.floor(localState.width / 120) : 0;
-
   return (
     <View
       ifTrue={items.items?.has() ?? false}
       css="mih:50 pa:10 pat:15 invert">
       <ActionSheetButton
-        size="50%"
+        size="70%"
         title={keyName.displayName()}
         css={"invert"}
         btn={
@@ -59,32 +56,28 @@ const ActionItem = ({
             Search by {keyName}
           </Text>
         }>
-        <View css="flex invert" onLayout={({ nativeEvent }) => {
-          localState.width = nativeEvent.layout.width;
-        }}>
-          {localState.width > 0 && numColumns > 0 ? (
-            <ItemList items={items.items}
-              itemCss={(item) => {
-                return `he-30 wi-120 bor-2 juc-center ali-center pa-5 bac-blue mat-2 overflow-hidden`
-              }}
-              onPress={x => {
-                let item = {};
-                item[keyName] = x;
-                selection(item);
-              }}
-              vMode={true}
-              numColumns={numColumns}
-              container={({ item }) => {
-                return (
-                  <Text
-                    css={`desc bold fos:15 co-white ${selected[item.text]
-                      }`}>
-                    {item.text}
-                  </Text>
-                )
-              }}
-            />) : null}
-        </View>
+
+        <ItemList items={items.items}
+          itemCss={(item) => {
+            return `he-30 wi-${settings.width - 10} juc-center ali-center pa-5 bac-blue mar-5 mat-10`
+          }}
+          onPress={x => {
+            let item = {};
+            item[keyName] = x;
+            selection(item);
+          }}
+          vMode={true}
+          numColumns={settings.numColumns}
+          container={({ item }) => {
+            return (
+              <Text
+                css={`desc bold fos:15 co-white ${selected[item.text]
+                  }`}>
+                {item.text}
+              </Text>
+            )
+          }}
+        />
       </ActionSheetButton>
     </View>
   );
@@ -97,7 +90,8 @@ export default ({ ...props }: any) => {
   const loader = useLoader(
     searchTxt?.has() ?? false
   );
-  const state = buildState({
+  const state = buildState(() =>
+  ({
     items: [],
     text: undefined as SearchDetail,
     currentPage: 0,
@@ -109,7 +103,7 @@ export default ({ ...props }: any) => {
       found: 0,
       stop: false
     }
-  }).ignore("parser", "items", "loadedParser").build();
+  })).ignore("parser", "items", "loadedParser").build();
   const globalParser = useParserSelector(() => {
     if (globalParser.hasSelection()) {
       state.text = new SearchDetail(state.text.text ?? "");

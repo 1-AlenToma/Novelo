@@ -2,9 +2,10 @@ import { View, Modal, Icon, Text, DropdownItem, TouchableOpacity } from "./React
 import ItemList from "./ItemList";
 import TextInput from "./TextInputView";
 import { useTimer } from "hooks";
-import { time } from "console";
+import { GlobalType } from "Types";
+import { getValueByPath, NestedKeyOf } from "react-smart-state";
 
-export const DropDownLocalList = ({ items, visible, selectedValue, css, size, render, onSelect, enableSearch }: {
+export const DropDownLocalList = ({ items, visible, selectedValue, css, size, render, onSelect, enableSearch, globalContextKeys }: {
     items: DropdownItem[],
     visible?: boolean,
     selectedValue?: any,
@@ -13,12 +14,19 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
     size?: number | string,
     render?: (item: DropdownItem) => JSX.Element,
     enableSearch?: ((text: string) => DropdownItem[]) | boolean,
+    globalContextKeys?: NestedKeyOf<GlobalType>[]
 }) => {
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         visible: visible ?? false,
         items: items,
-    }).ignore("items").build();
+    })).build();
     const timer = useTimer(100);
+    let values = undefined as any[] | undefined;
+    if (globalContextKeys?.has()) {
+        context.hook(...globalContextKeys as any);
+        values = globalContextKeys.map(x => getValueByPath(context, x));
+    }
 
     useEffect(() => {
         if (state.visible !== visible && visible !== undefined) {
@@ -59,6 +67,7 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
                         />
                     </View>
                     <ItemList
+                        updater={values}
                         vMode={true}
                         items={state.items}
                         selectedIndex={selectedIndex}

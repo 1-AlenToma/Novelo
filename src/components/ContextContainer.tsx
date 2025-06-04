@@ -1,32 +1,26 @@
 import * as React from "react";
+import { GlobalType } from "../Types";
+import { NestedKeyOf, getValueByPath } from "react-smart-state";
 
-export const ContextContainer = ({ children, keys, contexts }: { children: any, keys: string, contexts?: any[] }) => {
-    contexts = contexts ?? [context];
+type ContextContainerProps<T extends object> = {
+    stateItem?: T,
+    render: (state: T) => React.ReactNode;
+    extra?: any[];
+    globalStateKeys?: NestedKeyOf<GlobalType>[]
+}
 
-    function containsKey(obj, path) {
-        const keys = path.split(".");
-        let current = obj;
+export function ContextContainer<T extends object>(props: ContextContainerProps<T>) {
+    const state = buildState(() => (props.stateItem ?? ({ nothing: true }))).build();
 
-        for (const key of keys) {
-            if (typeof current !== 'object' || current === null || !(key in current)) {
-                return false;
-            }
-            current = current[key];
-        }
-        return true;
+    const values = Object.keys(props.stateItem ?? {}).map(x => state[x]).filter(x => x !== null);
+    if (props.globalStateKeys?.has()) {
+        context.hook(...props.globalStateKeys as any);
+        values.push(...props.globalStateKeys.map(x => getValueByPath(context, x)))
     }
-    let items = keys.split(" ").filter(x => x.has()).reduce((arr, x) => {
-        const cn = contexts.find(c => containsKey(c, x));
-        if (cn) {
-            if (arr.has(cn))
-                arr.get(cn)?.push(x);
-            else arr.set(cn, [x]);
-        }
-        return arr;
+    const elem = React.useMemo(() => {
+        return props.render(state as T);
+    }, [...values, ...(props.extra ?? [])])
 
-    }, new Map<any, string[]>);
 
-    items.forEach((value, item) => item.hook(...value));
-
-    return children;
+    return elem;
 }

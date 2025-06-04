@@ -101,10 +101,6 @@ export default ({
     scrollTo();
   }, [selectedIndex]);
 
-  if (!items || !items.has()) return null;
-  if (numColumns == 0)
-    numColumns = undefined;
-
   return (
     <View
       style={{
@@ -114,56 +110,58 @@ export default ({
         flex: 0
       }}
       css="flg:1 mah:100% bac-transparent po-relative">
-      <FlashList
-        ref={c => {
-          ref.current = c;
-        }}
+      {items?.has() ?? false ? (
+        <FlashList
+          ref={c => {
+            ref.current = c;
+          }}
 
-        onContentSizeChange={() => {
-          time(() => scrollTo());
-        }}
-        contentContainerStyle={{
-          padding: 1
-        }}
-        numColumns={numColumns}
+          onContentSizeChange={() => {
+            time(() => scrollTo());
+          }}
+          contentContainerStyle={{
+            padding: 1
+          }}
+          numColumns={numColumns == 0 ? undefined : numColumns}
 
-        onScrollBeginDrag={() => {
-          selected.current = true;
-        }}
-        nestedScrollEnabled={nested}
-        initialScrollIndex={scrollIndex}
-        horizontal={vMode !== true}
-        data={items}
-        refreshing={onRefresh?.loading}
-        onRefresh={onRefresh?.onRefresh}
-        estimatedItemSize={200}
-        onEndReachedThreshold={0.5}
-        onMomentumScrollBegin={() => {
-          onEndReachedCalledDuringMomentum.current =
-            false;
-        }}
-
-        extraData={[
-          ...(updater ?? []),
-          selectedIndex,
-          context.selectedThemeIndex
-        ]}
-        onEndReached={() => {
-          if (
-            !onEndReachedCalledDuringMomentum.current
-          ) {
-            onEndReached?.();
+          onScrollBeginDrag={() => {
+            selected.current = true;
+          }}
+          nestedScrollEnabled={nested}
+          initialScrollIndex={scrollIndex}
+          horizontal={vMode !== true}
+          data={items ?? []}
+          refreshing={onRefresh?.loading}
+          onRefresh={onRefresh?.onRefresh}
+          estimatedItemSize={200}
+          onEndReachedThreshold={0.5}
+          onMomentumScrollBegin={() => {
             onEndReachedCalledDuringMomentum.current =
-              true;
+              false;
+          }}
+
+          extraData={[
+            ...(updater ?? []),
+            selectedIndex,
+            context.selectedThemeIndex,
+            numColumns
+          ]}
+          onEndReached={() => {
+            if (
+              !onEndReachedCalledDuringMomentum.current
+            ) {
+              onEndReached?.();
+              onEndReachedCalledDuringMomentum.current =
+                true;
+            }
+          }}
+          renderItem={({ item, index }) =>
+            <Render item={item} index={index} />
           }
-        }}
-        renderItem={({ item, index }) =>
-          <Render item={item} index={index} />
-        }
-        keyExtractor={(item, index) =>
-          index.toString()
-        }
-      />
+          keyExtractor={(item, index) =>
+            index.toString()
+          }
+        />) : null}
     </View>
   );
 };

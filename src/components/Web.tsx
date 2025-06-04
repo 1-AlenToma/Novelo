@@ -107,7 +107,6 @@ export default ({
   bottomReched,
   topReched
 }: any) => {
-  context.hook("appSettings.backgroundColor");
 
   const [render, state, loader, timer] = useView({
     timer: 200,
@@ -141,7 +140,7 @@ export default ({
     }
   });
 
-
+  context.hook("appSettings.backgroundColor");
 
   const postMessage = async (
     type: string,

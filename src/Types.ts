@@ -21,6 +21,7 @@ import {
 } from "react-native-ts-sqlite-orm";
 import { ReadDirItem } from "react-native-fs";
 import { DimensionValue } from "react-native";
+import { ReturnState } from "react-smart-state";
 
 export type NavigationPage = "WatchAnime" | "AppMenu" | "GroupDetail" | "NovelItemDetail" | "Search" | "ReadChapter";
 
@@ -142,11 +143,7 @@ export abstract class DBInit extends Table<TableNames> {
 type NestedKeyOf<T extends object, D extends any[] = [0, 0, 0, 0, 0]> = D extends [any, ...infer DD] ? {
   [K in keyof T & (string | number)]: T[K] extends object ? `${K}` | `${K}.${NestedKeyOf<T[K], DD>}` : `${K}`;
 }[keyof T & (string | number)] : never;
-type ReturnState<T extends object> = {
-  hook(...keys: NestedKeyOf<T>[]): void;
-  useEffect(fn: Function, ...keys: NestedKeyOf<T>[]): void;
-  bind(path: string): void;
-};
+
 
 type ThemeMode = "light" | "dark";
 export type ISize = {
@@ -185,8 +182,7 @@ export type GlobalType =
     selection: {
       downloadSelectedItem: any,
       favoritItem: any,
-      sliderValue: number | undefined,
-      chapterSliderValue: number | undefined
+      sliderValue: number | undefined
     },
     alertMessage: {
       msg: any;
@@ -227,7 +223,7 @@ export type GlobalType =
       window: ISize,
       screen: ISize
     },
-    init: () => Promise<{ remove: Function }[]>
+    AppStart: () => Promise<{ remove: Function }[]>
 
   }
 

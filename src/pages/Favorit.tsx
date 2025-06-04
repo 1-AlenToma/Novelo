@@ -187,11 +187,12 @@ const ItemRender = ({
 };
 
 export default ({ ...props }: any) => {
-  const state = buildState({
+  const state = buildState(() =>
+  ({
     text: "",
     json: "",
     infoNovel: {}
-  }).build();
+  })).build();
 
   const [books, dataIsLoading, reload] = context
     .db.useQuery(

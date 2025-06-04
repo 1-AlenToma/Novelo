@@ -34,7 +34,7 @@ import * as Clipboard from "expo-clipboard";
 import { useNavigation, useTimer, useDbHook } from "../../hooks";
 import { Player, DetailInfo } from "../../native";
 import Header from "../../pages/Header";
-import { Book } from "../../db";
+import { AppSettings, Book } from "../../db";
 import { invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
 import { text } from "stream/consumers";
@@ -297,11 +297,8 @@ const Controller = ({ state, ...props }) => {
   context.hook(
     "player.showController",
     "player.showPlayer",
-    "player.chapterArray",
-    "player.currentChapter",
     "player._playing",
     "size",
-    "player.currentChapterIndex",
     "appSettings"
   );
 
@@ -349,55 +346,57 @@ const Controller = ({ state, ...props }) => {
     voiceWordSelectionsSettings,
     useSentenceBuilder,
     sentenceMargin
-  }: any) => {
-    Timer(async () => {
-      if (fontSize != undefined) {
-        context.appSettings.fontSize = fontSize;
-        context.appSettings.lineHeight = fontSize * context.lineHeight;
-      }
+  }: AppSettings | Record<string, any>) => {
+    Timer(() => {
+      context.batch(async () => {
+        if (fontSize != undefined) {
+          context.appSettings.fontSize = fontSize;
+          context.appSettings.lineHeight = fontSize * context.lineHeight;
+        }
 
-      if (lineHeight !== undefined) {
-        context.appSettings.lineHeight = lineHeight;
-      }
+        if (lineHeight !== undefined) {
+          context.appSettings.lineHeight = lineHeight;
+        }
 
-      if (isBold != undefined) {
-        context.appSettings.isBold = isBold;
-      }
-      if (backgroundColor !== undefined)
-        context.appSettings.backgroundColor = backgroundColor;
-      if (textAlign != undefined)
-        context.appSettings.textAlign = textAlign;
-      if (lockScreen != undefined) {
-        context.appSettings.lockScreen = lockScreen;
-        if (context.appSettings.lockScreen)
-          context.orientation("LANDSCAPE");
-        else context.orientation("Default");
-      }
-      if (rate != undefined) context.appSettings.rate = rate;
-      if (pitch != undefined) context.appSettings.pitch = pitch;
-      if (fontName) context.appSettings.fontName = fontName;
-      if (voice) context.appSettings.voice = voice;
-      if (margin != undefined) context.appSettings.margin = margin;
-      if (navigationType != undefined)
-        context.appSettings.navigationType = navigationType;
-      if (use3D != undefined) context.appSettings.use3D = use3D;
-      if (fontStyle != undefined)
-        context.appSettings.fontStyle = fontStyle;
-      if (shadowLength != undefined)
-        context.appSettings.shadowLength = shadowLength;
-      if (voiceWordSelectionsSettings)
-        context.appSettings.voiceWordSelectionsSettings =
-          voiceWordSelectionsSettings;
-      if (useSentenceBuilder) {
-        context.appSettings.useSentenceBuilder = useSentenceBuilder;
-      }
+        if (isBold != undefined) {
+          context.appSettings.isBold = isBold;
+        }
+        if (backgroundColor !== undefined)
+          context.appSettings.backgroundColor = backgroundColor;
+        if (textAlign != undefined)
+          context.appSettings.textAlign = textAlign;
+        if (lockScreen != undefined) {
+          context.appSettings.lockScreen = lockScreen;
+          if (context.appSettings.lockScreen)
+            context.orientation("LANDSCAPE");
+          else context.orientation("Default");
+        }
+        if (rate != undefined) context.appSettings.rate = rate;
+        if (pitch != undefined) context.appSettings.pitch = pitch;
+        if (fontName) context.appSettings.fontName = fontName;
+        if (voice) context.appSettings.voice = voice;
+        if (margin != undefined) context.appSettings.margin = margin;
+        if (navigationType != undefined)
+          context.appSettings.navigationType = navigationType;
+        if (use3D != undefined) context.appSettings.use3D = use3D;
+        if (fontStyle != undefined)
+          context.appSettings.fontStyle = fontStyle;
+        if (shadowLength != undefined)
+          context.appSettings.shadowLength = shadowLength;
+        if (voiceWordSelectionsSettings)
+          context.appSettings.voiceWordSelectionsSettings =
+            voiceWordSelectionsSettings;
+        if (useSentenceBuilder) {
+          context.appSettings.useSentenceBuilder = useSentenceBuilder;
+        }
 
-      if (sentenceMargin) {
-        context.appSettings.sentenceMargin = sentenceMargin;
-      }
-      await context.appSettings.saveChanges();
+        if (sentenceMargin) {
+          context.appSettings.sentenceMargin = sentenceMargin;
+        }
+        await context.appSettings.saveChanges();
 
-      if (useSentenceBuilder) context.player.clean();
+        if (useSentenceBuilder) context.player.clean();
+      });
     });
   };
 
@@ -408,32 +407,35 @@ const Controller = ({ state, ...props }) => {
         css={`band he:110 bottom maw-100% juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(
           context.appSettings.backgroundColor
         )}`}>
-        <ContextContainer keys="selection.chapterSliderValue">
-          <Text css="desc fos:13">
-            {context.player.procent(context.selection.chapterSliderValue)}
-          </Text>
-          <View css="wi-100% juc:center fld-row position-relative left-1 ali:center">
-            <Slider
-              css="invert"
-              disableTimer={true}
-              buttons={true}
-              value={context.selection.chapterSliderValue == undefined ? context.player.currentChapterIndex : context.selection.chapterSliderValue}
-              onValueChange={v => {
-                Timer.clear();
-                context.selection.chapterSliderValue = parseInt(v.toString())
-              }}
-              animationType="spring"
-              onSlidingComplete={index => {
-                Timer(() => {
-                  context.player.jumpTo(parseInt(index.toString()));
-                  context.selection.chapterSliderValue = undefined;
-                });
-              }}
-              minimumValue={0}
-              maximumValue={context.player.novel.chapters.length}
-            />
-          </View>
-        </ContextContainer>
+
+        <ContextContainer stateItem={{ chapterSliderValue: undefined }} globalStateKeys={["player.currentChapterIndex"]} render={(state) => {
+          return (<>
+            <Text css="desc fos:13">
+              {context.player.procent(state.chapterSliderValue)}
+            </Text>
+            <View css="wi-100% juc:center fld-row position-relative left-1 ali:center">
+              <Slider
+                css="invert"
+                disableTimer={true}
+                buttons={true}
+                value={state.chapterSliderValue == undefined ? context.player.currentChapterIndex : state.chapterSliderValue}
+                onValueChange={v => {
+                  Timer.clear();
+                  state.chapterSliderValue = parseInt(v.toString())
+                }}
+                animationType="spring"
+                onSlidingComplete={index => {
+                  Timer(async () => {
+                    await context.player.jumpTo(parseInt(index.toString()));
+                    state.chapterSliderValue = undefined;
+                  });
+                }}
+                minimumValue={0}
+                maximumValue={context.player.novel.chapters.length}
+              />
+            </View></>)
+        }} />
+
         <View css="clearwidth maw-95% overflow-hidden ali:center juc:center ">
           <Text
             numberOfLines={1}
@@ -447,7 +449,7 @@ const Controller = ({ state, ...props }) => {
       </View>
       <Header
         ifTrue={context.player.showController}
-        css={`absolute to:0 bobw:1 boc:${invertColor(
+        css={`absolute to:0 bobw:1 he-45 boc:${invertColor(
           context.appSettings.backgroundColor
         )}`}
         buttons={[
@@ -457,6 +459,7 @@ const Controller = ({ state, ...props }) => {
               <Icon
                 name="featured-play-list"
                 type="MaterialIcons"
+                css="fos-35"
               />
             ),
             press: () => {
@@ -467,23 +470,31 @@ const Controller = ({ state, ...props }) => {
           {
             text: (
               <ActionSheetButton
+                ready={false}
                 title="Chapters"
                 size="80%"
                 btn={
                   <Icon
                     type="MaterialCommunityIcons"
                     name="menu"
+                    css="fos-35"
                   />
                 }
               >
-                <ChapterView
-                  book={state.book}
-                  novel={state.novel}
-                  onPress={item => {
-                    context.player.jumpTo(item.url);
-                  }}
-                  current={context.player.currentChapter.url}
+                <ContextContainer
+                  globalStateKeys={["player.currentChapter"]}
+                  render={() => (
+                    <ChapterView
+                      book={state.book}
+                      novel={state.novel}
+                      onPress={async item => {
+                        await context.player.jumpTo(item.url);
+                      }}
+                      current={context.player.currentChapter.url}
+                    />
+                  )}
                 />
+
               </ActionSheetButton>
             )
           },
@@ -495,6 +506,7 @@ const Controller = ({ state, ...props }) => {
                   <Icon
                     type="Ionicons"
                     name="settings"
+                    css="fos-35"
                   />
                 }
               >
@@ -866,6 +878,7 @@ const Controller = ({ state, ...props }) => {
                     >
                       <FormItem title="Voices">
                         <DropDownLocalList
+                          globalContextKeys={["player.testVoice"]}
                           size={"80%"}
                           enableSearch={true}
                           css="invert"
@@ -889,34 +902,20 @@ const Controller = ({ state, ...props }) => {
                           selectedValue={context.appSettings.voice}
                           render={item => {
                             return (
-                              <View
-                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between`}
-                              >
+                              <View css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between`}>
                                 <Text css={`desc invertco fos:13`}>
                                   {item.label}
                                 </Text>
                                 <TouchableOpacity
                                   css={`bac:transparent`}
                                   onPress={() =>
-                                    context.player.testPlaying(
-                                      item.value
-                                    )
+                                    context.player.testPlaying(item.value)
                                   }
                                 >
                                   <Icon
-                                    name={
-                                      context
-                                        .player
-                                        .testVoice ==
-                                        item.value
-                                        ? "stop-circle"
-                                        : "play-circle"
-                                    }
-                                    css="invert bac-transparent"
+                                    name={context.player.testVoice == item.value ? "stop-circle" : "play-circle"}
+                                    css="invert bac-transparent fos-35"
                                     type="Ionicons"
-                                    size={
-                                      35
-                                    }
                                   />
                                 </TouchableOpacity>
                               </View>
@@ -1087,71 +1086,74 @@ const Controller = ({ state, ...props }) => {
   );
 };
 const InternalWeb = ({ state, ...props }: any) => {
-
+  const loader = context.player.usePlayerLoader();
   return (
-    <Web
-      click={() => {
-        context.player.showController = !context.player.showController;
-      }}
-      onComments={index => {
-        context.player.menuOptions.comment =
-          context.player.book.textReplacements[index].comments;
-      }}
-      onMenu={(item: any) => {
-        // handle later
-        if (item.text == "Translate")
-          context.player.menuOptions.textToTranslate = item.selection;
-        else if (item.text === "Copy") {
-          Clipboard.setStringAsync(item.selection);
-        } else if (item.text === "Define") {
-          context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(/ /g, "+")}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
-        } else {
-          context.player.menuOptions.textEdit = {
-            edit: item.selection,
-            bgColor: undefined,
-            comments: undefined,
-            editWith: item.selection
-          };
-        }
-      }}
-      menuItems={{
-        selector: "#novel",
-        minlength: 2,
-        items: [
-          {
-            text: "Copy",
-            icon: "content_copy"
-          },
-          {
-            text: "Translate",
-            icon: "translate"
-          },
-          {
-            text: "Define",
-            icon: "search"
-          },
-          {
-            text: "Edit",
-            icon: "edit_note"
+    <>
+      {loader.elem}
+      <Web
+        click={() => {
+          context.player.showController = !context.player.showController;
+        }}
+        onComments={index => {
+          context.player.menuOptions.comment =
+            context.player.book.textReplacements[index].comments;
+        }}
+        onMenu={(item: any) => {
+          // handle later
+          if (item.text == "Translate")
+            context.player.menuOptions.textToTranslate = item.selection;
+          else if (item.text === "Copy") {
+            Clipboard.setStringAsync(item.selection);
+          } else if (item.text === "Define") {
+            context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(/ /g, "+")}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
+          } else {
+            context.player.menuOptions.textEdit = {
+              edit: item.selection,
+              bgColor: undefined,
+              comments: undefined,
+              editWith: item.selection
+            };
           }
-        ]
-      }}
-      bottomReched={() => {
-        if (!context.player.isloading)
-          context.player.next(true)
-      }}
-      topReched={() => {
-        if (!context.player.isloading)
-          context.player.prev()
-      }
-      }
-      onScroll={(y: number) => {
-        if (context.player.isloading)
-          return;
-        context.player.currentChapterSettings.scrollProgress = y;
-        context.player.currentChapterSettings.saveChanges();
-      }}
-    />
+        }}
+        menuItems={{
+          selector: "#novel",
+          minlength: 2,
+          items: [
+            {
+              text: "Copy",
+              icon: "content_copy"
+            },
+            {
+              text: "Translate",
+              icon: "translate"
+            },
+            {
+              text: "Define",
+              icon: "search"
+            },
+            {
+              text: "Edit",
+              icon: "edit_note"
+            }
+          ]
+        }}
+        bottomReched={() => {
+          if (!context.player.isloading)
+            context.player.next(true)
+        }}
+        topReched={() => {
+          if (!context.player.isloading)
+            context.player.prev()
+        }
+        }
+        onScroll={(y: number) => {
+          if (context.player.isloading)
+            return;
+          context.player.currentChapterSettings.scrollProgress = y;
+          context.player.currentChapterSettings.saveChanges();
+        }}
+      />
+    </>
   );
 };
 
@@ -1168,25 +1170,26 @@ export default (props: any) => {
     },
     "New"
   );
-  const state = buildState(
+  const state = buildState(() =>
+  (
     {
       novel: {} as DetailInfo,
       parser: context.parser.find(parserName),
-      book: {} as Book
-    }).ignore(
+      book: {} as Book,
+      ready: false
+    })).ignore(
       "book",
       "parser",
       "novel"
     ).build();
 
-  context.hook("appSettings.backgroundColor");
+  // context.hook("appSettings.backgroundColor");
 
   const loadData = async () => {
     try {
 
       loader.show();
       if (state.novel.url) {
-        loader.hide();
         return;
       }
       state.novel = parserName == "epub" || epub
@@ -1219,42 +1222,22 @@ export default (props: any) => {
         context.player = new Player(
           state.novel,
           state.book,
-          {
-            show: () => {
-              loader.show();
-              context.player.isloading = true;
-            },
-            hide: () => {
-              loader.hide();
-              context.player.isloading = false;
-            }
-          },
           epub === true
         );
         await context.player.jumpTo(chapter);
       } else {
         context.player.novel = state.novel = state.novel;
         state.book = context.player.book;
-        context.player.loader = {
-          show: () => {
-            loader.show();
-            context.player.isloading = true;
-          },
-          hide: () => {
-            loader.hide();
-            context.player.isloading = false;
-          }
-        };
         context.player.hooked = true;
         context.player.viewState = "Default";
         await context.player.jumpTo(chapter);
-
-        loader.hide();
       }
     } catch (e) {
       console.error(e);
     } finally {
-      // loader.hide();
+      if (loader.loading)
+        loader.hide();
+      state.ready = true;
     }
   };
 
@@ -1278,7 +1261,7 @@ export default (props: any) => {
   }, []);
 
   context.useEffect(() => {
-    if (context.player.networkError) {
+    if (context.player?.networkError) {
       AlertDialog
         .confirm(
           {
@@ -1293,14 +1276,8 @@ export default (props: any) => {
     }
   }, "player.networkError");
 
+  const loading = (!state.ready || (loader.loading && (!state.novel.name || !context.player?.currentChapterSettings)));
 
-
-  if (
-    loader.loading &&
-    (!state.novel.name || !context.player?.currentChapterSettings)
-  ) {
-    return loader.elem;
-  }
   return (
     <>
       {loader.elem}
@@ -1309,13 +1286,17 @@ export default (props: any) => {
         css="flex"
         style={{
           zIndex: 100,
-          backgroundColor: context.appSettings.backgroundColor
+          backgroundColor: loading ? context.appSettings.backgroundColor : "transparent"
         }}
       >
-        <Modoles />
-        <Controller state={state} {...props} />
-        <InternalWeb state={state} {...props} />
-        <PlayerView />
+        {!loading ? (
+          <>
+            <Modoles />
+            <Controller state={state} {...props} />
+            <InternalWeb state={state} {...props} />
+            <PlayerView />
+          </>
+        ) : null}
       </View>
     </>
   );

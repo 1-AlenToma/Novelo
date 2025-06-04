@@ -38,15 +38,16 @@ const WatchAnime = (props: any) => {
     const loader = useLoader(true, "Loading please wait");
     useKeepAwake();
     const parser = context.parser.find(parserName);
-    const state = buildState({
+    const state = buildState(() =>
+    ({
         book: undefined as Book | undefined,
         anime: undefined as DetailInfo | undefined,
         chapterDetail: undefined as ChapterDetail | undefined,
         selectedChapter: undefined as ChapterInfo | undefined,
         displayHeader: true,
-        webView: undefined as WebView | undefined,
 
-    }).ignore("anime", "book", "chapterDetail", "webView").build();
+    })).ignore("anime", "book", "chapterDetail").build();
+
     const actionSheet = useRef({
         onChange: (visibility) => {
             state.displayHeader = !visibility;
@@ -122,8 +123,8 @@ const WatchAnime = (props: any) => {
         }
     }
 
-    if (state.chapterDetail == undefined || !state.selectedChapter)
-        return loader.elem;
+
+
 
     let css = `
         .videoSize, iframe, #jwppp-video- {
@@ -141,39 +142,41 @@ const WatchAnime = (props: any) => {
                 zIndex: 100,
                 backgroundColor: context.appSettings.backgroundColor
             }}>
-            <Header css={`boc:${invertColor(context.appSettings.backgroundColor)}`} {...props} buttons={[
-                {
-                    text: (
-                        <ActionSheetButton
-                            title="Chapters"
-                            size="95%"
-                            refItem={actionSheet}
-                            btn={
-                                <Icon
-                                    type="MaterialCommunityIcons"
-                                    name="menu"
-                                />
-                            }
-                        >
-                            <ChapterView
-                                book={state.book}
-                                novel={state.anime}
-                                onPress={item => {
-                                    console.warn(item)
-                                    loadChapter(item.url);
-                                }}
-                                current={state.selectedChapter.url}
-                            />
-                        </ActionSheetButton>
-                    )
-                }
-            ]} />
+            {
+                state.chapterDetail && state.selectedChapter ? (<>
+                    <Header css={`boc:${invertColor(context.appSettings.backgroundColor)}`} {...props} buttons={[
+                        {
+                            text: (
+                                <ActionSheetButton
+                                    ready={false}
+                                    title="Chapters"
+                                    size="95%"
+                                    refItem={actionSheet}
+                                    btn={
+                                        <Icon
+                                            type="MaterialCommunityIcons"
+                                            name="menu"
+                                        />
+                                    }
+                                >
+                                    <ChapterView
+                                        book={state.book}
+                                        novel={state.anime}
+                                        onPress={item => {
+                                            console.warn(item)
+                                            loadChapter(item.url);
+                                        }}
+                                        current={state.selectedChapter.url}
+                                    />
+                                </ActionSheetButton>
+                            )
+                        }
+                    ]} />
 
-            <View ifTrue={state.displayHeader} css={`bac:${context.appSettings.backgroundColor} flex-1`}>
-                {loader.elem}
-                <WebView
-                    ref={c => state.webView = c}
-                    injectedJavaScript={`
+                    <View ifTrue={state.displayHeader} css={`bac:${context.appSettings.backgroundColor} flex-1`}>
+                        {loader.elem}
+                        <WebView
+                            injectedJavaScript={`
 
                         window.postmsg = (type, data) => {
                         const item = { type, data };
@@ -224,44 +227,46 @@ const WatchAnime = (props: any) => {
                         videoCheck();
                         true;
                      `}
-                    onNavigationStateChange={(event) => {
-                        if (event.url !== state.selectedChapter.url) {
+                            onNavigationStateChange={(event) => {
+                                if (event.url !== state.selectedChapter.url) {
 
-                        }
-                        return false;
-                    }}
-                    nestedScrollEnabled={true}
-                    cacheEnabled={true}
-                    source={{
-                        uri: state.selectedChapter.url
-                    }}
-                    contentMode="mobile"
-                    scalesPageToFit={true}
-                    originWhitelist={["*"]}
-                    scrollEnabled={true}
-                    userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
-                    setSupportMultipleWindows={false}
-                    style={[
-                        {
-                            backgroundColor: context.appSettings.backgroundColor
-                        }
-                    ]}
-                    containerStyle={[
-                        {
-                            backgroundColor: context.appSettings.backgroundColor,
-                            zIndex: 70,
-                            flex: 0,
-                            flexGrow: 1,
+                                }
+                                return false;
+                            }}
+                            nestedScrollEnabled={true}
+                            cacheEnabled={true}
+                            source={{
+                                uri: state.selectedChapter.url
+                            }}
+                            contentMode="mobile"
+                            scalesPageToFit={true}
+                            originWhitelist={["*"]}
+                            scrollEnabled={true}
+                            userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+                            setSupportMultipleWindows={false}
+                            style={[
+                                {
+                                    backgroundColor: context.appSettings.backgroundColor
+                                }
+                            ]}
+                            containerStyle={[
+                                {
+                                    backgroundColor: context.appSettings.backgroundColor,
+                                    zIndex: 70,
+                                    flex: 0,
+                                    flexGrow: 1,
 
-                        }]}
-                    onMessage={({ nativeEvent }) => onMassage(nativeEvent.data)}
-                    allowFileAccess={true}
-                    allowFileAccessFromFileURLs={true}
-                    allowUniversalAccessFromFileURLs={true}
-                    javaScriptEnabled={true}
-                    allowsFullscreenVideo={true}
-                />
-            </View>
+                                }]}
+                            onMessage={({ nativeEvent }) => onMassage(nativeEvent.data)}
+                            allowFileAccess={true}
+                            allowFileAccessFromFileURLs={true}
+                            allowUniversalAccessFromFileURLs={true}
+                            javaScriptEnabled={true}
+                            allowsFullscreenVideo={true}
+                        />
+                    </View>
+                </>) : loader.elem
+            }
         </View>
     )
 

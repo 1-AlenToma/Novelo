@@ -49,13 +49,13 @@ export default ({
   );
   const input = useRef();
   const sourceContainer = useRef({ close: () => { } });
-  const state = buildState(
-    {
-      text: "",
-      inputAnimator: {
-        state: undefined
-      } as any
-    }
+  const state = buildState(() =>
+  ({
+    text: "",
+    inputAnimator: {
+      state: undefined
+    } as any
+  })
   ).ignore("inputAnimator").build();
   const parserLoader = useLoader();
 

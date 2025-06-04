@@ -18,11 +18,12 @@ import { Parser } from "../native";
 
 type BtnTextType = "Install" | "Update" | "Uninstall";
 const ListItem = ({ item, zip }) => {
-  const state = buildState({
+  const state = buildState(() =>
+  ({
     btnText: "Install" as BtnTextType,
     parser: undefined as Parser,
     parserCode: "",
-  }).ignore("parser").build();
+  })).ignore("parser").build();
   const loader = useLoader(true)
 
   const load = async () => {

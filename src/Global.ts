@@ -482,7 +482,7 @@ global.test = (desc: string) => {
     global.tests.push(item);
     return item;
 }
-global.buildState = StateBuilder;
+global.buildState = (item) => StateBuilder(item).timeout(undefined);
 global.useEffect = React.useEffect;
 global.useState = React.useState;
 global.useRef = React.useRef;
