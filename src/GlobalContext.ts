@@ -43,6 +43,14 @@ const debugMode = __DEV__;
 
 const data = StateBuilder<GlobalType>(() => (
     {
+        dbBatch: async (fn) => {
+            await context.batch(async () => {
+                context.db.disableHooks().disableWatchers();
+                await fn();
+                await context.db.enableHooks();
+                await context.db.enableWatchers();
+            })
+        },
         versionName: version,
         version: parseInt(version.replace(/\./g, "")),
         notification,
@@ -166,92 +174,96 @@ const data = StateBuilder<GlobalType>(() => (
         },
         AppStart: async () => {
             try {
-
-                // await globalDb.dropTables();
-                let currentParserString: string = "";
-                const loadParsers = async () => {
-                    if (debugMode) {
-                        data.parser.all = ParserWrapper.getAllParsers() as ParserWrapper[];
-                        return;
-                    }
-                    const defaultParser = ParserWrapper.getAllParsers(data.parser.default) as ParserWrapper;
-                    let settings = data.appSettings;
-                    if (!settings.parsers)
-                        settings.parsers = [];
-                    if (currentParserString == JSON.stringify(settings.parsers))
-                        return;
-                    currentParserString = JSON.stringify(settings.parsers);
-                    let parserObjects = settings.parsers.map(x => data.parser.parseCode(x.content)).filter(x => x != undefined).map((x: any) => new x());
-                    let parsers: ParserWrapper[] = [];
-                    if (!parserObjects.find(x => x.name == data.parser.default))
-                        parsers.push(defaultParser);
-                    parsers.push(...parserObjects.map(x => new ParserWrapper(x)));
-                    parsers = parsers.sort((a, b) => {
-                        if (a.name == data.parser.default) { return -1; }
-                        return 1;
-                    })
-                    data.parser.all = parsers;
-                    if (data.appSettings.currentNovel && !data.appSettings.currentNovel.isEpub && !parsers.find(x => x.name == data.appSettings.currentNovel?.parserName)) {
-                        data.appSettings.currentNovel = {} as any;
-                        await data.appSettings.saveChanges();
-                    }
-                    if (!parsers.find(x => x.name == data.parser.current.name))
-                        await data.parser.set(parsers[0]);
-
-                    if (data.player && !data.player.isEpup && data.player.book && data.player.book.parserName && !parsers.find(x => x.name == data.player.book.parserName)) {
-                        data.player.showPlayer = data.player.hooked = false;
-                        data.player.playing(false);
-                        await context.speech.stop();
-
-                    }
-                }
-
-                const loadVoices = (counter?: number) => {
-                    setTimeout(
-                        async () => {
-                            const filename = "voices.json";
-                            let voices = await Speech.getAvailableVoicesAsync();
-                            if (voices.length <= 0) {
-                                let localVoices = await privateData.read(filename);
-                                voices = localVoices && localVoices.has() ? JSON.parse(localVoices) : voices;
+                let appSettingWatcher: any = {};
+                await context.batch(async () => {
+                    // await globalDb.dropTables();
+                    let currentParserString: string = "";
+                    const loadParsers = async () => {
+                        await context.batch(async () => {
+                            if (debugMode) {
+                                data.parser.all = ParserWrapper.getAllParsers() as ParserWrapper[];
+                                return;
                             }
-
-                            if (voices.length > 0) {
-                                data.voices = voices;
-                                await privateData.write(filename, JSON.stringify(voices));
+                            const defaultParser = ParserWrapper.getAllParsers(data.parser.default) as ParserWrapper;
+                            let settings = data.appSettings;
+                            if (!settings.parsers)
+                                settings.parsers = [];
+                            if (currentParserString == JSON.stringify(settings.parsers))
+                                return;
+                            currentParserString = JSON.stringify(settings.parsers);
+                            let parserObjects = settings.parsers.map(x => data.parser.parseCode(x.content)).filter(x => x != undefined).map((x: any) => new x());
+                            let parsers: ParserWrapper[] = [];
+                            if (!parserObjects.find(x => x.name == data.parser.default))
+                                parsers.push(defaultParser);
+                            parsers.push(...parserObjects.map(x => new ParserWrapper(x)));
+                            parsers = parsers.sort((a, b) => {
+                                if (a.name == data.parser.default) { return -1; }
+                                return 1;
+                            })
+                            data.parser.all = parsers;
+                            if (data.appSettings.currentNovel && !data.appSettings.currentNovel.isEpub && !parsers.find(x => x.name == data.appSettings.currentNovel?.parserName)) {
+                                data.appSettings.currentNovel = {} as any;
+                                await data.appSettings.saveChanges();
                             }
-                            else {
-                                console.log("voices not found");
-                                if (!counter || counter < 10)
-                                    loadVoices((counter ?? 0) + 1);
-                            }
-                        },
-                        (counter ?? 1) * 300
-                    );
-                };
-                await globalDb.setUpDataBase();
-                await globalDb.migrateNewChanges();
-                data.appSettings = await globalDb.AppSettings.query.findOrSave(data.appSettings);
-                if (data.appSettings.filesDataLocation && !data.appSettings.filesDataLocation.empty()) {
-                    data.files = new FileHandler(data.appSettings.filesDataLocation.path(FilesPath.File), undefined, true);
-                    data.imageCache = new ImageCache(data.appSettings.filesDataLocation.path(FilesPath.Images))
-                }
-                await loadParsers();
-                if (data.parser.find(data.appSettings.selectedParser)) {
-                    data.parser.set(data.parser.find(data.appSettings.selectedParser))
-                }
+                            if (!parsers.find(x => x.name == data.parser.current.name))
+                                await data.parser.set(parsers[0]);
 
-                let appSettingWatcher = globalDb.watch("AppSettings");
-                appSettingWatcher.onSave = async items => {
-                    let item = items?.firstOrDefault();
-                    if (item) {
-                        data.appSettings = item as any;
-                        loadParsers();
+                            if (data.player && !data.player.isEpup && data.player.book && data.player.book.parserName && !parsers.find(x => x.name == data.player.book.parserName)) {
+                                data.player.showPlayer = data.player.hooked = false;
+                                data.player.playing(false);
+                                await context.speech.stop();
+
+                            }
+                        });
                     }
-                };
-                data.selectedThemeIndex = data.appSettings.selectedTheme ?? 0;
-                loadVoices();
-                data.parser.current.settings = (await data.parser.current.load() as any);
+
+                    const loadVoices = (counter?: number) => {
+                        setTimeout(
+                            async () => {
+                                const filename = "voices.json";
+                                let voices = await Speech.getAvailableVoicesAsync();
+                                if (voices.length <= 0) {
+                                    let localVoices = await privateData.read(filename);
+                                    voices = localVoices && localVoices.has() ? JSON.parse(localVoices) : voices;
+                                }
+
+                                if (voices.length > 0) {
+                                    data.voices = voices;
+                                    await privateData.write(filename, JSON.stringify(voices));
+                                }
+                                else {
+                                    console.log("voices not found");
+                                    if (!counter || counter < 10)
+                                        loadVoices((counter ?? 0) + 1);
+                                }
+                            },
+                            (counter ?? 1) * 300
+                        );
+                    };
+                    await globalDb.setUpDataBase();
+                    await globalDb.migrateNewChanges();
+                    data.appSettings = await globalDb.AppSettings.query.findOrSave(data.appSettings);
+                    if (data.appSettings.filesDataLocation && !data.appSettings.filesDataLocation.empty()) {
+                        data.files = new FileHandler(data.appSettings.filesDataLocation.path(FilesPath.File), undefined, true);
+                        data.imageCache = new ImageCache(data.appSettings.filesDataLocation.path(FilesPath.Images))
+                    }
+                    await loadParsers();
+                    if (data.parser.find(data.appSettings.selectedParser)) {
+                        data.parser.set(data.parser.find(data.appSettings.selectedParser))
+                    }
+
+                    appSettingWatcher = globalDb.watch("AppSettings");
+                    appSettingWatcher.onSave = async items => {
+                        let item = items?.firstOrDefault();
+                        if (item) {
+                            data.appSettings = item as any;
+                            loadParsers();
+                        }
+                    };
+                    data.selectedThemeIndex = data.appSettings.selectedTheme ?? 0;
+                    loadVoices();
+                    data.parser.current.settings = (await data.parser.current.load() as any);
+                });
                 const showSubscription = Keyboard.addListener(
                     "keyboardDidShow",
                     () => {
@@ -278,7 +290,7 @@ const data = StateBuilder<GlobalType>(() => (
                     windowEvent,
                     { remove: () => BGService.stop() },
                     {
-                        remove: () => appSettingWatcher.removeWatch()
+                        remove: () => appSettingWatcher.removeWatch?.()
                     }
                 ];
             } catch (e) {

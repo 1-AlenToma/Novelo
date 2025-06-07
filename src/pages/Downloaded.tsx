@@ -13,9 +13,6 @@ import {
 import Header from "./Header";
 import * as React from "react";
 import {
-  useNavigation,
-  useUpdate,
-  useDbHook,
   useView
 } from "../hooks";
 import { Book } from "../db";

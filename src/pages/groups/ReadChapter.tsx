@@ -37,7 +37,6 @@ import Header from "../../pages/Header";
 import { AppSettings, Book } from "../../db";
 import { invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
-import { text } from "stream/consumers";
 
 const lang = {};
 
@@ -1186,59 +1185,63 @@ export default (props: any) => {
   // context.hook("appSettings.backgroundColor");
 
   const loadData = async () => {
-    try {
+    await context.dbBatch(async () => {
+      await state.batch(async () => {
+        try {
 
-      loader.show();
-      if (state.novel.url) {
-        return;
-      }
-      state.novel = parserName == "epub" || epub
-        ? files.fileItems.find(x => x.url === url)
-        : await state.parser?.detail(url, true);
+          loader.show();
+          if (state.novel.url) {
+            return;
+          }
+          state.novel = parserName == "epub" || epub
+            ? files.fileItems.find(x => x.url === url)
+            : await state.parser?.detail(url, true);
 
-      if (!state.novel || !state.novel.name)
-        return;
-      if (
-        !context.player.novel ||
-        context.player.novel.url !== url ||
-        context.player.isEpup != (epub === true)
-      ) {
-        context.player = undefined;
-        let book = await context
-          .db.Books.query.load("chapterSettings")
-          .where.column(x => x.url)
-          .equalTo(url)
-          .and.column(x => x.parserName).equalTo(parserName)
-          .findOrSave(
-            Book.n()
-              .Url(state.novel.url)
-              .Name(state.novel.name)
-              .ParserName(parserName)
-              .ImageBase64(await context.http().imageUrlToBase64(state.novel.image)));
+          if (!state.novel || !state.novel.name)
+            return;
+          if (
+            !context.player.novel ||
+            context.player.novel.url !== url ||
+            context.player.isEpup != (epub === true)
+          ) {
+            context.player = undefined;
+            let book = await context
+              .db.Books.query.load("chapterSettings")
+              .where.column(x => x.url)
+              .equalTo(url)
+              .and.column(x => x.parserName).equalTo(parserName)
+              .findOrSave(
+                Book.n()
+                  .Url(state.novel.url)
+                  .Name(state.novel.name)
+                  .ParserName(parserName)
+                  .ImageBase64(await context.http().imageUrlToBase64(state.novel.image)));
 
-        if (!book.textReplacements) book.textReplacements = [];
-        state.book = book;
+            if (!book.textReplacements) book.textReplacements = [];
+            state.book = book;
 
-        context.player = new Player(
-          state.novel,
-          state.book,
-          epub === true
-        );
-        await context.player.jumpTo(chapter);
-      } else {
-        context.player.novel = state.novel = state.novel;
-        state.book = context.player.book;
-        context.player.hooked = true;
-        context.player.viewState = "Default";
-        await context.player.jumpTo(chapter);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      if (loader.loading)
-        loader.hide();
-      state.ready = true;
-    }
+            context.player = new Player(
+              state.novel,
+              state.book,
+              epub === true
+            );
+            await context.player.jumpTo(chapter);
+          } else {
+            context.player.novel = state.novel = state.novel;
+            state.book = context.player.book;
+            context.player.hooked = true;
+            context.player.viewState = "Default";
+            await context.player.jumpTo(chapter);
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          if (loader.loading)
+            loader.hide();
+          state.ready = true;
+        }
+      });
+    });
   };
 
 
@@ -1289,7 +1292,7 @@ export default (props: any) => {
           backgroundColor: loading ? context.appSettings.backgroundColor : "transparent"
         }}
       >
-        {!loading ? (
+        {!loading && context.player?.currentChapterSettings ? (
           <>
             <Modoles />
             <Controller state={state} {...props} />

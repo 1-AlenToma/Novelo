@@ -18,6 +18,7 @@ import {
   useNumColumns
 } from "hooks";
 import {
+  HttpHandler,
   SearchDetail
 } from "native";
 import Header from "pages/Header";
@@ -117,6 +118,7 @@ export default ({ ...props }: any) => {
   const fetchData = async (page?: number) => {
     loader.show();
     try {
+
       let parser = state.parser;
       state.procent.value = 0;
       if (state.text == undefined) {
@@ -247,7 +249,10 @@ export default ({ ...props }: any) => {
     }
 
     fetchData(1);
+
   };
+
+
 
   if (!state.text)
     return loader.elem;

@@ -1,7 +1,6 @@
 import { VirtualScroller, DropdownList, View, Text } from "./ReactNativeComponents";
 import * as React from "react";
 import { useNumColumns } from "hooks";
-import { ReadyView } from "./ReadyView";
 
 const colors = [
   {

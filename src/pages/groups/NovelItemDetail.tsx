@@ -62,29 +62,31 @@ export default ({ ...props }: any) => {
 
   let fetchData = async (refresh?: boolean) => {
     loader.show();
-    let parser = context.parser.find(parserName);
-    try {
-      if (parser && url) {
-        let novel = await parser.detail(url, true, refresh ? "RenewMemo" : undefined);
-        state.novel = novel ?? {} as any;
-        if (novel) {
-          state.book = await context
-            .db.Books.query.load("chapterSettings")
-            .where.column(x => x.url)
-            .equalTo(url)
-            .and.column(x => x.parserName)
-            .equalTo(parserName)
-            .firstOrDefault();
-        }
+    await state.batch(async () => {
+      let parser = context.parser.find(parserName);
+      try {
+        if (parser && url) {
+          let novel = await parser.detail(url, true, refresh ? "RenewMemo" : undefined);
+          state.novel = novel ?? {} as any;
+          if (novel) {
+            state.book = await context
+              .db.Books.query.load("chapterSettings")
+              .where.column(x => x.url)
+              .equalTo(url)
+              .and.column(x => x.parserName)
+              .equalTo(parserName)
+              .firstOrDefault();
+          }
 
-        if (parser.infoEnabled) loadInfo(novel);
-        await fetchAuthorNovels();
+          if (parser.infoEnabled) loadInfo(novel);
+          await fetchAuthorNovels();
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        loader.hide();
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      loader.hide();
-    }
+    });
   };
 
   let loadInfo = async (novel: any) => {
@@ -309,7 +311,9 @@ export default ({ ...props }: any) => {
                 </View>
                 <View
                   css={`box pal:10 par:10 invert ${state.novel.decription?.has() ? "" : "mih-20"}`}>
-                  <ExpandableDescription ifTrue={state.novel.decription?.has() ?? false} text={state.novel.decription} numberOfLines={5} />
+                  <View css="mih-200">
+                    <ExpandableDescription ifTrue={state.novel.decription?.has() ?? false} text={state.novel.decription} numberOfLines={5} />
+                  </View>
 
                   <View css={`botw-${state.novel.decription?.has() ? "1" : "0"} row pat:5 pab:5 botc:gray clearwidth juc:space-between ali:center invert`}>
                     <Text
@@ -337,6 +341,7 @@ export default ({ ...props }: any) => {
                       title="Chapters"
                       size="80%">
                       <ChapterView
+                        ignoreChapterValidation={true}
                         book={state.book}
                         novel={state.novel}
                         onPress={item => {

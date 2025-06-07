@@ -162,6 +162,7 @@ export type WebViewProps = {
 }
 export type GlobalType =
   {
+    dbBatch: (fn: () => Promise<void>) => Promise<void>,
     version: number,
     versionName: string,
     html: {

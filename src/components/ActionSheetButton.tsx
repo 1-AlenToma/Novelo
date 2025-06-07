@@ -1,8 +1,7 @@
 import { ActionSheet, Modal } from "./ReactNativeComponents";
 import * as React from "react";
-import { Text, TouchableOpacity } from "./ReactNativeComponents";
+import { Text, TouchableOpacity, ReadyView } from "./ReactNativeComponents";
 import { ifSelector } from "../Methods";
-import { ReadyView } from "./ReadyView";
 export default ({
   btn,
   css,
@@ -47,6 +46,9 @@ export default ({
 
   const CN = controller == "Modal" ? Modal : ActionSheet;
   const Container = ready !== false ? ReadyView : React.Fragment;
+  let containerProps: any = {};
+  if (ready != false)
+    containerProps = { css: "bac-transparent", timeout: 10 };
   return (
     <>
       <TouchableOpacity {...tprops} style={{ backgroundColor: "transparent" }}>
@@ -62,7 +64,7 @@ export default ({
         isVisible={visible}
         onHide={() => setVisible(false)}
       >
-        <Container>
+        <Container {...containerProps}>
           {props.children}
         </Container>
       </CN>

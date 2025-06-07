@@ -1,4 +1,4 @@
-import { Icon } from "./ReactNativeComponents";
+import { Icon, useTimer } from "./ReactNativeComponents";
 import useLoader from "./Loader";
 import * as React from "react";
 import { View, Text, SafeAreaView, VirtualScroller, VirtualScrollerViewRefProps } from "./ReactNativeComponents";
@@ -8,22 +8,24 @@ export const ChapterView = ({
   book,
   current,
   novel,
-  onPress
+  onPress,
+  ignoreChapterValidation
 }: {
   book: Book,
   novel: DetailInfo,
   current: any,
-  onPress: ((item: ChapterInfo) => Promise<void>) | ((item: ChapterInfo) => void)
+  onPress: ((item: ChapterInfo) => Promise<void>) | ((item: ChapterInfo) => void),
+  ignoreChapterValidation?: boolean
 }) => {
   let state = buildState(() =>
   ({
     index: { page: 0, index: 0 },
-    pager: { scrollToIndex: undefined } as VirtualScrollerViewRefProps,
-    chapterScroll: { scrollToIndex: undefined } as VirtualScrollerViewRefProps,
     currentPage: 0
   })).build();
   const size = 100;
   const loader = useLoader(true, "Loading Chapter");
+  const initLoading = useLoader(novel?.chapters.length > 0, "Loading Chapter");
+  const initTimer = useTimer(100)
   const getChapterItems = (chunkIndex: number) => {
     const chapters = novel?.chapters ?? [];
     const start = chunkIndex * size;
@@ -35,10 +37,11 @@ export const ChapterView = ({
     const chapters = novel?.chapters;
     if (!Array.isArray(chapters) || chapters.length === 0) return [];
     const totalChunks = Math.ceil(chapters.length / size);
-    return Array.from({ length: totalChunks }, (_, chunkIndex) => ({
+    const data = Array.from({ length: totalChunks }, (_, chunkIndex) => ({
       index: chunkIndex,
       items: undefined
     }));
+    return data;
   }, [novel?.chapters?.length]);
 
 
@@ -62,18 +65,6 @@ export const ChapterView = ({
   }, [current]);
 
 
-
-  useEffect(() => {
-    if (state.pager.scrollToIndex)
-      state.pager.scrollToIndex(state.currentPage, true);
-  }, [state.currentPage, state.pager.scrollToIndex])
-
-  useEffect(() => {
-    if (state.chapterScroll.scrollToIndex) {
-      state.chapterScroll.scrollToIndex(state.index.page == state.currentPage ? state.index.index : 0, true);
-    }
-  }, [state.currentPage, state.index.index, state.chapterScroll.scrollToIndex])
-
   const settingsMap = React.useMemo(() => {
     const map = new Map<string, { scrollProgress?: number; isFinished?: boolean }>();
     for (const s of book?.chapterSettings ?? []) map.set(s.url, s);
@@ -90,7 +81,7 @@ export const ChapterView = ({
         css="clearwidth he:50 mat:10">
         <VirtualScroller
           updateOn={[state.currentPage]}
-          ref={state.pager as any}
+          initializeIndex={state.currentPage}
           items={chArray}
           itemSize={{ size: 115 }}
           onItemPress={({ item }) => {
@@ -117,21 +108,26 @@ export const ChapterView = ({
               </View>
             )
           }}
-          itemStyle={{ padding: 5, width: "100%", borderBottomWidth: 1, borderColor: "gray" }}
+          itemStyle="pa-5 wi-100% bobw-1 boc-gray invert"
           horizontal={true}
         />
       </View>
       <View css="clearwidth mih:50 flex invert po-relative">
         <VirtualScroller
           updateOn={[current]}
+          ref={() => {
+            initTimer(() => {
+              initLoading.hide()
+            });
+          }}
           onItemPress={async ({ item }: { item: ChapterInfo }) => {
-            if (current != item.url) {
+            if (current != item.url || ignoreChapterValidation) {
               loader.show();
               await onPress(item);
             }
           }}
           itemSize={{ size: 45 }}
-          ref={state.chapterScroll as any}
+          initializeIndex={state.index.page == state.currentPage ? state.index.index : 0}
           items={chArray[state.currentPage]?.items ?? []}
           renderItem={({ item, index }) => (
             <View
@@ -156,10 +152,10 @@ export const ChapterView = ({
               </View>
             </View>
           )}
-          itemStyle={{ padding: 5, width: "100%", borderBottomWidth: 1, borderColor: "gray" }}
+          itemStyle="pa-5 wi-100% bobw-1 boc-gray invert"
         />
       </View>
-      {loader.elem}
+      {loader.elem ?? initLoading.elem}
     </SafeAreaView>
   );
 };

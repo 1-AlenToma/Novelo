@@ -203,74 +203,75 @@ class Player {
   }
 
   async jumpTo(index?: number | string) {
-    await this.stop();
     this.show();
-
-    if (index === undefined)
-      index = this.book.selectedChapterIndex;
-    if (
-      !context.appSettings.currentNovel ||
-      context.appSettings.currentNovel.url !=
-      this.book.url ||
-      context.appSettings.currentNovel.parserName != this.book.parserName ||
-      context.appSettings.currentNovel.isEpub !=
-      this.isEpup
-    ) {
-      context.appSettings.currentNovel = {
-        url: this.book.url,
-        parserName: this.book.parserName,
-        isEpub:
-          this.isEpup ||
-          this.book.parserName === "epub"
-      };
-      await context.appSettings.saveChanges();
-    }
-    if (typeof index === "string")
-      index = this.novel.chapters.findIndex(
-        x => x.url === index
-      );
-    if (this.novel.chapters[index] == undefined)
-      index = this.novel.chapters.length - 1; // outside array
-
-    this.currentChapterIndex = index as number
-    this.book.selectedChapterIndex = index;
-    this.currentChapter = this.novel.chapters[index];
-    if (
-      this.book.chapterSettings.find(
-        x => x.name === this.currentChapter.name
-      )
-    ) {
-      let ch = this.book.chapterSettings.find(
-        x => x.name === this.currentChapter.name
-      );
-      if (ch &&
-        (ch.audioProgress === undefined ||
-          ch.audioProgress === null)
+    await this.stop();
+    await context.dbBatch(async () => {
+      if (index === undefined)
+        index = this.book.selectedChapterIndex;
+      if (
+        !context.appSettings.currentNovel ||
+        context.appSettings.currentNovel.url !=
+        this.book.url ||
+        context.appSettings.currentNovel.parserName != this.book.parserName ||
+        context.appSettings.currentNovel.isEpub !=
+        this.isEpup
       ) {
-        ch.audioProgress = 0;
+        context.appSettings.currentNovel = {
+          url: this.book.url,
+          parserName: this.book.parserName,
+          isEpub:
+            this.isEpup ||
+            this.book.parserName === "epub"
+        };
+        await context.appSettings.saveChanges();
+      }
+      if (typeof index === "string")
+        index = this.novel.chapters.findIndex(
+          x => x.url === index
+        );
+      if (this.novel.chapters[index] == undefined)
+        index = this.novel.chapters.length - 1; // outside array
 
+      this.currentChapterIndex = index as number
+      this.book.selectedChapterIndex = index;
+      this.currentChapter = this.novel.chapters[index];
+      if (
+        this.book.chapterSettings.find(
+          x => x.name === this.currentChapter.name
+        )
+      ) {
+        let ch = this.book.chapterSettings.find(
+          x => x.name === this.currentChapter.name
+        );
+        if (ch &&
+          (ch.audioProgress === undefined ||
+            ch.audioProgress === null)
+        ) {
+          ch.audioProgress = 0;
+
+        }
+
+        if (ch)
+          this.currentChapterSettings = ch;
+      } else {
+        let chSettings = Chapter.n()
+          .Url(this.currentChapter.url)
+          .Name(this.currentChapter.name)
+          .ScrollProgress(this.currentChapterIndex > 0 && context.appSettings.navigationType === "Scroll" ? 100 : 10)
+          .AudioProgress(0)
+          .Parent_Id(this.book.id);
+
+        await context.db.save<Chapter>(chSettings);
+        this.currentChapterSettings = await context.db.asQueryable<Chapter>(chSettings);
+        this.book.chapterSettings.push(this.currentChapterSettings as any);
       }
 
-      if (ch)
-        this.currentChapterSettings = ch;
-    } else {
-      let chSettings = Chapter.n()
-        .Url(this.currentChapter.url)
-        .Name(this.currentChapter.name)
-        .ScrollProgress(this.currentChapterIndex > 0 && context.appSettings.navigationType === "Scroll" ? 100 : 10)
-        .AudioProgress(0)
-        .Parent_Id(this.book.id);
-
-      await context.db.save<Chapter>(chSettings);
-      this.currentChapterSettings = await context.db.asQueryable<Chapter>(chSettings);
-      this.book.chapterSettings.push(this.currentChapterSettings as any);
-    }
-
-    await this.book.saveChanges();
-    await this.getChapterContent(
-      this.currentChapter.url
-    );
-    if (this.playing()) this.speak();
+      await this.book.saveChanges();
+      await this.getChapterContent(
+        this.currentChapter.url
+      );
+      if (this.playing()) this.speak();
+    });
     this.hide();
   }
 

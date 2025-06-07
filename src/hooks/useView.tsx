@@ -15,6 +15,7 @@ interface Props<T> {
   state?: T;
   component: any;
   timer?: number;
+  key?: string;
   loader?: {
     text?: string;
     value?: boolean;
@@ -55,7 +56,9 @@ export default function <T>({
       const Component = component ?? View;
       return (
         <Component
+
           {...prs}
+          key={props.key}
           onLayout={event => {
 
             itemState.size = { ...event.nativeEvent.layout };
