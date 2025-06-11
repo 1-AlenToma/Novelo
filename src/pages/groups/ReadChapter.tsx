@@ -407,7 +407,7 @@ const Controller = ({ state, ...props }) => {
           context.appSettings.backgroundColor
         )}`}>
 
-        <ContextContainer stateItem={{ chapterSliderValue: undefined }} globalStateKeys={["player.currentChapterIndex"]} render={(state) => {
+        <ContextContainer stateItem={{ chapterSliderValue: undefined }} globalStateKeys={["player.currentChapterIndex", "player.showController"]} render={(state) => {
           return (<>
             <Text css="desc fos:13">
               {context.player.procent(state.chapterSliderValue)}

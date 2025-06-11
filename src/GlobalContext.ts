@@ -299,7 +299,7 @@ const data = StateBuilder<GlobalType>(() => (
 
             return [];
         }
-    })).timeout(0).ignore(
+    })).ignore(
         "files",
         "imageCache",
         "cache",

@@ -111,7 +111,6 @@ export default ({
   const [render, state, loader, timer] = useView({
     timer: 200,
     component: WebView,
-    key: "WebNovel",
     loader: {
       text: "Loading, Please wait",
       value: true

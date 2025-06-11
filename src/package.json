@@ -24,7 +24,7 @@
     "@react-native-community/slider": "4.5.5",
     "@react-navigation/native": "^6.1.9",
     "@react-navigation/native-stack": "^6.9.17",
-    "@shopify/flash-list": "^1.8.0",
+    "@shopify/flash-list": "1.7.3",
     "advanced-html-parser": "^1.1.0",
     "expo": "~52.0.46",
     "expo-application": "~6.0.2",
@@ -75,11 +75,11 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/node": "^22.7.5",
-    "@types/react": "~18.3.12",
     "bestzip": "^2.2.1",
     "cross-env": "^7.0.3",
     "expo-dev-client": "~5.0.19",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "@types/react": "~18.3.12"
   },
   "private": true
 }
