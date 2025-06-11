@@ -15,7 +15,7 @@ import {
 } from "./native";
 import { Dimensions, Keyboard, LogBox } from "react-native";
 import StateBuilder from "react-smart-state";
-import { GlobalType, FilesPath, Ajax, WebViewProps } from "./Types";
+import { GlobalType, FilesPath, WebViewProps } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
 import { version } from "./package.json"

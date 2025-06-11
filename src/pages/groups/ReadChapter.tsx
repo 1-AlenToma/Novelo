@@ -1094,8 +1094,7 @@ const InternalWeb = ({ state, ...props }: any) => {
           context.player.showController = !context.player.showController;
         }}
         onComments={index => {
-          context.player.menuOptions.comment =
-            context.player.book.textReplacements[index].comments;
+          context.player.menuOptions.comment = context.player.book.textReplacements[index].comments;
         }}
         onMenu={(item: any) => {
           // handle later
