@@ -1147,6 +1147,7 @@ const InternalWeb = ({ state, ...props }: any) => {
         onScroll={(y: number) => {
           if (context.player.isloading)
             return;
+          context.player.currentChapterSettings.readPercent = context.player.scrollProcent;
           context.player.currentChapterSettings.scrollProgress = y;
           context.player.currentChapterSettings.saveChanges();
         }}

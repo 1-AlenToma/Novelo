@@ -8,6 +8,7 @@ class Chapter extends DBInit {
   name: string = "";
   scrollProgress: number = 0;
   audioProgress: number = 0;
+  readPercent?: number = 0;
   isFinished: boolean = false;
   parent_Id?: number;
   constructor() {
@@ -28,7 +29,7 @@ class Chapter extends DBInit {
       .column("isFinished")
       .boolean.column("scrollProgress")
       .decimal.column("audioProgress")
-      .decimal.objectPrototype(Chapter.prototype);
+      .decimal.column("readPercent").decimal.nullable.objectPrototype(Chapter.prototype);
   }
 }
 public_m(Chapter);

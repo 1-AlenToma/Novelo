@@ -1,8 +1,8 @@
 import { Icon, useTimer } from "./ReactNativeComponents";
 import useLoader from "./Loader";
 import * as React from "react";
-import { View, Text, SafeAreaView, VirtualScroller, VirtualScrollerViewRefProps } from "./ReactNativeComponents";
-import { Book } from "db";
+import { View, Text, SafeAreaView, VirtualScroller, ProgressBar } from "./ReactNativeComponents";
+import { Book, Chapter } from "db";
 import { DetailInfo, ChapterInfo } from "native";
 export const ChapterView = ({
   book,
@@ -66,7 +66,7 @@ export const ChapterView = ({
 
 
   const settingsMap = React.useMemo(() => {
-    const map = new Map<string, { scrollProgress?: number; isFinished?: boolean }>();
+    const map = new Map<string, Chapter>();
     for (const s of book?.chapterSettings ?? []) map.set(s.url, s);
     return map;
   }, [book?.chapterSettings]);
@@ -112,8 +112,9 @@ export const ChapterView = ({
           horizontal={true}
         />
       </View>
-      <View css="clearwidth mih:50 flex invert po-relative">
+      <View css="clearwidth mih:50 flex invert mat-5 po-relative">
         <VirtualScroller
+          showsVerticalScrollIndicator={false}
           updateOn={[current]}
           ref={() => {
             initTimer(() => {
@@ -131,11 +132,13 @@ export const ChapterView = ({
           items={chArray[state.currentPage]?.items ?? []}
           renderItem={({ item, index }) => (
             <View
-              css={`flex mih:40 row juc:space-between di:flex ali:center par:5 bor:1 invert ${current == item.url ? "selectedRow pal-5 par-5" : ""}`}>
+              css={`pa-5 flex mih:40 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
               <Text
                 css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}`}>
                 {item.name.safeSplit("/", -1)}
               </Text>
+              <ProgressBar ifTrue={settingsMap.get(item.url)?.readPercent > 0}
+                color="#3b5998" value={settingsMap.get(item.url)?.readPercent / 100} css="_abc bo-0 he-5 wi-102%" />
               <View css="row clb">
                 <Icon
                   css={settingsMap.get(item.url)?.scrollProgress >= 200 ? "co-green" : undefined}
@@ -152,7 +155,7 @@ export const ChapterView = ({
               </View>
             </View>
           )}
-          itemStyle="pa-5 wi-100% bobw-1 boc-gray invert"
+          itemStyle="wi-100% bobw-1 boc-gray invert"
         />
       </View>
       {loader.elem ?? initLoading.elem}

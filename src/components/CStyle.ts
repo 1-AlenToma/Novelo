@@ -66,7 +66,7 @@ export default NestedStyleSheet.create({
     display: "none"
   },
 
-  itemListContainer: "flex wi-95% mih:100 pa-5 bow-0.5 boc-#333 shadow-xs shc-red mat-5 mab-10 bor-5 View",
+  itemListContainer: "flex wi-95% mih:100 pa-5 bow-0.5 boc-#333 shadow-xs shc-red mat-5 mab-10 bor-5 View overflow-hidden",
 
   fileButton: "di:flex row pa:5 bow:0.4 boc:gray juc:center ali:center mar:5 he:90%",
 

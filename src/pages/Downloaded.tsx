@@ -404,7 +404,7 @@ export default ({ ...props }: any) => {
           ifTrue={() =>
             loader.elem ?? elem ? true : false
           }
-          css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+          css="wi-105% he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
           {loader.elem ?? elem}
         </View>
       </View>
