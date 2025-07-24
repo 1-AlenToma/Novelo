@@ -312,6 +312,7 @@ const data = StateBuilder<GlobalType>(() => (
         "selection.favoritItem",
         "player.currentChapterSettings.scrollProgress",
         "player.book.chapterSettings",
+        "player.book.textReplacements",
         "player.currentChapter",
         "player.novel",
         "zip",
@@ -319,7 +320,6 @@ const data = StateBuilder<GlobalType>(() => (
         "db",
         "appSettings.currentNovel",
         "appSettings.parsers",
-        "html.data",
-        "size"
+        "html.data"
     ).globalBuild();
 export default data;

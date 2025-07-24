@@ -56,7 +56,8 @@ const Modoles = () => {
     "player.menuOptions.textEdit",
     "player.menuOptions.comment",
     "player.menuOptions.define",
-    "appSettings"
+    "appSettings",
+    "player.book.textReplacements"
   );
 
   useEffect(() => {
@@ -298,7 +299,8 @@ const Controller = ({ state, ...props }) => {
     "player.showPlayer",
     "player._playing",
     "size",
-    "appSettings"
+    "appSettings",
+    "player.book.textReplacements"
   );
 
   const oSettings = useRef({
@@ -1031,10 +1033,7 @@ const Controller = ({ state, ...props }) => {
                           Text Replacements
                         </Text>
                         <ItemList
-                          items={
-                            context.player.book
-                              .textReplacements
-                          }
+                          items={context.player.book.textReplacements}
                           container={({ item }) => (
                             <View
                               style={{
@@ -1056,15 +1055,12 @@ const Controller = ({ state, ...props }) => {
                                 </Text>
                               </View>
                               <Button text="Delete" onPress={async () => {
-                                context.player.book.textReplacements =
-                                  context.player.book.textReplacements.filter(
-                                    x =>
-                                      x !=
-                                      item
-                                  );
+                                context.player.show();
+                                context.player.book.textReplacements = context.player.book.textReplacements.filter(x => x != item);
 
                                 await context.player.book.saveChanges();
                                 await context.player.clean();
+                                context.player.hide();
                               }}></Button>
                             </View>
                           )}
@@ -1096,7 +1092,7 @@ const InternalWeb = ({ state, ...props }: any) => {
         onComments={index => {
           context.player.menuOptions.comment = context.player.book.textReplacements[index].comments;
         }}
-        onMenu={(item: any) => {
+        onMenu={async (item: any) => {
           // handle later
           if (item.text == "Translate")
             context.player.menuOptions.textToTranslate = item.selection;
@@ -1104,13 +1100,24 @@ const InternalWeb = ({ state, ...props }: any) => {
             Clipboard.setStringAsync(item.selection);
           } else if (item.text === "Define") {
             context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(/ /g, "+")}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
-          } else {
+          } else if (item.text === "Edit") {
             context.player.menuOptions.textEdit = {
               edit: item.selection,
               bgColor: undefined,
               comments: undefined,
               editWith: item.selection
             };
+          } else if (item.text === "Delete" && item.selection && item.selection.length > 1) {
+            context.player.book.textReplacements.push(
+              {
+                edit: item.selection,
+                bgColor: undefined,
+                comments: undefined,
+                editWith: ""
+              }
+            );
+            await context.player.book.saveChanges();
+            await context.player.clean();
           }
         }}
         menuItems={{
@@ -1128,6 +1135,10 @@ const InternalWeb = ({ state, ...props }: any) => {
             {
               text: "Define",
               icon: "search"
+            },
+            {
+              text: "Delete",
+              icon: "delete"
             },
             {
               text: "Edit",
@@ -1188,7 +1199,6 @@ export default (props: any) => {
     await context.dbBatch(async () => {
       await state.batch(async () => {
         try {
-
           loader.show();
           if (state.novel.url) {
             return;
