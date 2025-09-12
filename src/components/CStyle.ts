@@ -70,15 +70,15 @@ export default NestedStyleSheet.create({
 
   fileButton: "di:flex row pa:5 bow:0.4 boc:gray juc:center ali:center mar:5 he:90%",
 
-  "fileButton.Icon": "desc fos:30 co:red mar:5",
+  "fileButton >Icon": "desc fos:30 co:red mar:5",
 
-  "fileButton.Text": "desc fos:12",
+  "fileButton> Text": "desc fos:12",
 
   button: "di:flex pa:2 row ali:center he:35 miw:55",
 
-  "button.Icon": "desc fos:30 co:red mar:5",
+  "button>Icon": "desc fos:30 co:red mar:5",
 
-  "button.Text": "desc fos:14",
+  "button>Text": "desc fos:14",
 
   borderBottom: "bobw:1 bobc:#ccc",
 
@@ -87,34 +87,33 @@ export default NestedStyleSheet.create({
   listButton:
     "di:flex borderBottom pa:2 row ali:center mih:48",
 
-  "listButton.Icon": "fos:15 bold mar:5",
+  "listButton>Icon": "fos:15 bold mar:5",
 
-  "listButton.Text": "desc fos:13",
+  "listButton>Text": "desc fos:13",
 
   settingButton: "listButton pa:0 par:5 wi:100% ali:center",
 
-  "settingButton.Icon": "mal:5 fos:25 mar:5",
+  "settingButton>Icon": "mal:5 fos:25 mar:5",
 
-  "settingButton.Text": "pa:5 maw:90%",
+  "settingButton>Text": "pa:5 maw:90%",
 
   box: "bor:5 wi:95% mih:200 mab:5 juc:flex-start ali:flex-start pa:5",
-  selectedRow: "bac:#e5313a",
-  "selectedRow.Text": "co:white",
+  "selectedRow, selectedRow Text, selectedRow>View ": "bac:#e5313a co:white !important",
   selected: {
     opacity: 0.8,
     color: "gray"
   },
-  "selected.Text": {
+  "selected>Text": {
     color: "red"
   },
   Slider: "clearboth",
   band: "clearwidth absolute he:50 zi:100 di:flex",
   form: "clearwidth row di:flex juc:space-between ali:center mab:5",
-  "form.Text": "desc fos:13 tea:left par:10 wi:130",
-  "formlist.Text": "wi:90%",
-  "form.chackBox": "ali:center mar:10",
+  "form>Text": "desc fos:13 tea:left par:10 wi:130",
+  "formlist>Text": "wi:90%",
+  "form>chackBox": "ali:center mar:10",
 
   formRow: "clearwidth mab:5",
-  "formRow.Text": "desc fos:13 tea:left par:10 wi:100",
-  "formRow.chackBox": "ali:center mar:10"
+  "formRow>Text": "desc fos:13 tea:left par:10 wi:100",
+  "formRow>chackBox": "ali:center mar:10"
 });

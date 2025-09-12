@@ -29,22 +29,23 @@ let colors = NestedStyleSheet.create({
     darkbg: "bac-#15181f",
 
     dark: "darkco darkbg",
-    ActionSheet: "maw-95% le-2.5% bac-transparent !important",
+    ActionSheet: "maw-95% le-2.5% bac-transparent!important",
+    "ActionSheet>View>View:eq(1)": "mat-20-!important",
     _sliderThump: "_abc to:-35 le:-15 fos-sm bor:5 fow:bold bow:1 boc:#CCC miw:50 pat:2 pab:2 tea:center zi:100 invert",
 
-    ActionSheet$View$$ViewView: "invert",
-    FormItem: "invert",
-    FormItem$View$$View$View$$View$View$Text: "invert",
-    DropdownList$View$Text$$View$Icon: "invertco",
-    DropDownListItems: "invert",
-    DropDownListItem: "invert",
-    DropdownList$View$Icon: "invertco",
+    "ActionSheet>View, ActionSheet >View >View": "invert",
+    FormItem: "invert mah-100",
+    "FormItem View, FormItem Text": "invert",
+    "DropdownList > View > Text ,DropdownList > View View > Icon": "invertco",
+    "DropDownListItems, DropDownListItem": "invert",
+    "DropdownList View Icon": "invertco",
     Modal: "invert !important",
-
+    "invert> *": "bac-transparent",
+    "invert > Text, invert > Icon": "invertco",
 })
 
 const lightTheme = NestedStyleSheet.create({
-    ...colors,
+
     View: "lightbg",
     TouchableOpacity: "lightbg",
     Text: "bac-transparent lightco",
@@ -53,13 +54,12 @@ const lightTheme = NestedStyleSheet.create({
     invert: "invertco invertbac",
     invertco: "darkco",
     invertbac: "darkbg",
-    invert$View$$TouchableOpacity: "bac-transparent",
-    invert$Text$$Icon: "invertco",
-    invert$Icon: "lightco"
+    "invert> Icon": "lightco",
+    ...colors,
 });
 
 const darkTheme = NestedStyleSheet.create({
-    ...colors,
+
     View: "darkbg",
     TouchableOpacity: "darkbg",
     Text: "bac-transparent darkco",
@@ -68,9 +68,8 @@ const darkTheme = NestedStyleSheet.create({
     invert: "invertco invertbac",
     invertco: "lightco",
     invertbac: "lightbg",
-    invert$View$$TouchableOpacity: "bac-transparent",
-    invert$Text: "invertco",
-    invert$Icon: "darkco"
+    "invert> Icon": "darkco",
+    ...colors,
 });
 
 
@@ -82,7 +81,7 @@ const App = () => {
     context.hook("size", "selectedThemeIndex", "isFullScreen", "updater", "files");
 
     context.useEffect(
-        (item, props) => {
+        () => {
             NavigationBar.setVisibilityAsync(
 
                 context.isFullScreen && !context.KeyboardState
