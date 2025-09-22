@@ -333,7 +333,7 @@ export default ({ ...props }: any) => {
                       btn={
                         <Icon
                           type="AntDesign"
-                          name="caretright"
+                          name="caret-right"
                           css="invertco"
                           size={20}
                         />

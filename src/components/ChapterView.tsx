@@ -150,7 +150,7 @@ export const ChapterView = ({
                   css={settingsMap.get(item.url)?.isFinished ? "co-green" : undefined}
                   size={20}
                   type="AntDesign"
-                  name="checkcircle"
+                  name="check-circle"
                 />
               </View>
             </View>

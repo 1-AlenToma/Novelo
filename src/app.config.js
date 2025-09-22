@@ -5,7 +5,7 @@
 export default {
   "name": "Novelo",
   "slug": "Novelo",
-  "version": "1.2.9",
+  "version": "1.3.0",
   "orientation": "default",
   "icon": "./assets/ic_launcher_round.png",
   "scheme": "novels",
@@ -19,6 +19,10 @@ export default {
   "assetBundlePatterns": [
     "**/*"
   ],
+  "autolinking": {
+    "legacy_shallowReactNativeLinking": true,
+    "searchPaths": ["../../node_modules", "node_modules"]
+  },
   "ios": {
     "supportsTablet": true,
     "bundleIdentifier": "com.alentoma.Novelo"

@@ -165,11 +165,6 @@ export type GlobalType =
     dbBatch: (fn: () => Promise<void>) => Promise<void>,
     version: number,
     versionName: string,
-    html: {
-      data: { url: string, props?: WebViewProps, func: (str: string) => void, id: string }[];
-      get_html: (url: string, props?: WebViewProps) => Promise<{ text: () => string, ok: boolean, status: number }>;
-    }
-
     lineHeight: number;
     selectedFoldItem: string;
     panEnabled: boolean;

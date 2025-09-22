@@ -1,5 +1,4 @@
 import uuid from "react-native-uuid";
-import { Styleable } from "react-native-short-style";
 import IDOMParser from "advanced-html-parser";
 import { Functions } from "react-native-ts-sqlite-orm/src/UsefullMethods";
 
@@ -353,14 +352,6 @@ function generateText(html, minLength) {
   }
 }
 
-const StyledView = function <T>(
-  View: T,
-  StyledXName: string
-) {
-  const Style =
-    require("./components/CStyle").default;
-  return Styleable(View, StyledXName);
-};
 const public_m = (...Items: any[]) => {
   try {
     Items.forEach(Item => {
@@ -538,7 +529,6 @@ export {
   newId,
   proc,
   removeProps,
-  StyledView,
   joinKeys,
   arrayBuffer,
   invertColor,

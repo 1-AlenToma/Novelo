@@ -94,30 +94,30 @@ export default memo(
             title={item.text}
           />
         ) : null}
-        <ItemList
-          onRefresh={{ loading: loader.loading, onRefresh: () => getItems(true) }}
-          onPress={item => {
-            context.nav.navigate("NovelItemDetail", {
-              url: item.url,
-              parserName: item.parserName
-            });
-          }}
-          vMode={vMode}
-          onEndReached={() => {
-            if (!loader.loading) {
-              loader.show();
-              getItems();
+          <ItemList
+            onRefresh={{ loading: loader.loading, onRefresh: () => getItems(true) }}
+            onPress={item => {
+              context.nav.navigate("NovelItemDetail", {
+                url: item.url,
+                parserName: item.parserName
+              });
+            }}
+            vMode={vMode}
+            onEndReached={() => {
+              if (!loader.loading) {
+                loader.show();
+                getItems();
+              }
+            }}
+            itemCss={
+              !vMode
+                ? `boc:#ccc bow:1 he-220 wi:170 mal:5 bor:5 overflow clb`
+                : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
             }
-          }}
-          itemCss={
-            !vMode
-              ? `boc:#ccc bow:1 he-220 wi:170 mal:5 bor:5 overflow clb`
-              : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
-          }
-          items={items}
-          container={HomeNovelItem}
-        />
-      </View>
+            items={items}
+            container={HomeNovelItem}
+          />
+        </View>
     );
   }
 );

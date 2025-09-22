@@ -60,7 +60,7 @@ export default class MangaKakalot extends Parser {
 
     parse(html) {
 
-        let items = html.$(".panel_story_list .story_item, .truyen-list .list-truyen-item-wrap")
+        let items = html.$(".panel_story_list .story_item, .truyen-list .list-truyen-item-wrap, .list-comic-item-wrap")
             .map(f => {
                 let name = f.find(".story_name a").hasValue ? f.find(".story_name a") : f.first("img").parent;
                 let title = name.attr("title").has() ? name.attr("title") : name.text;
@@ -115,7 +115,7 @@ export default class MangaKakalot extends Parser {
             await this.http.web_view(url, this.url)
         ).html;
         let imgs = html.findAll(".container-chapter-reader img").map(x => `<img id="${methods.newId()}" src='${x.url("src", { Referer: this.url + "/" })}'  />`).join("\n");
-        return imgs;
+        return imgs; 
     }
 
     async detail(url) {

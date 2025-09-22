@@ -34,7 +34,8 @@ const baseUrl = (url: string) => {
 }
 
 export default () => {
-    context.hook("html.data");
+    htmlContext.hook("html.data");
+
     const state = buildState(() =>
     ({
         protection: [] as { url: string, id: string }[]
@@ -42,11 +43,11 @@ export default () => {
 
     useEffect(() => {
         return () => {
-            context.html.data = [];
+            htmlContext.html.data = [];
         }
     }, [])
 
-    let data = context.html.data.filter(d => !state.protection.find(x => baseUrl(d.url) == baseUrl(x.url))).filter((x, index) => index <= maxCalls);
+    let data = htmlContext.html.data.filter(d => !state.protection.find(x => baseUrl(d.url) == baseUrl(x.url))).filter((x, index) => index <= maxCalls);
 
     let jsCode = (x: any) => {
         let data = `
@@ -207,7 +208,7 @@ export default () => {
                             let data = JSON.parse(nativeEvent.data);
                             switch (data.type) {
                                 case "html":
-                                    context.html.data.find(x => x.id == data.id)?.func(data.data as any)
+                                    htmlContext.html.data.find(x => x.id == data.id)?.func(data.data as any)
                                     break;
                                 case "protection":
                                     console.warn("Icloude found")

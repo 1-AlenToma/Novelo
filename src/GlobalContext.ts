@@ -15,7 +15,7 @@ import {
 } from "./native";
 import { Dimensions, Keyboard, LogBox } from "react-native";
 import StateBuilder from "react-smart-state";
-import { GlobalType, FilesPath, WebViewProps } from "./Types";
+import { GlobalType, FilesPath, WebViewProps, IGlobalState } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
 import { version } from "./package.json"
@@ -41,7 +41,7 @@ const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
 const debugMode = __DEV__;
 
-const data = StateBuilder<GlobalType>(() => (
+const data : IGlobalState = StateBuilder<GlobalType>(
     {
         dbBatch: async (fn) => {
             await context.batch(async () => {
@@ -59,30 +59,14 @@ const data = StateBuilder<GlobalType>(() => (
             data: undefined,
             pickFile: (ext, desc) => {
                 return new Promise<any | undefined>((success) => {
-                    data.browser.data = { desc, func: (f) => success(f), onCancel: success, props: { selectionType: "File", ext } }
+                    data.browser.data = { desc, func: (f: any) => success(f), onCancel: success, props: { selectionType: "File", ext } }
                 })
             },
             pickFolder: (desc, ext) => {
                 return new Promise<any | undefined>((success) => {
-                    data.browser.data = { func: (f) => success(f), onCancel: success, desc, props: { selectionType: "Folder", ext } }
+                    data.browser.data = { func: (f: any) => success(f), onCancel: success, desc, props: { selectionType: "Folder", ext } }
                 });
             },
-        },
-        html: {
-            data: [],
-            get_html: (url: string, props?: WebViewProps) => {
-                return new Promise<{ text: () => string, ok: boolean, status: number }>((success) => {
-                    const id = newId();
-                    data.html.data = [...data.html.data, {
-                        props,
-                        url: url, id, func: async (str: string) => {
-                            await success({ text: () => str, ok: true, status: 0 })
-                            data.html.data = data.html.data.filter(x => x.id !== id);
-                        }
-                    }] as any;
-                })
-
-            }
         },
         lineHeight: 2.5,
         selectedFoldItem: "",
@@ -253,7 +237,7 @@ const data = StateBuilder<GlobalType>(() => (
                     }
 
                     appSettingWatcher = globalDb.watch("AppSettings");
-                    appSettingWatcher.onSave = async items => {
+                    appSettingWatcher.onSave = async (items: any) => {
                         let item = items?.firstOrDefault();
                         if (item) {
                             data.appSettings = item as any;
@@ -299,7 +283,7 @@ const data = StateBuilder<GlobalType>(() => (
 
             return [];
         }
-    })).ignore(
+    }).ignore(
         "files",
         "imageCache",
         "cache",
@@ -319,7 +303,6 @@ const data = StateBuilder<GlobalType>(() => (
         "notification",
         "db",
         "appSettings.currentNovel",
-        "appSettings.parsers",
-        "html.data"
+        "appSettings.parsers"
     ).globalBuild();
 export default data;

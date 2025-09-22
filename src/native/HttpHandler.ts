@@ -20,7 +20,7 @@ const getFetch = async (
   try {
     if (tempData.has(key))
       return tempData.get(key);
-    let data = fromWebView ? await context.html.get_html(url, props) : await fetch(url, {
+    let data = fromWebView ? await htmlContext.html.get_html(url, props) : await fetch(url, {
       ...options
     });
     if (data.ok) {

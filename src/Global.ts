@@ -7,7 +7,8 @@ import { IGlobalState, FileInfo } from "./Types";
 import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
-const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
+import HtmlContext from "./HtmlContext";
+const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0); 
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
 
 declare global {
@@ -17,6 +18,7 @@ declare global {
     var useEffect: typeof React.useEffect;
     var useRef: <T = any>(item?: T) => { current: T };
     var context: IGlobalState;
+    var htmlContext: typeof HtmlContext;
     var methods: typeof Methods;
     var buildState: typeof StateBuilder;
     var getFileName: (file: string, dir?: string) => string;
@@ -371,7 +373,7 @@ let styleShortKeys = [];
 
 String.prototype.css = function (id?: string) {
     let styleText = String(this).toString();
-    return cssTranslator(styleText, CStyle, undefined, id ?? styleText);
+    return cssTranslator(styleText, CStyle);
 };
 
 String.prototype.imageUrlSize = function (size: string) {
@@ -550,3 +552,4 @@ global.getFileName = (file: string, dir?: string) => {
 
 const GlobalContext = require("./GlobalContext").default;
 global.context = GlobalContext;
+global.htmlContext = HtmlContext;
