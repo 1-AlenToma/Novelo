@@ -459,7 +459,6 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
       });
       //  await ZipFile(folder, path);
       const result = await EpubZipper.zipEpubFolder(folder, path);
-      console.log(result);
       await fileHandler.deleteDir();
 
     }
