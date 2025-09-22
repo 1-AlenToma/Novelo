@@ -1,8 +1,8 @@
 import { View, Text, Icon } from "./ReactNativeComponents";
 import Image from "./Image";
-import { LightInfo } from "../native";
+import { LightInfo } from "../native/ParserItems";
 import * as React from "react";
-import { BlurView } from "components";
+import { BlurView } from "./BlurView";
 
 export default ({
   item,
@@ -107,7 +107,7 @@ export default ({
               Parser:{item.parserName} ({item.type ?? context.parser.find(item.parserName)?.type})
             </Text>
             <Text
-              ifTrue={item.info && !item.info.empty()}
+              ifTrue={(item.info && !item.info.empty()) as boolean}
               css="desc co:#e30505" numberOfLines={1}>
               {item.info}
             </Text>

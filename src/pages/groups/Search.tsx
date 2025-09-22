@@ -4,30 +4,30 @@ import {
   TouchableOpacity,
   useLoader,
   ItemList,
-  HomeNovelItem,
   ActionSheetButton,
   ScrollView,
   ProgressBar,
   Button,
   Icon
-} from "components";
+} from "../../components";
+import HomeNovelItem from "../../components/HomeNovelItem"
 import * as React from "react";
 import {
   useNavigation,
   useParserSelector,
   useNumColumns
-} from "hooks";
+} from "../../hooks";
 import {
   HttpHandler,
   SearchDetail
-} from "native";
-import Header from "pages/Header";
+} from "../../native";
+import Header from "../../pages/Header";
 
 const ActionItem = ({
   keyName,
   selection,
   state
-}) => {
+}: any) => {
   const settings = useNumColumns();
   let items = { items: state.parser.settings[keyName] };
   let selected = {};

@@ -13,7 +13,7 @@ import Header from "./Header";
 import {
   useNavigation
 } from "../hooks";
-import { Book } from "db";
+import { Book } from "../db";
 
 const ItemRender = ({
   item,

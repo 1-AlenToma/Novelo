@@ -38,7 +38,7 @@ import { AppSettings, Book } from "../../db";
 import { invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
 
-const lang = {};
+const lang: any = {};
 
 for (let l in LANGUAGE_TABLE) {
   let item = LANGUAGE_TABLE[l].google;
@@ -106,10 +106,7 @@ const Modoles = () => {
             <FormItem
               title="TextToEdit">
               <TextInput
-                onChangeText={x =>
-                (context.player.menuOptions.textEdit.edit =
-                  x)
-                }
+                onChangeText={x =>(context.player.menuOptions.textEdit.edit = x)}
                 invertColor={false}
                 css="pa:5 bor:2 flg:1"
                 multiline={true}
@@ -1214,7 +1211,7 @@ export default (props: any) => {
             context.player.novel.url !== url ||
             context.player.isEpup != (epub === true)
           ) {
-            context.player = undefined;
+            context.player = undefined as any;
             let book = await context
               .db.Books.query.load("chapterSettings")
               .where.column(x => x.url)

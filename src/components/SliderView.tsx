@@ -1,6 +1,6 @@
 import * as React from "react";
 import { View, Text, Button, Icon, SliderView } from "./ReactNativeComponents";
-import { useTimer } from "hooks";
+import useTimer from "../hooks/Timer";
 
 
 export default ({

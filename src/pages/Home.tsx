@@ -4,10 +4,10 @@ import {
   TouchableOpacity,
   Image,
   Icon,
-  NovelGroup,
   AnimatedView,
   ActionSheet
 } from "../components";
+import NovelGroup from "../components/NovelGroup"
 import * as React from "react";
 import Header from "./Header";
 import {

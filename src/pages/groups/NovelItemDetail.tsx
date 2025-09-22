@@ -9,12 +9,12 @@ import {
   ActionSheetButton,
   TabBar,
   ChapterView,
-  HomeNovelItem,
   TabView,
   AlertDialog,
   Modal,
   ExpandableDescription
 } from "../../components/";
+import HomeNovelItem from "../../components/HomeNovelItem";
 import WebView from "react-native-webview";
 import * as React from "react";
 import {

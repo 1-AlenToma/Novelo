@@ -2,8 +2,7 @@ import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
 import ItemList from "./ItemList";
 import useLoader from "./Loader";
 import HomeNovelItem from "./HomeNovelItem";
-import { useNavigation } from "../hooks";
-import { Header } from "../pages";
+import Header from "../pages/Header";
 import {
   memo
 } from "react";
@@ -31,7 +30,7 @@ export default memo(
         let p = refreshing ? 1 : page.current + 1;
         let oldItems = [...items];
         let gitems = await parser.group(item, p, true, refreshing ? "RenewMemo" : undefined);
-        oldItems.distinct("url", gitems);
+        oldItems.distinct("url", gitems as any);
         if (oldItems.length > items.length) {
           page.current = p;
           setItems(oldItems);

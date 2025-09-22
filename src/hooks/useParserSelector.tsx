@@ -1,4 +1,4 @@
-import { Modal, View, Text, ScrollView, CheckBox, CheckBoxList } from "../components";
+import { Modal, View, Text, ScrollView, CheckBox, CheckBoxList } from "react-native-short-style";
 import * as React from "react";
 
 

@@ -1,24 +1,31 @@
 import dbContext from "./db/dbContext";
 import * as Speech from "expo-speech";
-import { AppSettings } from "./db";
-import { newId } from "./Methods";
-import DownloadManager from "./native/DownloadManager"
+import AppSettings from "./db/AppSettings";
+import DownloadManager from "./native/DownloadManager";
+import Html from "./native/Html";
+import Notification from "./native/Notification";
 import {
-    Player,
-    BGService,
-    FileHandler,
-    HttpHandler,
-    ImageCache,
-    FilesZipper,
-    Notification,
-    Value, ChapterInfo, LightInfo, DetailInfo, ParserDetail, SearchDetail, Parser, Html, ChapterDetail
-} from "./native";
+    Value, 
+    ChapterInfo, 
+    LightInfo, 
+    DetailInfo, 
+    ParserDetail, 
+    SearchDetail, 
+    Parser, 
+} from "./native/ParserItems";
+
 import { Dimensions, Keyboard, LogBox } from "react-native";
-import StateBuilder from "react-smart-state";
+import StateBuilder,{newId} from "react-smart-state";
 import { GlobalType, FilesPath, WebViewProps, IGlobalState } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
 import { version } from "./package.json"
+import HttpHandler from "./native/HttpHandler";
+import FileHandler from "./native/FileHandler";
+import FilesZipper from "./native/Zip";
+import Player from "./native/Player";
+import ImageCache from "./native/ImageCache";
+import BGService from "./native/BackgroundService";
 
 LogBox.ignoreLogs([
     "fontFamily",

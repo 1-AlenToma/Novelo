@@ -1,5 +1,5 @@
 import { IStorage, DataCache, FilesPath } from "../Types";
-import { FileHandler } from "../native";
+import FileHandler from "../native/FileHandler";
 
 class Storage implements IStorage {
   handler: FileHandler;

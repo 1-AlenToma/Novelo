@@ -4,7 +4,7 @@ import {
 import * as React from "react";
 import { FlashList } from "@shopify/flash-list";
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
-import { useTimer } from "../hooks";
+import useTimer from "../hooks/Timer";
 
 
 export default ({
@@ -133,7 +133,6 @@ export default ({
           data={items ?? []}
           refreshing={onRefresh?.loading}
           onRefresh={onRefresh?.onRefresh}
-          estimatedItemSize={200}
           onEndReachedThreshold={0.5}
           onMomentumScrollBegin={() => {
             onEndReachedCalledDuringMomentum.current =

@@ -2,13 +2,13 @@ import { ReactElement, ReactNode } from "react";
 import {
   Player,
   BGService,
-  FileHandler,
   HttpHandler,
   ImageCache,
   FilesZipper,
   Notification,
   Parser
 } from "./native";
+import FileHandler from "./native/FileHandler"
 import { AppSettings, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
 import DownloadManager from "./native/DownloadManager";

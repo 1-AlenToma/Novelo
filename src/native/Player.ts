@@ -10,7 +10,7 @@ import {
 } from "../Methods";
 import { IImage } from "../Types";
 import Html from "./Html";
-import { useLoader } from "components";
+import useLoader from "../components/Loader";
 type ViewState =
   | "Default"
   | "Folded"
@@ -42,9 +42,9 @@ class Player {
   menuOptions = {
     textToTranslate: undefined,
     translationLanguage: "English",
-    textEdit: undefined,
-    comment: undefined,
-    define: undefined
+    textEdit: undefined as any,
+    comment: undefined as any,
+    define: undefined as any
   };
   isloading: boolean = false;
   constructor(

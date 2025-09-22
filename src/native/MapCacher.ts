@@ -1,4 +1,3 @@
-import { sleep } from "../Methods"
 export default class MapCacher<T> {
     item = new Map<string, T>();
     max: number;

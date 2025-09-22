@@ -18,11 +18,11 @@ import {
 import { Book } from "../db";
 import {
   DetailInfo,
-  FileHandler,
   ZipBook,
   createEpub,
   readEpub
 } from "../native";
+import FileHandler from "../native/FileHandler"
 import { ReadDirItem } from "react-native-fs";
 const EpubHandler = ({
   parentState
@@ -41,10 +41,10 @@ const EpubHandler = ({
     try {
       loader.show();
       await readEpub(item.path, (info) => {
-        state.progress = { ...info, percent: info.percent / 100 }
+        state.progress = { ...info, percent: info.percent / 100 } as any
       });
     } catch (e) {
-      AlertDialog.alert({ message: e.message });
+      AlertDialog.alert(e?.toString() ?? "");
       console.error(e);
     } finally {
       loader.hide();
@@ -164,7 +164,7 @@ const ItemRender = ({
         loader.show();
         await createEpub(file, item, path.path, (info) => {
           if (info)
-            itemState.downloadFileInfo = { ...info, percent: info.percent / 100 };
+            itemState.downloadFileInfo = { ...info, percent: info.percent / 100 } as any;
         });
       }
 
@@ -391,7 +391,7 @@ export default ({ ...props }: any) => {
             return !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text) || file?.type?.has(state.text)
           }
           )}
-          container={({ item }) => (
+          container={({ item }: any) => (
             <ItemRender
               state={state}
               item={item}

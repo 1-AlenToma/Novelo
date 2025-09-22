@@ -4,7 +4,7 @@ import {
 import * as React from "react";
 import { View, Text, Icon } from "./ReactNativeComponents";
 import * as Battery from "expo-battery";
-import { useTimer } from "../hooks";
+import useTimer from "../hooks/Timer";
 
 export default ({ color }: any) => {
   const [batteryLevel, setBatteryLevel] =

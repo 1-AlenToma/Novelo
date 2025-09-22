@@ -8,7 +8,8 @@ import {
     FileBrowser,
     AlertDialog
 } from "../components";
-import { FileHandler, ImageCache } from "../native";
+import { ImageCache } from "../native";
+import FileHandler from "../native/FileHandler";
 import { FilesPath } from "../Types";
 
 

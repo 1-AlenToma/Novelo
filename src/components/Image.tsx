@@ -1,9 +1,7 @@
 
-import { HttpHandler } from "../native"
 import * as React from "react";
 import { Image } from "react-native-short-style";
 let noImage = require("../assets/noimage.png");
-const https = new HttpHandler();
 export default ({
   style,
   url,

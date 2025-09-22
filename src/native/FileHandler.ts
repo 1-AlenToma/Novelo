@@ -1,5 +1,5 @@
 import { newId } from "../Methods";
-import { useLoader } from "../components";
+import useLoader from "../components/Loader";
 import RNF, { ReadDirItem } from "react-native-fs";
 import RNFetchBlob from "rn-fetch-blob";
 import { SystemDir, EncodingType, FileInfo } from "../Types";

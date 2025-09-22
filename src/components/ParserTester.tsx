@@ -5,9 +5,8 @@ import {
   StyleSheet,
   ScrollView
 } from "react-native";
-import { Parser } from "../native";
+import { Parser, SearchDetail } from "../native/ParserItems";
 import useLoader from "./Loader";
-import { SearchDetail } from "../native";
 import { sleep } from "../Methods";
 
 export default ({

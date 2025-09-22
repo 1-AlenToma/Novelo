@@ -1,6 +1,5 @@
 import HttpHandler from "./HttpHandler";
 import Html from "./Html";
-import FileHandler from "./FileHandler";
 import ImageCache from "./ImageCache";
 import Player from "./Player";
 import BGService from "./BackgroundService";
@@ -15,7 +14,6 @@ export * from "./EpubBuilder";
 export {
   HttpHandler,
   Html,
-  FileHandler,
   Player,
   BGService,
   EventEmitter,

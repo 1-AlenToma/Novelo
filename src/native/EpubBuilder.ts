@@ -1,4 +1,4 @@
-import { AlertDialog, newId } from "components";
+import { AlertDialog, newId } from "../components";
 import { Book } from "../db";
 import { DetailInfo } from "./ParserItems";
 import RNFS from 'react-native-fs';
@@ -227,7 +227,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
         } as ZipFileItem;
       }
     }
-    let player = new Player(novel, book, {}, true);
+    let player = new Player(novel, book, true);
     let cover = book.imageBase64 ? book.imageBase64 : undefined;
     function extractBase64(rawDataUrl: string): string {
       if (rawDataUrl.isBase64String()) {
@@ -428,7 +428,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     console.log("Generating Zip");
 
 
-    path = path.path(`${novel.name}.epub`);
+    path = path.path(`${novel.name.replace(/[:<>"/\\|?*]/g, "_")}.epub`);
     let writeFile = true;
     console.log("Saving ", path)
     if (await RNFS.exists(path)) {

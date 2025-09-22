@@ -2,7 +2,8 @@ import WebView from "react-native-webview";
 import Fonts from "../assets/Fonts";
 import { CSSStyle, JS } from "../assets/readerJs";
 import * as React from "react";
-import { useTimer, useView } from "../hooks";
+import useView from "../hooks/useView";
+import useTimer from "../hooks/Timer"
 import {
   invertColor,
   sleep

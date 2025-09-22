@@ -1,10 +1,9 @@
 import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
 import Slider from "./SliderView";
 import * as React from "react";
-import {
-  useTimer,
-  useDbHook
-} from "../hooks";
+import useDbHook from "../hooks/useDbHook";
+
+import useTimer from "../hooks/Timer"
 
 export default ({ isMenu }: { isMenu?: boolean }) => {
   context.hook(
@@ -13,7 +12,8 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
     "player.showPlayer",
     "player.chapterArray",
     "player._playing",
-    "player.viewState"
+    "player.viewState",
+    "player"
   );
 
   const audioProgressTimer = useTimer(100);
@@ -87,12 +87,10 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
         </View>
         <TouchableOpacity
           onPress={() =>
-            context.player.playing(
-              !context.player.playing()
-            )
+            context.player.playing(!context.player.playing())
           }>
           <Icon
-            name={context.player.playing()
+            name={context.player._playing
               ? "pause-circle"
               : "play-circle"
             }

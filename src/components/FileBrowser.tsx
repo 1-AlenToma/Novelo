@@ -1,6 +1,6 @@
 import * as React from "react";
 import { View, Text, TouchableOpacity, ScrollView, Icon, Modal, AlertDialog, TextInput, ActionSheet } from "./ReactNativeComponents";
-import { FileHandler } from "../native";
+import FileHandler from "../native/FileHandler";
 import { EXT, SelectionType } from "../Types";
 import { ReadDirItem } from "react-native-fs";
 

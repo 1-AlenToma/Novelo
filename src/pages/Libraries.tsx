@@ -13,7 +13,7 @@ import Header from "./Header";
 import { useView } from "../hooks";
 import { Linking } from "react-native";
 import JSZip from "jszip";
-import { Parser } from "../native";
+import { Parser } from "../native/ParserItems";
 
 
 type BtnTextType = "Install" | "Update" | "Uninstall";

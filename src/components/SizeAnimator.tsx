@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useAnimate } from "../hooks";
+import { useAnimate } from "../hooks/useAnimate"
 import { AnimatedView } from "react-native-short-style";
 
 export default ({

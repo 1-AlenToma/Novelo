@@ -4,7 +4,7 @@ import {
   Value,
   DetailInfo,
   InfoGeneratorName
-} from "../native";
+} from "../native/ParserItems";
 
 import ReadNovelFull from "./ReadNovelFull";
 import NovelFull from "./NovelFull";

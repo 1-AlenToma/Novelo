@@ -3,8 +3,6 @@ import ParserTester from "./ParserTester";
 
 import Image from "./Image";
 import ItemList from "./ItemList";
-import HomeNovelItem from "./HomeNovelItem";
-import NovelGroup from "./NovelGroup";
 import SizeAnimator from "./SizeAnimator";
 import TextInput from "./TextInputView";
 import ActionSheetButton from "./ActionSheetButton";
@@ -28,8 +26,6 @@ export {
   ParserTester,
   Image,
   ItemList,
-  HomeNovelItem,
-  NovelGroup,
   SizeAnimator,
   TextInput,
   ActionSheetButton,
