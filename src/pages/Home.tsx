@@ -5,7 +5,8 @@ import {
   Image,
   Icon,
   AnimatedView,
-  ActionSheet
+  ActionSheet,
+  useTimer
 } from "../components";
 import NovelGroup from "../components/NovelGroup"
 import * as React from "react";
@@ -27,16 +28,23 @@ const CurrentItem = ({
   ...props
 }: any) => {
   const [visible, setVisible] = useState(false);
+  const [books, setBooks] = useState<Book[]>([]);
+  const timer = useTimer(100)
   context.hook("appSettings.currentNovel")
-  const [books, dataIsLoading, reload] = context.db.useQuery("Books", context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg"));
+
+
+  const reloadData = () => timer(async () => setBooks(await context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg").toList()));
   useDbHook(
     "AppSettings",
     item => true,
     () => context.appSettings,
     "currentNovel"
   )(() => {
-    reload();
+
+    reloadData();
   });
+
+
 
   let book: Book = books?.firstOrDefault() ?? {} as any;
   if (!books?.firstOrDefault() || (context.appSettings.currentNovel == undefined || context.appSettings.currentNovel.parserName == undefined)) return children;
