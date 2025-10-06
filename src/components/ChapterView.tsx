@@ -1,7 +1,7 @@
 import { Icon, useTimer } from "./ReactNativeComponents";
 import useLoader from "./Loader";
 import * as React from "react";
-import { View, Text, SafeAreaView, VirtualScroller, ProgressBar } from "./ReactNativeComponents";
+import { View, Text, VirtualScroller, ProgressBar } from "./ReactNativeComponents";
 import { Book, Chapter } from "db";
 import { DetailInfo, ChapterInfo } from "native";
 export const ChapterView = ({
@@ -75,7 +75,7 @@ export const ChapterView = ({
     chArray[state.currentPage].items = getChapterItems(state.currentPage);
 
   return (
-    <SafeAreaView css="clearboth juc:flex-start mah:98% invert po:relative">
+    <View css="clearboth juc:flex-start mah:98% invert po:relative">
       <View
         ifTrue={chArray.length > 1}
         css="clearwidth he:50 mat:10">
@@ -159,6 +159,6 @@ export const ChapterView = ({
         />
       </View>
       {loader.elem ?? initLoading.elem}
-    </SafeAreaView>
+    </View>
   );
 };

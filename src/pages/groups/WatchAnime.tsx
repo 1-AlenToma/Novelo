@@ -21,8 +21,7 @@ import {
     AlertDialog,
     Button,
     ColorSelection,
-    PlayerView,
-    SafeAreaView
+    PlayerView
 } from "../../components/";
 import WebView from "react-native-webview";
 import * as React from "react";
@@ -228,7 +227,7 @@ const WatchAnime = (props: any) => {
                         true;
                      `}
                             onNavigationStateChange={(event) => {
-                                if (event.url !== state.selectedChapter.url) {
+                                if (event.url !== state.selectedChapter?.url) {
 
                                 }
                                 return false;
@@ -244,19 +243,19 @@ const WatchAnime = (props: any) => {
                             scrollEnabled={true}
                             userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
                             setSupportMultipleWindows={false}
-                            style={[
+                            style={
                                 {
                                     backgroundColor: context.appSettings.backgroundColor
                                 }
-                            ]}
-                            containerStyle={[
+                            }
+                            containerStyle={
                                 {
                                     backgroundColor: context.appSettings.backgroundColor,
                                     zIndex: 70,
                                     flex: 0,
                                     flexGrow: 1,
 
-                                }]}
+                                }}
                             onMessage={({ nativeEvent }) => onMassage(nativeEvent.data)}
                             allowFileAccess={true}
                             allowFileAccessFromFileURLs={true}
