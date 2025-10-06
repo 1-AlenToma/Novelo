@@ -42,6 +42,7 @@ let colors = NestedStyleSheet.create({
     Modal: "invert !important",
     "invert> *": "bac-transparent",
     "invert Text, invert > Icon": "invertco",
+    "_toast * TouchableOpacity Icon": "bac-transparent fos-15 co-red !important"
 })
 
 const lightTheme = NestedStyleSheet.create({
@@ -101,7 +102,6 @@ const App = () => {
     const visibility = NavigationBar.useVisibility();
     const loader = useLoader(true);
     useEffect(() => {
-
         let itemToRemove: any[] = [];
         (async () => {
             try {

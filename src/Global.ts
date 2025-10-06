@@ -8,7 +8,7 @@ import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
 import HtmlContext from "./HtmlContext";
-const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0); 
+const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
 
 declare global {
@@ -27,7 +27,8 @@ declare global {
     var test: (name: string) => TestRunner;
     var folderValidName: (name: string) => string;
     interface Date {
-        getMinDiff: (date: Date) => number;
+        getMinDiff: (date?: Date) => number;
+        getSecoundDiff: () => number;
     }
     interface Array<T> {
         mapAsync(fn: (item: T, index: number) => Promise<T[]>);
@@ -168,9 +169,13 @@ String.prototype.escapeRegExp = function () {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
-Date.prototype.getMinDiff = function (date: Date) {
+Date.prototype.getSecoundDiff = function () {
+    return this.getMinDiff(new Date()) * 60;
+};
+
+Date.prototype.getMinDiff = function (date?: Date) {
     var today = new Date() as any;
-    var diffMs = this - today;
+    var diffMs = this - (date ?? today);
     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
     return diffMins;
 };

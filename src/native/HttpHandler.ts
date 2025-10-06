@@ -26,7 +26,8 @@ const getFetch = async (
     if (data.ok) {
       let text = await data.text();
       let item = new HttpTemp(text, key);
-      tempData.set(key, item);
+      if (text !== "")
+        tempData.set(key, item);
       return item;
     } else {
       if (data.status === 404)

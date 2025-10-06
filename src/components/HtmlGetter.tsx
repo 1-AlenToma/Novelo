@@ -1,7 +1,7 @@
 import React from "react";
 import WebView from "react-native-webview";
 import { View } from "react-native";
-import { Modal, Text } from "./ReactNativeComponents"
+import { Modal, Text, useTimer } from "./ReactNativeComponents"
 const jsScript = `
 try{
 window.__DEV__ = ${__DEV__.toString().toLowerCase()};
@@ -35,6 +35,7 @@ const baseUrl = (url: string) => {
 
 export default () => {
     htmlContext.hook("html.data");
+    const timer = useTimer(3000);
 
     const state = buildState(() =>
     ({
@@ -47,8 +48,25 @@ export default () => {
         }
     }, [])
 
-    let data = htmlContext.html.data.filter(d => !state.protection.find(x => baseUrl(d.url) == baseUrl(x.url))).filter((x, index) => index <= maxCalls);
+    const clean = () => {
+        timer(async () => {
+            await htmlContext.batch(async () => {
+                for (let item of htmlContext.html.data) {
+                    const pr = state.protection.find(x => baseUrl(x.url) == baseUrl(item.url));
+                    if (item.created.getSecoundDiff() >= 5 && !pr) {
+                        console.warn("timeout, cleared", item.url)
+                        await item.func("");
+                    }
+                }
+            });
+            if (htmlContext.html.data.length > 0) {
+                clean();
+            }
+        });
+    }
 
+    let data = htmlContext.html.data.filter(d => !state.protection.find(x => baseUrl(d.url) == baseUrl(x.url))).filter((x, index) => index <= maxCalls);
+    clean();
     let jsCode = (x: any) => {
         let data = `
                         try{
@@ -161,7 +179,12 @@ export default () => {
             height: 0,
             overflow: "hidden"
         } : { flex: 1, height: 200 }}>
-            <Modal addCloser={true} css="wi-90% he-90%" isVisible={state.protection.has()} onHide={() => state.protection = state.protection.filter(x => x.id !== protection.id)}>
+            <Modal addCloser={true} css="wi-90% he-90%" isVisible={state.protection.has()}
+                onHide={() => {
+                    //  htmlContext.html.data.find(x => x.id == protection.id).created = new Date();
+                    timer.clear();
+                    state.protection = state.protection.filter(x => x.id !== protection.id)
+                }}>
                 <View style={{ flex: 1, marginTop: 15 }}>
                     <Text css="fos-15 fow-bold co-red">
                         This {baseUrl(protection?.url)} containe ICloude protection, so you need to validate it from time to time.

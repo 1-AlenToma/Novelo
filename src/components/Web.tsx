@@ -275,7 +275,7 @@ export default ({
 
         .Manga img {
           margin: auto;
-          margin-bottom: 5px;
+          margin-bottom: 0px;
           display: block;
         }
         
