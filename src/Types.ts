@@ -156,9 +156,10 @@ export type ISize = {
 export type Ajax = { url: string, type: "post" | "get", query: object };
 export type WebViewProps = {
   type?: "base64" | "webp";
-  selector: string;
+  selector?: string;
   ajax?: Ajax;
   protectionIdentifier?: string[];
+  timer?: number
 }
 export type GlobalType =
   {

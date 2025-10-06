@@ -7,10 +7,10 @@ try{
 window.__DEV__ = ${__DEV__.toString().toLowerCase()};
 if (document.readyState === "loading") {
 document.addEventListener("load", (event) => {
-#
+setTimeout(()=> #, timer)
 });
 }else {
-#
+setTimeout(()=> #, timer)
 }
 }catch(e){
 if (window.__DEV__)
@@ -35,7 +35,7 @@ const baseUrl = (url: string) => {
 
 export default () => {
     htmlContext.hook("html.data");
-    const timer = useTimer(3000);
+    const timer = useTimer(5000);
 
     const state = buildState(() =>
     ({
@@ -158,7 +158,7 @@ export default () => {
                             };
                             postData("html", payload);
                         }
-                        ${jsScript.replace(/\#/g, " window.getHtml();")}
+                        ${jsScript.replace(/timer/g, x.props?.timer ?? "0").replace(/\#/g, " window.getHtml()")}
                         }catch(e){
                         if (window.__DEV__)
                           alert(e)

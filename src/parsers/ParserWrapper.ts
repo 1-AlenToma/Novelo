@@ -18,6 +18,7 @@ import NovLoveCom from "./NovLoveCom"
 
 import NovelUpdate from "./infos/NovelUpdates";
 import MyAnimeList from "./infos/MyAnimeList";
+import WebNovel from "./infos/WebNovel";
 import Memo from "../attr/Memo";
 import { AlertDialog } from "react-native-short-style";
 
@@ -25,6 +26,7 @@ const debugg = false;
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
+  webNovel: WebNovel;
   animeInfo: MyAnimeList;
   infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   infoEnabled: boolean = true;
@@ -34,6 +36,7 @@ export default class ParserWrapper extends Parser {
     this.settings = parser.settings;
     this.novelUpdate = new NovelUpdate();
     this.animeInfo = new MyAnimeList();
+    this.webNovel = new WebNovel();
     this.infoGeneratorName = parser.infoGeneratorName;
     this.minVersion = parser.minVersion;
   }
@@ -115,6 +118,7 @@ export default class ParserWrapper extends Parser {
       !data.url.empty() &&
       data.chapters &&
       data.chapters.length > 0
+      && data.novelUpdateUrl && data.novelUpdateUrl.length >0
   })
   async novelInfo(
     item: DetailInfo,
@@ -124,6 +128,8 @@ export default class ParserWrapper extends Parser {
     switch (this.infoGeneratorName) {
       case "NovelUpdate":
         novel = await this.novelUpdate.search(item);
+        if (!novel.novelUpdateUrl || novel.novelUpdateRating.empty())
+          novel = await this.webNovel.search(item);
         break;
       case "MyAnimeList":
         novel = await this.animeInfo.search(item);
