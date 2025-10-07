@@ -61,6 +61,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             },
             test: async (ip: string) => {
                 try {
+                    ip = ip ?? "";
                     console.log("testing server", ip.join("ping"))
                     const rep = await methods.fetchWithTimeout(ip.join("ping"), {}, 3000);
                     if (!rep.ok)
