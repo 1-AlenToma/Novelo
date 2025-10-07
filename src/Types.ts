@@ -161,8 +161,19 @@ export type WebViewProps = {
   protectionIdentifier?: string[];
   timer?: number
 }
+
+export type AppLocalSettings = {
+  serverIp: string
+}
+
 export type GlobalType =
   {
+    appLocalSettings: {
+      data: AppLocalSettings,
+      get: () => Promise<AppLocalSettings>,
+      set: (item: AppLocalSettings) => Promise<void>,
+      test: (ip: string) => Promise<boolean>;
+    }
     dbBatch: (fn: () => Promise<void>) => Promise<void>,
     version: number,
     versionName: string,

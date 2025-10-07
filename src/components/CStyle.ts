@@ -3,6 +3,7 @@ import { NestedStyleSheet } from "react-native-short-style";
 const font = "SourceSans3-Bold";
 const font0 = "SourceSans3-BlackItalic";
 export default NestedStyleSheet.create({
+  link: "desc co-#99c3ff fos-12 fow-bold",
   root: {
     marginTop: StatusBar.currentHeight
   },

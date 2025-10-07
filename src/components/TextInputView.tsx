@@ -16,7 +16,7 @@ export default React.forwardRef(
     ref
   ) => {
 
-    const inputRef = React.useRef<typeof TextInput>();
+    const inputRef = React.useRef<typeof TextInput>(null);
     const [visible, setVisible] = React.useState(inputVisible || false);
     const [size, setSize] = React.useState<ISize | undefined>();
     const [txt, setTxt] = React.useState(

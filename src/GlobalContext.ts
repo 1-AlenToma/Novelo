@@ -5,17 +5,17 @@ import DownloadManager from "./native/DownloadManager";
 import Html from "./native/Html";
 import Notification from "./native/Notification";
 import {
-    Value, 
-    ChapterInfo, 
-    LightInfo, 
-    DetailInfo, 
-    ParserDetail, 
-    SearchDetail, 
-    Parser, 
+    Value,
+    ChapterInfo,
+    LightInfo,
+    DetailInfo,
+    ParserDetail,
+    SearchDetail,
+    Parser,
 } from "./native/ParserItems";
 
 import { Dimensions, Keyboard, LogBox } from "react-native";
-import StateBuilder,{newId} from "react-smart-state";
+import StateBuilder, { newId } from "react-smart-state";
 import { GlobalType, FilesPath, WebViewProps, IGlobalState } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
@@ -37,7 +37,7 @@ LogBox.ignoreLogs([
 ]);
 
 
-const globalDb = new dbContext();
+var globalDb = new dbContext();
 const globalHttp = new HttpHandler();
 
 let currentParser = ParserWrapper.getAllParsers("ReadNovelFull") as ParserWrapper;
@@ -48,8 +48,32 @@ const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
 const debugMode = __DEV__;
 
-const data : IGlobalState = StateBuilder<GlobalType>(
+const data: IGlobalState = StateBuilder<GlobalType>(
     {
+        appLocalSettings: {
+            data: {} as any,
+            get: async () => {
+                return JSON.parse((await privateData.read("AppLocalSettings")) ?? "{}")
+            },
+            set: async (item) => {
+                data.appLocalSettings.data = item;
+                await privateData.write("AppLocalSettings", JSON.stringify(item))
+            },
+            test: async (ip: string) => {
+                try {
+                    console.log("testing server", ip.join("ping"))
+                    const rep = await methods.fetchWithTimeout(ip.join("ping"), {}, 3000);
+                    if (!rep.ok)
+                        return false;
+                    let txt = await rep.text();
+                    return txt == "true";
+                } catch (e) {
+                    console.error(e);
+                    return false;
+                }
+
+            }
+        },
         dbBatch: async (fn) => {
             await context.batch(async () => {
                 context.db.disableHooks().disableWatchers();
@@ -167,6 +191,11 @@ const data : IGlobalState = StateBuilder<GlobalType>(
             try {
                 let appSettingWatcher: any = {};
                 await context.batch(async () => {
+                    data.appLocalSettings.data = JSON.parse((await privateData.read("AppLocalSettings")) ?? "{}");
+                    if (await data.appLocalSettings.test(data.appLocalSettings.data.serverIp))
+                        data.db = globalDb = new dbContext(data.appLocalSettings.data);
+                    else alert(`Could not connect to Novelo server, Check your internet settings or make sure that Novelo server is reachable. Will be using local db instead`);
+
                     // await globalDb.dropTables();
                     let currentParserString: string = "";
                     const loadParsers = async () => {

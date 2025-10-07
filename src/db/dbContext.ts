@@ -9,21 +9,45 @@ import {
   TableNames,
   AppSettings
 } from "./";
-import { DownloadOptions } from "../Types";
+import { AppLocalSettings, DownloadOptions } from "../Types";
 import {
   removeProps,
   joinKeys,
   sleep
 } from "../Methods";
 import { DetailInfo, ZipBook } from "../native";
+import { AlertDialog } from "react-native-short-style";
 let encKey = "novelo.enc";
 let encKeys = ["url", "parserName", "image"];
 export default class DbContext extends Database<TableNames> {
   databaseName: string = "Novelo";
+  appLocalSettings: AppLocalSettings;
   readonly Books = this.DbSet<Book>(Book);
   readonly Chapters = this.DbSet<Chapter>(Chapter);
   readonly AppSettings = this.DbSet<AppSettings>(AppSettings);
-  constructor() {
+
+  async sendToServer(sql, args, operation) {
+    try {
+      let rep = await methods.fetchWithTimeout(this.appLocalSettings.serverIp.join("sql"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sql, args, operation })
+      }, 8000)
+      if (rep.ok) {
+        let txt = await rep.text();
+        if (txt && (txt.startsWith("{") || txt.startsWith("[")))
+          return JSON.parse(txt);
+      }
+    } catch (e) {
+      AlertDialog.alert({title:"Novelo Server", message: `Could not connect to Novelo server, Check your internet settings or make sure that Novelo server is reachable\nError Message:${e.toString()}`})
+      console.error(e);
+    }
+
+    return undefined
+  }
+
+  constructor(appLocalSettings?: AppLocalSettings) {
+
     super(
       async () => {
         let db = await openDatabaseAsync(this.databaseName);
@@ -33,13 +57,23 @@ export default class DbContext extends Database<TableNames> {
             console.info("Sql Operation", operation);
             switch (operation) {
               case "Bulk":
-                await db.execAsync(sql);
+                if (this.appLocalSettings)
+                  this.sendToServer(sql, args, operation);
+                else
+                  await db.execAsync(sql);
                 break;
               case "READ":
-                return await db.getAllAsync(sql, args);
+                if (this.appLocalSettings)
+                  return await this.sendToServer(sql, args, operation);
+                else
+                  return await db.getAllAsync(sql, args);
               case "WRITE":
-                let item = await db.runAsync(sql, args);
-                return item?.lastInsertRowId;
+                if (this.appLocalSettings)
+                  return (await this.sendToServer(sql, args, operation))?.lastInsertRowId;
+                else {
+                  let item = await db.runAsync(sql, args);
+                  return item?.lastInsertRowId;
+                }
             }
             return undefined;
           },
@@ -67,6 +101,7 @@ export default class DbContext extends Database<TableNames> {
       !__DEV__
     );
 
+    this.appLocalSettings = appLocalSettings;
     this.addTables(Session)
   }
 

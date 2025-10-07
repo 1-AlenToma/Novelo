@@ -522,6 +522,20 @@ const injectCSS = (css: string) => {
   return js;
 }
 
+async function fetchWithTimeout(resource: string, options = {}, timeout = 3000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(resource, { ...options, signal: controller.signal });
+    return response;
+  } catch (error) {
+    throw new Error(`Fetch failed or timed out: ${error.message}`);
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 export {
   public_m,
   sleep,
@@ -534,5 +548,6 @@ export {
   invertColor,
   ifSelector,
   generateText,
-  injectCSS
+  injectCSS,
+  fetchWithTimeout
 };

@@ -8,6 +8,7 @@ import {
   useLoader,
   DropDownLocalList,
   AlertDialog,
+  AppServer,
 } from "../components/";
 import * as React from "react";
 import { useLocationSelection, AppUpdate } from "../hooks";
@@ -132,6 +133,7 @@ export default (props: any) => {
         </View>
         {dataLocation.elem}
         <AppUpdate />
+        <AppServer />
         <TouchableOpacity
           css="invert settingButton"
           onPress={download}>
