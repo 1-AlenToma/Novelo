@@ -25,13 +25,19 @@ export const AppServer = () => {
                 state.connected = false;
                 return;
             }
-            context.appLocalSettings.set(state.data);
+            await context.appLocalSettings.set({ ...state.data });
             state.connected = true;
         } catch (e) {
             console.error(e);
         } finally {
             state.isLoading = false
         }
+    }
+
+    const clear = async () => {
+        state.data.serverIp = "";
+        await context.appLocalSettings.set({ ...state.data });
+        state.visible = false;
     }
 
 
@@ -56,11 +62,15 @@ export const AppServer = () => {
                     <FormItem css="bow-0 fl-1 mih-87% wi-100% mab-5" title="Server Ip">
                         <Text css="desc">You will need to restart the app after changing this</Text>
                         <TextInputView placeholder="Server Ip eg http://192.168.1.239:5002"
-                            style={{ paddingLeft: 5, color: state.connected ? "green" : state.connected == undefined ? undefined : "red" }}
+                            style={{ paddingLeft: 5, color: state.connected ? "green" : state.connected == undefined ? "gray" : "red" }}
                             defaultValue={state.data.serverIp} onChangeText={x => state.data.serverIp = x} />
-                        <Text onPress={()=> Linking.openURL("https://github.com/1-AlenToma/Novelo.Service")} css="link">Read how to in https://github.com/1-AlenToma/Novelo.Service</Text>
+                        <Text onPress={() => Linking.openURL("https://github.com/1-AlenToma/Novelo.Service")} css="link">Read how to in https://github.com/1-AlenToma/Novelo.Service</Text>
                     </FormItem>
-                    <Button icon={<Icon type="Entypo" name="save" />} onPress={save} text="Save" />
+                    <View css="fld-row">
+                        <Button icon={<Icon type="AntDesign" name="clear" />} onPress={clear} text="Clear" css="par-5" />
+                        <Button icon={<Icon type="Entypo" name="save" />} onPress={save} text="Save" css="mal-5 par-5" />
+
+                    </View>
                 </View>
             </Loader>
         </Modal>

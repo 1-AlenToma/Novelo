@@ -192,9 +192,9 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                 let appSettingWatcher: any = {};
                 await context.batch(async () => {
                     data.appLocalSettings.data = JSON.parse((await privateData.read("AppLocalSettings")) ?? "{}");
-                    if (await data.appLocalSettings.test(data.appLocalSettings.data.serverIp))
+                    if (data.appLocalSettings.data.serverIp && !data.appLocalSettings.data.serverIp.empty() && await data.appLocalSettings.test(data.appLocalSettings.data.serverIp))
                         data.db = globalDb = new dbContext(data.appLocalSettings.data);
-                    else alert(`Could not connect to Novelo server, Check your internet settings or make sure that Novelo server is reachable. Will be using local db instead`);
+                    else if (data.appLocalSettings.data.serverIp && !data.appLocalSettings.data.serverIp.empty()) alert(`Could not connect to Novelo server, Check your internet settings or make sure that Novelo server is reachable. Will be using local db instead`);
 
                     // await globalDb.dropTables();
                     let currentParserString: string = "";
