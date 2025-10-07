@@ -12,6 +12,11 @@ The app is totally free, if you are a developer then feel free to participate in
 <img width="24%" src="https://raw.githubusercontent.com/1-AlenToma/Novelo/main/Screenshots/6.PNG" />
 </p>
 
+# Novelo database server(optional)
+If you want to make your novels accessable from differend system then you could use this [Novelo.Service](https://github.com/1-AlenToma/Novelo.Service)
+
+With [Novelo.Service](https://github.com/1-AlenToma/Novelo.Service) you will be able to save/retrieve your novels from your PC(server) instead of locally saving your Novels on the PHONE
+
 # How to make a new parser
 
 Download the source code, and build it.
