@@ -28,10 +28,11 @@ export default class DbContext extends Database<TableNames> {
 
   async sendToServer(sql, args, operation) {
     try {
+     
       let rep = await methods.fetchWithTimeout(this.appLocalSettings.serverIp.join("sql"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sql, args, operation })
+        body: JSON.stringify({ sql, args: JSON.stringify(args ?? []).toBase64(), operation })
       }, 8000)
       if (rep.ok) {
         let txt = await rep.text();

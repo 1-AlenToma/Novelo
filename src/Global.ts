@@ -8,6 +8,7 @@ import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
 import HtmlContext from "./HtmlContext";
+import base64 from './native/Base64Converter'
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
 
@@ -49,6 +50,7 @@ declare global {
         isLocalPath(incBase64?: boolean): boolean;
         isBase64String(): boolean;
         toBase64Url(): string;
+        toBase64(): string;
         escapeRegExp(): string;
         join(...relative: String[]): string;
         path(...relative: string[]): string;
@@ -141,6 +143,10 @@ String.prototype.isBase64String = function () {
     const str = new String(this).toString();
     var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
     return /data\:image/g.test(str) || base64regex.test(str);
+}
+
+String.prototype.toBase64 = function(){
+    return base64.encode(new String(this).toString())
 }
 
 String.prototype.toBase64Url = function () {
