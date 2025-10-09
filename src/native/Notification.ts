@@ -11,7 +11,7 @@ Notifications.setNotificationHandler({
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: true
-    }),
+    }as any),
 });
 
 async function registerForPushNotificationsAsync() {

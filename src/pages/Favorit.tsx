@@ -1,13 +1,10 @@
 import {
-  Text,
-  View,
   useLoader,
   Image,
   ItemList,
-  Icon,
   FoldableItem,
-  AlertDialog
 } from "../components";
+import { View, Text, Icon, AlertDialog } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
 import {
@@ -93,7 +90,7 @@ const ItemRender = ({
                   loader.show();
                   if (answer) {
                     try {
-                      let file = context.files.exists("".fileName(item.name, item.parserName));
+                      let file = await context.files.exists("".fileName(item.name, item.parserName));
                       if (file) {
                         item.favorit = false;
                         await item.saveChanges();
@@ -239,7 +236,7 @@ export default ({ ...props }: any) => {
           items={books?.filter(x =>
             !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)
           )}
-          container={({ item }) => (
+          container={({ item }: any) => (
             <ItemRender
               loader={loader}
               state={state}

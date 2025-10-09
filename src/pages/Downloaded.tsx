@@ -1,15 +1,17 @@
 import {
-  Text,
-  View,
-  TouchableOpacity,
   useLoader,
   Image,
   ItemList,
+  FoldableItem
+} from "../components";
+import {
+  Text,
+  View,
+  TouchableOpacity,
   Icon,
   ProgressBar,
-  FoldableItem,
   AlertDialog
-} from "../components";
+} from "react-native-short-style";
 import Header from "./Header";
 import * as React from "react";
 import {

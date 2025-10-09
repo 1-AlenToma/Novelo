@@ -1,15 +1,10 @@
 import {
-  Text,
-  View,
-  TouchableOpacity,
-  Icon,
-  Modal,
   Image,
   useLoader,
   DropDownLocalList,
-  AlertDialog,
   AppServer,
 } from "../components/";
+import { View, Text, Icon, AlertDialog, Modal,TouchableOpacity } from "react-native-short-style";
 import * as React from "react";
 import { useLocationSelection, AppUpdate } from "../hooks";
 import WebNovelTester from "../components/WebNovelTester";
@@ -49,7 +44,7 @@ export default (props: any) => {
   const cleanData = () => {
     AlertDialog
       .confirm({ message: "Are you sure?", title: "Please Confirm" })
-      .then(async answer => {
+      .then(async (answer: boolean) => {
         try {
           if (!answer) return;
           loader.show();

@@ -1,30 +1,23 @@
 import {
-  Text,
-  View,
-  TouchableOpacity,
   useLoader,
   ItemList,
-  Icon,
   TextInput,
   ActionSheetButton,
   Web,
-  TabBar,
   Slider,
-  CheckBox,
-  Modal,
   DropDownLocalList,
   ColorPicker,
-  FormItem,
   ChapterView,
-  ButtonGroup,
-  TabView,
-  AlertDialog,
-  Button,
   ColorSelection,
   PlayerView,
-  SliderView,
   ContextContainer
 } from "../../components/";
+import {
+  View, Text, Icon, ButtonGroup,
+  TabView,
+  AlertDialog,
+  Button, Modal, CheckBox, TabBar, FormItem, TouchableOpacity
+} from "react-native-short-style";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
 import * as React from "react";
@@ -85,7 +78,7 @@ const Modoles = () => {
       >
         <View css="flex mat:20 invert">
           <TextInput
-            onChangeText={x =>
+            onChangeText={(x: string) =>
               (context.player.menuOptions.comment = x)
             }
             readOnly={true}
@@ -106,8 +99,7 @@ const Modoles = () => {
             <FormItem
               title="TextToEdit">
               <TextInput
-                onChangeText={x =>(context.player.menuOptions.textEdit.edit = x)}
-                invertColor={false}
+                onChangeText={x => (context.player.menuOptions.textEdit.edit = x)}
                 css="pa:5 bor:2 flg:1"
                 multiline={true}
                 defaultValue={
@@ -121,7 +113,6 @@ const Modoles = () => {
                 (context.player.menuOptions.textEdit.editWith =
                   x)
                 }
-                invertColor={false}
                 css="pa:5 bor:2 flg:1 he-40"
                 multiline={true}
                 defaultValue={
@@ -136,7 +127,6 @@ const Modoles = () => {
                 (context.player.menuOptions.textEdit.comments =
                   x)
                 }
-                invertColor={false}
                 css="pa:5 bor:2 flg:1"
                 multiline={true}
                 defaultValue={
@@ -151,7 +141,7 @@ const Modoles = () => {
                   context.player.menuOptions.textEdit
                     ?.bgColor ?? "#ffffff"
                 }
-                onComplete={({ hex }) =>
+                onComplete={({ hex }: any) =>
                 (context.player.menuOptions.textEdit = {
                   ...context.player.menuOptions.textEdit,
                   bgColor: hex
@@ -219,7 +209,7 @@ const Modoles = () => {
                   context.appSettings.lang ?? "English"
                 ].google
                   }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
-                    context.player.menuOptions.textToTranslate
+                    context.player.menuOptions.textToTranslate ?? ""
                   )}`
               }}
               contentMode="mobile"
@@ -228,13 +218,13 @@ const Modoles = () => {
               scrollEnabled={true}
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
-              style={[
+              style={
                 {
                   flexGrow: 1,
                   zIndex: 70,
                   flex: 1
                 }
-              ]}
+              }
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
               allowUniversalAccessFromFileURLs={true}
@@ -264,13 +254,13 @@ const Modoles = () => {
               scrollEnabled={true}
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
-              style={[
+              style={
                 {
                   flexGrow: 1,
                   zIndex: 70,
                   flex: 1
                 }
-              ]}
+              }
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
               allowUniversalAccessFromFileURLs={true}
@@ -283,7 +273,7 @@ const Modoles = () => {
   );
 };
 
-const Controller = ({ state, ...props }) => {
+const Controller = ({ state, ...props }: any) => {
   useDbHook(
     "Chapters",
     item => item.parent_Id === state.book.id,
@@ -417,12 +407,12 @@ const Controller = ({ state, ...props }) => {
                 disableTimer={true}
                 buttons={true}
                 value={state.chapterSliderValue == undefined ? context.player.currentChapterIndex : state.chapterSliderValue}
-                onValueChange={v => {
+                onValueChange={(v: number)=> {
                   Timer.clear();
-                  state.chapterSliderValue = parseInt(v.toString())
+                  state.chapterSliderValue = parseInt(v.toString()) as any
                 }}
                 animationType="spring"
-                onSlidingComplete={index => {
+                onSlidingComplete={(index: number) => {
                   Timer(async () => {
                     await context.player.jumpTo(parseInt(index.toString()));
                     state.chapterSliderValue = undefined;
@@ -558,7 +548,7 @@ const Controller = ({ state, ...props }) => {
                             });
                           }}
                           selectedIndex={(
-                            [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle.toLowerCase())].filter(x => x >= 0)
+                            [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle?.toLowerCase())].filter(x => x >= 0)
                           )}
                         />
                       </FormItem>
@@ -633,7 +623,7 @@ const Controller = ({ state, ...props }) => {
                             context.appSettings
                               .fontSize
                           }
-                          onSlidingComplete={fontSize => {
+                          onSlidingComplete={(fontSize: any) => {
                             editSettings({
                               fontSize
                             });
@@ -653,7 +643,7 @@ const Controller = ({ state, ...props }) => {
                             context.appSettings
                               .lineHeight
                           }
-                          onSlidingComplete={lineHeight => {
+                          onSlidingComplete={(lineHeight: any) => {
                             editSettings({
                               lineHeight
                             });
@@ -673,7 +663,7 @@ const Controller = ({ state, ...props }) => {
                             context.appSettings
                               .sentenceMargin ?? 5
                           }
-                          onSlidingComplete={sentenceMargin => {
+                          onSlidingComplete={(sentenceMargin: any) => {
                             editSettings({
                               sentenceMargin
                             });
@@ -693,7 +683,7 @@ const Controller = ({ state, ...props }) => {
                             context.appSettings
                               .margin
                           }
-                          onSlidingComplete={margin => {
+                          onSlidingComplete={(margin: any) => {
                             editSettings({
                               margin
                             });
@@ -787,7 +777,7 @@ const Controller = ({ state, ...props }) => {
                               ?.minLength ??
                             100
                           }
-                          onSlidingComplete={length => {
+                          onSlidingComplete={(length: any) => {
                             editSettings({
                               useSentenceBuilder:
                               {
@@ -808,7 +798,7 @@ const Controller = ({ state, ...props }) => {
                         <CheckBox
                           css="pal:1 invert"
                           checked={
-                            context.appSettings.use3D
+                            context.appSettings.use3D ?? false
                           }
                           onChange={() => {
                             editSettings({
@@ -835,7 +825,7 @@ const Controller = ({ state, ...props }) => {
                               .shadowLength,
                             true
                           )}
-                          onSlidingComplete={shadowLength => {
+                          onSlidingComplete={(shadowLength: any) => {
                             editSettings({
                               shadowLength
                             });
@@ -851,7 +841,6 @@ const Controller = ({ state, ...props }) => {
                       >
                         <TextInput
                           isModole={true}
-                          invertColor={false}
                           css="wi:100% pa:5 bor:2 he:100%"
                           multiline={true}
                           defaultValue={
@@ -880,7 +869,7 @@ const Controller = ({ state, ...props }) => {
                           size={"80%"}
                           enableSearch={true}
                           css="invert"
-                          items={context.voices.map(x => {
+                          items={context.voices?.map(x => {
                             return {
                               label: `${lang[
                                 x.language.toLowerCase()
@@ -896,7 +885,7 @@ const Controller = ({ state, ...props }) => {
                                 x.language}(${x.language})`,
                               value: x.name
                             }
-                          })}
+                          }) ?? []}
                           selectedValue={context.appSettings.voice}
                           render={item => {
                             return (
@@ -938,7 +927,7 @@ const Controller = ({ state, ...props }) => {
                             context.appSettings
                               .pitch
                           }
-                          onSlidingComplete={pitch => {
+                          onSlidingComplete={(pitch: any) => {
                             editSettings({
                               pitch
                             });
@@ -957,7 +946,7 @@ const Controller = ({ state, ...props }) => {
                           value={
                             context.appSettings.rate
                           }
-                          onSlidingComplete={rate => {
+                          onSlidingComplete={(rate: any) => {
                             editSettings({
                               rate
                             });
@@ -1003,7 +992,7 @@ const Controller = ({ state, ...props }) => {
                           <Text css="fow-bold">
                             Word Color
                           </Text>
-                          <ColorSelection selectedValue={context.appSettings.voiceWordSelectionsSettings?.color} onChange={(hex) => {
+                          <ColorSelection selectedValue={context.appSettings.voiceWordSelectionsSettings?.color ?? ""} onChange={(hex) => {
                             editSettings({
                               voiceWordSelectionsSettings:
                               {
@@ -1031,7 +1020,7 @@ const Controller = ({ state, ...props }) => {
                         </Text>
                         <ItemList
                           items={context.player.book.textReplacements}
-                          container={({ item }) => (
+                          container={({ item }: any) => (
                             <View
                               style={{
                                 backgroundColor:
@@ -1086,7 +1075,7 @@ const InternalWeb = ({ state, ...props }: any) => {
         click={() => {
           context.player.showController = !context.player.showController;
         }}
-        onComments={index => {
+        onComments={(index: number) => {
           context.player.menuOptions.comment = context.player.book.textReplacements[index].comments;
         }}
         onMenu={async (item: any) => {
@@ -1201,7 +1190,7 @@ export default (props: any) => {
             return;
           }
           state.novel = parserName == "epub" || epub
-            ? files.fileItems.find(x => x.url === url)
+            ? files.fileItems.find(x => x.url === url) as DetailInfo
             : await state.parser?.detail(url, true);
 
           if (!state.novel || !state.novel.name)

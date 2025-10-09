@@ -1,19 +1,26 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity, Icon, Modal, TextInput } from "react-native-short-style";
+import { View, Text, TouchableOpacity, Icon, Modal, TextInput ,StyledProps} from "react-native-short-style";
 import { ISize } from "Types";
-import { StyleSheet } from "react-native";
+import { StyleSheet, TextInputProps } from "react-native";
+
+
+type Props = TextInputProps & StyledProps & {
+isModole?: boolean,
+inputVisible?: boolean,
+serachBar?: boolean
+}
+
 export default React.forwardRef(
   (
     {
       style,
-      invertColor,
       css,
       isModole,
       inputVisible,
       serachBar,
       ...props
-    }: any,
-    ref
+    }: Props,
+    ref: any
   ) => {
 
     const inputRef = React.useRef<typeof TextInput>(null);
@@ -127,7 +134,7 @@ export default React.forwardRef(
             inputRef.current?.clear();
             inputRef.current?.focus();
             props.onChangeText?.("");
-            props.onSubmitEditing?.("");
+            props.onSubmitEditing?.(null);
           }}>
           <Icon
             css="bold co-red"

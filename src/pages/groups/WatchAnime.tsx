@@ -1,28 +1,17 @@
 import {
-    Text,
-    View,
-    TouchableOpacity,
+
     useLoader,
-    ItemList,
-    Icon,
-    TextInput,
     ActionSheetButton,
     Web,
-    TabBar,
-    Slider,
-    CheckBox,
-    Modal,
-    DropdownList,
-    ColorPicker,
-    FormItem,
-    ChapterView,
-    ButtonGroup,
-    TabView,
-    AlertDialog,
-    Button,
-    ColorSelection,
-    PlayerView
+    ChapterView
+
 } from "../../components/";
+
+import {
+    View,
+    Icon,
+    AlertDialog,
+} from "react-native-short-style";
 import WebView from "react-native-webview";
 import * as React from "react";
 import { useNavigation } from "../../hooks";
@@ -48,7 +37,7 @@ const WatchAnime = (props: any) => {
     })).ignore("anime", "book", "chapterDetail").build();
 
     const actionSheet = useRef({
-        onChange: (visibility) => {
+        onChange: (visibility: boolean) => {
             state.displayHeader = !visibility;
         }
     })
@@ -79,8 +68,8 @@ const WatchAnime = (props: any) => {
             state.chapterDetail = (await parser.chapter(url)) as ChapterDetail;
             await loadChapter(chapter);
 
-        } catch (e) {
-            AlertDialog.alert({ message: e, title: "Error" });
+        } catch (e: any) {
+            AlertDialog.alert({ message: e.message, title: "Error" });
         }
 
     }
@@ -111,7 +100,7 @@ const WatchAnime = (props: any) => {
         }
     }, [])
 
-    const onMassage = (data) => {
+    const onMassage = (data: string) => {
         let item = JSON.parse(data) as { type: string, data: any }
         switch (item.type) {
             case "click":

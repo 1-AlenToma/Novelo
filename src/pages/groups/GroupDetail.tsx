@@ -1,6 +1,4 @@
-import {
-  View
-} from "../../components/";
+import { View } from "react-native-short-style";
 
 import NovelGroup from "../../components/NovelGroup"
 import * as React from "react";

@@ -1,19 +1,12 @@
 import {
-  Text,
-  View,
-  TouchableOpacity,
   useLoader,
   Image,
   ItemList,
-  Icon,
   ActionSheetButton,
-  TabBar,
   ChapterView,
-  TabView,
-  AlertDialog,
-  Modal,
   ExpandableDescription
 } from "../../components/";
+import { View, Text, Icon, AlertDialog, Modal, TabBar, TabView, TouchableOpacity } from "react-native-short-style";
 import HomeNovelItem from "../../components/HomeNovelItem";
 import WebView from "react-native-webview";
 import * as React from "react";
@@ -131,13 +124,13 @@ export default ({ ...props }: any) => {
             scrollEnabled={true}
             userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
             setSupportMultipleWindows={false}
-            style={[
+            style={
               {
                 flexGrow: 1,
                 zIndex: 70,
                 flex: 1
               }
-            ]}
+            }
             allowFileAccess={true}
             allowFileAccessFromFileURLs={true}
             allowUniversalAccessFromFileURLs={true}
@@ -412,7 +405,7 @@ export default ({ ...props }: any) => {
                       }
                     }}
                     itemCss={!((state.novel.novelUpdateRecommendations?.firstOrDefault("image") ?? "").toString().has()) ? "wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray" : "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"}
-                    container={({ item, index }) => {
+                    container={({ item, index }: any) => {
                       if (item.image?.has())
                         return <HomeNovelItem item={item} vMode={false} />
                       return <Text css="fow-bold fos-15 pal-10">{item.name}</Text>
@@ -559,14 +552,14 @@ export default ({ ...props }: any) => {
               scrollEnabled={true}
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
-              style={[
+              style={
                 {
                   flexGrow: 1,
                   zIndex: 70,
                   flex: 1,
 
                 }
-              ]}
+              }
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
               allowUniversalAccessFromFileURLs={

@@ -1,13 +1,7 @@
 import {
-  Text,
-  View,
-  TouchableOpacity,
   Image,
-  Icon,
-  AnimatedView,
-  ActionSheet,
-  useTimer
 } from "../components";
+import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, TouchableOpacity } from "react-native-short-style";
 import NovelGroup from "../components/NovelGroup"
 import * as React from "react";
 import Header from "./Header";
@@ -104,9 +98,7 @@ const CurrentItem = ({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            ifTrue={() =>
-              context.appSettings.currentNovel?.isEpub &&
-              book.parserName != "epub" && book.isOnline?.()
+            ifTrue={() => (context.appSettings.currentNovel?.isEpub && book.parserName != "epub" && book.isOnline?.()) as any
             }
             css="invert listButton"
             onPress={() => {

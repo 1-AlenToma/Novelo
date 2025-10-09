@@ -1,15 +1,11 @@
 import {
-  View,
-  Text,
-  TouchableOpacity,
   SizeAnimator,
   TextInput,
-  Icon,
   ActionSheetButton,
   Image,
-  ScrollView,
   useLoader
 } from "../components";
+import { View, Text, Icon, ScrollView, TouchableOpacity } from "react-native-short-style";
 import * as React from "react";
 import { proc } from "../Methods";
 import {
@@ -115,7 +111,7 @@ export default ({
                 input.current = x;
               }}
               defaultValue={value}
-              onChangeText={txt => {
+              onChangeText={(txt: string) => {
                 state.text = txt;
               }}
               disableFullscreenUI={true}
@@ -160,11 +156,7 @@ export default ({
         ) : null}
         <View
           css="row juc:center ali:center absolute ri:5 bac-transparent"
-          ifTrue={() =>
-            buttons?.has() ??
-            (false ||
-              (inputEnabled && !onInputChange))
-          }>
+          ifTrue={() => (buttons?.has() ?? ((inputEnabled && onInputChange)) as any)}>
           <>
             {buttons?.map((x, i) => (
               <TouchableOpacity

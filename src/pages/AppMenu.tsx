@@ -3,7 +3,8 @@ import Favorit from "./Favorit";
 import Settings from "./Settings";
 import Downloaded from "./Downloaded";
 import Libraries from "./Libraries";
-import { TabBar, View, PlayerView } from "../components";
+import { PlayerView } from "../components";
+import { TabBar, View } from "react-native-short-style";
 import * as React from "react";
 
 

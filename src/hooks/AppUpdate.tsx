@@ -1,5 +1,5 @@
 import { UpdateAPK } from 'rn-update-apk';
-import { TouchableOpacity, Text, Icon, ProgressBar, View, AlertDialog } from '../components';
+import { TouchableOpacity, Text, Icon, ProgressBar, View, AlertDialog } from 'react-native-short-style';
 import * as React from "react";
 import * as Application from 'expo-application';
 

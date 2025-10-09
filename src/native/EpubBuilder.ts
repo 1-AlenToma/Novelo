@@ -1,4 +1,4 @@
-import { AlertDialog, newId } from "../components";
+import { AlertDialog, newId } from "react-native-short-style";
 import { Book } from "../db";
 import { DetailInfo } from "./ParserItems";
 import RNFS from 'react-native-fs';

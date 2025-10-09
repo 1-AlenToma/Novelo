@@ -1,13 +1,9 @@
 import * as React from "react";
 import {
-    Modal, TouchableOpacity, Icon,
-    Text,
-    View,
-    ProgressBar,
     useLoader,
-    FileBrowser,
-    AlertDialog
 } from "../components";
+
+import { ProgressBar, TouchableOpacity, Icon, AlertDialog, Text } from "react-native-short-style";
 import { ImageCache } from "../native";
 import FileHandler from "../native/FileHandler";
 import { FilesPath } from "../Types";
@@ -67,7 +63,7 @@ export default () => {
 
                 }
 
-            } catch (e) {
+            } catch (e: any) {
                 console.error(e);
                 AlertDialog.alert({ message: e.toString(), title: "Error" });
 

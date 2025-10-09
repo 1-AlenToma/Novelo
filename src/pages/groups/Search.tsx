@@ -1,15 +1,13 @@
 import {
-  Text,
-  View,
-  TouchableOpacity,
+
   useLoader,
   ItemList,
   ActionSheetButton,
-  ScrollView,
-  ProgressBar,
-  Button,
-  Icon
 } from "../../components";
+import {
+  View, Text, Icon, TouchableOpacity,
+  ProgressBar
+} from "react-native-short-style";
 import HomeNovelItem from "../../components/HomeNovelItem"
 import * as React from "react";
 import {
@@ -30,14 +28,12 @@ const ActionItem = ({
 }: any) => {
   const settings = useNumColumns();
   let items = { items: state.parser.settings[keyName] };
-  let selected = {};
-  items.items?.map(
-    x =>
-    (selected[x.text] = state.text[
-      keyName
-    ].find(f => x.text == f.text)
-      ? "selected"
-      : "")
+  let selected: any = {};
+  items.items?.map((x: any) => (selected[x.text] = state.text[
+    keyName
+  ].find((f: any) => x.text == f.text)
+    ? "selected"
+    : "")
   );
 
   return (
@@ -63,13 +59,13 @@ const ActionItem = ({
             return `he-30 wi-${settings.width - 10} juc-center ali-center pa-5 bac-blue mar-5 mat-10`
           }}
           onPress={x => {
-            let item = {};
+            let item: any = {};
             item[keyName] = x;
             selection(item);
           }}
           vMode={true}
           numColumns={settings.numColumns}
-          container={({ item }) => {
+          container={({ item }: any) => {
             return (
               <Text
                 css={`desc bold fos:15 co-white ${selected[item.text]
@@ -93,11 +89,11 @@ export default ({ ...props }: any) => {
   );
   const state = buildState(() =>
   ({
-    items: [],
-    text: undefined as SearchDetail,
+    items: [] as any[],
+    text: undefined as SearchDetail | undefined,
     currentPage: 0,
     parser: parser,
-    loadedParser: {},
+    loadedParser: {} as any,
     procent: {
       parser: "",
       value: 0,
@@ -107,7 +103,7 @@ export default ({ ...props }: any) => {
   })).ignore("parser", "items", "loadedParser").build();
   const globalParser = useParserSelector(() => {
     if (globalParser.hasSelection()) {
-      state.text = new SearchDetail(state.text.text ?? "");
+      state.text = new SearchDetail(state.text?.text ?? "");
       state.items = [];
       state.currentPage = 0;
       if (!state.text.text.empty())
@@ -122,7 +118,7 @@ export default ({ ...props }: any) => {
       let parser = state.parser;
       state.procent.value = 0;
       if (state.text == undefined) {
-        parser.settings = await parser.load("RenewMemo");
+        parser.settings = await parser.load("RenewMemo") as any;
         state.loadedParser[parser.name] = true;
         state.text = new SearchDetail(searchTxt || "").set("page", 0).set("genre", parser.settings.genre?.filter(x => genre && x.text.has(genre)) ?? []);
       }
@@ -136,7 +132,7 @@ export default ({ ...props }: any) => {
       let txt = state.text.clone();
       if (page === undefined) txt.page++;
       else txt.page = page;
-      let currentItems = txt.page > 1 ? [...state.items] : [];
+      let currentItems: any[] = txt.page > 1 ? [...state.items] : [];
 
       for (let p of prs) {
         if (state.procent.stop && globalParser.hasSelection())
@@ -163,7 +159,7 @@ export default ({ ...props }: any) => {
       }
     } finally {
       loader.hide();
-      state.currentPage = state.text.page;
+      state.currentPage = state.text?.page ?? 0;
       state.procent.stop = false;
     }
 
@@ -179,6 +175,8 @@ export default ({ ...props }: any) => {
     genre,
     group
   }: any) => {
+    if (state.text == undefined)
+      return;
     let co =
       state.parser.settings.searchCombination;
     if (!co.has("Group") && !group)
@@ -291,18 +289,18 @@ export default ({ ...props }: any) => {
         css="row juc:space-between ali:center invert">
         <ActionItem
           state={state}
-          selection={item => selection(item)}
+          selection={(item: any) => selection(item)}
           keyName="status"
         />
         <ActionItem
           state={state}
-          selection={item => selection(item)}
+          selection={(item: any) => selection(item)}
           keyName="group"
         />
 
         <ActionItem
           state={state}
-          selection={item => selection(item)}
+          selection={(item: any) => selection(item)}
           keyName="genre"
         />
       </View>
@@ -333,7 +331,7 @@ export default ({ ...props }: any) => {
               return `boc:#ccc bow:1 overflow he-${imageSize?.height ?? "170"} wi:98% mat:5 mal:5 bor:5`
             }}
             items={state.items}
-            container={({ item }) => <HomeNovelItem item={item} vMode={true} showParserName={globalParser.hasSelection()} />}
+            container={({ item }: any) => <HomeNovelItem item={item} vMode={true} showParserName={globalParser.hasSelection()} />}
           />
         </View>
       </View>

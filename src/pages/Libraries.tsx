@@ -1,13 +1,9 @@
 import {
-  Text,
-  View,
   Image,
-  AlertDialog,
   ItemList,
-  Button,
   useLoader,
-  Icon,
 } from "../components";
+import { View, Text, Icon, AlertDialog, Button } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
 import { useView } from "../hooks";
@@ -17,11 +13,11 @@ import { Parser } from "../native/ParserItems";
 
 
 type BtnTextType = "Install" | "Update" | "Uninstall";
-const ListItem = ({ item, zip }) => {
+const ListItem = ({ item, zip }: any) => {
   const state = buildState(() =>
   ({
     btnText: "Install" as BtnTextType,
-    parser: undefined as Parser,
+    parser: undefined as Parser | undefined,
     parserCode: "",
   })).ignore("parser").build();
   const loader = useLoader(true)
@@ -48,7 +44,7 @@ const ListItem = ({ item, zip }) => {
     let btnText: BtnTextType = "Install";
     if (!appSettings.parsers)
       appSettings.parsers = [];
-    let existingParser = appSettings.parsers.find(x => x.name == state.parser.name);
+    let existingParser = appSettings.parsers.find(x => x.name == state.parser?.name);
     if (existingParser && existingParser.content == state.parserCode)
       btnText = "Uninstall";
     else if (existingParser || state.parser.name == context.parser.default)
@@ -62,7 +58,7 @@ const ListItem = ({ item, zip }) => {
   }, "parser")
 
   const install = async () => {
-    if (loader.loading)
+    if (loader.loading || state.parser == undefined)
       return;
     loader.show();
     let appSettings = context.appSettings;
@@ -71,7 +67,7 @@ const ListItem = ({ item, zip }) => {
     if (state.parser.minVersion != undefined && state.parser.minVersion > context.version) {
       AlertDialog.alert({ message: `The new parser require app version to at least be ${state.parser.minVersion}, and the current app version is ${context.version} \n please update your app to the newset version`, title: "App Version error" });
     } else {
-      appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser.name);
+      appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser?.name);
       appSettings.parsers.push({ name: state.parser.name, content: state.parserCode });
       await appSettings.saveChanges();
       await context.cache.deleteDir(state.parser.name);
@@ -89,7 +85,7 @@ const ListItem = ({ item, zip }) => {
     let appSettings = context.appSettings;
     if (!appSettings.parsers)
       appSettings.parsers = [];
-    appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser.name);
+    appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser?.name);
     await appSettings.saveChanges();
     loader.hide();
   }
@@ -122,7 +118,7 @@ const ListItem = ({ item, zip }) => {
           <Text ifTrue={state.parser.minVersion != undefined && context.version < state.parser.minVersion} css="co-red fos-10 fow-bold">{"\n"}MinAppVersion:{state.parser.minVersion}</Text>
         </Text>
         <View css="fld-row _abc ri-0 juc-space-between ali-center he-100% wi-170">
-          <Button css="he-100% juc-center bor-0 mab-0 miw-50" onPress={() => Linking.openURL(state.parser.url)} icon={<Icon name="browser" type="Entypo" css={"co-#fff mal-0 pa-0"} size={15} />} />
+          <Button css="he-100% juc-center bor-0 mab-0 miw-50" onPress={() => Linking.openURL(state.parser?.url ?? "")} icon={<Icon name="browser" type="Entypo" css={"co-#fff mal-0 pa-0"} size={15} />} />
           <Button textCss="co-#fff fow-bold" css="miw-120 he-100% bor-0 mab-0 pal-10" icon={btnIcon} onPress={state.btnText != "Uninstall" ? install : unistall} text={state.btnText} />
         </View>
       </View>
@@ -141,7 +137,7 @@ const Libraries = ({ ...props }) => {
     state: {
       parserNames: [] as string[],
       refItem: {
-        zip: undefined as JSZip
+        zip: undefined as JSZip | undefined
       }
     }
   });
@@ -182,7 +178,7 @@ const Libraries = ({ ...props }) => {
           <Text css="desc fos-12 co-red fow-bold tea-left wi-100% pal-5">Browse between installed parsers in Home tab </Text>
           {render(undefined, {
             items: state.parserNames,
-            container: ({ item }) => <ListItem zip={state.refItem.zip} item={item} />,
+            container: ({ item }: any) => <ListItem zip={state.refItem.zip} item={item} />,
             itemCss: "clearwidth ali:center juc:center mab:5 overflow bor:5",
             vMode: true
           })}

@@ -1,7 +1,7 @@
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive';
 import RNFetchBlob from "rn-fetch-blob";
 import FileHandler from './FileHandler';
-import { ProgressBar } from '../components';
+import { ProgressBar } from 'react-native-short-style';
 import * as React from "react";
 import { newId } from '../Methods';
 import { ZipEventData } from "../Types";

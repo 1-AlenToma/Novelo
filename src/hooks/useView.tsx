@@ -1,4 +1,4 @@
-import { View } from "../components";
+import { View } from "react-native-short-style";
 import useUpdate from "./UseUpdate";
 import * as React from "react";
 import useLoader from "../components/Loader";
@@ -59,7 +59,7 @@ export default function <T>({
 
           {...prs}
           key={props.key}
-          onLayout={event => {
+          onLayout={(event : any) => {
 
             itemState.size = { ...event.nativeEvent.layout };
             gProps.onLayout?.(event);
