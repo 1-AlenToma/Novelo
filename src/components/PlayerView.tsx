@@ -33,7 +33,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
   return (
     <View
       ifTrue={context.player.showPlayer}
-      style={[
+      style={
         {
           zIndex: 100,
           top: context.player.hooked && context.player.showController && !isMenu ? 48 : (isMenu ? 0 : 1),
@@ -42,7 +42,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           borderRadius: isMenu ? 0 : 0,
           borderColor: methods.invertColor(context.appSettings.backgroundColor)
         }
-      ]}
+      }
       css={`band zi:100 bac:black overflow he:40 juc:center ali:center pal:10 par:10 invert`}>
       <View css="row juc:center ali:center di:flex invert">
         <TouchableOpacity
@@ -72,7 +72,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           css="clearheight flex invert">
           <Slider
             value={context.player.currentChapterSettings.audioProgress}
-            onValueChange={value => {
+            onValueChange={(value: number) => {
               audioProgressTimer(async () => {
                 await context.player.stop();
                 context.player.currentChapterSettings.audioProgress = value;

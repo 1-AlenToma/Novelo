@@ -32,7 +32,7 @@ export {
   ActionSheetButton,
   Web,
   Slider,
-  PlayerView,
+  PlayerView, 
   ColorPicker,
   ColorSelection,
   FoldableItem,

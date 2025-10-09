@@ -1,8 +1,8 @@
 import { View, Modal, Icon, Text, DropdownItem, TouchableOpacity } from "react-native-short-style";
 import ItemList from "./ItemList";
 import TextInput from "./TextInputView";
-import { useTimer } from "hooks";
-import { GlobalType } from "Types";
+import { useTimer } from "../hooks";
+import { GlobalType } from "../Types";
 import { getValueByPath, NestedKeyOf } from "react-smart-state";
 import { JSX } from "react";
 
@@ -75,7 +75,7 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
                         itemCss={(item) => {
                             return `wi-100% he-40 bobw-0.5 boc-#333 DropDownListItem invert ${item.value === selectedValue ? "selectedValue" : ""}`;
                         }}
-                        container={(({ item }) => {
+                        container={(({ item }: any) => {
                             if (render) {
                                 return render(item);
                             }

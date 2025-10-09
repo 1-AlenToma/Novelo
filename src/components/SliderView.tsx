@@ -89,7 +89,7 @@ export default ({
       </View>
       <View css={`flex invert`} style={{ maxWidth: buttons ? "75%" : "90%" }}>
         <SliderView
-          onStartShouldSetResponder={event =>
+          onStartShouldSetResponder={() =>
             false
           }
           minimumTrackTintColor="#f17c7c"

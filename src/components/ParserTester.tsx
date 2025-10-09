@@ -19,7 +19,7 @@ export default ({
   const [logs, setLogs] = useState([]);
   const lastItems = useRef<any>({});
   let serilize = (item: any) => {
-    let items = [];
+    let items: any[] = [];
     if (!item) return [];
     try {
       if (
@@ -58,7 +58,7 @@ export default ({
     let item = {
       id,
       text: "testing-",
-      items: []
+      items: [] as any[]
     };
     try {
       let v = await fn();
@@ -72,7 +72,7 @@ export default ({
       item.text += "failed " + e;
     }
 
-    setLogs(x => [...x, item]);
+    setLogs(x => [...x, item] as any);
     await sleep(1000);
   };
   useEffect(() => {
@@ -112,7 +112,7 @@ export default ({
     <View style={styles.container}>
       <ScrollView style={{ width: "100%" }}>
         <View style={{ flex: 1 }}>
-          {logs.map((x, i) => (
+          {logs.map((x: any, i) => (
             <View
               style={{
                 width: "100%"
@@ -127,16 +127,14 @@ export default ({
                   {x.text}
                 </Text>
               </View>
-              {x.items.map((f, index) => (
+              {x.items.map((f: string, index: number) => (
                 <Text
                   key={index + x.id}
                   style={[
                     styles.txt,
                     {
-                      backgroundColor: f.has(":-")
-                        ? "#ccc"
-                        : null
-                    }
+                      backgroundColor: f.has(":-") ? "#ccc" : null
+                    } as any
                   ]}
                 >
                   {f}

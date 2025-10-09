@@ -1,13 +1,13 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity, Icon, Modal, TextInput ,StyledProps} from "react-native-short-style";
-import { ISize } from "Types";
+import { View, Text, TouchableOpacity, Icon, Modal, TextInput, StyledProps } from "react-native-short-style";
+import { ISize } from "../Types";
 import { StyleSheet, TextInputProps } from "react-native";
 
 
 type Props = TextInputProps & StyledProps & {
-isModole?: boolean,
-inputVisible?: boolean,
-serachBar?: boolean
+  isModole?: boolean,
+  inputVisible?: boolean,
+  serachBar?: boolean
 }
 
 export default React.forwardRef(
@@ -46,7 +46,7 @@ export default React.forwardRef(
               <TouchableOpacity
                 css="listButton bow:1 boc:#ccc juc:center ali:center mab:10 invert"
                 onPress={() => {
-                  props.onChangeText(txt);
+                  props?.onChangeText?.(txt ?? "");
                   setVisible(false);
                 }}>
                 <Text css={"invertco"}>
@@ -128,7 +128,7 @@ export default React.forwardRef(
               props.value?.has() ||
               props.defaultValue?.has()
               || txt?.has()
-            ))
+            )) as any
           }
           onPress={() => {
             inputRef.current?.clear();

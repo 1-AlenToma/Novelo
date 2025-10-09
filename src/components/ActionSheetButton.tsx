@@ -23,7 +23,7 @@ export default ({
 
   let tprops = {
     onPress: () => setVisible(true),
-    onLongPress: undefined
+    onLongPress: undefined as Function | undefined
   };
 
   if (refItem) {
@@ -50,7 +50,7 @@ export default ({
     containerProps = { css: "bac-transparent", timeout: 10 };
   return (
     <>
-      <TouchableOpacity {...tprops} style={{ backgroundColor: "transparent" }}>
+      <TouchableOpacity {...tprops as any} style={{ backgroundColor: "transparent" }}>
         {typeof btn === "string" ? (
           <Text css={css}>{btn}</Text>
         ) : (

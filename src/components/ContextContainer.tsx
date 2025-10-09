@@ -12,7 +12,7 @@ type ContextContainerProps<T extends object> = {
 export function ContextContainer<T extends object>(props: ContextContainerProps<T>) {
     const state = buildState(() => (props.stateItem ?? ({ nothing: true }))).build();
 
-    const values = Object.keys(props.stateItem ?? {}).map(x => state[x]).filter(x => x !== null);
+    const values = Object.keys(props.stateItem ?? {}).map(x => (state as any)[x]).filter(x => x !== null);
     if (props.globalStateKeys?.has()) {
         context.hook(...props.globalStateKeys as any);
         values.push(...props.globalStateKeys.map(x => getValueByPath(context, x)))

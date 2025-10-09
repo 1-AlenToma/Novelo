@@ -1,8 +1,8 @@
 import useLoader from "./Loader";
 import * as React from "react";
 import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer } from "react-native-short-style";
-import { Book, Chapter } from "db";
-import { DetailInfo, ChapterInfo } from "native";
+import { Book, Chapter } from "../db";
+import { DetailInfo, ChapterInfo } from "../native";
 export const ChapterView = ({
   book,
   current,
@@ -38,7 +38,7 @@ export const ChapterView = ({
     const totalChunks = Math.ceil(chapters.length / size);
     const data = Array.from({ length: totalChunks }, (_, chunkIndex) => ({
       index: chunkIndex,
-      items: undefined
+      items: undefined as ChapterInfo[] | undefined
     }));
     return data;
   }, [novel?.chapters?.length]);
@@ -136,11 +136,11 @@ export const ChapterView = ({
                 css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}`}>
                 {item.name.safeSplit("/", -1)}
               </Text>
-              <ProgressBar ifTrue={settingsMap.get(item.url)?.readPercent > 0}
-                color="#3b5998" value={settingsMap.get(item.url)?.readPercent / 100} css="_abc bo-0 he-5 wi-102%" />
+              <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
+                color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="_abc bo-0 he-5 wi-102%" />
               <View css="row clb">
                 <Icon
-                  css={settingsMap.get(item.url)?.scrollProgress >= 200 ? "co-green" : undefined}
+                  css={(settingsMap.get(item.url)?.scrollProgress ?? 0) >= 200 ? "co-green" : undefined}
                   size={20}
                   type="MaterialIcons"
                   name="preview"

@@ -183,11 +183,11 @@ export default () => {
                 onHide={() => {
                     //  htmlContext.html.data.find(x => x.id == protection.id).created = new Date();
                     timer.clear();
-                    state.protection = state.protection.filter(x => x.id !== protection.id)
+                    state.protection = state.protection.filter(x => x.id !== protection?.id)
                 }}>
                 <View style={{ flex: 1, marginTop: 15 }}>
                     <Text css="fos-15 fow-bold co-red">
-                        This {baseUrl(protection?.url)} containe ICloude protection, so you need to validate it from time to time.
+                        This {baseUrl(protection?.url ?? "")} containe ICloude protection, so you need to validate it from time to time.
                         {"\n"}
                         {"\n"}
                         Found ICloude protection, please check in the box and close the modal and then reload the page if needed
@@ -199,7 +199,7 @@ export default () => {
                         cacheEnabled={true}
                         source={{
                             uri: protection?.url
-                        }}
+                        } as any}
                         contentMode="mobile"
                         originWhitelist={["*"]}
                         userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"

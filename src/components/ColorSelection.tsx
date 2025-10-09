@@ -1,6 +1,6 @@
 import { VirtualScroller, DropdownList, View, Text } from "react-native-short-style";
 import * as React from "react";
-import { useNumColumns } from "hooks";
+import { useNumColumns } from "../hooks";
 
 const colors = [
   {

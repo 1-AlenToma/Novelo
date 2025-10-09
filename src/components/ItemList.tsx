@@ -38,7 +38,7 @@ export default ({
   updater?: any[];
   hooks?: any[];
   selectedIndex?: number;
-  onRefresh?: { loading, onRefresh: () => void },
+  onRefresh?: { loading: boolean, onRefresh: () => void },
   page?: number,
   numColumns?: number;
 }) => {
