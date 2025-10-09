@@ -2,7 +2,7 @@ import {
   invertColor
 } from "../Methods";
 import * as React from "react";
-import { View, Text, Icon } from "./ReactNativeComponents";
+import { View, Text, Icon } from "react-native-short-style";
 import * as Battery from "expo-battery";
 import useTimer from "../hooks/Timer";
 

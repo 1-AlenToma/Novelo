@@ -17,7 +17,7 @@ export default ({
   const [p] = useState({} as Parser);
   const loader = useLoader(true);
   const [logs, setLogs] = useState([]);
-  const lastItems = useRef({});
+  const lastItems = useRef<any>({});
   let serilize = (item: any) => {
     let items = [];
     if (!item) return [];

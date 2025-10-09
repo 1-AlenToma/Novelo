@@ -1,4 +1,4 @@
-import { View, AnimatedView, Text, TouchableOpacity, Icon } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Icon } from "react-native-short-style";
 import Slider from "./SliderView";
 import * as React from "react";
 import useDbHook from "../hooks/useDbHook";

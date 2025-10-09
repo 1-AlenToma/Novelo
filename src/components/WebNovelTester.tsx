@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, AnimatedView, Text, TouchableOpacity, ProgressBar, ButtonGroup, Icon, Button } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ProgressBar, ButtonGroup, Icon, Button } from "react-native-short-style";
 import ItemList from "./ItemList";
 import TextInput from "./TextInputView";
 import WebView from "react-native-webview";

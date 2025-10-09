@@ -1,6 +1,5 @@
-import { ActionSheet, Modal } from "./ReactNativeComponents";
 import * as React from "react";
-import { Text, TouchableOpacity, ReadyView } from "./ReactNativeComponents";
+import { Text, TouchableOpacity, ReadyView, ActionSheet, Modal } from "react-native-short-style";
 import { ifSelector } from "../Methods";
 export default ({
   btn,

@@ -1,4 +1,4 @@
-import { VirtualScroller, DropdownList, View, Text } from "./ReactNativeComponents";
+import { VirtualScroller, DropdownList, View, Text } from "react-native-short-style";
 import * as React from "react";
 import { useNumColumns } from "hooks";
 

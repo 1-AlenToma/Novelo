@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from "./ReactNativeComponents"
+import { View, Text, TouchableOpacity } from "react-native-short-style"
 import {
     LayoutAnimation,
     UIManager,
@@ -63,7 +63,7 @@ export const ExpandableDescription: React.FC<ExpandableTextProps> = ({ text, num
             <Text
                 selectable={true}
                 css={textCss}
-                style={[{ position: 'absolute', top: 10000, opacity: 0, width: '100%' }]}
+                style={{ position: 'absolute', top: 10000, opacity: 0, width: '100%' }}
                 onLayout={onFullTextLayout}
             >
                 {text}

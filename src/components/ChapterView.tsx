@@ -1,7 +1,6 @@
-import { Icon, useTimer } from "./ReactNativeComponents";
 import useLoader from "./Loader";
 import * as React from "react";
-import { View, Text, VirtualScroller, ProgressBar } from "./ReactNativeComponents";
+import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer } from "react-native-short-style";
 import { Book, Chapter } from "db";
 import { DetailInfo, ChapterInfo } from "native";
 export const ChapterView = ({

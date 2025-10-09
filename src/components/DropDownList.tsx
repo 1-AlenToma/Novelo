@@ -1,9 +1,10 @@
-import { View, Modal, Icon, Text, DropdownItem, TouchableOpacity } from "./ReactNativeComponents";
+import { View, Modal, Icon, Text, DropdownItem, TouchableOpacity } from "react-native-short-style";
 import ItemList from "./ItemList";
 import TextInput from "./TextInputView";
 import { useTimer } from "hooks";
 import { GlobalType } from "Types";
 import { getValueByPath, NestedKeyOf } from "react-smart-state";
+import { JSX } from "react";
 
 export const DropDownLocalList = ({ items, visible, selectedValue, css, size, render, onSelect, enableSearch, globalContextKeys }: {
     items: DropdownItem[],

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity, Icon, Modal, TextInput } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity, Icon, Modal, TextInput } from "react-native-short-style";
 import { ISize } from "Types";
 import { StyleSheet } from "react-native";
 export default React.forwardRef(

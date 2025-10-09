@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity } from "react-native-short-style";
 import ItemList from "./ItemList";
 import useLoader from "./Loader";
 import HomeNovelItem from "./HomeNovelItem";

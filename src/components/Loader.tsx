@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ActivityIndicator } from "react-native";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, ProgressBar } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, ProgressBar } from "react-native-short-style";
 
 
 export default (

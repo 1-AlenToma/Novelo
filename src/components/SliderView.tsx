@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, Text, Button, Icon, SliderView } from "./ReactNativeComponents";
+import { View, Text, Button, Icon, SliderView } from "react-native-short-style";
 import useTimer from "../hooks/Timer";
 
 

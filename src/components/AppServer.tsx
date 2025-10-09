@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Text, Button, FormItem, TextInput, Loader, Icon, Modal, TouchableOpacity, View, AlertDialog } from "./ReactNativeComponents";
+import { Text, Button, FormItem, TextInput, Loader, Icon, Modal, TouchableOpacity, View, AlertDialog } from "react-native-short-style";
 import TextInputView from "./TextInputView";
 import { Linking } from "react-native";
 

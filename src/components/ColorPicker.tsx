@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity, Modal } from "react-native-short-style";
 import { invertColor } from "../Methods";
 import * as React from "react";
 import ColorPicker, {

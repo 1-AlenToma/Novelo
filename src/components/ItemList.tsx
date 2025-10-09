@@ -3,7 +3,7 @@ import {
 } from "react";
 import * as React from "react";
 import { FlashList } from "@shopify/flash-list";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "react-native-short-style";
 import useTimer from "../hooks/Timer";
 
 

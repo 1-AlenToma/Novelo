@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Image, View } from "./ReactNativeComponents";
+import { Image, View } from "react-native-short-style";
 
 export const BlurView = ({ css }: { css?: string }) => {
 

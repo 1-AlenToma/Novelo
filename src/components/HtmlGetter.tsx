@@ -1,7 +1,7 @@
 import React from "react";
 import WebView from "react-native-webview";
 import { View } from "react-native";
-import { Modal, Text, useTimer } from "./ReactNativeComponents"
+import { Modal, Text, useTimer } from "react-native-short-style"
 const jsScript = `
 try{
 window.__DEV__ = ${__DEV__.toString().toLowerCase()};

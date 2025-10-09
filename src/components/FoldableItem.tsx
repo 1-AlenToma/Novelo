@@ -1,4 +1,4 @@
-import { View, AnimatedView, Text, TouchableOpacity, Icon, ScrollView } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, Icon, ScrollView } from "react-native-short-style";
 import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";

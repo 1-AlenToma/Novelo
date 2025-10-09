@@ -1,6 +1,6 @@
 import FileBrowser from "./FileBrowser";
 import * as React from "react";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Modal } from "./ReactNativeComponents";
+import { View, Text, Modal } from "react-native-short-style";
 
 export default () => {
     context.hook("browser.data")

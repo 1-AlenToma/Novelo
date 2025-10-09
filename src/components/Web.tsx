@@ -9,7 +9,7 @@ import {
   sleep
 } from "../Methods";
 import { Asset } from "expo-asset";
-import { View, Text as TextView, ProgressBar } from "./ReactNativeComponents";
+import { View, Text as TextView, ProgressBar } from "react-native-short-style";
 import BattariView from "./BattariView";
 import WebOptions from "../native/WebOptions";
 
