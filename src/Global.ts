@@ -146,7 +146,7 @@ String.prototype.isBase64String = function () {
 }
 
 String.prototype.toBase64 = function(){
-    return Base64.encode(new String(this).toString())
+    return Base64.encode(new String(this).toString()) 
 }
 
 String.prototype.toBase64Url = function () {

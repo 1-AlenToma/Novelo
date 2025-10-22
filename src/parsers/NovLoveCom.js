@@ -25,7 +25,7 @@ export default class NovLoveCom extends Parser {
 
     async load() {
         let html = (
-            await this.http.get_html(this.url)
+            await this.http.web_view(this.url, this.url)
         ).html;
 
         this.settings.Genre(
@@ -100,7 +100,7 @@ export default class NovLoveCom extends Parser {
         });
 
         let html = (
-            await this.http.get_html(url, this.url)
+            await this.http.web_view(url, this.url)
         ).html;
 
         return this.toList(html);
@@ -115,18 +115,18 @@ export default class NovLoveCom extends Parser {
 
     async getByAuthor(url) {
         let html = (
-            await this.http.get_html(url, this.url)
+            await this.http.web_view(url, this.url)
         ).html;
         return this.toList(html);
     }
 
     async chapter(url) {
-        let html = (await this.http.get_html(url)).html;
+        let html = (await this.http.web_view(url)).html;
         return html.$(".chr-c").html;
     }
 
     async detail(url) {
-        let html = (await this.http.get_html(url, this.url)).html;
+        let html = (await this.http.web_view(url, this.url)).html;
         let body = html.$("body");
 
         let item = DetailInfo.n();
@@ -172,7 +172,7 @@ export default class NovLoveCom extends Parser {
             .ParserName(this.name);
             //https://novlove.com/ajax/chapter-option?novelId=hitman-with-a-badass-system&currentChapterId=chapter-1
         let cHhtml = (
-            await this.http.get_html(
+            await this.http.web_view(
                 this.url
                     .join("ajax","chapter-option")
                     .query({
