@@ -176,10 +176,11 @@ const ItemRender = ({
 
 
   const novelInfo = fileItems.find(x => item.url === x.url);
+  const chapterLength = (novelInfo?.chapters.length ?? 0)
   return (
     <FoldableItem
       single={true}
-      enabled={(novelInfo?.chapters.length ?? 0) > 0 && downloadProgress <= 0}
+      enabled={chapterLength > 0 && downloadProgress <= 0}
       css="wi:98% overflow"
       buttons={[
         {
@@ -191,6 +192,7 @@ const ItemRender = ({
             />
           ),
           text: "Download",
+          ifTrue: () => downloadProgress <= 0,
           onPress: () => {
             downloadEpub();
             return true;
@@ -198,8 +200,7 @@ const ItemRender = ({
         },
         {
           ifTrue: () =>
-            item.parserName !== "epub" && item.isOnline?.() &&
-            !context.downloadManager().items.has(item.url ?? ""),
+            item.parserName !== "epub" && item.isOnline?.() && !context.downloadManager().items.has(item.url ?? "") && downloadProgress <= 0,
           icon: (
             <Icon
               name="update"
@@ -219,15 +220,23 @@ const ItemRender = ({
           }
         },
         {
-          text: "Delete",
+          text: downloadProgress > 0 ? "Stop" : "Delete",
           icon: (
             <Icon
-              name="delete"
-              type="MaterialIcons"
+              name={downloadProgress > 0 ? "controller-stop" : "delete"}
+              type={downloadProgress > 0 ? "Entypo" : "MaterialIcons"}
               css="invertco"
             />
           ),
-          onPress: () => {
+          onPress: async () => {
+            // stop it if its downloading
+            if (downloadProgress > 0) {
+              loader.show();
+              context.downloadManager().stop(item.url)
+              await methods.sleep(3000);
+              loader.hide();
+              return;
+            }
             AlertDialog
               .confirm(
                 {
@@ -239,6 +248,7 @@ const ItemRender = ({
                 loader.show();
                 if (answer) {
                   try {
+
                     let file = fileItems.find(x => x.url == item.url);
 
                     if (file) {
@@ -271,14 +281,14 @@ const ItemRender = ({
             />
           ),
           text: "Read",
+          ifTrue: () => chapterLength > 0,
           onPress: () => {
-            context
-              .nav.navigate(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                name: item.name,
-                url: item.url,
-                parserName: item.parserName,
-                epub: true
-              });
+            context.nav.navigate(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+              name: item.name,
+              url: item.url,
+              parserName: item.parserName,
+              epub: true
+            });
             return true;
           }
         },
@@ -291,6 +301,7 @@ const ItemRender = ({
               });
             return true;
           },
+
           icon: (
             <Icon
               css="invertco"
@@ -335,10 +346,12 @@ const ItemRender = ({
 
           <TouchableOpacity
             css="button zi:6 miw:30 clb"
-            onPress={() =>
-              context
-                .downloadManager()
-                .stop(item.url)
+            onPress={async () => {
+              loader.show();
+              context.downloadManager().stop(item.url);
+              await methods.sleep(3000);
+              loader.hide();
+            }
             }>
             <Icon
               name="controller-stop"

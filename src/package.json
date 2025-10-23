@@ -1,13 +1,13 @@
 {
   "name": "novelo",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "parse": "node parsers/tsc/nodeParser.mjs",
     "zip": "npm run parse && npx bestzip ../parsers.zip temp/parsers",
     "androidFiles": "node parsers/tsc/writeAndroidFiles.mjs",
     "update": "eas update --message [dbclick fix]",
-    "gradlew": "npm run zip && cd android && gradlew clean assembleRelease",
+    "gradlew": "npm run zip && cd android && gradlew assembleRelease",
 
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start -c",

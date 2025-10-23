@@ -64,7 +64,6 @@ const ItemRender = ({
   return (
     <>
       {itemLoader.elem}
-
       <FoldableItem
         single={true}
         css="wi:98% overflow"

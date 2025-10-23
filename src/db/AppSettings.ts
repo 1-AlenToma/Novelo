@@ -38,6 +38,7 @@ class AppSettings extends DBInit {
         color?: string;
         appendSelection?: boolean;
     } = {};
+    autoUpdateFavoritNovels?: boolean = false;
     constructor() {
         super("AppSettings");
     }
@@ -67,6 +68,7 @@ class AppSettings extends DBInit {
             .column("shadowLength").nullable.number
             .column("filesDataLocation").nullable
             .column("sentenceMargin").nullable.number
+            .column("autoUpdateFavoritNovels").nullable.boolean
             .column("selectedParser").objectPrototype(AppSettings.prototype);
     }
 }

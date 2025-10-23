@@ -4,7 +4,7 @@ import {
   DropDownLocalList,
   AppServer,
 } from "../components/";
-import { View, Text, Icon, AlertDialog, Modal,TouchableOpacity } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, Modal, TouchableOpacity, CheckBox, FormItem } from "react-native-short-style";
 import * as React from "react";
 import { useLocationSelection, AppUpdate } from "../hooks";
 import WebNovelTester from "../components/WebNovelTester";
@@ -171,6 +171,27 @@ export default (props: any) => {
             </Text>
           </Text>
         </TouchableOpacity>
+
+        <View css="invert settingButton">
+          <Icon
+            type="MaterialCommunityIcons"
+            name="update"
+            css="invertco"
+          />
+          <Text>
+            AutoUpdate favorit novels
+            {"\n"}
+            <Text css="co:red desc">
+              This will update the chapters in favorit, each 5 dayes when you open favorit tab.{"\n"}
+              This could be demanding if you have many novels in favorit tab.{"\n"}
+              Recommend to disable this and use refresh on those novels/manga you like.
+            </Text>
+          </Text>
+          <CheckBox css="als-center _abc ri-10" checkBoxType="Switch" checked={context.appSettings.autoUpdateFavoritNovels ?? false} onChange={() => {
+            context.appSettings.autoUpdateFavoritNovels = !context.appSettings.autoUpdateFavoritNovels;
+            context.appSettings.saveChanges();
+          }} />
+        </View>
 
         <View css="settingButton invert">
           <Icon

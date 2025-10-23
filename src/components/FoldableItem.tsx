@@ -1,4 +1,4 @@
-import { View, AnimatedView, Text, TouchableOpacity, Icon, ScrollView } from "react-native-short-style";
+import { View, AnimatedView, Text, TouchableOpacity, Icon, ScrollView, ActionSheet } from "react-native-short-style";
 import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";
@@ -17,19 +17,19 @@ export default ({
   value,
   single,
   enabled,
+  disableLongPress,
   css,
   ...props
 }: {
   buttons: Buttons[];
+  disableLongPress?: boolean
   children: any;
   value?: any;
   single: any;
   enabled?: boolean,
   css?: string;
 }) => {
-  let btn = buttons.filter(
-    x => methods.ifSelector(x.ifTrue) !== false
-  );
+
 
   const { animateX, animate } = useAnimate({
     easing: Easing.bounce
@@ -38,6 +38,7 @@ export default ({
     component: View,
     state: {
       visible: false,
+      longPressVisible: false,
       buttonsSize: undefined as ISize | undefined,
       childSize: undefined as ISize | undefined
     }
@@ -88,7 +89,36 @@ export default ({
           width: state.buttonsSize?.width ?? 0
         }}
         css="wi:98% ri:5 to:5 overflow bor:5 absolute zi:1 ali:flex-end juc:flex-end">
-
+        {!disableLongPress ? (
+          <ActionSheet size={"50%"} isVisible={state.longPressVisible} onHide={() => state.longPressVisible = false}>
+            <ScrollView
+              style={{ maxWidth: "100%" }}
+              showsVerticalScrollIndicator={true}
+              css="zi:1 clearheight">
+              {Array.isArray(buttons)
+                ? [...buttons].reverse().map((x, i) => (
+                  <TouchableOpacity
+                    css={`invert settingButton`}
+                    ifTrue={x.ifTrue}
+                    onPress={() => {
+                      if (x.onPress())
+                        state.longPressVisible = false;
+                    }}
+                    key={i}>
+                    {x.icon as any}
+                    <Text
+                      css="desc invertco"
+                      ifTrue={() =>
+                        x.text?.has() ?? false
+                      }>
+                      {x.text}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+                : buttons}
+            </ScrollView>
+          </ActionSheet>
+        ) : null}
         <ScrollView horizontal={true}
           onContentSizeChange={(width, h) => {
             state.buttonsSize = { width } as any
@@ -146,6 +176,12 @@ export default ({
             state.childSize = event.nativeEvent.layout;
           }}
           activeOpacity={0.9}
+          onLongPress={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            state.longPressVisible = true;
+
+          }}
           onPress={() => {
             if (enabled !== false)
               animateLeft(!state.visible)

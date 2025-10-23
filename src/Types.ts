@@ -282,7 +282,7 @@ export type IStorage = {
 export type MemorizeOptions = {
   isDebug?: boolean;
   storage?: IStorage;
-  daysToSave: number;
+  daysToSave: number | (() => number | undefined);
   folder?: (target: any) => string
   argsOverride?: (...args: any[]) => any[];
   updateIfTrue?: (args: any) => boolean;

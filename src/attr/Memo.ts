@@ -66,8 +66,9 @@ export default function Memorize(
 
           if (data && typeof data.date === "string")
             data.date = new Date(data.date);
+          const dayesToSave = typeof option.daysToSave == "function" ? option.daysToSave() : option.daysToSave;
 
-          if (!data || RenewMemo || days_between(data.date) >= option.daysToSave || (option.updateIfTrue && option.updateIfTrue(data.data))) {
+          if (!data || RenewMemo || (dayesToSave != undefined && days_between(data.date) >= dayesToSave) || (option.updateIfTrue && option.updateIfTrue(data.data))) {
             try {
               let data2 = await currentFn.bind(this)(...args);
               if (!option.isDebug) {
