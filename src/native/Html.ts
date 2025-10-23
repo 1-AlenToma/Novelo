@@ -171,7 +171,7 @@ class Html {
     return value || "";
   }
 
-  url(key: string, header?: any) {
+  url(key: string, header?: any, serilize?: (value: string) => string) {
     let value: any = "";
     key.split("|").forEach(k => {
       if (!value || value.empty()) {
@@ -181,6 +181,8 @@ class Html {
         }
       }
     });
+    if (value && value.length > 0 && serilize)
+      value = serilize(value)
     if (header && value && value.length > 0)
       value += ` header=${JSON.stringify(header)}`
     return value || "";

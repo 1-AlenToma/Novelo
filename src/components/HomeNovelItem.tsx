@@ -35,7 +35,7 @@ export default ({
         <Text css="absolute le-2 to-2 pa-2 bor-5 bac-#ffa000 co-white" ifTrue={item.langType?.has() ?? false}>{item.langType}</Text>
         <View css="wi-100% ali-center bottom he:50% overflow invert bac-transparent">
           <BlurView css="bottom" />
-          <View css="bac-transparent overflow-hidden wi-95% mal-5 mar-5 he-100%">
+          <View css="bac-transparent overflow-hidden wi-95% mal-5 mar-5 he-100%"> 
             <Text
               numberOfLines={1}
               css="clearwidth wi:99% header co:#fff pal-5 par-5 pat-5 tea:center">

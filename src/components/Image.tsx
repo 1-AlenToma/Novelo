@@ -21,20 +21,22 @@ export default ({
     Referer: undefined
   }).current
   const imageSize = parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined;
+  header.Referer = parserName ? context.parser.find(parserName)?.url : undefined
   let loadImage = async () => {
     try {
-      if (url && url.toString().startsWith("[")) {
+      if (url && typeof url === "string" && url.startsWith("[")) {
         // image selector
         context.parser
           .current
           .fetchSelectorImage(url)
           .then(x => setSource(x))
           .catch(x => { });
-      } else if (url && typeof url === "string" && url.toString().isLocalPath(true)) {
+      } else if (url && typeof url === "string" && !url.isBase64String() && url.toString().isLocalPath(true)) {
         context.imageCache.read(url.trimStr("/")).then(x => {
           if (x && !x.empty())
             setSource(x)
         });
+        console.warn("reading cach", url)
       } else if (url && url.toString().has()) {
 
         if (typeof url == "string" && url.has("header")) {
@@ -60,7 +62,8 @@ export default ({
     style && Array.isArray(style)
       ? [...style]
       : [style || {}];
-
+   
+  //    console.log(source, url?.split("").filter((_,i)=> i<100).join(""))
   return (
     <Image
       {...props}

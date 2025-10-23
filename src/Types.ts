@@ -160,6 +160,12 @@ export type WebViewProps = {
   ajax?: Ajax;
   protectionIdentifier?: string[];
   timer?: number
+  imageSelector?: {
+    selector: string,
+    attr: string,
+    referer?: string,
+    regexp?: [string, string]
+  }
 }
 
 export type AppLocalSettings = {

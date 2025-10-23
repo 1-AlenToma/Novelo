@@ -46,7 +46,7 @@ const ActionItem = ({
         css={"invert"}
         btn={
           <Text
-            css={`header co:#bf6416 ${state.text[keyName].has()
+            css={`header co:#bf6416 ${state.text[keyName]?.has()
               ? "selected"
               : ""
               }`}>
@@ -113,60 +113,63 @@ export default ({ ...props }: any) => {
 
   const fetchData = async (page?: number) => {
     loader.show();
-    try {
+    await state.batch(async () => {
+      try {
 
-      let parser = state.parser;
-      state.procent.value = 0;
-      if (state.text == undefined) {
-        parser.settings = await parser.load("RenewMemo") as any;
-        state.loadedParser[parser.name] = true;
-        state.text = new SearchDetail(searchTxt || "").set("page", 0).set("genre", parser.settings.genre?.filter(x => genre && x.text.has(genre)) ?? []);
-      }
-
-      if (state.text.text?.empty() && !state.text.genre?.has() && !state.text.status?.has() && !state.text.group?.has()) {
-        state.items = [];
-        return;
-      }
-
-      const prs = globalParser.hasSelection() ? context.parser.all.filter(x => globalParser.selectedParser.find(f => f.name == x.name && f.selected)) : [parser];
-      let txt = state.text.clone();
-      if (page === undefined) txt.page++;
-      else txt.page = page;
-      let currentItems: any[] = txt.page > 1 ? [...state.items] : [];
-
-      for (let p of prs) {
-        if (state.procent.stop && globalParser.hasSelection())
-          break;
-        state.procent.parser = p.name;
-        if (!state.loadedParser[p.name]) {
-          await p.load("RenewMemo");
-          state.loadedParser[p.name] = true;
+        let parser = state.parser;
+        state.procent.value = 0;
+        if (state.text == undefined) {
+          parser.settings = await parser.load("RenewMemo") as any;
+          state.loadedParser[parser.name] = true;
+          state.text = new SearchDetail(searchTxt || "").set("page", 0).set("genre", parser.settings.genre?.filter(x => genre && x.text?.has(genre)) ?? []);
         }
 
-        let items = await p.search(txt);
-        state.procent.value = prs.length.procent(prs.indexOf(p) + 1) / 100;
-        state.procent.found += items.length;
-        if (txt.page <= 1 && !globalParser.hasSelection()) currentItems = items;
-        else {
-          currentItems = currentItems.distinct("url", items);
+        if (state.text.text?.empty() && !state.text.genre?.has() && !state.text.status?.has() && !state.text.group?.has()) {
+          state.items = [];
+          return;
         }
 
-      }
+        const prs = globalParser.hasSelection() ? context.parser.all.filter(x => globalParser.selectedParser.find(f => f.name == x.name && f.selected)) : [parser];
+        let txt = state.text.clone();
+        if (page === undefined) txt.page++;
+        else txt.page = page;
+        let currentItems: any[] = txt.page > 1 ? [...state.items] : [];
 
-      if (txt.page == 1 || currentItems.length > 0) {
-        state.items = currentItems;
-        state.text = txt;
-      }
-    } finally {
-      loader.hide();
-      state.currentPage = state.text?.page ?? 0;
-      state.procent.stop = false;
-    }
+        for (let p of prs) {
+          if (state.procent.stop && globalParser.hasSelection())
+            break;
+          state.procent.parser = p.name;
+          if (!state.loadedParser[p.name]) {
+            await p.load("RenewMemo");
+            state.loadedParser[p.name] = true;
+          }
 
+          let items = await p.search(txt);
+
+          state.procent.value = prs.length.procent(prs.indexOf(p) + 1) / 100;
+          state.procent.found += items.length;
+          if (txt.page <= 1 && !globalParser.hasSelection()) currentItems = items;
+          else {
+            currentItems = currentItems.distinct("url", items);
+          }
+
+        }
+
+        if (txt.page == 1 || currentItems.length > 0) {
+
+          state.items = currentItems;
+          state.text = txt;
+        }
+      } finally {
+        loader.hide();
+        state.currentPage = state.text?.page ?? 0;
+        state.procent.stop = false;
+      }
+    });
   };
 
   useEffect(() => {
-    if (!state.text || state.text.text.has() || state.text.genre.has())
+    if (!state.text || state.text.text?.has() || state.text.genre?.has())
       fetchData();
   }, []);
 
@@ -177,8 +180,8 @@ export default ({ ...props }: any) => {
   }: any) => {
     if (state.text == undefined)
       return;
-    let co =
-      state.parser.settings.searchCombination;
+    console.log("selection")
+    let co = state.parser.settings.searchCombination ?? [];
     if (!co.has("Group") && !group)
       state.text.group.clear();
     if (!co.has("Status") && !status)
@@ -254,7 +257,6 @@ export default ({ ...props }: any) => {
 
   if (!state.text)
     return loader.elem;
-
   return (
     <View
       css="flex root">
@@ -262,10 +264,16 @@ export default ({ ...props }: any) => {
         value={state.text.text}
         inputEnabled={true}
         onInputChange={txt => {
-          state.text = SearchDetail.n(txt).Page(0);
-          state.items = [];
-          if (txt.has())
-            fetchData();
+          console.log("text changed", txt)
+          if ((txt ?? "").empty() && (state.text?.text ?? "").empty())
+            return;
+          state.batch(() => {
+            state.text = SearchDetail.n(txt).Page(0);
+            state.items = [];
+          });
+          if (txt?.has())
+            fetchData(1);
+
         }}
       />
       <View css="invert pal-10 par-10" style={{

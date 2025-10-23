@@ -10,7 +10,6 @@ const {
     Parser
 } = require("../native");
 
-
 export default class NovLoveCom extends Parser {
     constructor() {
         super(
@@ -59,17 +58,16 @@ export default class NovLoveCom extends Parser {
         return html
             .$(".list-novel > .row")
             .map(x => {
+
                 return x.map(f => {
-                    if (f.find(".cover").attr("src|data-src").has())
+                    if (f.find(".cover").attr("src|data-src").has()) {
                         return LightInfo.n()
                             .Name(f.find(".novel-title").text)
                             .Url(
                                 f.find(".novel-title a").url("href")
                             )
                             .Image(
-                                f
-                                    .find(".cover")
-                                    .url("src|data-src").replace(/novel_\d*_\d*/gi, "novel")
+                                f.find(".cover").attr("data-src|src")
                             )
                             .Info(f.find(".text-info").text)
                             .Decription(f.find(".author").text)
@@ -77,6 +75,8 @@ export default class NovLoveCom extends Parser {
                                 f.find(".label-new, label-hot").hasValue
                             )
                             .ParserName(this.name);
+
+                    }
                 });
             })
             .flatMap(x => x);
@@ -100,7 +100,16 @@ export default class NovLoveCom extends Parser {
         });
 
         let html = (
-            await this.http.web_view(url, this.url)
+            await this.http.web_view(url, this.url, {
+                props: {
+                    imageSelector: {
+                        selector: ".cover",
+                        attr: "data-src|src",
+                        referer:this.url,
+                        regexp:["/novel_\\d*_\\d*/gi", "novel"]
+                    }
+                }
+            })
         ).html;
 
         return this.toList(html);
@@ -115,7 +124,16 @@ export default class NovLoveCom extends Parser {
 
     async getByAuthor(url) {
         let html = (
-            await this.http.web_view(url, this.url)
+            await this.http.web_view(url, this.url, {
+                props: {
+                    imageSelector: {
+                        selector: ".cover",
+                        attr: "data-src|src",
+                        referer:this.url,
+                        regexp:["/novel_\\d*_\\d*/gi", "novel"]
+                    }
+                }
+            })
         ).html;
         return this.toList(html);
     }
@@ -126,7 +144,16 @@ export default class NovLoveCom extends Parser {
     }
 
     async detail(url) {
-        let html = (await this.http.web_view(url, this.url)).html;
+        let html = (await this.http.web_view(url, this.url, {
+            props: {
+                imageSelector: {
+                    selector: ".book img, .cover",
+                    attr: "data-src|src",
+                    referer:this.url,
+                    regexp:["/novel_\\d*_\\d*/gi", "novel"]
+                }
+            }
+        })).html;
         let body = html.$("body");
 
         let item = DetailInfo.n();
@@ -136,7 +163,7 @@ export default class NovLoveCom extends Parser {
             .Image(
                 body
                     .find(".books img")
-                    .url("src|data-src")
+                    .attr("data-src|src")
             )
             .Decription(body.find(".desc-text").text)
             .AlternativeNames(
@@ -170,11 +197,11 @@ export default class NovLoveCom extends Parser {
                 body.find("div.item-time").text?.trim()
             )
             .ParserName(this.name);
-            //https://novlove.com/ajax/chapter-option?novelId=hitman-with-a-badass-system&currentChapterId=chapter-1
+        //https://novlove.com/ajax/chapter-option?novelId=hitman-with-a-badass-system&currentChapterId=chapter-1
         let cHhtml = (
             await this.http.web_view(
                 this.url
-                    .join("ajax","chapter-option")
+                    .join("ajax", "chapter-option")
                     .query({
                         novelId: html.find("[data-novel-id!=''][data-novel-id]").attr("data-novel-id")
                     }),

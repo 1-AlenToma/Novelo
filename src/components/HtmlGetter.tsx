@@ -69,105 +69,122 @@ export default () => {
     clean();
     let jsCode = (x: any) => {
         let data = `
-                        try{
-                      function sleep(ms){
-                            return new Promise((r)=> setTimeout(r,ms))
-                       }
-                    
-                       const addString =(...item)=> {
-                            return item.join("");
-                       }
+    try {
+      function sleep(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+      }
 
-                       const postData = async (type, data)=> {
-                            let item = {type, data};
-                            if (typeof data == "object")
-                                item = {type, ...data};
-                            window.ReactNativeWebView.postMessage(JSON.stringify(item));
-                       }
-                       const props = ${x.props ? JSON.stringify(x.props) : "null"};
-                       window.sleep = sleep;
-                      function fetchWebPToBase64(url) {
-                       return new Promise(async (resolve) => {
-                       try{
-                       const response = await fetch(url);
-                       const blob = await response.blob();
-                       
-                       const reader = new FileReader();
-                       reader.readAsDataURL(blob);
-                       reader.onloadend = () => resolve(reader.result);
-                       reader.onerror = (event) => {
-                       postData("log", event.toString())
-                       resolve(null);
-                       };
-                        }catch(e){
-                        postData("log", e.toString())
-                       resolve(null);
-                        }
+      const addString = (...item) => {
+        return item.join("");
+      };
 
-                      });
-                    }
-                       
+      const postData = async (type, data) => {
+        let item = { type, data };
+        if (typeof data == "object") item = { type, ...data };
+        window.ReactNativeWebView.postMessage(JSON.stringify(item));
+      };
 
-                        window.getHtml = async function(){
-                         let protection =["Verifying you are human"];
-                         if (props && props.protectionIdentifier && props.protectionIdentifier.length>0)
-                            protection = [...protection, ...props.protectionIdentifier]
+      const props = ${x.props ? JSON.stringify(x.props) : "null"};
+      window.sleep = sleep;
 
-                          let text = document.documentElement.outerHTML;
-                          if (protection.find(x=> text.toLowerCase().indexOf(x.toLowerCase()) !== -1))
-                          {
-                            var payload = {
-                              id: "${x.id}",
-                              data: "${x.url}"
-                            };
-                        
-                            postData("protection", payload);
-                            return;
-                            
-                          }
-                          if (props && props.selector){
-                            text = [...document.querySelectorAll(props.selector)].map(x=> x.outerHTML).join("");
-                          }
-                          if (props && props.type == "webp"){
-                            let div = document.createElement("div");
-                            div.innerHTML = text;
-                            let imgs = [...div.querySelectorAll("img")];
-                            let counter = 100;
-                              postData("log", imgs.length)
-                            for(let img of imgs){
-                                if (counter<=0)
-                                    break;
-                                counter--;
-                                let src = img.getAttribute("src");
-                                if (!src || src.indexOf(".webp") == -1)
-                                    continue;
-                                let c = await fetchWebPToBase64(src);
-                                if (c)
-                                img.setAttribute("src", c);
-                                
-                                
-                            }
+      function fetchWebPToBase64(url, referer) {
+        return new Promise(async (resolve) => {
+          try {
+       referer =referer ?? window.location.origin;
 
-                            text = div.outerHTML;
-                          }
+      const response = await fetch(url, {
+        headers: {
+          "Referer": referer,
+          "User-Agent": navigator.userAgent, // mimic browser
+          },
+         });
+            const blob = await response.blob();
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = (event) => {
+              resolve(null);
+            };
+          } catch (e) {
+            resolve(null);
+          }
+        });
+      }
 
-                       
-                          var payload = {
-                              id: "${x.id}",
-                              data: text
-                            };
-                            postData("html", payload);
-                        }
-                        ${jsScript.replace(/timer/g, x.props?.timer ?? "0").replace(/\#/g, " window.getHtml()")}
-                        }catch(e){
-                        if (window.__DEV__)
-                          alert(e)
-                        }
-                        true;
-                      `;
-        //  console.warn(data)
+      window.getHtml = async function () {
+        let protection = ["Verifying you are human"];
+        if (props && props.protectionIdentifier && props.protectionIdentifier.length > 0)
+          protection = [...protection, ...props.protectionIdentifier];
+
+        let text = document.documentElement.outerHTML;
+        if (
+          protection.find(
+            (x) => text.toLowerCase().indexOf(x.toLowerCase()) !== -1
+          )
+        ) {
+          var payload = {
+            id: "${x.id}",
+            data: "${x.url}",
+          };
+
+          postData("protection", payload);
+          return;
+        }
+
+        if (props && props.imageSelector) {
+          let attr = props.imageSelector.attr.split("|");
+          const images = [...document.querySelectorAll(props.imageSelector.selector)];
+          let regexp = props.imageSelector.regexp;
+          for (let img of images) {
+            let src = "";
+            let at = "";
+            let temp = null;
+            attr.forEach(x => {
+              if (!src || src == "") {
+                src = img.getAttribute(x);
+                at = x;
+              }
+            });
+
+            if (!src) continue;
+            if (regexp){
+                temp = src;
+                src = src.replace(eval(regexp[0]), regexp[1]);
+             }
+            let c = await fetchWebPToBase64(src, props.imageSelector.referer);
+            if (!c && temp && temp !== src){
+                c = await fetchWebPToBase64(temp, props.imageSelector.referer);
+            }
+            if (c) img.setAttribute(at, c);
+          }
+          text = document.documentElement.outerHTML;
+        }
+
+        if (props && props.selector) {
+          text = [...document.querySelectorAll(props.selector)]
+            .map((x) => x.outerHTML)
+            .join("");
+        }
+
+        var payload = {
+          id: "${x.id}",
+          data: text,
+        };
+        postData("html", payload);
+      };
+
+      ${jsScript
+                .replace(/timer/g, x.props?.timer ?? "0")
+                .replace(/\#/g, " window.getHtml()")}
+    } catch (e) {
+      if (window.__DEV__) alert(e);
+    }
+    true;
+  `;
+        // console.warn(data)
         return data;
     };
+
 
     const protection = state.protection.firstOrDefault() as { url: string, id: string } | undefined;
     return (

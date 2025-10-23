@@ -168,7 +168,8 @@ export default class FileHandler {
     await this.checkDir();
     let text: string | undefined = undefined;
     let fileUri = this.getName(file);
-    console.log("reading", fileUri);
+    if (__DEV__)
+      console.log("reading", fileUri);
     if (this.enableCaching && this.DownloadedFiles.has(fileUri))
       return this.DownloadedFiles.get(fileUri) as string;
     if (await this.exists(file)) {

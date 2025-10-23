@@ -140,13 +140,17 @@ String.prototype.fileName = function (name: string, parserName: string) {
 };
 
 String.prototype.isBase64String = function () {
-    const str = new String(this).toString();
-    var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-    return /data\:image/g.test(str) || base64regex.test(str);
+    const str = String(this);
+    // Quick check for data:image URIs
+    if (str.startsWith("data:image") || str.startsWith("data:text")) return true;
+
+    // Optional: check raw base64 (simple version)
+    const base64regex = /^([0-9A-Za-z+/]{4})*([0-9A-Za-z+/]{2}==|[0-9A-Za-z+/]{3}=)?$/;
+    return base64regex.test(str);
 }
 
-String.prototype.toBase64 = function(){
-    return Base64.encode(new String(this).toString()) 
+String.prototype.toBase64 = function () {
+    return Base64.encode(new String(this).toString())
 }
 
 String.prototype.toBase64Url = function () {

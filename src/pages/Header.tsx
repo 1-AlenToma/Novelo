@@ -56,7 +56,7 @@ export default ({
   const parserLoader = useLoader();
 
   useEffect(() => {
-    if (value === "") {
+    if ((value ?? "") !== (state.text ?? "")) {
       state.text = "";
       input.current?.clear();
     }
@@ -117,9 +117,9 @@ export default ({
               disableFullscreenUI={true}
               enterKeyHint="search"
               inputMode="search"
-              onSubmitEditing={() =>
-                onInputChange(state.text)
-              }
+              onSubmitEditing={() => {
+                  onInputChange(state.text)
+              }}
               placeholder="Search Novels"
               style={{ width: "100%", height: "70%" }}
               css="he:90% clearwidth bow:1 bor:3 desc fos:14 boc:#ccc pal:10"
@@ -156,7 +156,7 @@ export default ({
         ) : null}
         <View
           css="row juc:center ali:center absolute ri:5 bac-transparent"
-          ifTrue={() => (buttons?.has() ?? ((inputEnabled && onInputChange)) as any)}>
+          ifTrue={() => (buttons?.has() ?? ((inputEnabled && onInputChange == undefined)) as any)}>
           <>
             {buttons?.map((x, i) => (
               <TouchableOpacity
