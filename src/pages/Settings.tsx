@@ -178,7 +178,7 @@ export default (props: any) => {
             name="update"
             css="invertco"
           />
-          <Text>
+          <Text css="maw-70%">
             AutoUpdate favorit novels
             {"\n"}
             <Text css="co:red desc">
