@@ -7,6 +7,7 @@ import {
   memo
 } from "react";
 import * as React from "react";
+import { useParser } from "../hooks";
 
 export default memo(
   ({
@@ -22,11 +23,11 @@ export default memo(
     const page = useRef(0);
     const item = context.parser.current.settings.group[itemIndex];
     const imageSize = context.parser.current.settings.imagesSize;
+    const parser = useParser();
 
     const getItems = async (refreshing?: boolean) => {
       loader.show();
       try {
-        let parser = context.parser.current;
         let p = refreshing ? 1 : page.current + 1;
         let oldItems = [...items];
         let gitems = await parser.group(item, p, true, refreshing ? "RenewMemo" : undefined);

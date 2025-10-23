@@ -13,7 +13,8 @@ import * as React from "react";
 import {
   useNavigation,
   useParserSelector,
-  useNumColumns
+  useNumColumns,
+  useParser
 } from "../../hooks";
 import {
   HttpHandler,
@@ -82,7 +83,7 @@ const ActionItem = ({
 
 export default ({ ...props }: any) => {
   const [{ searchTxt, parserName, genre }] = useNavigation(props);
-  const parser = context.parser.find(parserName) ?? context.parser.current;
+  const parser = useParser(parserName);
 
   const loader = useLoader(
     searchTxt?.has() ?? false

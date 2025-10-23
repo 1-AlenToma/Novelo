@@ -223,6 +223,7 @@ export type GlobalType =
     orientation: (value: "Default" | "LANDSCAPE") => void,
     parser: {
       default: string;
+      parserCodes: Map<string, any>;
       parseCode: (code: string) => any;
       current: ParserWrapper,
       clone: (name: string) => ParserWrapper,

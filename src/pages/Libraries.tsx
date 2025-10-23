@@ -3,11 +3,11 @@ import {
   ItemList,
   useLoader,
 } from "../components";
-import { View, Text, Icon, AlertDialog, Button } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, Button, ScrollView } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
 import { useView } from "../hooks";
-import { Linking } from "react-native";
+import { Linking, RefreshControl } from "react-native";
 import JSZip from "jszip";
 import { Parser } from "../native/ParserItems";
 
@@ -67,6 +67,7 @@ const ListItem = ({ item, zip }: any) => {
     if (state.parser.minVersion != undefined && state.parser.minVersion > context.version) {
       AlertDialog.alert({ message: `The new parser require app version to at least be ${state.parser.minVersion}, and the current app version is ${context.version} \n please update your app to the newset version`, title: "App Version error" });
     } else {
+      context.parser.parserCodes.clear();
       appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser?.name);
       appSettings.parsers.push({ name: state.parser.name, content: state.parserCode });
       await appSettings.saveChanges();
@@ -85,6 +86,7 @@ const ListItem = ({ item, zip }: any) => {
     let appSettings = context.appSettings;
     if (!appSettings.parsers)
       appSettings.parsers = [];
+    context.parser.parserCodes.clear();
     appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser?.name);
     await appSettings.saveChanges();
     loader.hide();
@@ -170,20 +172,21 @@ const Libraries = ({ ...props }) => {
         {...props}
         title="Extensions"
       />
-      {loader.elem}
+      <ScrollView css={"invert"} refreshControl={<RefreshControl refreshing={loader.loading} onRefresh={() => loadeParser()} />}>
 
-      <View css="flex pa-5 invert ali-center">
+        <View css="flex pa-5 invert ali-center">
 
-        <View css="itemListContainer">
-          <Text css="desc fos-12 co-red fow-bold tea-left wi-100% pal-5">Browse between installed parsers in Home tab </Text>
-          {render(undefined, {
-            items: state.parserNames,
-            container: ({ item }: any) => <ListItem zip={state.refItem.zip} item={item} />,
-            itemCss: "clearwidth ali:center juc:center mab:5 overflow bor:5",
-            vMode: true
-          })}
+          <View css="itemListContainer">
+            <Text css="desc fos-12 co-red fow-bold tea-left wi-100% pal-5">Browse between installed parsers in Home tab </Text>
+            {render(undefined, {
+              items: state.parserNames,
+              container: ({ item }: any) => <ListItem zip={state.refItem.zip} item={item} />,
+              itemCss: "clearwidth ali:center juc:center mab:5 overflow bor:5",
+              vMode: true
+            })}
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </>
   )
 

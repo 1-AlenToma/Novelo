@@ -25,7 +25,7 @@ export default class NovelBinCom extends Parser {
 
   async load() {
     let html = (
-      await this.http.get_html(this.url)
+      await this.http.web_view(this.url)
     ).html;
 
     this.settings.Genre(
@@ -85,7 +85,16 @@ export default class NovelBinCom extends Parser {
       page: (1).sureValue(options.page)
     });
 
-    let html = (await this.http.get_html(url, this.url)).html;
+    let html = (await this.http.web_view(url, this.url, {
+      props: {
+        imageSelector: {
+          selector: ".cover",
+          attr: "data-src|src",
+          referer: this.url,
+          regexp: ["/novel_\\d*_\\d*/gi", "novel"]
+        }
+      }
+    })).html;
     let data = html
       .$(".list-novel > .row")
       .map(x => {
@@ -101,8 +110,7 @@ export default class NovelBinCom extends Parser {
               .Image(
                 f
                   .find(".cover")
-                  .url("src|data-src")
-                  .replace(/(novel_)(\d+)_(\d+)/g, "novel")
+                  .attr("data-src|src")
               )
               .Info(f.find(".chr-text").text)
               .Decription(f.find(".author").text)
@@ -124,7 +132,16 @@ export default class NovelBinCom extends Parser {
 
   async getByAuthor(url) {
     let html = (
-      await this.http.get_html(url, this.url)
+      await this.http.web_view(url, this.url, {
+        props: {
+          imageSelector: {
+            selector: ".cover",
+            attr: "data-src|src",
+            referer: this.url,
+            regexp: ["/novel_\\d*_\\d*/gi", "novel"]
+          }
+        }
+      })
     ).html;
     return html
       .$(".list-novel > .row")
@@ -141,7 +158,7 @@ export default class NovelBinCom extends Parser {
               .Image(
                 f
                   .find(".cover")
-                  .url("src|data-src").replace(/(novel_)(\d+)_(\d+)/g, "novel")
+                  .attr("data-src|src")
               )
               .Info(f.find(".chr-text").text)
               .Decription(f.find(".author").text)
@@ -155,14 +172,23 @@ export default class NovelBinCom extends Parser {
   }
 
   async chapter(url) {
-    let html = (await this.http.get_html(url))
+    let html = (await this.http.web_view(url))
       .html;
     return html.$(".chr-c").remove(".unlock-buttons").html;
   }
 
   async detail(url) {
     let html = (
-      await this.http.get_html(url, this.url)
+      await this.http.web_view(url, this.url, {
+        props: {
+          imageSelector: {
+            selector: ".books img",
+            attr: "data-src|src",
+            referer: this.url,
+            regexp: ["/novel_\\d*_\\d*/gi", "novel"]
+          }
+        }
+      })
     ).html;
     let body = html.$("body");
 
@@ -172,9 +198,7 @@ export default class NovelBinCom extends Parser {
       .Url(url)
       .Image(
         body
-          .find(".books img")
-          .url("src|data-src")
-          .imageUrlSize("200x250")
+          .find(".books img").attr("data-src|src")
       )
       .Decription(body.find(".desc-text").text)
       .AlternativeNames(
@@ -229,7 +253,7 @@ export default class NovelBinCom extends Parser {
         scLoad();
         `);
     let cHhtml = (
-      await this.http.get_html(
+      await this.http.web_view(
         this.url
           .join("ajax/chapter-archive")
           .query({
@@ -237,7 +261,7 @@ export default class NovelBinCom extends Parser {
               .$("[data-novel-id]")
               .attr("data-novel-id")
           }),
-        this.url
+        this.url,
       )
     ).html;
     item.Chapters(

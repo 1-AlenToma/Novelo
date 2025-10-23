@@ -140,7 +140,10 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         },
         parser: {
             default: "ReadNovelFull",
+            parserCodes: new Map<string, any>(),
             parseCode: (code: string) => {
+                if (data.parser.parserCodes.has(code))
+                    return data.parser.parserCodes.get(code);
                 const parserItem = {
                     Value, ChapterInfo, LightInfo, DetailInfo, ParserDetail, SearchDetail, Parser, Html, HttpHandler
                 }
@@ -148,7 +151,8 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     let className = (code.match(/(.*)\.(prototype.detail)/gim)?.firstOrDefault() ?? "") as string;
                     className = className.safeSplit(".", 0).trim()
                     let runnalbe: any = eval(`(function(require){ ${code} \n return ${className}})`);
-                    return runnalbe?.(() => parserItem);
+                    data.parser.parserCodes.set(code, runnalbe?.(() => parserItem))
+                    return data.parser.parserCodes.get(code);
                 }
                 return undefined as any
             },

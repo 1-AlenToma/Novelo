@@ -14,7 +14,7 @@ const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".x
 
 declare global {
     var fileTypes: string[];
-    var tests: TestRunner[];
+    var tests: TestRunner[]; 
     var useState: typeof React.useState;
     var useEffect: typeof React.useEffect;
     var useRef: <T = any>(item?: T) => { current: T };
@@ -130,7 +130,7 @@ String.prototype.onEmpty = function (defaultValue: string) {
 }
 
 String.prototype.isManga = function () {
-    let mng = ["manhwa", "manga", "manhua"];
+    let mng = ["manhwa", "manga", "manhua"]; 
     let str = new String(this).toString();
     return mng.find(x => str.toLowerCase() == x) != undefined;
 }

@@ -7,7 +7,8 @@
     "zip": "npm run parse && npx bestzip ../parsers.zip temp/parsers",
     "androidFiles": "node parsers/tsc/writeAndroidFiles.mjs",
     "update": "eas update --message [dbclick fix]",
-    "gradlew": "npm run zip && cd android && gradlew assembleRelease",
+    "gradlew": "npm run zip && cd android && gradlew clean assembleRelease",
+
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start -c",
     "android": "npx expo run:android",

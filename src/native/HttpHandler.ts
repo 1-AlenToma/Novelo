@@ -1,6 +1,7 @@
 import { Ajax, WebViewProps } from "Types";
 import Html from "./Html";
 import MapCacher from "./MapCacher";
+import { newId } from "react-native-short-style";
 
 const tempData = new MapCacher<HttpTemp>(300);
 
@@ -8,21 +9,51 @@ const createKey = (...args) => {
   return JSON.stringify(args).replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "");
 };
 
+class FetchTimer {
+  controller: AbortController = new AbortController();
+  timeout: any;
+  id: string = newId();
+  constructor(timeoutms: number = 5000) {
+    this.timeout = setTimeout(() => this.clear(true), timeoutms);
+  }
+
+  clear(abort?: boolean) {
+    if (abort)
+      this.controller.abort();
+    clearTimeout(this.timeout);
+    return this;
+  }
+
+
+
+  get option() {
+    return {
+      signal: this.controller.signal,
+    };
+  }
+}
+
+
 
 const getFetch = async (
   url: string,
   options: any,
   ignoreAlert: boolean,
+  httpHandler: HttpHandler,
   fromWebView?: boolean,
   props?: WebViewProps
 ) => {
   let key = createKey({ url, options });
+  if (tempData.has(key))
+    return tempData.get(key);
+  const timer = new FetchTimer();
   try {
-    if (tempData.has(key))
-      return tempData.get(key);
+    httpHandler.operations.set(timer.id, timer);
     let data = fromWebView ? await htmlContext.html.get_html(url, props) : await fetch(url, {
-      ...options
+      ...options,
+      ...timer.option
     });
+    httpHandler.clearOperations(timer.id);
     if (data.ok) {
       let text = await data.text();
       let item = new HttpTemp(text, key);
@@ -47,7 +78,13 @@ const getFetch = async (
       throw new Error(data.status.toString());
     }
   } catch (e) {
+    httpHandler.clearOperations(timer.id);
     tempData.delete(key);
+    if (httpHandler.subressErrors) {
+      console.warn("aborted")
+      return new HttpTemp("", key);;
+    }
+
     throw e;
   }
 };
@@ -132,6 +169,19 @@ class HttpError {
 class HttpHandler {
   ignoreAlert: boolean = false;
   httpError?: HttpError;
+  operations: Map<string, FetchTimer> = new Map<string, FetchTimer>();
+  subressErrors: boolean = false;
+  clearOperations(operationId?: string, abort?: boolean) {
+    if (operationId) {
+      this.operations.get(operationId)?.clear(abort);
+      this.operations.delete(operationId);
+    } else {
+      for (let key of [...this.operations.keys()]) {
+        this.operations.get(key)?.clear(abort);
+        this.operations.delete(key);
+      }
+    }
+  }
   constructor(ignoreAlert?: boolean) {
     this.ignoreAlert = ignoreAlert === true;
   }
@@ -164,7 +214,7 @@ class HttpHandler {
     try {
       if (item) url = this.queryString(url, item);
       console.info("get_html", url);
-      const data = await getFetch(url, this.header(), this.ignoreAlert);
+      const data = await getFetch(url, this.header(), this.ignoreAlert, this);
       return new HttpValue(data ? await data.text() : "", baseurl || url);
     } catch (e) {
       console.error("httget", e);
@@ -188,7 +238,7 @@ class HttpHandler {
         delete item.props;
       if (item) url = this.queryString(url, item);
       console.info("web_view", url);
-      const data = await getFetch(url, this.header(), this.ignoreAlert, true, props);
+      const data = await getFetch(url, this.header(), this.ignoreAlert, this, true, props);
       return new HttpValue(data ? await data.text() : "", baseurl || url);
     } catch (e) {
       console.error("httget", e);
@@ -214,7 +264,8 @@ class HttpHandler {
           method: "POST",
           body: data
         },
-        this.ignoreAlert
+        this.ignoreAlert,
+        this
       );
       return new HttpValue(await res.text());
     } catch (e) {
@@ -242,7 +293,8 @@ class HttpHandler {
           method: "POST",
           ...this.header({ "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" })
         },
-        this.ignoreAlert
+        this.ignoreAlert,
+        this
       );
 
       return new HttpValue(await res.text());

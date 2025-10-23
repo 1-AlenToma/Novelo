@@ -41,6 +41,12 @@ export default class ParserWrapper extends Parser {
     this.minVersion = parser.minVersion;
   }
 
+  dispose() {
+    this.http.subressErrors = this.parser.http.subressErrors = true;
+    this.http.clearOperations(undefined, true);
+    this.parser.http.clearOperations(undefined, true);
+  }
+
   getContext() {
     return context;
   }
@@ -118,7 +124,7 @@ export default class ParserWrapper extends Parser {
       !data.url.empty() &&
       data.chapters &&
       data.chapters.length > 0
-      && data.novelUpdateUrl && data.novelUpdateUrl.length >0
+      && data.novelUpdateUrl && data.novelUpdateUrl.length > 0
   })
   async novelInfo(
     item: DetailInfo,

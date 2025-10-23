@@ -21,7 +21,7 @@ export default ({
     Referer: undefined
   }).current
   const imageSize = parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined;
-  header.Referer = parserName ? context.parser.find(parserName)?.url : undefined
+  header.Referer = header.Referer ?? (parserName ? context.parser.find(parserName)?.url : undefined)
   let loadImage = async () => {
     try {
       if (url && typeof url === "string" && url.startsWith("[")) {
@@ -62,7 +62,7 @@ export default ({
     style && Array.isArray(style)
       ? [...style]
       : [style || {}];
-   
+
   //    console.log(source, url?.split("").filter((_,i)=> i<100).join(""))
   return (
     <Image

@@ -14,7 +14,7 @@ import {
   ScrollView,
   RefreshControl
 } from "react-native";
-import { useNavigation } from "../../hooks";
+import { useNavigation, useParser } from "../../hooks";
 import Header from "../../pages/Header";
 import { Book } from "../../db";
 import { DetailInfo } from "../../native"
@@ -22,6 +22,7 @@ import { DetailInfo } from "../../native"
 export default ({ ...props }: any) => {
   const [{ url, parserName }] =
     useNavigation(props);
+  const parser = useParser(parserName)
   const loader = useLoader(true);
   const chapterRef = useRef();
   const state = buildState(() =>
@@ -47,7 +48,6 @@ export default ({ ...props }: any) => {
       state.novel.authorUrl?.has()
     ) {
       loader.show();
-      let parser = context.parser.find(parserName);
       state.authorNovels = await parser.getByAuthor(state.novel.authorUrl);
       loader.hide();
     }
@@ -56,7 +56,6 @@ export default ({ ...props }: any) => {
   let fetchData = async (refresh?: boolean) => {
     loader.show();
     await state.batch(async () => {
-      let parser = context.parser.find(parserName);
       try {
         if (parser && url) {
           let novel = await parser.detail(url, true, refresh ? "RenewMemo" : undefined);
@@ -87,7 +86,7 @@ export default ({ ...props }: any) => {
       //return;
       state.infoLoading = true;
       if (novel && (novel.name?.has() ?? false)) {
-        let item = await context.parser.find(parserName).novelInfo(novel, true);
+        let item = await parser.novelInfo(novel, true);
         if (item && item.name) {
           state.novel = item;
         }
