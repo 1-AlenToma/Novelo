@@ -83,7 +83,7 @@ export default class ParserWrapper extends Parser {
     folder: (target: Parser) => target.name,
     isDebug: debugg,
     argsOverride: (args: any[]) => {
-      return args;
+      return args[0];
     },
     keyModifier: (target, key) =>
       `${key}${target.name}`,
