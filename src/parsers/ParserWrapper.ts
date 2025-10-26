@@ -21,10 +21,10 @@ import MyAnimeList from "./infos/MyAnimeList";
 import WebNovel from "./infos/WebNovel";
 import Memo from "../attr/Memo";
 import { AlertDialog } from "react-native-short-style";
-const daysToSave =(nr:number= 5)=> {
+const daysToSave = (nr: number = 5) => {
   if (!context.appSettings.autoUpdateFavoritNovels)
-      return undefined;
-    return nr;
+    return undefined;
+  return nr;
 }
 const debugg = false;
 export default class ParserWrapper extends Parser {
@@ -154,7 +154,7 @@ export default class ParserWrapper extends Parser {
   }
 
   @Memo({
-    daysToSave: ()=> daysToSave(20),
+    daysToSave: () => daysToSave(20),
     isDebug: debugg,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) =>
@@ -192,7 +192,7 @@ export default class ParserWrapper extends Parser {
   }
 
   @Memo({
-    daysToSave: ()=> daysToSave(20),
+    daysToSave: () => daysToSave(20),
     isDebug: debugg,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) =>

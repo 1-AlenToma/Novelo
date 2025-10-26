@@ -16,9 +16,10 @@ const getKey = (
   let key = JSON.stringify(args);
   if (!option.argsOverride)
     key += propertyName;
-  key = "memoizing." + key.replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\%|\’|\+|\?|\!)/gim, "").toLowerCase();
+
   if (option.keyModifier !== undefined)
     key += option.keyModifier(target, key);
+  key = "memoizing." + key.replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\%|\’|\+|\?|\!)/gim, "").toLowerCase();
   return key.toLowerCase() + ".json";
 };
 
@@ -44,7 +45,7 @@ export default function Memorize(
     ) => Promise<any>;
     descriptor.value = async function (...args: any[]) {
       let RenewMemo = args.some(x => x == "RenewMemo");
-      args = args.filter(x => x != "RenewMemo");
+      args = args.filter(x => x != "RenewMemo" && x !== undefined && x !== null);
       const folder = option.folder ? option.folder(this) : undefined;
       let key = getKey(
         option,
