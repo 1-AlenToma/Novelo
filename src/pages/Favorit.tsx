@@ -3,32 +3,34 @@ import {
   Image,
   ItemList,
   FoldableItem,
+  ChapterView,
 } from "../components";
-import { View, Text, Icon, AlertDialog } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, ActionSheet } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
 import {
   useNavigation
 } from "../hooks";
 import { Book } from "../db";
+import { DetailInfo } from "../native";
 
 const ItemRender = ({
-  item,
-  state,
+  url,
   loader
 }: {
-  item: Book,
-  state: any,
+  url: string,
   loader: any
 }) => {
-  const itemLoader = useLoader(false)
+  const itemLoader = useLoader(false);
+  const [novel, setNovel] = useState(undefined as DetailInfo | undefined);
   context.hook("novelFavoritInfo");
   const [books, dataIsLoading] = context.db.Books.useQuery(
-    context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
+    context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(url),
     (items, op) => {
-      return (items.find(x => x.url == item.url && x.favorit) != undefined);
+      return (items.find(x => x.url == url && x.favorit) != undefined);
     }
   );
+  const item = (books.find(x => x.url === url) ?? { url }) as Book;
 
   context.cache.onDirDelete((parserName) => {
     if (!parserName || parserName == item.parserName)
@@ -53,16 +55,53 @@ const ItemRender = ({
     itemLoader.hide();
   }
 
+  const loadNovel = async () => {
+    try {
+      itemLoader.show();
+      let parser = context.parser.find(item.parserName);
+      if (parser) {
+        const nov = await parser.detail(item.url, true);
+        setNovel(nov)
+      } else console.error("parser not founc", item.parserName)
+    } finally {
+      itemLoader.hide();
+    }
+
+    return true;
+
+  }
+
   useEffect(() => {
     loadNovelDetail();
   }, [books]);
 
   context.useEffect(() => loadNovelDetail(), "parser.all")
-
-  item = books.find(x => x.url === item.url) ?? item;
-
   return (
     <>
+      <ActionSheet size={"80%"} isVisible={novel != undefined} onHide={() => setNovel(undefined)}>
+        <ChapterView
+          ignoreChapterValidation={true}
+          book={item}
+          novel={novel as any}
+          onPress={item => {
+            if (novel) {
+              context
+                .nav.navigate(novel.type == "Anime" || context.parser.find(novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                  name: novel.name,
+                  chapter: item.url,
+                  url: novel.url,
+                  parserName: novel.parserName
+                });
+            }
+            setNovel(undefined);
+          }}
+          current={
+            novel?.chapters?.at(
+              item?.selectedChapterIndex ?? 0
+            )?.url
+          }
+        />
+      </ActionSheet>
       {itemLoader.elem}
       <FoldableItem
         single={true}
@@ -86,7 +125,7 @@ const ItemRender = ({
                   }
                 )
                 .then(async answer => {
-                  loader.show();
+                  itemLoader.show();
                   if (answer) {
                     try {
                       let file = await context.files.exists("".fileName(item.name, item.parserName));
@@ -98,7 +137,7 @@ const ItemRender = ({
                       console.error(e);
                     }
                   }
-                  loader.hide();
+                  itemLoader.hide();
                 });
             }
           },
@@ -113,10 +152,21 @@ const ItemRender = ({
             ifTrue: item.isOnline?.(),
             text: "Refresh",
             onPress: () => {
-
               loadNovelDetail(true)
               return true;
             }
+          },
+          {
+            ifTrue: item.isOnline?.(),
+            onPress: async () => {
+              return await loadNovel()
+            },
+            icon: (<Icon
+              type="AntDesign"
+              name="menu"
+              css="invertco"
+            />),
+            text: "Chapters"
           },
           {
             icon: (
@@ -238,8 +288,7 @@ export default ({ ...props }: any) => {
           container={({ item }: any) => (
             <ItemRender
               loader={loader}
-              state={state}
-              item={item}
+              url={item.url}
             />
           )}
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"

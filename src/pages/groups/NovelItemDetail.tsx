@@ -331,7 +331,7 @@ export default ({ ...props }: any) => {
                         />
                       }
                       title="Chapters"
-                      size="80%">
+                      size="80%"> 
                       <ChapterView
                         ignoreChapterValidation={true}
                         book={state.book}

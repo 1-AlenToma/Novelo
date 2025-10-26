@@ -72,10 +72,7 @@ export default ({
 
   if (single) {
     context.useEffect(() => {
-      if (
-        state.id != context.selectedFoldItem &&
-        state.visible
-      ) {
+      if (state.id != context.selectedFoldItem && state.visible) {
         animateLeft(false);
       }
     }, "selectedFoldItem");
@@ -100,8 +97,8 @@ export default ({
                   <TouchableOpacity
                     css={`invert settingButton`}
                     ifTrue={x.ifTrue}
-                    onPress={() => {
-                      if (x.onPress())
+                    onPress={async () => {
+                      if (await x.onPress())
                         state.longPressVisible = false;
                     }}
                     key={i}>
@@ -132,13 +129,10 @@ export default ({
           {Array.isArray(buttons)
             ? buttons.map((x, i) => (
               <TouchableOpacity
-                css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value
-                  ? "selectedRow"
-                  : ""
-                  }`}
+                css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value ? "selectedRow" : ""}`}
                 ifTrue={x.ifTrue}
-                onPress={() => {
-                  if (x.onPress())
+                onPress={async () => {
+                  if (await x.onPress())
                     animateLeft(false);
                 }}
                 key={i}>

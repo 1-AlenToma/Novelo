@@ -344,6 +344,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         "notification",
         "db",
         "appSettings.currentNovel",
-        "appSettings.parsers"
+        "appSettings.parsers",
+        "novelFavoritInfo"
     ).globalBuild();
 export default data;

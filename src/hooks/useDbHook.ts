@@ -7,7 +7,7 @@ export default (
   ...keys: string[]
 ) => {
   const updater = useUpdate();
-  let currentValues = useRef({}).current;
+  let currentValues = useRef<any>({}).current;
   const on = useRef();
   let setValues = (item: any) => {
     if (!item) return;

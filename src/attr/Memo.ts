@@ -12,7 +12,7 @@ const getKey = (
   ...args: any[]
 ) => {
   if (option.argsOverride)
-    args = option.argsOverride(...args); 
+    args = option.argsOverride(args); 
   let key = JSON.stringify(args);
   if (!option.argsOverride)
     key += propertyName;
@@ -51,7 +51,7 @@ export default function Memorize(
         option,
         propertyKey,
         this,
-        args
+        ...args
       );
 
       if (folder && folder.has())
