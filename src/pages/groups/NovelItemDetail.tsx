@@ -436,7 +436,6 @@ export default ({ ...props }: any) => {
                       state.novel.parserName
                     );
                   AlertDialog.alert({
-                    css: "co-red",
                     title: "Attention",
                     message: `The ${parser?.type ?? "Novel"} will start downloading shortly.${parser.protected
                       ? `\n\nNote\n"${parser.name}" contains protection and it's requires WebView to access its data.\nBecause of this, the download will pause if the app is minimized or runs in the background. Please keep the app open until it finishes.`
