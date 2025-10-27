@@ -76,6 +76,8 @@ const ItemRender = ({
   }, [books]);
 
   context.useEffect(() => loadNovelDetail(), "parser.all")
+  if (!item.name)
+    return null;
   return (
     <>
       <ActionSheet size={"80%"} isVisible={novel != undefined} onHide={() => setNovel(undefined)}>
@@ -243,7 +245,7 @@ export default ({ ...props }: any) => {
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
-      context.db.Books.query.load("chapterSettings").where.column(x => x.favorit).equalTo(true).orderByDesc(x => x.parserName),
+      context.db.Books.query.load("chapterSettings").where.column(x => x.favorit).equalTo(true).orderByDesc(x => [x.parserName, x.name]),
       undefined,
       (items, op) => {
         if (books.length <= 0) return true;

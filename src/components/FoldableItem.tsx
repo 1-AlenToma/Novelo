@@ -90,6 +90,16 @@ export default ({
     }, "selectedFoldItem");
   }
 
+  let scrollButoons = Array.isArray(buttons) ? buttons : [buttons];
+
+  scrollButoons = [{
+    onPress: () => {
+      animateView(false);
+    },
+    icon: (<Icon type="FontAwesome" name="close" css="co-red" />),
+    text: "Close"
+  }, ...scrollButoons]
+
   return render(
     <>
       <View
@@ -129,18 +139,6 @@ export default ({
             </ScrollView>
           </ActionSheet>
         ) : null}
-        <TouchableOpacity
-          css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert _abc le-5 to-0`}
-
-          onPress={async () => {
-            animateView(false);
-          }}>
-          <Icon type="FontAwesome" name="close" css="co-red" />
-          <Text
-            css="desc invertco">
-            Close
-          </Text>
-        </TouchableOpacity>
         <ScrollView horizontal={true}
           onContentSizeChange={(width, height) => {
             state.buttonsSize = { width, height } as any
@@ -150,34 +148,32 @@ export default ({
           onLayout={event => {
             // state.buttonsSize = event.nativeEvent.layout;
           }}
+          contentContainerStyle={{ paddingLeft: 5, paddingRight: 5 }}
           css="zi:1 clearheight">
-          {Array.isArray(buttons)
-            ? buttons.map((x, i) => (
-              <TouchableOpacity
-                css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value ? "selectedRow" : ""}`}
-                ifTrue={x.ifTrue}
-                onPress={async () => {
-                  if (await x.onPress())
-                    animateView(false);
-                }}
-                key={i}>
-                {x.icon as any}
-                <Text
-                  css="desc invertco"
-                  ifTrue={() =>
-                    x.text?.has() ?? false
-                  }>
-                  {x.text}
-                </Text>
-              </TouchableOpacity>
-            ))
-            : buttons}
+          {scrollButoons.map((x, i) => (
+            <TouchableOpacity
+              css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value ? "selectedRow" : ""}`}
+              ifTrue={x.ifTrue}
+              onPress={async () => {
+                if (await x.onPress())
+                  animateView(false);
+              }}
+              key={i}>
+              {x.icon as any}
+              <Text
+                css="desc invertco"
+                ifTrue={() =>
+                  x.text?.has() ?? false
+                }>
+                {x.text}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </View>
       <AnimatedView
         css="clearboth zi:2 "
         style={{
-          overflow: "visible",
           transform: [
             pos == "Left" ? (
               {
