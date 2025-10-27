@@ -96,16 +96,17 @@ const EpubHandler = ({
   );
 };
 
-const PrepItem = ({ item }: { item: string }) => {
+const PrepItem = React.memo(({ item }: { item: string }) => {
   const timer = useTimer(1000);
   const [progress, setProgress] = useState(0.1);
   const duration = 30;
-  timer(() => {
-    setProgress((prev) => {
-      const next = prev + 1 / duration;
-      return next >= 1 ? 1 : next;
-    });
-  })
+  if (progress < 1)
+    timer(() => {
+      setProgress((prev) => {
+        const next = prev + 1 / duration;
+        return next >= 1 ? 1 : next;
+      });
+    })
   return (
     <View
       css="clearwidth bor:5 pa-0 he:60 ali-center juc-center invert">
@@ -114,24 +115,29 @@ const PrepItem = ({ item }: { item: string }) => {
       </ProgressBar>
     </View>
   )
-}
-const ItemRender = ({
-  item
+});
+
+const ItemRender = React.memo(({
+  name,
+  parserName,
+  url
 }: {
-  item: Book
+  name: string;
+  parserName: string;
+  url: string;
 }) => {
-  if (!item) return null;
+  if (!name || !parserName || !url) return null;
+  let item: Book = { name, parserName, url } as any;
   context.hook("parser.all")
-  const [books, dataIsLoading] = context
-    .db.Books.useQuery(
-      context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
-      (items, op) => {
-        return (
-          items.find(x => x.url == item.url) !=
-          undefined
-        )
-      }
-    );
+  const [books, dataIsLoading] = context.db.Books.useQuery(
+    context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
+    (items, op) => {
+      return (
+        items.find(x => x.url == item.url) !=
+        undefined
+      )
+    }
+  );
   const { fileItems, elem } = context.files.useFile<DetailInfo>("json", x => {
     return x.has(
       "".fileName(
@@ -386,7 +392,7 @@ const ItemRender = ({
       </View>
     </FoldableItem>
   );
-};
+});
 
 export default ({ ...props }: any) => {
   const state = buildState(() =>
@@ -412,17 +418,20 @@ export default ({ ...props }: any) => {
       }
     );
   const loader = useLoader(dataIsLoading);
+  
   useEffect(() => {
     reload();
   }, [fileItems]);
 
   const renderItems: any[] = books?.filter(x => {
     const file = fileItems.find(x => x.url == x.url)
-    return (!state.text.has() ||
+    return (
+      !state.text.has() ||
       x.name.has(state.text) || x.parserName.has(state.text) ||
-      (context.parser.find(x.parserName)?.type ?? "").has(state.text) || file?.type?.has(state.text))
-  }
-  )
+      (context.parser.find(x.parserName)?.type ?? "").has(state.text) ||
+      file?.type?.has(state.text)
+    )
+  })
 
   renderItems.push(...prepLoading.filter(x => !renderItems.find(f => f.url == x)));
   return (
@@ -435,17 +444,12 @@ export default ({ ...props }: any) => {
         </Text>
         <ItemList
           items={renderItems}
-          container={({ item }: any) => {
+          container={({ item }: { item: Book | string }) => {
             if (typeof item == "object" && prepLoading.includes(item.url))
               item = item.url;
             if (typeof item == "object") {
-              return (<ItemRender
-                item={item}
-              />)
-            } else return (<PrepItem
-              item={item}
-            />)
-
+              return (<ItemRender name={item.name} parserName={item.parserName} url={item.url} />)
+            } else return (<PrepItem item={item} />)
           }}
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
           vMode={true}

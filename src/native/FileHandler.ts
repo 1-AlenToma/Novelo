@@ -102,26 +102,28 @@ export default class FileHandler {
 
   async write(file: string, content: string | number[], options?: any) {
     let fileUri = this.getName(file);
-    await this.checkDir(fileUri);
-    console.log(
-      "writing",
-      fileUri,
-      "filename",
-      file
-    );
+    return methods.withLock<FileInfo>(fileUri, async () => {
+      await this.checkDir(fileUri);
+      console.log(
+        "writing",
+        fileUri,
+        "filename",
+        file
+      );
 
 
-    await RNFetchBlob.fs.writeFile(
-      fileUri,
-      content,
-      options ?? "utf8"
-    );
+      await RNFetchBlob.fs.writeFile(
+        fileUri,
+        content,
+        options ?? "utf8"
+      );
 
-    console.log("Finished Wrting", fileUri)
-    if (this.enableCaching)
-      this.DownloadedFiles.set(fileUri, content);
-    this.trigger("Write", file, fileUri);
-    return getFileInfo(fileUri, this.dir).filePath ?? fileUri;
+      console.log("Finished Wrting", fileUri)
+      if (this.enableCaching)
+        this.DownloadedFiles.set(fileUri, content);
+      this.trigger("Write", file, fileUri);
+      return getFileInfo(fileUri, this.dir).filePath ?? fileUri;
+    });
   }
 
   async allFilesInfos(recrusive?: boolean, path?: string) {

@@ -2,6 +2,7 @@ import { registerRootComponent } from "expo";
 import "./Global"
 import App from "./App";
 import AppTest from "./App.test";
+
 let testing = false;
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

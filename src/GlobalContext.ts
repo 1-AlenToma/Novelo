@@ -26,6 +26,9 @@ import FilesZipper from "./native/Zip";
 import Player from "./native/Player";
 import ImageCache from "./native/ImageCache";
 import BGService from "./native/BackgroundService";
+import { ConsoleInterceptor } from "./native/ConsoleInterceptor";
+
+
 
 LogBox.ignoreLogs([
     "fontFamily",
@@ -36,6 +39,7 @@ LogBox.ignoreLogs([
     "xmldom warning"
 ]);
 
+ConsoleInterceptor.enable();
 
 var globalDb = new dbContext();
 const globalHttp = new HttpHandler();

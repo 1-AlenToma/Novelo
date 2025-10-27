@@ -2,6 +2,17 @@ import uuid from "react-native-uuid";
 import IDOMParser from "advanced-html-parser";
 import { Functions } from "react-native-ts-sqlite-orm/src/UsefullMethods";
 
+const locks = new Map<string, Promise<any>>();
+
+export const withLock = async function <T>(fileUri: string, fn: () => Promise<any>) {
+  const prev = locks.get(fileUri) ?? Promise.resolve();
+  const next = prev.then(fn).finally(() => {
+    if (locks.get(fileUri) === next) locks.delete(fileUri);
+  });
+  locks.set(fileUri, next);
+  return next as Promise<T>;
+}
+
 function generateText(html, minLength) {
   try {
     html = html.replace(/<( )?(\/)?strong( )?>/gim, "");

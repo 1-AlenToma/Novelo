@@ -8,18 +8,13 @@ import {
 import { View, Text, Icon, AlertDialog, ActionSheet } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
-import {
-  useNavigation
-} from "../hooks";
 import { Book } from "../db";
 import { DetailInfo } from "../native";
 
-const ItemRender = ({
-  url,
-  loader
+const ItemRender = React.memo(({
+  url
 }: {
-  url: string,
-  loader: any
+  url: string
 }) => {
   const itemLoader = useLoader(false);
   const [novel, setNovel] = useState(undefined as DetailInfo | undefined);
@@ -232,7 +227,7 @@ const ItemRender = ({
       </FoldableItem>
     </>
   );
-};
+});
 
 export default ({ ...props }: any) => {
   const state = buildState(() =>
@@ -288,10 +283,7 @@ export default ({ ...props }: any) => {
             !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)
           )}
           container={({ item }: any) => (
-            <ItemRender
-              loader={loader}
-              url={item.url}
-            />
+            <ItemRender url={item.url} />
           )}
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
           vMode={true}
