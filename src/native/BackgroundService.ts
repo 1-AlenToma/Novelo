@@ -21,7 +21,7 @@ const veryIntensiveTask =
 
     tasks.push(new EventEmitter(.5, () => {
       const dm = context.downloadManager();
-      const keys = [...dm.prepItems.keys()].filter(x => !dm.items.has(x));
+      const keys = [...dm.prepItems.keys()].filter(x => !dm.items.has(x) && dm.prepItems.get(x)?.protected !== true);
       for (let url of keys) {
         let item = dm.prepItems.get(url);
         dm.download(url, item.parserName);

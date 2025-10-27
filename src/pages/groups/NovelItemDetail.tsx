@@ -433,7 +433,8 @@ export default ({ ...props }: any) => {
                   context
                     .downloadManager().prepDownload(
                       state.novel.url,
-                      state.novel.parserName
+                      state.novel.parserName,
+                      parser.protected
                     );
                   AlertDialog.alert({
                     title: "Attention",

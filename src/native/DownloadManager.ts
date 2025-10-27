@@ -8,7 +8,7 @@ import { DetailInfo } from "./ParserItems";
 export default class DownloadManager {
   events: { [key: string]: Function } = {};
   items: Map<string, number> = new Map();
-  prepItems: Map<string, { url: string, parserName: string }> = new Map();
+  prepItems: Map<string, { url: string, parserName: string, protected?: boolean }> = new Map();
   change(url: string) {
     for (let k in this.events) {
       this.events[k](url);
@@ -92,9 +92,11 @@ export default class DownloadManager {
 
   }
 
-  async prepDownload(url: string, parserName: string) {
-    this.prepItems.set(url, { url, parserName })
-    this.change(url);
+  async prepDownload(url: string, parserName: string, _protected: boolean) {
+    this.prepItems.set(url, { url, parserName, protected: _protected });
+    if (_protected)
+      this.download(url, parserName);
+      this.change(url);
   }
 
   async download(

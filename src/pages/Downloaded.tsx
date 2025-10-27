@@ -239,7 +239,8 @@ const ItemRender = React.memo(({
               .downloadManager()
               .prepDownload(
                 item.url,
-                item.parserName
+                item.parserName,
+                context.parser.find(item.parserName)?.protected
               );
             return true;
           }
@@ -418,7 +419,7 @@ export default ({ ...props }: any) => {
       }
     );
   const loader = useLoader(dataIsLoading);
-  
+
   useEffect(() => {
     reload();
   }, [fileItems]);
