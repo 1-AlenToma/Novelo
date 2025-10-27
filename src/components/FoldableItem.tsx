@@ -19,6 +19,7 @@ export default ({
   enabled,
   disableLongPress,
   css,
+  position,
   ...props
 }: {
   buttons: Buttons[];
@@ -28,10 +29,11 @@ export default ({
   single: any;
   enabled?: boolean,
   css?: string;
+  position?: "Left" | "Top"
 }) => {
+  const pos = position ?? "Top";
 
-
-  const { animateX, animate } = useAnimate({
+  const { animateX, animateY, animate } = useAnimate({
     easing: Easing.bounce
   });
   const [render, state, loader] = useView({
@@ -44,19 +46,29 @@ export default ({
     }
   });
   let interpolate = [0, 1];
-  if (
-    state.buttonsSize &&
-    state.size.width > 0 &&
-    !isNaN(state.buttonsSize.width as number)
-  ) {
-    interpolate = [
-      0,
-      -Math.max((state.buttonsSize.width as number) + 10, 10)
-    ];
+  if (pos == "Left") {
+    if (
+      state.buttonsSize &&
+      state.size.width > 0 &&
+      !isNaN(state.buttonsSize.width as number)
+    ) {
+      interpolate = [
+        0,
+        -Math.max((state.buttonsSize.width as number) + 10, 10)
+      ];
+    }
+  } else {
+    if (
+      state.buttonsSize &&
+      (state.childSize?.height as number ?? 0) > 0 &&
+      !isNaN(state.size.height as number)
+    ) {
+      interpolate = [0, -Math.max((state.childSize?.height as number) - 1, 10)];
+    }
   }
 
-  const animateLeft = (show: boolean) => {
-    animateX(interpolate[show ? 0 : 1], () => {
+  const animateView = (show: boolean) => {
+    (pos == "Left" ? animateX : animateY)(interpolate[show ? 0 : 1], () => {
       state.visible = show;
       if (single && show) {
         context.selectedFoldItem = state.id;
@@ -68,12 +80,12 @@ export default ({
         context.selectedFoldItem = "";
       }
     });
-  };
+  }
 
   if (single) {
     context.useEffect(() => {
       if (state.id != context.selectedFoldItem && state.visible) {
-        animateLeft(false);
+        animateView(false);
       }
     }, "selectedFoldItem");
   }
@@ -81,11 +93,12 @@ export default ({
   return render(
     <>
       <View
+        onPress={() => alert("jkshad")}
         style={{
           height: ((state.childSize?.height ?? 0) as number) - 10,
-          width: state.buttonsSize?.width ?? 0
+          width: "100%"
         }}
-        css="wi:98% ri:5 to:5 overflow bor:5 absolute zi:1 ali:flex-end juc:flex-end">
+        css="wi:98% ri:5 to:5 overflow:visible bor:5 absolute zi:1 ali:flex-end juc:flex-end">
         {!disableLongPress ? (
           <ActionSheet size={"50%"} isVisible={state.longPressVisible} onHide={() => state.longPressVisible = false}>
             <ScrollView
@@ -116,9 +129,21 @@ export default ({
             </ScrollView>
           </ActionSheet>
         ) : null}
+        <TouchableOpacity
+          css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert _abc le-5 to-0`}
+
+          onPress={async () => {
+            animateView(false);
+          }}>
+          <Icon type="FontAwesome" name="close" css="co-red" />
+          <Text
+            css="desc invertco">
+            Close
+          </Text>
+        </TouchableOpacity>
         <ScrollView horizontal={true}
-          onContentSizeChange={(width, h) => {
-            state.buttonsSize = { width } as any
+          onContentSizeChange={(width, height) => {
+            state.buttonsSize = { width, height } as any
           }}
           style={{ maxWidth: "100%" }}
           showsHorizontalScrollIndicator={true}
@@ -133,7 +158,7 @@ export default ({
                 ifTrue={x.ifTrue}
                 onPress={async () => {
                   if (await x.onPress())
-                    animateLeft(false);
+                    animateView(false);
                 }}
                 key={i}>
                 {x.icon as any}
@@ -152,9 +177,21 @@ export default ({
       <AnimatedView
         css="clearboth zi:2 "
         style={{
+          overflow: "visible",
           transform: [
-            {
-              translateX: animate.x.interpolate({
+            pos == "Left" ? (
+              {
+                translateX: animate.x.interpolate({
+                  inputRange: interpolate.sort(
+                    (a, b) => a - b
+                  ),
+                  outputRange: interpolate,
+                  extrapolateLeft: "extend",
+                  extrapolate: "clamp"
+                })
+              }
+            ) : ({
+              translateY: animate.y.interpolate({
                 inputRange: interpolate.sort(
                   (a, b) => a - b
                 ),
@@ -162,7 +199,7 @@ export default ({
                 extrapolateLeft: "extend",
                 extrapolate: "clamp"
               })
-            }
+            })
           ]
         }}>
         <TouchableOpacity
@@ -178,7 +215,7 @@ export default ({
           }}
           onPress={() => {
             if (enabled !== false)
-              animateLeft(!state.visible)
+              animateView(!state.visible)
           }}>
           {children}
         </TouchableOpacity>

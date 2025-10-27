@@ -11,45 +11,47 @@ const veryIntensiveTask =
     // Example of an infinite loop task
     const { delay } = taskDataArguments;
     console.info(taskDataArguments)
-    let tasks: any = [];
+    let tasks: EventEmitter<string>[] = [];
     let getDate = (days: number) => {
       const date = new Date();
       date.setDate(date.getDate() + days);
       return date;
     };
     tasks.push(
-      new EventEmitter(10, async function () {
-        this.extra = (
-          !this.extra || this.extra.length <= 0
-            ? await context.cache.allFiles()
-            : this.extra).filter(x => x);
-        let i = 5;
-        while (i > 0 && this.extra.length > 0 && context.downloadManager().items.size <= 0) {
-          i--;
-          let f = this.extra.shift();
-          let date = getDate(30);
-          let data = JSON.parse((await context.cache.read(f)) ?? "");
-          if (data.date > date) {
-            await context.cache.delete(f);
-            let book = await context.db.Books.query.where
-              .column(x => x.url).equalTo(data.data.url)
-              .firstOrDefault();
-            if (book && !book.favorit)
-              await context.db.deleteBook(book.id);
+      new EventEmitter<string>(10, async function () {
+        try {
+
+
+          this.extra = (
+            !this.extra || this.extra.length <= 0
+              ? (await context.cache.allFiles()).filter(Boolean)
+              : this.extra
+          );
+          let i = 5;
+          while (i > 0 && this.extra.length > 0 && context.downloadManager().items.size <= 0) {
+            i--;
+            let f: string = this.extra.shift();
+            let date = getDate(30);
+            let data = JSON.parse((await context.cache.read(f)) ?? "");
+            if (data.date > date) {
+              await context.cache.delete(f);
+              let book = await context.db.Books.query.where
+                .column(x => x.url).equalTo(data.data.url)
+                .firstOrDefault();
+              if (book && !book.favorit)
+                await context.db.deleteBook(book.id);
+            }
           }
+        } catch (e) {
+          console.error("Background Periodic cleanup failed:", e);
         }
       })
     );
-    await new Promise(async resolve => {
-      for (
-        let i = 0;
-        BackgroundService.isRunning();
-        i++
-      ) {
-        tasks.forEach(x => x.check());
-        await sleep(delay);
-      }
-    });
+
+    while (BackgroundService.isRunning()) {
+      for (const t of tasks) t.check();
+      await sleep(delay);
+    }
   };
 
 const options = {

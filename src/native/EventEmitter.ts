@@ -1,35 +1,34 @@
-export default class EventEmitter {
+export default class EventEmitter<T> {
   minutes: number;
   func: Function;
-  running: boolean = false;
-  lastRun: Date;
-  extra?: undefined;
+  running = false;
+  nextRun: number; // timestamp in ms
+  extra?: T[];
+
   constructor(minutes: number, func: Function) {
     this.func = func;
     this.minutes = minutes;
-    this.hasRun();
+    this.updateNextRun();
   }
 
-  hasRun() {
-    this.lastRun = new Date(
-      new Date().getTime() + this.minutes * 60000
-    );
+  updateNextRun() {
+    this.nextRun = Date.now() + this.minutes * 60000;
   }
 
   async run() {
     try {
-      await this.func.bind(this)();
+      await this.func.call(this);
     } catch (e) {
-      console.error(e);
+      console.error("EventEmitter error:", e);
     } finally {
-      this.hasRun();
       this.running = false;
+      this.updateNextRun();
     }
   }
 
   check() {
     if (this.running) return;
-    if (this.lastRun <= new Date()) {
+    if (Date.now() >= this.nextRun) {
       this.running = true;
       this.run();
     }
