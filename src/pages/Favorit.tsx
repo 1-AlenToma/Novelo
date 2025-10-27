@@ -245,7 +245,7 @@ export default ({ ...props }: any) => {
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
-      context.db.Books.query.load("chapterSettings").where.column(x => x.favorit).equalTo(true).orderByDesc(x => [x.parserName, x.name]),
+      context.db.Books.query.load("chapterSettings").where.column(x => x.favorit).equalTo(true).orderByAsc(x => [x.parserName, x.name]),
       undefined,
       (items, op) => {
         if (books.length <= 0) return true;
