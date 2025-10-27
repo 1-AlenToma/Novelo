@@ -1,5 +1,6 @@
 import BackgroundService from "react-native-background-actions";
 import EventEmitter from "./EventEmitter";
+import "../Global";
 
 const sleep = time =>
   new Promise(resolve =>
@@ -17,11 +18,20 @@ const veryIntensiveTask =
       date.setDate(date.getDate() + days);
       return date;
     };
+
+    tasks.push(new EventEmitter(.5, () => {
+      const dm = context.downloadManager();
+      const keys = [...dm.prepItems.keys()].filter(x => !dm.items.has(x));
+      for (let url of keys) {
+        let item = dm.prepItems.get(url);
+        dm.download(url, item.parserName);
+      }
+    }));
+
+    // file cleaner
     tasks.push(
       new EventEmitter<string>(10, async function () {
         try {
-
-
           this.extra = (
             !this.extra || this.extra.length <= 0
               ? (await context.cache.allFiles()).filter(Boolean)

@@ -10,7 +10,8 @@ import {
   TouchableOpacity,
   Icon,
   ProgressBar,
-  AlertDialog
+  AlertDialog,
+  useTimer
 } from "react-native-short-style";
 import Header from "./Header";
 import * as React from "react";
@@ -94,11 +95,29 @@ const EpubHandler = ({
     </>
   );
 };
+
+const PrepItem = ({ item }: { item: string }) => {
+  const timer = useTimer(1000);
+  const [progress, setProgress] = useState(0.1);
+  const duration = 30;
+  timer(() => {
+    setProgress((prev) => {
+      const next = prev + 1 / duration;
+      return next >= 1 ? 1 : next;
+    });
+  })
+  return (
+    <View
+      css="clearwidth bor:5 pa-0 he:60 ali-center juc-center invert">
+      <ProgressBar css="_abc he-100% bac-red" value={progress}>
+        <Text css="fos-12 bold co-#FFFFFF">Loading Please wait...</Text>
+      </ProgressBar>
+    </View>
+  )
+}
 const ItemRender = ({
-  item,
-  state
+  item
 }: {
-  state: any,
   item: Book
 }) => {
   if (!item) return null;
@@ -212,7 +231,7 @@ const ItemRender = ({
           onPress: () => {
             context
               .downloadManager()
-              .download(
+              .prepDownload(
                 item.url,
                 item.parserName
               );
@@ -316,8 +335,11 @@ const ItemRender = ({
       <View
         css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start invert">
         {loader.elem ?? elem}
+
         <ProgressBar css="_abc he-100% bac-red" ifTrue={itemState.downloadFileInfo.percent > 0 && itemState.downloadFileInfo.percent < 1 && loader.loading} value={itemState.downloadFileInfo.percent}>
-          <Text css="fos-12 bold co-#FFFFFF">{itemState.downloadFileInfo.currentFile}</Text>
+          <Text css="fos-12 bold co-#FFFFFF">{itemState.downloadFileInfo.currentFile}
+
+          </Text>
         </ProgressBar>
         <Image
           url={item.imageBase64}
@@ -341,7 +363,8 @@ const ItemRender = ({
           css="clearboth wi-102% absolute row juc:flex-end ali:center">
 
           <ProgressBar css="_abc he-100%" value={downloadProgress / 100}>
-            <Text css="fos-12 bold co-#FFFFFF">{downloadProgress.readAble()}%</Text>
+            <Text ifTrue={downloadProgress == 0.1} css="fos-12 bold co-red">Loading Please wait...</Text>
+            <Text ifTrue={downloadProgress != 0.1} css="fos-12 bold co-#FFFFFF">{downloadProgress.readAble()}%</Text>
           </ProgressBar>
 
           <TouchableOpacity
@@ -374,6 +397,7 @@ export default ({ ...props }: any) => {
   })).build();
 
   const { fileItems, elem } = context.files.useFile<DetailInfo>("json", undefined, "NewDelete");
+  const prepLoading = context.downloadManager().prepLoading();
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
@@ -392,6 +416,15 @@ export default ({ ...props }: any) => {
     reload();
   }, [fileItems]);
 
+  const renderItems: any[] = books?.filter(x => {
+    const file = fileItems.find(x => x.url == x.url)
+    return (!state.text.has() ||
+      x.name.has(state.text) || x.parserName.has(state.text) ||
+      (context.parser.find(x.parserName)?.type ?? "").has(state.text) || file?.type?.has(state.text))
+  }
+  )
+
+  renderItems.push(...prepLoading.filter(x => !renderItems.find(f => f.url == x)));
   return (
     <View css="flex mih:100 invert ali-center">
       <EpubHandler parentState={state} />
@@ -401,17 +434,19 @@ export default ({ ...props }: any) => {
           Downloaded and Added Epubs
         </Text>
         <ItemList
-          items={books?.filter(x => {
-            const file = fileItems.find(x => x.url == x.url)
-            return !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text) || file?.type?.has(state.text)
-          }
-          )}
-          container={({ item }: any) => (
-            <ItemRender
-              state={state}
+          items={renderItems}
+          container={({ item }: any) => {
+            if (typeof item == "object" && prepLoading.includes(item.url))
+              item = item.url;
+            if (typeof item == "object") {
+              return (<ItemRender
+                item={item}
+              />)
+            } else return (<PrepItem
               item={item}
-            />
-          )}
+            />)
+
+          }}
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
           vMode={true}
         />

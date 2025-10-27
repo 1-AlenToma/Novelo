@@ -8,6 +8,7 @@ import { DetailInfo } from "./ParserItems";
 export default class DownloadManager {
   events: { [key: string]: Function } = {};
   items: Map<string, number> = new Map();
+  prepItems: Map<string, { url: string, parserName: string }> = new Map();
   change(url: string) {
     for (let k in this.events) {
       this.events[k](url);
@@ -16,7 +17,22 @@ export default class DownloadManager {
 
   stop(url: string) {
     this.items.delete(url);
+    this.prepItems.delete(url);
     return this;
+  }
+
+  prepLoading() {
+    let id = useRef(newId()).current;
+    const [urls, setUrls] = useState<string[]>([]);
+
+    this.events[id] = (url: string) => {
+      const keys = [...this.prepItems.keys()].filter(x => !this.items.has(x));
+      if (keys.length !== urls.length)
+        setUrls(keys);
+    };
+
+    return urls;
+
   }
 
   useDownload(parentUrl: string) {
@@ -27,10 +43,12 @@ export default class DownloadManager {
         return;
       let item = undefined;
       let tms: { [key: string]: number } = {}
-      this.items.forEach((p, url) => {
-        if (!parentUrl || url.has(parentUrl))
-          item = p;
+      let items = [...this.prepItems.values()];
+      items.forEach(x => {
+        if (!parentUrl || x.url.has(parentUrl))
+          item = this.items.get(x.url) ?? 0.1;
       });
+
       if (item == undefined)
         setInfos(0)
       else
@@ -72,6 +90,11 @@ export default class DownloadManager {
 
     return htmlImages;
 
+  }
+
+  async prepDownload(url: string, parserName: string) {
+    this.prepItems.set(url, { url, parserName })
+    this.change(url);
   }
 
   async download(
@@ -168,7 +191,8 @@ export default class DownloadManager {
       console.error(e);
     }
 
-    this.items.delete(url);
+    this.stop(url);
+
     this.change(url);
   }
 }

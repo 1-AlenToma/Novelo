@@ -331,7 +331,7 @@ export default ({ ...props }: any) => {
                         />
                       }
                       title="Chapters"
-                      size="80%"> 
+                      size="80%">
                       <ChapterView
                         ignoreChapterValidation={true}
                         book={state.book}
@@ -431,14 +431,14 @@ export default ({ ...props }: any) => {
                 css="button mar:5 clearheight juc:center invert"
                 onPress={async () => {
                   context
-                    .downloadManager().download(
+                    .downloadManager().prepDownload(
                       state.novel.url,
                       state.novel.parserName
                     );
                   AlertDialog
                     .alert(
                       {
-                        message: "novel is downloading",
+                        message: "novel will shortly start downloading",
                         title: "Attantion"
                       }
                     );
