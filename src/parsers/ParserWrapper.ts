@@ -43,6 +43,7 @@ export default class ParserWrapper extends Parser {
     this.webNovel = new WebNovel();
     this.infoGeneratorName = parser.infoGeneratorName;
     this.minVersion = parser.minVersion;
+    this.protected = parser.protected ?? false;
   }
 
   dispose() {

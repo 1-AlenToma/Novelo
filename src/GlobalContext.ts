@@ -158,11 +158,11 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             },
             clone: (name: string) => {
                 let all = ParserWrapper.getAllParsers() as ParserWrapper[];
-                let parsers = (context.appSettings.parsers && context.appSettings.parsers.length > 0 ? context.appSettings.parsers.map(x => {
+                let parsers = !debugMode ? ((context.appSettings.parsers && context.appSettings.parsers.length > 0 ? context.appSettings.parsers.map(x => {
                     let Item = data.parser.parseCode(x.content);
                     if (Item) return new ParserWrapper(new Item());
                     return undefined;
-                }) : all).filter(x => x != undefined);
+                }) : all).filter(x => x != undefined)) : all;
                 let parser = parsers.find(x => x.name == name);
                 if (!parser)
                     parser = all.find(x => x.name == name);

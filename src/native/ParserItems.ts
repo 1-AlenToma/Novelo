@@ -110,6 +110,7 @@ abstract class Parser {
   infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   type: ParserType = "Novel";
   minVersion?: number;
+  protected: boolean = false;
   constructor(
     url: string,
     name: string,

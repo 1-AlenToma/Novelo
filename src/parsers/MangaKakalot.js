@@ -23,6 +23,7 @@ export default class MangaKakalot extends Parser {
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
         this.minVersion = 122;
+        this.protected = true;
 
     }
 
@@ -115,7 +116,7 @@ export default class MangaKakalot extends Parser {
             await this.http.web_view(url, this.url)
         ).html;
         let imgs = html.findAll(".container-chapter-reader img").map(x => `<img id="${methods.newId()}" src='${x.url("src", { Referer: this.url + "/" })}'  />`).join("\n");
-        return imgs; 
+        return imgs;
     }
 
     async detail(url) {

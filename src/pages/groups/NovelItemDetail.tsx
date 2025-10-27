@@ -339,7 +339,7 @@ export default ({ ...props }: any) => {
                         onPress={item => {
                           chapterRef.current?.close();
                           context
-                            .nav.navigate(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                            .nav.navigate(state.novel.type == "Anime" || parser?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                               name: state.novel.name,
                               chapter: item.url,
                               url: state.novel.url,
@@ -427,7 +427,7 @@ export default ({ ...props }: any) => {
                 (state.novel.url?.has() ?? false)
               }>
               <TouchableOpacity
-                ifTrue={["Novel", "Manga"].includes(context.parser.find(state.novel.parserName)?.type)}
+                ifTrue={["Novel", "Manga"].includes(parser?.type)}
                 css="button mar:5 clearheight juc:center invert"
                 onPress={async () => {
                   context
@@ -435,13 +435,15 @@ export default ({ ...props }: any) => {
                       state.novel.url,
                       state.novel.parserName
                     );
-                  AlertDialog
-                    .alert(
-                      {
-                        message: "novel will shortly start downloading",
-                        title: "Attantion"
-                      }
-                    );
+                  AlertDialog.alert({
+                    css: "co-red",
+                    title: "Attention",
+                    message: `The ${parser?.type ?? "Novel"} will start downloading shortly.${parser.protected
+                      ? `\n\nNote\n"${parser.name}" contains protection and it's requires WebView to access its data.\nBecause of this, the download will pause if the app is minimized or runs in the background. Please keep the app open until it finishes.`
+                      : ""
+                      }`,
+                  });
+
                 }}>
                 <View css="blur" />
                 <Icon

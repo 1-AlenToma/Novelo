@@ -20,6 +20,7 @@ export default class NovLoveCom extends Parser {
         this.settings.searchEnabled = true;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
+        this.protected = true;
     }
 
     async load() {
@@ -105,8 +106,8 @@ export default class NovLoveCom extends Parser {
                     imageSelector: {
                         selector: ".cover",
                         attr: "data-src|src",
-                        referer:this.url,
-                        regexp:["/novel_\\d*_\\d*/gi", "novel"]
+                        referer: this.url,
+                        regexp: ["/novel_\\d*_\\d*/gi", "novel"]
                     }
                 }
             })
@@ -129,8 +130,8 @@ export default class NovLoveCom extends Parser {
                     imageSelector: {
                         selector: ".cover",
                         attr: "data-src|src",
-                        referer:this.url,
-                        regexp:["/novel_\\d*_\\d*/gi", "novel"]
+                        referer: this.url,
+                        regexp: ["/novel_\\d*_\\d*/gi", "novel"]
                     }
                 }
             })
@@ -149,8 +150,8 @@ export default class NovLoveCom extends Parser {
                 imageSelector: {
                     selector: ".book img, .cover",
                     attr: "data-src|src",
-                    referer:this.url,
-                    regexp:["/novel_\\d*_\\d*/gi", "novel"]
+                    referer: this.url,
+                    regexp: ["/novel_\\d*_\\d*/gi", "novel"]
                 }
             }
         })).html;
