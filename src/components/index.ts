@@ -15,7 +15,7 @@ import FileBrowser from "./FileBrowser";
 import ColorSelection from "./ColorSelection";
 import HtmlGetter from "./HtmlGetter";
 export * from "./BlurView";
-export * from "./ExpandableDescription";
+export * from "./ExpandableDescription"; 
 export * from "./ContextContainer";
 export * from "./DropDownList";
 export * from "./ChapterView";

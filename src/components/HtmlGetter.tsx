@@ -33,10 +33,43 @@ const baseUrl = (url: string) => {
   return protocol + (hasProtocol ? '//' : "") + host;
 }
 
+const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () => void }) => {
+  return (<Modal addCloser={true} css="wi-90% he-90%" isVisible={url != undefined} onHide={onHide}>
+    <View style={{ flex: 1, marginTop: 15 }}>
+      <Text css="fos-15 fow-bold co-red">
+        This {baseUrl(url ?? "")} containe ICloude protection, so you need to validate it from time to time.
+        {"\n"}
+        Found ICloude protection, please check in the box and close the modal and then reload the page if needed
+        {"\n"}
+        Note: if you dont find the ICloude protection, then simple close it and continue.
+      </Text>
+      <WebView
+        cacheEnabled={true}
+        source={{
+          uri: url
+        } as any}
+        contentMode="mobile"
+        originWhitelist={["*"]}
+        userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+        setSupportMultipleWindows={false}
+        style={
+          {
+            flex: 1
+          }
+        }
+        allowFileAccess={true}
+        allowFileAccessFromFileURLs={true}
+        allowUniversalAccessFromFileURLs={true}
+        javaScriptEnabled={true}
+      />
+
+    </View>
+
+  </Modal>)
+})
+
 export default () => {
   htmlContext.hook("html.data");
-  const timer = useTimer(5000 * 3);
-
   const state = buildState(() =>
   ({
     protection: [] as { url: string, id: string }[]
@@ -48,26 +81,8 @@ export default () => {
     }
   }, [])
 
-  const clean = () => {
-    return;
-    timer(async () => {
-      await htmlContext.batch(async () => {
-        for (let item of htmlContext.html.data) {
-          const pr = state.protection.find(x => baseUrl(x.url) == baseUrl(item.url));
-          if (item.created.getSecoundDiff() >= 5 && !pr) {
-            console.warn("timeout, cleared", item.url)
-            await item.func("");
-          }
-        }
-      });
-      if (htmlContext.html.data.length > 0) {
-        clean();
-      }
-    });
-  }
 
-  let data = htmlContext.html.data.filter(d => !state.protection.find(x => baseUrl(d.url) == baseUrl(x.url))).filter((x, index) => index <= maxCalls);
-  //clean();
+
   let jsCode = (x: any) => {
     let data = `
     try {
@@ -194,12 +209,23 @@ export default () => {
     }
     true;
   `;
-    // console.warn(data)
+    //  console.warn(data)
     return data;
   };
 
+  const htmlData = htmlContext.html.data
+    .filter(d => !state.protection.some(x => baseUrl(d.url) === baseUrl(x.url)))
+    .filter((item, index, self) =>
+      index === self.findIndex(other => baseUrl(other.url) === baseUrl(item.url))
+    ).slice(0, maxCalls);
 
   const protection = state.protection.firstOrDefault() as { url: string, id: string } | undefined;
+
+  const handleHide = React.useCallback(() => {
+    state.protection = state.protection.filter(x => x.id !== protection?.id)
+  }, [protection?.id]);
+
+
   return (
     <View style={!debug ? {
       position: "absolute",
@@ -209,72 +235,39 @@ export default () => {
       height: 0,
       overflow: "hidden"
     } : { flex: 1, height: 200 }}>
-      <Modal addCloser={true} css="wi-90% he-90%" isVisible={state.protection.has()}
-        onHide={() => {
-          //  htmlContext.html.data.find(x => x.id == protection.id).created = new Date();
-          timer.clear();
-          state.protection = state.protection.filter(x => x.id !== protection?.id)
-        }}>
-        <View style={{ flex: 1, marginTop: 15 }}>
-          <Text css="fos-15 fow-bold co-red">
-            This {baseUrl(protection?.url ?? "")} containe ICloude protection, so you need to validate it from time to time.
-            {"\n"}
-            {"\n"}
-            Found ICloude protection, please check in the box and close the modal and then reload the page if needed
-            {"\n"}
-            {"\n"}
-            Note: if you dont find the ICloude protection, then simple close it and continue.
-          </Text>
-          <WebView
-            cacheEnabled={true}
-            source={{
-              uri: protection?.url
-            } as any}
-            contentMode="mobile"
-            originWhitelist={["*"]}
-            userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
-            setSupportMultipleWindows={false}
-            style={
-              {
-                flex: 1
-              }
-            }
-            allowFileAccess={true}
-            allowFileAccessFromFileURLs={true}
-            allowUniversalAccessFromFileURLs={true}
-            javaScriptEnabled={true}
-          />
-
-        </View>
-
-      </Modal>
+      <ProtectionModal url={protection?.url} onHide={handleHide} />
       {
-        data.map(x => (
+        htmlData.map(x => (
           <WebView
-            key={x.id}
+            key={x.id + x.url}
             injectedJavaScript={jsCode(x)}
             cacheEnabled={true}
             source={{
               uri: x.url
             }}
             onMessage={async ({ nativeEvent }) => {
-              let data = JSON.parse(nativeEvent.data);
-              switch (data.type) {
-                case "html":
-                  htmlContext.html.data.find(x => x.id == data.id)?.func(data.data as any)
-                  break;
-                case "protection":
-                  console.warn("Icloude found")
-                  if (!state.protection.find(x => baseUrl(data.data) == baseUrl(x.url))) {
-                    if (!protection)
-                      state.protection = [{ url: data.data, id: data.id }]
-                    else state.protection.push({ url: data.data, id: data.id });
-                  }
-                  break;
-                default:
-                  console.warn(data)
-                  break;
+              try {
+                let data = JSON.parse(nativeEvent.data);
+               // console.log(data)
+                switch (data.type) {
+                  case "html":
+                    htmlContext.html.data.find(x => x.id == data.id)?.func(data.data as any)
+                    break;
+                  case "protection":
+                    console.warn("Icloude found")
+                    if (!state.protection.find(x => baseUrl(data.data) == baseUrl(x.url))) {
+                      if (!protection)
+                        state.protection = [{ url: data.data, id: data.id }]
+                      else state.protection.push({ url: data.data, id: data.id });
+                    }
+                    break;
+                  default:
+                    console.warn(data)
+                    break;
 
+                }
+              } catch (e) {
+                console.error(e);
               }
 
             }}

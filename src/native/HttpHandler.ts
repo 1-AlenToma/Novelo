@@ -3,7 +3,7 @@ import Html from "./Html";
 import MapCacher from "./MapCacher";
 import { newId } from "react-native-short-style";
 
-const tempData = new MapCacher<HttpTemp>(300);
+const tempData = new MapCacher<HttpTemp>(10);
 
 const createKey = (...args) => {
   return JSON.stringify(args).replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "");

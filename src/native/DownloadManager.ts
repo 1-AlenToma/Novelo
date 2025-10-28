@@ -56,6 +56,7 @@ export default class DownloadManager {
     };
 
     useEffect(() => {
+     this.events[id](parentUrl);
       return () => { delete this.events[id] }
     }, []);
 
