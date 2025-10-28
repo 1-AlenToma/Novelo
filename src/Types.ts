@@ -25,6 +25,8 @@ import { ReturnState } from "react-smart-state";
 
 export type NavigationPage = "WatchAnime" | "AppMenu" | "GroupDetail" | "NovelItemDetail" | "Search" | "ReadChapter";
 
+export type WebViewFetchData = { url: string, created: Date, props?: WebViewProps, func: (str: string) => void, id: string }
+
 export type NavigationObject = {
   parserName?: string;
   url?: string;

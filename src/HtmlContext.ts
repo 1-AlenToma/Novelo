@@ -1,9 +1,9 @@
 import StateBuilder, { newId } from "react-smart-state";
-import { WebViewProps } from "./Types";
+import { WebViewFetchData, WebViewProps } from "./Types";
 
 const contextData = StateBuilder({
     html: {
-        data: [] as { url: string, created: Date, props?: WebViewProps, func: (str: string) => void, id: string }[],
+        data: [] as WebViewFetchData[],
         get_html: (url: string, props?: WebViewProps) => {
             return new Promise<{ text: () => string, ok: boolean, status: number }>((success) => {
                 const id = newId();

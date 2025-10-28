@@ -102,6 +102,10 @@ export default ({ ...props }: any) => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    fetchData();
+  }, [parser]);
+
   //console.warn([state.novel].niceJson("chapters"), state.novel.alternativeNames?.has() )
   return (
     <View

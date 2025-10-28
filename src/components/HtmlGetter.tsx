@@ -2,6 +2,7 @@ import React from "react";
 import WebView from "react-native-webview";
 import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
+import { WebViewFetchData } from "../Types";
 const jsScript = `
 try{
 window.__DEV__ = ${__DEV__.toString().toLowerCase()};
@@ -45,9 +46,10 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
       </Text>
       <WebView
         cacheEnabled={true}
+        androidLayerType="software"
         source={{
-          uri: url
-        } as any}
+          uri: url as string
+        }}
         contentMode="mobile"
         originWhitelist={["*"]}
         userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
@@ -69,17 +71,22 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
 })
 
 export default () => {
-  htmlContext.hook("html.data");
+  //htmlContext.hook("html.data");
   const state = buildState(() =>
   ({
-    protection: [] as { url: string, id: string }[]
-  })).build();
+    protection: [] as { url: string, id: string }[],
+    data: [] as WebViewFetchData[]
+  })).timeout(2).build();
 
   useEffect(() => {
     return () => {
       htmlContext.html.data = [];
     }
   }, [])
+
+  htmlContext.useEffect(()=> {
+    state.data = [...htmlContext.html.data];
+  },"html.data")
 
 
 
@@ -213,7 +220,7 @@ export default () => {
     return data;
   };
 
-  const htmlData = htmlContext.html.data
+  const htmlData = state.data
     .filter(d => !state.protection.some(x => baseUrl(d.url) === baseUrl(x.url)))
     .filter((item, index, self) =>
       index === self.findIndex(other => baseUrl(other.url) === baseUrl(item.url))
@@ -239,7 +246,7 @@ export default () => {
       {
         htmlData.map(x => (
           <WebView
-            key={x.id + x.url}
+            key={x.id}
             injectedJavaScript={jsCode(x)}
             cacheEnabled={true}
             source={{
@@ -280,6 +287,7 @@ export default () => {
                 zIndex: -1,
               }
             }
+            androidLayerType="software"
             allowFileAccess={true}
             allowFileAccessFromFileURLs={true}
             allowUniversalAccessFromFileURLs={true}
