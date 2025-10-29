@@ -208,6 +208,7 @@ export default class FileHandler {
             folder
           );
           await RNF.mkdir(folder);
+          console.info("Dir created")
         }
 
     } catch (e) {

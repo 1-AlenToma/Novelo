@@ -8,7 +8,6 @@
     "androidFiles": "node parsers/tsc/writeAndroidFiles.mjs",
     "update": "eas update --message [dbclick fix]",
     "gradlew": "npm run zip && cd android && gradlew assembleRelease",
-
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start -c",
     "android": "npx expo run:android",

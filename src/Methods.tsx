@@ -2,6 +2,69 @@ import uuid from "react-native-uuid";
 import IDOMParser from "advanced-html-parser";
 import { Functions } from "react-native-ts-sqlite-orm/src/UsefullMethods";
 
+/**
+ * Run asynchronous tasks in parallel with limited concurrency.
+ *
+ * @param items - The array of items to process.
+ * @param worker - Async function to handle each item.
+ * @param options - Optional config for concurrency, progress, etc.
+ * @returns Promise of results in the same order as input.
+ */
+export async function parallelRun<T, R>(
+  items: T[],
+  worker: (item: T, index: number) => Promise<R>,
+  options?: {
+    concurrency?: number; // Default 8
+    onProgress?: (progress: number, index: number, item: T) => void;
+    stopOnError?: boolean; // Default false
+  }
+): Promise<R[]> {
+  const {
+    concurrency = 8,
+    onProgress,
+    stopOnError = false,
+  } = options || {};
+
+  const results: R[] = new Array(items.length);
+  let index = 0;
+  let completed = 0;
+  let active = 0;
+  let error: any = null;
+
+  async function runWorker() {
+    while (index < items.length && (!stopOnError || !error)) {
+      const currentIndex = index++;
+      const item = items[currentIndex];
+      active++;
+
+      try {
+        const result = await worker(item, currentIndex);
+        results[currentIndex] = result;
+      } catch (err) {
+        if (stopOnError) {
+          error = err;
+          break;
+        } else {
+          console.warn(`parallelRun: item[${currentIndex}] failed`, err);
+        }
+      } finally {
+        completed++;
+        active--;
+        if (onProgress) {
+          onProgress(completed / items.length, currentIndex, item);
+        }
+      }
+    }
+  }
+
+  const workers = Array.from({ length: concurrency }, () => runWorker());
+  await Promise.all(workers);
+
+  if (error && stopOnError) throw error;
+  return results;
+}
+
+
 const locks = new Map<string, Promise<any>>();
 
 export const withLock = async function <T>(fileUri: string, fn: () => Promise<any>) {

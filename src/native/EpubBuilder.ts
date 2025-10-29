@@ -27,7 +27,9 @@ export class ZipBook extends ZipBase {
   chapters: ZipFile[] = [];
   epub: boolean = true;
   imagePath?: string;
+  decription: string = "";
   type: string;
+  identifier: string = "";
 
 }
 
@@ -94,22 +96,35 @@ export const readEpub = async (uri: string, onUpdate: (item: {
     }
 
     await fileHandler.checkDir();
+    console.info("unziping ")
     await unzip(uri, tempPath);
+    console.info("finished unziping ")
     for (let file of await fileHandler.allFilesInfos(true)) {
       zip.file(file.path, "");
     }
 
     let opfFile = search(".opf");
+    let tocFile = search(".ncx")
     if (!opfFile) {
       return undefined;
 
     }
     const opfHtml = (await opfFile.load()).html();
+    const navMap = [] as { src: string; text: string }[];
+    if (tocFile) {
+      let tocHtml = (await tocFile.load()).html();
+      tocHtml.find("navpoint").forEach(x => {
+        let item = { src: x.find("content").attr("src"), text: x.find("text").text };
+        navMap.push(item);
+
+      })
+    }
+
     let oPFContent = { manifest: {}, spine: {} } as OPFContent;
     oPFContent.title = opfHtml.find("metadata").byTag("dc:title").text;
     oPFContent.creator = opfHtml.find("metadata").byTag("dc:creator").text;
-    oPFContent.description = opfHtml.find("metadata").byTag("dc:description").text;
-    oPFContent.identifier = opfHtml.find("metadata").byTag("dc:identifier").text;
+    oPFContent.description = book.decription = opfHtml.find("metadata").byTag("dc:description").text;
+    oPFContent.identifier = book.identifier = opfHtml.find("metadata").byTag("dc:identifier").text;
     oPFContent.novelType = opfHtml.find("metadata").byTag("dc:noveltype").text;
     oPFContent.manifest.item = opfHtml.find("manifest item").map(x => ({
       id: x.attr("id"),
@@ -139,38 +154,60 @@ export const readEpub = async (uri: string, onUpdate: (item: {
     if (await context.files.exists(book.fileName))
       throw "The current Epub Already exists, please remove the existing one to upload the current one";
     book.imagePath = folderValidName(book.name);
-    for (let ch of oPFContent.spine.itemref) {
-      let href = oPFContent.manifest.item.find(x => x.id == ch.idref);
-      if (href) {
-        if (href.href.toLowerCase().endsWith("xhtml") || href.href.toLowerCase().endsWith("html")) {
-          let file = search(href.href);
-          if (!file) {
-            console.warn(href, "Could not be found, will skip it");
-            continue;
-          }
-          let zipFile = new ZipFile();
-          zipFile.type = "HTML";
-          zipFile.content = (await file.load()).html().find("body").html
-          zipFile.name = href.href.trimStr("..", "../").split("/").lastOrDefault()?.toString().split(".").reverse().filter((_, i) => i > 0).reverse().join(".")
-          book.chapters.push(zipFile);
-        }
-      }
-      onUpdate({
-        percent: length.procent(index),
-        currentFile: "Reading Chapter"
-      });
-      index++;
-    }
 
-    for (let key in zip.files) {
-      let file = zip.files[key];
-      await file.write();
-      onUpdate({
-        percent: length.procent(index),
-        currentFile: "Wring Images"
-      });
-      index++;
-    }
+    console.info("reading itemref")
+    await methods.parallelRun(
+      oPFContent.spine.itemref,
+      async (ch) => {
+        let href = oPFContent.manifest.item.find(x => x.id == ch.idref);
+        if (href) {
+          if (href.href.toLowerCase().endsWith("xhtml") || href.href.toLowerCase().endsWith("html")) {
+            let file = search(href.href);
+            if (file) {
+              let zipFile = new ZipFile();
+              zipFile.type = "HTML";
+              zipFile.content = (await file.load()).html().find("body").html
+              let nav = navMap.find(x => x.src?.toLowerCase().indexOf(href.href.trimStr("..", "../", "/").toLowerCase().trim()) !== -1);
+              if (!nav || (nav.text?.empty() ?? true)) {
+                zipFile.name = href.href.trimStr("..", "../").split("/").lastOrDefault()?.toString().split(".").reverse().filter((_, i) => i > 0).reverse().join(".")
+              } else zipFile.name = nav.text;
+              book.chapters.push(zipFile);
+            } else console.warn(href, "Could not be found, will skip it");
+          }
+        }
+        index++;
+      },
+      {
+        concurrency: 6,
+        onProgress: (progress) => {
+          onUpdate({
+            percent: length.procent(index),
+            currentFile: "Reading Chapter",
+          });
+        },
+      }
+    );
+
+    console.info("finished reading itemref")
+    console.info("reading files")
+    await methods.parallelRun(
+      Object.values(zip.files),
+      async (file) => {
+        await file.write();
+        index++;
+      },
+      {
+        concurrency: 6,
+        onProgress: (progress) => {
+          onUpdate({
+            percent: length.procent(index),
+            currentFile: "Writing Images",
+          });
+        },
+      }
+    );
+
+    console.info("finished reading files")
 
     await context.files.write(book.fileName, JSON.stringify(book));
 
@@ -213,6 +250,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
 
   const folder = RNFS.CachesDirectoryPath.path(newId());
   let fileHandler = new FileHandler(folder);
+  const novelChapters = novel.chapters.filter(x => book.parserName != "epub" || x.name != "cover_page")
   try {
     const zip = {
       files: {} as {
@@ -336,12 +374,13 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
 
     let tocContent = createTocNcx(novel.name, [
       ...[cover ? { title: "cover_page", filename: "chapters/cover.xhtml" } : undefined],
-      ...novel.chapters.map((x, index) => ({ title: x.name, filename: `chapters/${index}.xhtml` }))
+      ...novelChapters.map((x, index) => ({ title: x.name, filename: `chapters/${index}.xhtml` }))
     ].filter(x => x))
     zip.file("OEBPS/toc.ncx", tocContent);
 
     // Step 3: Add OEBPS files
-    zip.file("OEBPS/content.opf", `
+    zip.file(
+      "OEBPS/content.opf", `
     <?xml version="1.0" encoding="utf-8"?>
     <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="BookId">
       <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -355,16 +394,27 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
       <manifest>
        <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
        <item id="style" href="style.css" media-type="text/css"/>
-      ${cover ? `<item id="cover-image" href="images/cover.jpg" media-type="image/jpeg"/>` : ""}
+      ${cover
+          ? `<item id="cover-image" href="images/cover.jpg" media-type="image/jpeg"/>`
+          : ""
+        }
        ${cover ? `<item id="cover-page" href="chapters/cover.xhtml" />` : ""}
-      ${novel.chapters.map((x, index) => `<item id="chapter${index}" href="chapters/${index}.xhtml" media-type="application/xhtml+xml"/>`).join("\n")}
+      ${novelChapters
+          .map(
+            (x, index) =>
+              `<item id="chapter${index}" href="chapters/${index}.xhtml" media-type="application/xhtml+xml"/>`
+          )
+          .join("\n")}
       </manifest>
       <spine toc="ncx">
        ${cover ? `<itemref idref="cover-page" />` : ""}
-       ${novel.chapters.map((x, index) => `<itemref idref="chapter${index}" />`).join("\n")}
+       ${novelChapters
+          .map((x, index) => `<itemref idref="chapter${index}" />`)
+          .join("\n")}
       </spine>
     </package>
-  `.trim());
+  `.trim()
+    );
     let chapterIndex = 0;
     let imageIndex = 0;
     const validateContent = async (content: string) => {
@@ -404,7 +454,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     }
 
 
-    for (let chapter of novel.chapters) {
+    for (let chapter of novelChapters) {
       zip.file(`OEBPS/chapters/${chapterIndex}.xhtml`, `
     <?xml version="1.0" encoding="utf-8"?>
     <html xmlns="http://www.w3.org/1999/xhtml">
@@ -417,10 +467,12 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
       </body>
     </html>
   `.trim());
+
       onUpdate({
         percent: novel.chapters.length.procent(chapterIndex),
         currentFile: `Parsing Chapter (${chapter.name})`
       });
+
       chapterIndex++;
     }
 
@@ -441,17 +493,21 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     async function writeBufferToFile() {
       let fileIndex = 0;
       let length = Object.keys(zip.files).length;
-      for (let key in zip.files) {
-        let file = zip.files[key];
+      await methods.parallelRun(Object.values(zip.files), async (file) => {
         if (file) {
           await fileHandler.write(folder.path(file.path), file.content as string, file.base64 ? "base64" : undefined);
         }
-        onUpdate({
-          percent: length.procent(fileIndex),
-          currentFile: `Genereting Files`
-        });
         fileIndex++;
-      }
+      }, {
+        concurrency: 6,
+        onProgress: () => {
+          onUpdate({
+            percent: length.procent(fileIndex),
+            currentFile: `Genereting Files`
+          });
+        }
+      })
+
 
       onUpdate({
         percent: 0.9,
@@ -469,7 +525,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
         percent: 1,
         currentFile: `Genereting Epub`
       });
-      AlertDialog.alert({ message: "File create at " + path, title: "epub Download" });
+      AlertDialog.alert({ message: "File created at " + path, title: "Epub Download" });
 
     }
     console.log('EPUB saved at:', path.path(`${novel.name}.epub`));

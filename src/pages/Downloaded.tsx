@@ -40,18 +40,21 @@ const EpubHandler = ({
       }
     }
   });
-  const loadEpub = async (item: ReadDirItem) => {
-    try {
-      loader.show();
-      await readEpub(item.path, (info) => {
-        state.progress = { ...info, percent: info.percent / 100 } as any
-      });
-    } catch (e) {
-      AlertDialog.alert(e?.toString() ?? "");
-      console.error(e);
-    } finally {
-      loader.hide();
-    }
+  const timer = useTimer(10)
+  const loadEpub = (item: ReadDirItem) => {
+    loader.show();
+    timer(async () => {
+      try {
+        await readEpub(item.path, (info) => {
+          state.progress = { ...info, percent: info.percent / 100 } as any
+        });
+      } catch (e) {
+        AlertDialog.alert(e?.toString() ?? "");
+        console.error(e);
+      } finally {
+        loader.hide();
+      }
+    })
   };
 
   return render(
@@ -147,6 +150,7 @@ const ItemRender = React.memo(({
     );
   });
   const loader = useLoader(true);
+  const epubDownloadTimer = useTimer(100);
   const downloadProgress = context.downloadManager().useDownload(item.url);
 
   const itemState = buildState(() =>
@@ -188,14 +192,21 @@ const ItemRender = React.memo(({
     if (file) {
       const path = await context.browser.pickFolder("Choose where to save the file", ["epub"]);
       if (path) {
+
         loader.show();
-        await createEpub(file, item, path.path, (info) => {
-          if (info)
-            itemState.downloadFileInfo = { ...info, percent: info.percent / 100 } as any;
+        epubDownloadTimer(async () => {
+          try {
+            await createEpub(file, item, path.path, (info) => {
+              if (info)
+                itemState.downloadFileInfo = { ...info, percent: info.percent / 100 } as any;
+            });
+          } finally {
+            loader.hide();
+          }
         });
       }
 
-      loader.hide();
+
     }
   };
 
