@@ -96,7 +96,7 @@ export type IImage = {
 
 export type SelectionType = "Folder" | "File";
 
-export type EXT = "json" | "txt" | "epub" | "zip";
+export type EXT = "json" | "txt" | "epub" | "zip" | "*";
 
 export const FilesPath = {
   File: "noveloFiles",

@@ -3,6 +3,24 @@ import IDOMParser from "advanced-html-parser";
 import { Functions } from "react-native-ts-sqlite-orm/src/UsefullMethods";
 
 /**
+ * Converts a file size in bytes into a human-readable string.
+ * @param bytes - The file size in bytes.
+ * @param decimals - Number of decimal places to display (default: 2)
+ * @returns A formatted string like "10.25 MB", "500 KB", or "1.2 GB".
+ */
+export function formatFileSize(bytes: number, decimals: number = 2): string {
+  if (bytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  const value = parseFloat((bytes / Math.pow(k, i)).toFixed(decimals));
+  return `${value} ${sizes[i]}`;
+}
+
+
+/**
  * Run asynchronous tasks in parallel with limited concurrency.
  *
  * @param items - The array of items to process.
@@ -50,7 +68,7 @@ export async function parallelRun<T, R>(
       } finally {
         completed++;
         active--;
-        if (onProgress) {
+        if (onProgress && (currentIndex == 1 || currentIndex % (concurrency * 2) == 0 || currentIndex == items.length - 1)) {
           onProgress(completed / items.length, currentIndex, item);
         }
       }

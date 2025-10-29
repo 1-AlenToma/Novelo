@@ -43,7 +43,7 @@ const FileBrowser = (
         let fileHandler = new FileHandler(state.containerPath);
         let files = await fileHandler.RNF.readDir(state.containerPath);
         state.containerDirItem = root == state.containerPath ? undefined : (await fileHandler.RNF.readDir(state.containerPath.split("/").reverse().skip(0).reverse().join("/"))).find(x => x.path == state.containerPath)
-        files = files.filter(x => x.isDirectory() || (x.isFile() && ext?.find(e => x.name.toLowerCase().endsWith("." + e))));
+        files = files.filter(x => x.isDirectory() || (x.isFile() && (ext?.includes("*") || ext?.find(e => x.name.toLowerCase().endsWith("." + e)))));
         state.files = files;
         state.handler = fileHandler;
     }
@@ -93,8 +93,19 @@ const FileBrowser = (
         }
     }
 
+    const getFileName = (file: ReadDirItem) => {
+        if (file.isDirectory())
+            return { ...file, ext: "Folder" };
+        let name = file.name.split(".").reverse().filter((_, i) => i > 0).reverse().join(".");
+        let ext = file.name.split(".").reverse()[0];
+        if (!name || name.empty())
+            name = "Unknown";
+        return { name, ext }
+
+    }
+
     return (
-        <View css="flex:1 mat:10 pa:5 invert">
+        <View css="flex:1 mat:1 pa:5 invert">
             <ActionSheet size={200} css="wi-90%" isVisible={state.selectedPath != undefined && selectionType === "Folder"} onHide={() => state.selectedPath = undefined}>
                 <View css="flex invert">
                     <TouchableOpacity css="listButton pal:5 fld-row" onPress={deleteItem} ifTrue={() => state.selectedPath != undefined && selectionType === "Folder"}>
@@ -103,12 +114,11 @@ const FileBrowser = (
                     </TouchableOpacity>
                 </View>
             </ActionSheet>
-            <View ifTrue={() => state.managedFiles} css="he:50 invert">
+            <View ifTrue={() => state.managedFiles} css="he:40 invert">
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-                    <View css="flex:0 he:50 fld:row juc:flex-end ali:center invert">
+                    <View css="flex:0 fld:row juc:flex-end ali:center invert">
                         <TouchableOpacity css="fileButton invert" onPress={back} ifTrue={() => state.containerPath != root}>
-                            <Icon type="MaterialIcons" name="backspace" />
-                            <Text css="invertco">Back</Text>
+                            <Icon type="AntDesign" name="caret-left" />
                         </TouchableOpacity>
                         <TouchableOpacity css="fileButton invert" ifTrue={() => selectionType == "Folder"} onPress={() => {
                             if (state.containerPath == root) {
@@ -117,13 +127,11 @@ const FileBrowser = (
                             }
                             use(state.containerDirItem as any)
                         }}>
-                            <Icon type="MaterialIcons" css="invertco" name="select-all" />
-                            <Text css="invertco">Use this Folder</Text>
+                            <Icon type="FontAwesome" css="invertco" name="check" />
                         </TouchableOpacity>
 
                         <TouchableOpacity css="fileButton invert" ifTrue={() => selectionType == "Folder"} onPress={() => state.create = true}>
                             <Icon type="MaterialIcons" css="invertco" name="create-new-folder" />
-                            <Text css="invertco">New Folder</Text>
                         </TouchableOpacity>
                         <Modal css={"he-200"} addCloser={true} isVisible={state.create} onHide={() => state.create = false}>
                             <View css="mat-10 bac-transparent flex-1">
@@ -156,7 +164,7 @@ const FileBrowser = (
                 </TouchableOpacity>
             </View>
             <View css="flex:1 invert" ifTrue={() => state.managedFiles}>
-                <Text css="fos:10 co:gray" >path:{state.containerPath}</Text>
+                <Text css="fos:10 co:gray" >{state.containerPath}</Text>
                 <ScrollView>
                     {
                         state.files.map((x, i) => (
@@ -182,13 +190,23 @@ const FileBrowser = (
 
                                 }
 
-                            }} css={`settingButton invert maw:95% ${x.path === state.selectedPath?.path ? "selectedRow" : ""}`}>
+                            }} css={`settingButton invert maw:95% overflow ${x.path === state.selectedPath?.path ? "selectedRow" : ""}`}>
                                 <Icon
                                     css="invertco"
                                     type="MaterialCommunityIcons"
                                     name={x.isDirectory() ? "folder" : (x.name.toLowerCase().endsWith(".epub") || x.name.toLowerCase().endsWith(".zip") ? "zip-box" : "card-text-outline")}
                                 />
-                                <Text css="fos:12 wi:90% invertco">{x.name}</Text>
+                                <View css={"wi-100%"}>
+                                    <Text css="fos:12 wi:90% invertco">{getFileName(x).name}</Text>
+
+                                    <Text ifTrue={x.isFile()} css="fos:12 wi:90% invertco">
+                                        {getFileName(x).ext?.toUpperCase()}
+                                        {" " + x.mtime?.formatDateMMDDYY()}
+                                        {" | " + methods.formatFileSize(x.size)}
+                                    </Text>
+
+
+                                </View>
                             </TouchableOpacity>
                         ))
                     }

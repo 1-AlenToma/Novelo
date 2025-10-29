@@ -121,6 +121,8 @@ const App = () => {
                 RNExitApp.exitApp?.();
             itemToRemove?.forEach(x => x.remove());
         };
+
+        
     }, []);
 
 

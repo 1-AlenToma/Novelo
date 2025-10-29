@@ -14,7 +14,7 @@ const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".x
 
 declare global {
     var fileTypes: string[];
-    var tests: TestRunner[]; 
+    var tests: TestRunner[];
     var useState: typeof React.useState;
     var useEffect: typeof React.useEffect;
     var useRef: <T = any>(item?: T) => { current: T };
@@ -30,6 +30,7 @@ declare global {
     interface Date {
         getMinDiff: (date?: Date) => number;
         getSecoundDiff: () => number;
+        formatDateMMDDYY: () => string;
     }
     interface Array<T> {
         mapAsync(fn: (item: T, index: number) => Promise<T[]>);
@@ -89,6 +90,17 @@ declare global {
     }
 }
 
+Date.prototype.formatDateMMDDYY = function (this: Date) {
+    const date = this;
+    if (isNaN(date.getTime())) return "";
+
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const yy = String(date.getFullYear()).slice(-2);
+
+    return `${mm}/${dd}/${yy}`;
+}
+
 String.prototype.isImage = function () {
     let path = new String(this).toString();
     return imageFileTypes.find(x => path.toLowerCase().endsWith(x.toLowerCase())) != undefined;
@@ -130,7 +142,7 @@ String.prototype.onEmpty = function (defaultValue: string) {
 }
 
 String.prototype.isManga = function () {
-    let mng = ["manhwa", "manga", "manhua"]; 
+    let mng = ["manhwa", "manga", "manhua"];
     let str = new String(this).toString();
     return mng.find(x => str.toLowerCase() == x) != undefined;
 }
