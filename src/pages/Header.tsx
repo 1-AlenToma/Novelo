@@ -3,7 +3,8 @@ import {
   TextInput,
   ActionSheetButton,
   Image,
-  useLoader
+  useLoader,
+  SingleTouchableOpacity
 } from "../components";
 import { View, Text, Icon, ScrollView, TouchableOpacity } from "react-native-short-style";
 import * as React from "react";
@@ -88,7 +89,7 @@ export default ({
         ifTrue={ifTrue}
         css={x => x.joinLeft("clearwidth zi:101 he:40 row juc:center ali:center di:flex invert").joinRight(css)}>
         {context.nav.option.canGoBack() ? (
-          <TouchableOpacity
+          <SingleTouchableOpacity
             css="absolute le:5"
             onPress={() => {
               if (!onBack || onBack())
@@ -98,7 +99,7 @@ export default ({
               type="Ionicons"
               name="caret-back-outline"
             />
-          </TouchableOpacity>
+          </SingleTouchableOpacity>
         ) : null}
         {inputEnabled && onInputChange ? (
           <SizeAnimator
@@ -129,7 +130,7 @@ export default ({
             />
           </SizeAnimator>
         ) : inputEnabled ? (
-          <TouchableOpacity
+          <SingleTouchableOpacity
             onPress={() => {
               context.nav.navigate("Search");
             }}
@@ -143,7 +144,7 @@ export default ({
             <Text css="desc fos:14 invert">
               Search Novels
             </Text>
-          </TouchableOpacity>
+          </SingleTouchableOpacity>
         ) : title && !title.empty() ? (
           <Text
             numberOfLines={1}
@@ -159,7 +160,7 @@ export default ({
           ifTrue={() => (buttons?.has() ?? ((inputEnabled && onInputChange == undefined)) as any)}>
           <>
             {buttons?.map((x, i) => (
-              <TouchableOpacity
+              <SingleTouchableOpacity
                 ifTrue={x.ifTrue}
                 onPress={x.press}
                 css="mal:10 bac-transparent"
@@ -167,7 +168,7 @@ export default ({
                 {typeof x.text == "function"
                   ? x.text()
                   : x.text}
-              </TouchableOpacity>
+              </SingleTouchableOpacity>
             ))}
             <ActionSheetButton
               ifTrue={() =>
@@ -191,7 +192,7 @@ export default ({
                 {context.parser
                   .all
                   .map((x, i) => (
-                    <TouchableOpacity
+                    <SingleTouchableOpacity
                       key={i}
                       onPress={async () => {
                         parserLoader.show();
@@ -210,7 +211,7 @@ export default ({
                       <Text css="pal-5 invertco header">{x.name} <Text css={"co-primary"}>
                         ({x.type})
                       </Text></Text>
-                    </TouchableOpacity>
+                    </SingleTouchableOpacity>
                   ))}
               </ScrollView>
             </ActionSheetButton>

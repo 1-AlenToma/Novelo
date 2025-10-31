@@ -15,15 +15,15 @@ import FileBrowser from "./FileBrowser";
 import ColorSelection from "./ColorSelection";
 import HtmlGetter from "./HtmlGetter";
 export * from "./BlurView";
-export * from "./ExpandableDescription"; 
+export * from "./ExpandableDescription";
 export * from "./ContextContainer";
 export * from "./DropDownList";
 export * from "./ChapterView";
 export * from "./AppServer";
-import "../Global"
+export * from "./SingleTouchableOpacity";
 
 export {
-  useLoader, 
+  useLoader,
   ParserTester,
   Image,
   ItemList,
@@ -32,7 +32,7 @@ export {
   ActionSheetButton,
   Web,
   Slider,
-  PlayerView, 
+  PlayerView,
   ColorPicker,
   ColorSelection,
   FoldableItem,

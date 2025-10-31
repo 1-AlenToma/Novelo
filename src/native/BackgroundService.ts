@@ -1,6 +1,6 @@
 import BackgroundService from "react-native-background-actions";
 import EventEmitter from "./EventEmitter";
-import "../Global";
+
 
 const sleep = time =>
   new Promise(resolve =>

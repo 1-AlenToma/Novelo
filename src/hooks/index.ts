@@ -10,7 +10,7 @@ import AppUpdate from "./AppUpdate";
 export * from "./useParserSelector";
 export * from "./useNumColumns";
 export * from "./useParser";
-import "../Global"
+
 export {
   useUpdate,
   useNavigation,

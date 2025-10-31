@@ -9,8 +9,13 @@
     "baseUrl": ".",
     "emitDecoratorMetadata": true,
     "noImplicitAny": false,
+    "paths": {
+      "@global": [
+        "Global.ts"
+      ]
+    }
   },
   "include": [
-    "./Global.ts"
+    "."
   ]
 }

@@ -4,7 +4,8 @@ import {
   ItemList,
   ActionSheetButton,
   ChapterView,
-  ExpandableDescription
+  ExpandableDescription,
+  SingleTouchableOpacity
 } from "../../components/";
 import { View, Text, Icon, AlertDialog, Modal, TabBar, TabView, TouchableOpacity } from "react-native-short-style";
 import HomeNovelItem from "../../components/HomeNovelItem";
@@ -338,7 +339,7 @@ export default ({ ...props }: any) => {
                       size="80%">
                       <ChapterView
                         ignoreChapterValidation={true}
-                        book={state.book}
+                        book={state.book as Book}
                         novel={state.novel}
                         onPress={item => {
                           chapterRef.current?.close();
@@ -430,7 +431,7 @@ export default ({ ...props }: any) => {
               ifTrue={
                 (state.novel.url?.has() ?? false)
               }>
-              <TouchableOpacity
+              <SingleTouchableOpacity
                 ifTrue={["Novel", "Manga"].includes(parser?.type)}
                 css="button mar:5 clearheight juc:center invert"
                 onPress={async () => {
@@ -455,8 +456,8 @@ export default ({ ...props }: any) => {
                   name="download"
                   css="mar:0 invert"
                 />
-              </TouchableOpacity>
-              <TouchableOpacity
+              </SingleTouchableOpacity>
+              <SingleTouchableOpacity
                 css="mar:5 button pa:5 wi:65% clearheight invert"
                 onPress={() => {
                   context
@@ -470,8 +471,8 @@ export default ({ ...props }: any) => {
                   css="fos:30 tea-center wi-100%">
                   {state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "Watch" : "Read"}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </SingleTouchableOpacity>
+              <SingleTouchableOpacity
                 css="button clearheight juc:center mar:0 invert"
                 onPress={async () => {
                   loader.show();
@@ -514,7 +515,7 @@ export default ({ ...props }: any) => {
                     color: "red"
                   } : undefined}
                 />
-              </TouchableOpacity>
+              </SingleTouchableOpacity>
             </View>
           </View>
         </TabView>

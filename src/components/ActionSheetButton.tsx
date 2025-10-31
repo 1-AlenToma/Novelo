@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Text, TouchableOpacity, ReadyView, ActionSheet, Modal } from "react-native-short-style";
 import { ifSelector } from "../Methods";
+import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 export default ({
   btn,
   css,
@@ -50,13 +51,13 @@ export default ({
     containerProps = { css: "bac-transparent", timeout: 10 };
   return (
     <>
-      <TouchableOpacity {...tprops as any} style={{ backgroundColor: "transparent" }}>
+      <SingleTouchableOpacity hideLoader={true} {...tprops as any} style={{ backgroundColor: "transparent" }}>
         {typeof btn === "string" ? (
           <Text css={css}>{btn}</Text>
         ) : (
           btn
         )}
-      </TouchableOpacity>
+      </SingleTouchableOpacity>
       <CN
         {...props}
         speed={400}

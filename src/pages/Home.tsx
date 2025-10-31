@@ -1,5 +1,6 @@
 import {
   Image,
+  SingleTouchableOpacity,
 } from "../components";
 import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, TouchableOpacity } from "react-native-short-style";
 import NovelGroup from "../components/NovelGroup"
@@ -50,7 +51,7 @@ const CurrentItem = ({
         size={300}>
         <View css="invert">
           <Text css="header">Actions</Text>
-          <TouchableOpacity
+          <SingleTouchableOpacity
             css="invert listButton"
             ifTrue={() =>
               book.isOnline?.() &&
@@ -70,8 +71,8 @@ const CurrentItem = ({
               css="invertco"
             />
             <Text>Info</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </SingleTouchableOpacity>
+          <SingleTouchableOpacity
             css="invert listButton"
             onPress={() => {
               context
@@ -96,8 +97,8 @@ const CurrentItem = ({
                 ? ` (Epub)`
                 : ""}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </SingleTouchableOpacity>
+          <SingleTouchableOpacity
             ifTrue={() => (context.appSettings.currentNovel?.isEpub && book.parserName != "epub" && book.isOnline?.()) as any
             }
             css="invert listButton"
@@ -118,8 +119,8 @@ const CurrentItem = ({
             <Text>
               Read (Online)
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </SingleTouchableOpacity>
+          <SingleTouchableOpacity
             css="invert listButton"
             onPress={() => {
               context.appSettings.currentNovel = {} as any;
@@ -132,14 +133,14 @@ const CurrentItem = ({
               css="invertco"
             />
             <Text>Clear</Text>
-          </TouchableOpacity>
+          </SingleTouchableOpacity>
         </View>
       </ActionSheet>
       <AnimatedView
         style={style}
         css="bor:5 overflow ma:5 invert">
         {children}
-        <TouchableOpacity
+        <SingleTouchableOpacity
           css="flex pa:5 row"
           onLongPress={() => setVisible(true)}
           onPress={() => {
@@ -176,7 +177,7 @@ const CurrentItem = ({
                 : ""}
             </Text>
           </View>
-        </TouchableOpacity>
+        </SingleTouchableOpacity>
       </AnimatedView>
     </>
   );

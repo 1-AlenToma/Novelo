@@ -3,6 +3,7 @@ import * as React from "react";
 import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer } from "react-native-short-style";
 import { Book, Chapter } from "../db";
 import { DetailInfo, ChapterInfo } from "../native";
+import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 export const ChapterView = ({
   book,
   current,
@@ -120,39 +121,41 @@ export const ChapterView = ({
               initLoading.hide()
             });
           }}
-          onItemPress={async ({ item }: { item: ChapterInfo }) => {
-            if (current != item.url || ignoreChapterValidation) {
-              loader.show();
-              await onPress(item);
-            }
-          }}
+
           itemSize={{ size: 45 }}
           initializeIndex={state.index.page == state.currentPage ? state.index.index : 0}
           items={chArray[state.currentPage]?.items ?? []}
-          renderItem={({ item, index }) => (
-            <View
-              css={`pa-5 flex mih:40 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
-              <Text
-                css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}`}>
-                {item.name.safeSplit("/", -1)}
-              </Text>
-              <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
-                color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="_abc bo-0 he-5 wi-102%" />
-              <View css="row clb">
-                <Icon
-                  css={(settingsMap.get(item.url)?.scrollProgress ?? 0) >= 200 ? "co-green" : undefined}
-                  size={20}
-                  type="MaterialIcons"
-                  name="preview"
-                />
-                <Icon
-                  css={settingsMap.get(item.url)?.isFinished ? "co-green" : undefined}
-                  size={20}
-                  type="AntDesign"
-                  name="check-circle"
-                />
+          renderItem={({ item, index }: { item: ChapterInfo, index: number }) => (
+            <SingleTouchableOpacity css="fl-1" onPress={async () => {
+              if (current != item.url || ignoreChapterValidation) {
+                loader.show();
+                await onPress(item);
+              }
+            }}>
+              <View
+                css={`pa-5 flex mih:40 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
+                <Text
+                  css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}`}>
+                  {item.name.safeSplit("/", -1)}
+                </Text>
+                <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
+                  color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="_abc bo-0 he-5 wi-102%" />
+                <View css="row clb">
+                  <Icon
+                    css={(settingsMap.get(item.url)?.scrollProgress ?? 0) >= 200 ? "co-green" : undefined}
+                    size={20}
+                    type="MaterialIcons"
+                    name="preview"
+                  />
+                  <Icon
+                    css={settingsMap.get(item.url)?.isFinished ? "co-green" : undefined}
+                    size={20}
+                    type="AntDesign"
+                    name="check-circle"
+                  />
+                </View>
               </View>
-            </View>
+            </SingleTouchableOpacity>
           )}
           itemStyle="wi-100% bobw-1 boc-gray invert"
         />

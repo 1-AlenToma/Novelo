@@ -5,6 +5,7 @@ import * as React from "react";
 import { FlashList } from "@shopify/flash-list";
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "react-native-short-style";
 import useTimer from "../hooks/Timer";
+import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
 
 export default ({
@@ -57,7 +58,7 @@ export default ({
     let VR = container;
     let CN =
       onPress || onLongPress
-        ? TouchableOpacity
+        ? SingleTouchableOpacity
         : View;
     let cnCSS = typeof itemCss == "string" ? itemCss as string : itemCss?.(item);
     return (

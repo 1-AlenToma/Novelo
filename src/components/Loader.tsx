@@ -5,42 +5,46 @@ import { View, AnimatedView, Text, TouchableOpacity, ScrollView, ProgressBar } f
 
 export default (
   initValue?: boolean,
-  text?: string
+  text?: string,
+  size?: number | "small" | "large"
 ) => {
-  const [loading, setLoading] = useState(
-    initValue ?? false
-  );
-  const [progressValue, setProgressValue] = useState<number | undefined>();
+  const state = buildState({
+    loading: initValue ?? false,
+    progressValue: undefined as number | undefined
+  }).build();
 
   useEffect(() => {
-    setLoading(initValue ?? false);
+    state.loading = (initValue ?? false);
   }, [initValue]);
 
   const show = (progress?: number) => {
-
-    setProgressValue(progress);
-    setLoading(true);
+    state.batch(() => {
+      state.progressValue = (progress);
+      state.loading = (true);
+    })
   };
 
   const hide = () => {
-    setLoading(false);
-    setProgressValue(undefined);
+    state.batch(() => {
+      state.progressValue = undefined;
+      state.loading = false
+    })
   };
 
-  let elem = !loading ? null : (
+  let elem = !state.loading ? null : (
     <View css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center clb">
       <View css="clearboth blur absolute zi:1" />
       <ActivityIndicator
-        size="large"
+        size={size ?? "large"}
         style={{
           zIndex: 2
         }}
       />
       <ProgressBar
-        ifTrue={(progressValue ?? 0) > 0}
-        value={progressValue / 100}
+        ifTrue={(state.progressValue ?? 0) > 0}
+        value={state.progressValue / 100}
       >
-        <Text css="fos-12 bold co-#FFFFFF">{(progressValue ?? 0).readAble()}%</Text>
+        <Text css="fos-12 bold co-#FFFFFF">{(state.progressValue ?? 0).readAble()}%</Text>
       </ProgressBar>
       <Text
         ifTrue={text != undefined}
@@ -49,5 +53,5 @@ export default (
       </Text>
     </View>
   );
-  return { show, hide, elem, loading };
+  return { show, hide, elem, loading: state.loading };
 };

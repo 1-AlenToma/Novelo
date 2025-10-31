@@ -8,6 +8,7 @@ import {
 } from "react";
 import * as React from "react";
 import { useParser } from "../hooks";
+import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
 export default memo(
   ({
@@ -78,7 +79,7 @@ export default memo(
             </Text>
           ) : null}
           {!vMode ? (
-            <TouchableOpacity
+            <SingleTouchableOpacity
               css="clb"
               onPress={() => {
                 context
@@ -90,7 +91,7 @@ export default memo(
                 css="desc fos:14 invertco">
                 Browse
               </Text>
-            </TouchableOpacity>
+            </SingleTouchableOpacity>
           ) : null}
         </View>
         {vMode ? (

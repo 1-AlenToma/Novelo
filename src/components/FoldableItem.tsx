@@ -3,6 +3,7 @@ import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";
 import { Easing } from "react-native";
+import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
 
 type Buttons = {
@@ -117,7 +118,7 @@ export default ({
               css="zi:1 clearheight">
               {Array.isArray(buttons)
                 ? [...buttons].reverse().map((x, i) => (
-                  <TouchableOpacity
+                  <SingleTouchableOpacity
                     css={`invert settingButton`}
                     ifTrue={x.ifTrue}
                     onPress={async () => {
@@ -133,7 +134,7 @@ export default ({
                       }>
                       {x.text}
                     </Text>
-                  </TouchableOpacity>
+                  </SingleTouchableOpacity>
                 ))
                 : buttons}
             </ScrollView>
@@ -151,7 +152,7 @@ export default ({
           contentContainerStyle={{ paddingLeft: 5, paddingRight: 5 }}
           css="zi:1 clearheight">
           {scrollButoons.map((x, i) => (
-            <TouchableOpacity
+            <SingleTouchableOpacity
               css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value ? "selectedRow" : ""}`}
               ifTrue={x.ifTrue}
               onPress={async () => {
@@ -167,7 +168,7 @@ export default ({
                 }>
                 {x.text}
               </Text>
-            </TouchableOpacity>
+            </SingleTouchableOpacity>
           ))}
         </ScrollView>
       </View>
@@ -198,7 +199,7 @@ export default ({
             })
           ]
         }}>
-        <TouchableOpacity
+        <SingleTouchableOpacity
           onLayout={event => {
             state.childSize = event.nativeEvent.layout;
           }}
@@ -214,7 +215,7 @@ export default ({
               animateView(!state.visible)
           }}>
           {children}
-        </TouchableOpacity>
+        </SingleTouchableOpacity>
       </AnimatedView>
     </>,
     {
