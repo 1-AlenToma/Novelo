@@ -36,7 +36,7 @@ export default (
 
   const set = (value: any) => {
     extraData.current = value;
-    return { show, hide, elem, loading: state.loading, get, set };
+    return { show, hide, loading: state.loading, get, set };
   }
 
   let elem = !state.loading ? null : (
