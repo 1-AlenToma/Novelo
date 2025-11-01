@@ -1,4 +1,4 @@
-export const CSSStyle = `
+export const CSSStyle = /*css */`
         * {
             margin: 0;
             padding: 0;
@@ -130,7 +130,7 @@ export const CSSStyle = `
             overflow: hidden;
         }
 `
-export const JS = ` 
+export const JS = /*js*/` 
                 let div = undefined;
                 let chapter = undefined;
                 let keyDown = false;
@@ -483,6 +483,18 @@ export const JS = `
                                                 return text.length > 0
                                         }
 
+                                       window.ScrollData=() => {
+                                   
+                                                if (isMouseDown) return;
+
+                                                if (textSelection && textSelection()) {
+                                                        return;
+                                                }
+
+                                                //  e.preventDefault();
+                                                sliderContainer.scrollLeft+= sliderContainer.clientWidth
+                                        };
+
                                         const onDrag = (e) => {
                                                 const x = e.pageX || e.touches[0].pageX;
                                                 const deltaX = x - startX;
@@ -815,6 +827,8 @@ export const JS = `
 
                                 createSelectionMenu(option.menu);
                                 sliderContainer.focus();
+
+                            
                         } catch (e) {
                                 window.postmsg("error", e);
                                 if (window.__DEV__)
@@ -1035,6 +1049,8 @@ export const JS = `
                         }, 200);
                         }
 
+
+                        
                                     
             
 

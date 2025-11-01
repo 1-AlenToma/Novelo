@@ -403,11 +403,12 @@ const Controller = ({ state, ...props }: any) => {
             </Text>
             <View css="wi-100% juc:center fld-row position-relative left-1 ali:center">
               <Slider
+                renderAboveThumbComponent={undefined}
                 css="invert"
                 disableTimer={true}
                 buttons={true}
                 value={state.chapterSliderValue == undefined ? context.player.currentChapterIndex : state.chapterSliderValue}
-                onValueChange={(v: number)=> {
+                onValueChange={(v: number) => {
                   Timer.clear();
                   state.chapterSliderValue = parseInt(v.toString()) as any
                 }}

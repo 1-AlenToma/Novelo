@@ -216,7 +216,8 @@ export default class ParserWrapper extends Parser {
     daysToSave: 2,
     isDebug: debugg,
     folder: (target: Parser) => target.name,
-    keyModifier: (target, key) => `${key}${target.name}`,
+    keyModifier: (target, key) => `group_${key}${target.name}`,
+    argsOverride:(args)=> [args[1]],
     validator: (data: any) => data && data.has() && !data[0].name.empty() && !data[0].url.empty()
   })
   async group(

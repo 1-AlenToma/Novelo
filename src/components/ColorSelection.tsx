@@ -39,6 +39,11 @@ const colors = [
     "mode": "light"
   },
   {
+    "name": "White",
+    "hex": "#ffffffff",
+    "mode": "light"
+  },
+  {
     "name": "Deep Gray",
     "hex": "#1E1E1E",
     "mode": "dark"

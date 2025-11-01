@@ -1,6 +1,6 @@
-import "./Global";
 import 'react-native-get-random-values'
 import RNExitApp from "react-native-exit-app";
+import "./Global";
 import { StatusBar, setStatusBarHidden } from "expo-status-bar";
 import * as React from "react";
 import {
@@ -12,7 +12,6 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 import { useFonts } from "./hooks";
 import { AlertDialog, NestedStyleSheet, ThemeContainer, useTimer } from "react-native-short-style";
-import AppTest from "./App.test";
 import GlobalFileBrowse from "./components/GlobalFileBrowse";
 import CStyle from "./components/CStyle";
 import { Platform } from "react-native";
@@ -153,4 +152,4 @@ const App = () => {
 
 
 
-export default (testning ? AppTest : App);
+export default (App);

@@ -209,11 +209,12 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     let currentParserString: string = "";
                     const loadParsers = async () => {
                         await context.batch(async () => {
+                            const defaultParser = ParserWrapper.getAllParsers(data.parser.default) as ParserWrapper;
                             if (debugMode) {
                                 data.parser.all = ParserWrapper.getAllParsers() as ParserWrapper[];
                                 return;
                             }
-                            const defaultParser = ParserWrapper.getAllParsers(data.parser.default) as ParserWrapper;
+
                             let settings = data.appSettings;
                             if (!settings.parsers)
                                 settings.parsers = [];
@@ -282,11 +283,23 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     }
 
                     appSettingWatcher = globalDb.watch("AppSettings");
+                    let _parsers = data.appSettings.parsers ?? [];
                     appSettingWatcher.onSave = async (items: any) => {
-                        let item = items?.firstOrDefault();
+                        let item: AppSettings = items?.firstOrDefault();
                         if (item) {
-                            data.appSettings = item as any;
-                            loadParsers();
+                            let updateParser = _parsers.length != (item.parsers ?? []).length || _parsers.some((x, index) => {
+                                let p1 = (item.parsers ?? [])[index];
+                                let p2 = x;
+                                if (!p1 || !p2 || p1.name != p2.name || p1.content !== p2.content)
+                                    return true;
+                                return false;
+                            });
+                            _parsers = [...(item.parsers ?? [])];
+                            if (updateParser)
+                                console.warn("updateParser")
+                            data.appSettings = item;
+                            if (updateParser)
+                                loadParsers();
                         }
                     };
                     data.selectedThemeIndex = data.appSettings.selectedTheme ?? 0;
