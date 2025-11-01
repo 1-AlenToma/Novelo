@@ -55,7 +55,7 @@ export default ({ ...props }: any) => {
   };
 
   let fetchData = async (refresh?: boolean) => {
-    loader.show();
+    loader.set(refresh).show();
     await state.batch(async () => {
       try {
         if (parser && url) {
@@ -173,7 +173,7 @@ export default ({ ...props }: any) => {
           }}>
           <View css="flex mat:10">
             <ScrollView refreshControl={
-              <RefreshControl refreshing={loader.loading} onRefresh={() => fetchData(true)} />}>
+              <RefreshControl refreshing={loader.loading && loader.get()} onRefresh={() => fetchData(true)} />}>
               <View css="flex ali:center">
                 <View
                   css="row box invert">

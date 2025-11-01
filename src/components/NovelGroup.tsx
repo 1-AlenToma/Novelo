@@ -32,7 +32,7 @@ export default memo(
     const parser = useParser();
 
     const getItems = async (refreshing?: boolean) => {
-      loader.show();
+      loader.set(refreshing).show();
       try {
         let p = refreshing ? 1 : page.current + 1;
         let oldItems = [...state.items];
@@ -112,7 +112,7 @@ export default memo(
           />
         ) : null}
         <ItemList
-          onRefresh={{ loading: loader.loading, onRefresh: () => getItems(true) }}
+          onRefresh={{ loading: loader.loading && loader.get(), onRefresh: () => getItems(true) }}
           onPress={item => {
             context.nav.navigate("NovelItemDetail", {
               url: item.url,
