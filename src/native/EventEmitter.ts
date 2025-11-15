@@ -4,6 +4,7 @@ export default class EventEmitter<T> {
   running = false;
   nextRun: number; // timestamp in ms
   extra?: T[];
+  progress?:number;
 
   constructor(minutes: number, func: Function) {
     this.func = func;

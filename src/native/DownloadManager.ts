@@ -9,7 +9,9 @@ export default class DownloadManager {
   events: { [key: string]: Function } = {};
   items: Map<string, number> = new Map();
   prepItems: Map<string, { url: string, parserName: string, protected?: boolean }> = new Map();
-  change(url: string) {
+  change(url: string, name: string) {
+    let progress = this.items.get(url);
+    context.bgService.updateProgressBar(name, progress);
     for (let k in this.events) {
       this.events[k](url);
     }
@@ -56,7 +58,7 @@ export default class DownloadManager {
     };
 
     useEffect(() => {
-     this.events[id](parentUrl);
+      this.events[id](parentUrl);
       return () => { delete this.events[id] }
     }, []);
 
@@ -97,7 +99,7 @@ export default class DownloadManager {
     this.prepItems.set(url, { url, parserName, protected: _protected });
     if (_protected)
       this.download(url, parserName);
-      this.change(url);
+    this.change(url, parserName);
   }
 
   async download(
@@ -133,7 +135,7 @@ export default class DownloadManager {
       let tries = 0;
       if (!file)
         await context.files.write(key, JSON.stringify(savedItem));
-      this.change(url);
+      this.change(url, novel.name);
       for (let ch of novel.chapters.filter(x => !savedItem.chapters.find(a => a.url == x.url))) {
         try {
           index++;
@@ -181,8 +183,8 @@ export default class DownloadManager {
           }
           if (!this.items.has(savedItem.url))
             break; // stop btn pressed
-          this.items.set(url, novel.chapters.length.procent(savedItem.chapters.length));
-          this.change(url);
+          this.items.set(url, novel.chapters.length.downloadPercent(savedItem.chapters.length));
+          this.change(url, novel.name);
           // so that it gets not to heavy on the website
           await sleep(5000);
         } catch (e) {
@@ -196,6 +198,6 @@ export default class DownloadManager {
 
     this.stop(url);
 
-    this.change(url);
+    this.change(url, "");
   }
 }

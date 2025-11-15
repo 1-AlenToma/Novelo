@@ -81,8 +81,8 @@ const options = {
   }
 };
 
-export default class BGService {
-  static async start() {
+export class BgService {
+  async start() {
     try {
       await BackgroundService.start(
         veryIntensiveTask,
@@ -91,15 +91,40 @@ export default class BGService {
     } catch (e) { console.error(e) }
   }
 
-  static async notify() {
+  async updateProgressBar(taskDesc: string, progress?: number) {
+    // Normalize to always between 0 and 1
+
+    // If no progress provided, remove it
+    if (progress == undefined || progress == null || isNaN(progress)) {
+      return BackgroundService.updateNotification({
+        taskDesc: options.taskDesc,
+        progressBar: undefined,
+      });
+    }
+    console.info(progress);
+    return BackgroundService.updateNotification({
+      taskDesc,
+      progressBar: {
+        value: progress,
+        max: 100,
+        indeterminate: progress <= 0 || progress >= 100,  // <-- Your choice
+      },
+    });
+  }
+
+
+  async notify() {
     await BackgroundService.updateNotification({
       taskDesc: "New ExampleTask description"
     });
   }
 
-  static async stop() {
+  async stop() {
     try {
       await BackgroundService.stop();
     } catch (e) { }
   }
 }
+
+const bgService = new BgService();
+export default bgService;

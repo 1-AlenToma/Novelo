@@ -54,6 +54,7 @@ const debugMode = __DEV__;
 
 const data: IGlobalState = StateBuilder<GlobalType>(
     {
+        bgService: BGService,
         appLocalSettings: {
             data: {} as any,
             get: async () => {
@@ -362,6 +363,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         "db",
         "appSettings.currentNovel",
         "appSettings.parsers",
-        "novelFavoritInfo"
+        "novelFavoritInfo",
+        "bgService"
     ).globalBuild();
 export default data;

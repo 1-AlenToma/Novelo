@@ -87,6 +87,7 @@ declare global {
         sureValue: (a?: number, isInt?: boolean) => number;
         readAble: () => any;
         procent: (index: number) => number;
+        downloadPercent: (index: number) => number;
     }
 }
 
@@ -214,6 +215,11 @@ Number.prototype.procent = function (index: number) {
     let p = (100 * index + 1) / this;
     return p;
 }
+
+Number.prototype.downloadPercent = function (index: number) {
+    return (index / this) * 100
+}
+
 
 Number.prototype.sureValue = function (a?: number, isInt?: boolean) {
     if (a === undefined || a === null || isNaN(a))

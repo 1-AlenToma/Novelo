@@ -176,6 +176,7 @@ export type AppLocalSettings = {
 
 export type GlobalType =
   {
+    bgService: typeof BGService,
     appLocalSettings: {
       data: AppLocalSettings,
       get: () => Promise<AppLocalSettings>,
