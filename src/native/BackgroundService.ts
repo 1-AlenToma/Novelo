@@ -101,7 +101,6 @@ export class BgService {
         progressBar: undefined,
       });
     }
-    console.info(progress);
     return BackgroundService.updateNotification({
       taskDesc,
       progressBar: {
