@@ -75,6 +75,7 @@ const options = {
   },
   color: "#ff00ff",
   linkingURI: "novels://file", // See Deep Linking for more info
+  progressBar: undefined,
   parameters: {
     delay: 3000
   }
