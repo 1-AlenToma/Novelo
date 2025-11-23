@@ -1,6 +1,6 @@
 {
-  "versionName": "1.3.5",
-  "apkUrl": "https://github.com/1-AlenToma/Novelo/releases/download/2.1.5/app-release.apk",
+  "versionName": "1.3.6",
+  "apkUrl": "https://github.com/1-AlenToma/Novelo/releases/download/2.1.6/app-release.apk",
   "forceUpdate": false,
   "whatsNew": "Support for App Server\nPerformance fixes\nBug fix when retrieving the novel info"
 }
