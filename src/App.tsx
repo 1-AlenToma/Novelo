@@ -6,17 +6,20 @@ import * as React from "react";
 import {
     useLoader,
     HtmlGetter,
+    StartUp,
 } from "./components";
 import * as NavigationBar from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 import { useFonts } from "./hooks";
+
 import { AlertDialog, NestedStyleSheet, ThemeContainer, useTimer } from "react-native-short-style";
 import GlobalFileBrowse from "./components/GlobalFileBrowse";
 import CStyle from "./components/CStyle";
-import { Platform } from "react-native";
+import { Platform, Text } from "react-native";
 import * as icons from '@expo/vector-icons';
 import { useKeepAwake } from "expo-keep-awake";
+
 
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
@@ -118,10 +121,11 @@ const App = () => {
             // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
             if (!__DEV__ && !((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
                 RNExitApp.exitApp?.();
+            
             itemToRemove?.forEach(x => x.remove());
         };
 
-        
+
     }, []);
 
 
@@ -134,13 +138,13 @@ const App = () => {
             <HtmlGetter />
             {
                 loader.loading ? loader.elem : fontLoader.loading ? fontLoader.elem : (
-                    <>
+                    <StartUp>
                         <NavigationContainer>
                             <AppStack />
                         </NavigationContainer>
                         <StatusBar style={context.selectedThemeIndex == 0 ? "dark" : "light"} />
                         <GlobalFileBrowse />
-                    </>
+                    </StartUp>
                 )
             }
 

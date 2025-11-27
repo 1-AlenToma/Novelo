@@ -142,7 +142,10 @@ export default class FileHandler {
   async copy(source: string, des: string) {
     des = this.getName(des);
     await this.checkDir(des);
+    if (__DEV__)
+      console.log("Copy files", source, "to", des)
     await RNF.copyFile(source, des);
+    return des;
   }
 
   async allFiles(folder?: string) {

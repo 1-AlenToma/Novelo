@@ -21,6 +21,7 @@ export * from "./DropDownList";
 export * from "./ChapterView";
 export * from "./AppServer";
 export * from "./SingleTouchableOpacity";
+export * from "./StartUp";
 
 export {
   useLoader,

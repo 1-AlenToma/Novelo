@@ -1,5 +1,4 @@
 import dbContext from "./db/dbContext";
-import * as Speech from "expo-speech";
 import AppSettings from "./db/AppSettings";
 import DownloadManager from "./native/DownloadManager";
 import Html from "./native/Html";
@@ -14,9 +13,9 @@ import {
     Parser,
 } from "./native/ParserItems";
 
-import { Dimensions, Keyboard, LogBox } from "react-native";
+import { Dimensions, Keyboard, LogBox, Platform } from "react-native";
 import StateBuilder, { newId } from "react-smart-state";
-import { GlobalType, FilesPath, WebViewProps, IGlobalState } from "./Types";
+import { GlobalType, FilesPath, WebViewProps, IGlobalState, TTSConfig, TTSNames } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
 import { version } from "./package.json"
@@ -27,7 +26,8 @@ import Player from "./native/Player";
 import ImageCache from "./native/ImageCache";
 import BGService from "./native/BackgroundService";
 import { ConsoleInterceptor } from "./native/ConsoleInterceptor";
-
+import RNFS from 'react-native-fs';
+import TTSManager from 'react_native_sherpa_onnx_offline_tts';
 
 
 LogBox.ignoreLogs([
@@ -41,6 +41,8 @@ LogBox.ignoreLogs([
 
 ConsoleInterceptor.enable();
 
+
+
 var globalDb = new dbContext();
 const globalHttp = new HttpHandler();
 
@@ -51,9 +53,85 @@ const zip = new FilesZipper();
 const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
 const debugMode = __DEV__;
+const ttsLocalPathBase = RNFS.DocumentDirectoryPath;
+
+const generateTTsConfig = (name: TTSNames, fileName: string, sampleRate: number = 22050): TTSConfig => {
+    return {
+        link: `https://github.com/1-AlenToma/Novelo/releases/download/tts-modols/${fileName}.zip`,
+        name: name,
+        path: `tts/${fileName}`,
+        sampleRate,
+        config: {
+            modelPath: `${ttsLocalPathBase}/tts/${fileName}/${fileName.replace(/(vits-piper-)|(-fp16)/gim, "").trim()}.onnx`,
+            tokensPath: `${ttsLocalPathBase}/tts/${fileName}/tokens.txt`,
+            dataDirPath: `${ttsLocalPathBase}/tts/${fileName}/espeak-ng-data`,
+        }
+    }
+}
+
 
 const data: IGlobalState = StateBuilder<GlobalType>(
     {
+        tts: {
+            initializing: false,
+            loaded: false,
+            lastChosenConfig: undefined,
+            nameLists: undefined,
+            stop: async () => {
+                return await TTSManager.stop();
+            },
+            deinitialize: async () => {
+                data.tts.loaded = false;
+                data.tts.lastChosenConfig = undefined;
+                return TTSManager.deinitialize();
+            },
+            speak: async (item) => {
+                try {
+                    if (!data.tts.loaded)
+                        await data.tts.initialize(data.tts.lastChosenConfig ?? data.appSettings.ttsModol);
+                    return await TTSManager.generateAndPlay({ ...item, speed: data.appSettings.rate });
+                } catch (e) {
+                    console.error(e)
+                }
+            },
+            initialize: async (config) => {
+                console.log("initializing tts")
+                try {
+                    
+                    data.tts.initializing = true;
+                    if (data.tts.loaded) {
+                        if (data.tts.lastChosenConfig == config)
+                            return;// already loaded
+                        await TTSManager.deinitialize();
+                    }
+
+                    data.tts.loaded = true;
+                    data.tts.lastChosenConfig = config;
+                    let ttsConfig = [...data.tts.female, ...data.tts.male].find(x => x.name == config) ?? data.tts.male[1];
+                    //console.log(ttsConfig);
+                    return await TTSManager.initialize(JSON.stringify(ttsConfig.config), ttsConfig.sampleRate, false, 1);
+                } catch (e) {
+                    console.error(e)
+                } finally {
+                    data.tts.initializing = false;
+                }
+            },
+            base: ttsLocalPathBase,
+            nameList: () => {
+                if (data.tts.nameLists)
+                    return data.tts.nameLists;
+                return (data.tts.nameLists = [...data.tts.male.map(x => x.name), ...data.tts.female.map(x => x.name)])
+            },
+            female: [
+                generateTTsConfig("Kristin(Low)", "vits-piper-en_US-kristin-medium-fp16"),
+                generateTTsConfig("Kristin(Medium)", "vits-piper-en_US-kristin-medium")
+            ],
+            male: [
+                generateTTsConfig("Ryan(Low)", "vits-piper-en_US-ryan-low", 16000),
+                generateTTsConfig("Ryan(Medium)", "vits-piper-en_US-ryan-medium"),
+                generateTTsConfig("Ryan(high)", "vits-piper-en_US-ryan-high")
+            ]
+        },
         bgService: BGService,
         appLocalSettings: {
             data: {} as any,
@@ -125,11 +203,9 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         KeyboardState: false,
         isFullScreen: false,
         appSettings: new AppSettings(),
-        voices: undefined,
         cache: cache,
         files: new FileHandler(FilesPath.File, "File", true),
         imageCache: new ImageCache(),
-        speech: Speech,
         nav: {
             option: undefined,
             navigate: (page, item) => {
@@ -200,6 +276,8 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         AppStart: async () => {
             try {
                 let appSettingWatcher: any = {};
+                //  await setupTTS();
+                //  await sayHello();
                 await context.batch(async () => {
                     data.appLocalSettings.data = JSON.parse((await privateData.read("AppLocalSettings")) ?? "{}");
                     if (data.appLocalSettings.data.serverIp && !data.appLocalSettings.data.serverIp.empty() && await data.appLocalSettings.test(data.appLocalSettings.data.serverIp))
@@ -242,35 +320,13 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                             if (data.player && !data.player.isEpup && data.player.book && data.player.book.parserName && !parsers.find(x => x.name == data.player.book.parserName)) {
                                 data.player.showPlayer = data.player.hooked = false;
                                 data.player.playing(false);
-                                await context.speech.stop();
+                                await context.tts.stop();
 
                             }
                         });
                     }
 
-                    const loadVoices = (counter?: number) => {
-                        setTimeout(
-                            async () => {
-                                const filename = "voices.json";
-                                let voices = await Speech.getAvailableVoicesAsync();
-                                if (voices.length <= 0) {
-                                    let localVoices = await privateData.read(filename);
-                                    voices = localVoices && localVoices.has() ? JSON.parse(localVoices) : voices;
-                                }
 
-                                if (voices.length > 0) {
-                                    data.voices = voices;
-                                    await privateData.write(filename, JSON.stringify(voices));
-                                }
-                                else {
-                                    console.log("voices not found");
-                                    if (!counter || counter < 10)
-                                        loadVoices((counter ?? 0) + 1);
-                                }
-                            },
-                            (counter ?? 1) * 300
-                        );
-                    };
                     await globalDb.setUpDataBase();
                     await globalDb.migrateNewChanges();
                     data.appSettings = await globalDb.AppSettings.query.findOrSave(data.appSettings);
@@ -304,7 +360,6 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                         }
                     };
                     data.selectedThemeIndex = data.appSettings.selectedTheme ?? 0;
-                    loadVoices();
                     data.parser.current.settings = (await data.parser.current.load() as any);
                 });
                 const showSubscription = Keyboard.addListener(
@@ -332,6 +387,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     showSubscription,
                     windowEvent,
                     { remove: () => BGService.stop() },
+                    { remove: () => context.tts.stop() },
                     {
                         remove: () => appSettingWatcher.removeWatch?.()
                     }
@@ -343,14 +399,14 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             return [];
         }
     }).ignore(
+        "tts.female",
+        "tts.male",
         "files",
         "imageCache",
         "cache",
         "parser.current",
         "parser.all",
         "nav",
-        "voices",
-        "speech",
         "selection.downloadSelectedItem",
         "selection.favoritItem",
         "player.currentChapterSettings.scrollProgress",

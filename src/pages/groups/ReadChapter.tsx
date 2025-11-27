@@ -316,24 +316,11 @@ const Controller = ({ state, ...props }: any) => {
   }, []);
 
   const editSettings = ({
-    lineHeight,
     fontSize,
     fontName,
-    isBold,
-    backgroundColor,
-    textAlign,
+    ttsModol,
     lockScreen,
-    voice,
-    pitch,
-    rate,
-    margin,
-    navigationType,
-    use3D,
-    fontStyle,
-    shadowLength,
-    voiceWordSelectionsSettings,
-    useSentenceBuilder,
-    sentenceMargin
+    ...rest
   }: AppSettings | Record<string, any>) => {
     Timer(() => {
       context.batch(async () => {
@@ -342,48 +329,31 @@ const Controller = ({ state, ...props }: any) => {
           context.appSettings.lineHeight = fontSize * context.lineHeight;
         }
 
-        if (lineHeight !== undefined) {
-          context.appSettings.lineHeight = lineHeight;
+        if (ttsModol != undefined) {
+          context.appSettings.ttsModol = ttsModol;
+          if (context.tts.loaded) {
+            if (context.player.playing())
+              context.player.playing(false);
+            await context.tts.deinitialize();
+          }
         }
 
-        if (isBold != undefined) {
-          context.appSettings.isBold = isBold;
+        for (let key in rest) {
+          context.appSettings[key] = rest[key];
         }
-        if (backgroundColor !== undefined)
-          context.appSettings.backgroundColor = backgroundColor;
-        if (textAlign != undefined)
-          context.appSettings.textAlign = textAlign;
+
         if (lockScreen != undefined) {
           context.appSettings.lockScreen = lockScreen;
           if (context.appSettings.lockScreen)
             context.orientation("LANDSCAPE");
           else context.orientation("Default");
         }
-        if (rate != undefined) context.appSettings.rate = rate;
-        if (pitch != undefined) context.appSettings.pitch = pitch;
-        if (fontName) context.appSettings.fontName = fontName;
-        if (voice) context.appSettings.voice = voice;
-        if (margin != undefined) context.appSettings.margin = margin;
-        if (navigationType != undefined)
-          context.appSettings.navigationType = navigationType;
-        if (use3D != undefined) context.appSettings.use3D = use3D;
-        if (fontStyle != undefined)
-          context.appSettings.fontStyle = fontStyle;
-        if (shadowLength != undefined)
-          context.appSettings.shadowLength = shadowLength;
-        if (voiceWordSelectionsSettings)
-          context.appSettings.voiceWordSelectionsSettings =
-            voiceWordSelectionsSettings;
-        if (useSentenceBuilder) {
-          context.appSettings.useSentenceBuilder = useSentenceBuilder;
-        }
 
-        if (sentenceMargin) {
-          context.appSettings.sentenceMargin = sentenceMargin;
-        }
+
+
         await context.appSettings.saveChanges();
 
-        if (useSentenceBuilder) context.player.clean();
+        if (rest.useSentenceBuilder) context.player.clean();
       });
     });
   };
@@ -864,80 +834,18 @@ const Controller = ({ state, ...props }: any) => {
                         type: "MaterialIcons"
                       }}
                     >
-                      <FormItem title="Voices">
-                        <DropDownLocalList
-                          globalContextKeys={["player.testVoice"]}
-                          size={"80%"}
-                          enableSearch={true}
-                          css="invert"
-                          items={context.voices?.map(x => {
-                            return {
-                              label: `${lang[
-                                x.language.toLowerCase()
-                              ] ||
-                                lang[
-                                x.language
-                                  .safeSplit(
-                                    "-",
-                                    0
-                                  )
-                                  .toLowerCase()
-                                ] ||
-                                x.language}(${x.language})`,
-                              value: x.name
-                            }
-                          }) ?? []}
-                          selectedValue={context.appSettings.voice}
-                          render={item => {
-                            return (
-                              <View css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between`}>
-                                <Text css={`desc invertco fos:13`}>
-                                  {item.label}
-                                </Text>
-                                <TouchableOpacity
-                                  css={`bac:transparent`}
-                                  onPress={() =>
-                                    context.player.testPlaying(item.value)
-                                  }
-                                >
-                                  <Icon
-                                    name={context.player.testVoice == item.value ? "stop-circle" : "play-circle"}
-                                    css="invert bac-transparent fos-35"
-                                    type="Ionicons"
-                                  />
-                                </TouchableOpacity>
-                              </View>
-                            );
-                          }}
-                          onSelect={voice => {
-                            editSettings({
-                              voice: voice.value
-                            });
-                            return false;
-                          }}
-                        />
+                      <FormItem css="mih-130" title="Voices">
+                        <Text css="desc fos-13 pal-10 mab-10">Choose TTS Model.{"\n"}
+                          <Text css="note co-red fos-12 fow-bold">For older phones, try using the medium or low models as those tend to be faster.</Text>
+                        </Text>
+                        <ButtonGroup scrollable={true}
+                          buttons={context.tts.nameList()}
+                          selectedIndex={[context.tts.nameList().indexOf(context.appSettings.ttsModol)]}
+                          onPress={x => {
+                            editSettings({ ttsModol: context.tts.nameList()[x[0]] })
+                          }} />
                       </FormItem>
-                      <FormItem title="Pitch">
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          step={0.1}
-                          value={
-                            context.appSettings
-                              .pitch
-                          }
-                          onSlidingComplete={(pitch: any) => {
-                            editSettings({
-                              pitch
-                            });
-                          }}
-                          minimumValue={0.9}
-                          maximumValue={3}
-                        />
-                      </FormItem>
-                      <FormItem title="Rate">
+                      <FormItem title="Rate/Speed">
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -956,56 +864,6 @@ const Controller = ({ state, ...props }: any) => {
                           maximumValue={3}
                         />
                       </FormItem>
-                      <View css="wi-100% flg-1 invert">
-                        <Text>Words Highlight Settings</Text>
-
-                        <FormItem title="Only Word:" labelPosition="Left">
-                          <CheckBox
-                            css="pal:1 invert"
-                            checked={
-                              context.appSettings
-                                .voiceWordSelectionsSettings
-                                ?.appendSelection ??
-                              false
-                            }
-                            onChange={() => {
-                              editSettings({
-                                voiceWordSelectionsSettings:
-                                {
-                                  color: context
-                                    .appSettings
-                                    .voiceWordSelectionsSettings
-                                    ?.color,
-                                  appendSelection:
-                                    !(
-                                      context
-                                        .appSettings
-                                        .voiceWordSelectionsSettings
-                                        ?.appendSelection ??
-                                      false
-                                    )
-                                }
-                              });
-                            }}
-                          />
-                        </FormItem>
-                        <View css="flg-1 fl-0 wi-100% mat-10 invert">
-                          <Text css="fow-bold">
-                            Word Color
-                          </Text>
-                          <ColorSelection selectedValue={context.appSettings.voiceWordSelectionsSettings?.color ?? ""} onChange={(hex) => {
-                            editSettings({
-                              voiceWordSelectionsSettings:
-                              {
-                                color: hex,
-                                appendSelection: context.appSettings.voiceWordSelectionsSettings?.appendSelection
-                              }
-                            })
-                          }} />
-
-                        </View>
-                      </View>
-
                     </TabView>
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
@@ -1196,6 +1054,8 @@ export default (props: any) => {
 
           if (!state.novel || !state.novel.name)
             return;
+          if (context.player._playing)
+            context.player.playing(false);
           if (
             !context.player.novel ||
             context.player.novel.url !== url ||

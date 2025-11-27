@@ -308,19 +308,11 @@ class Player {
   playing(v?: boolean) {
     if (v == undefined) return this._playing;
 
-    this._playing = v;
+
     if (!v) this.stop();
     else this.speak();
+    this._playing = v;
     return this._playing;
-  }
-
-  testPlaying(voice?: string) {
-    if (voice == undefined) return this.testVoice;
-    this.stop();
-    if (this.testVoice === voice) this.stop();
-    else if (voice) this.testPlay(voice);
-    this.testVoice = this.testVoice === voice ? "" : voice;
-    return this.testVoice;
   }
 
   currentPlaying() {
@@ -328,6 +320,11 @@ class Player {
       this.chapterArray[
       this.currentChapterSettings.audioProgress
       ];
+    return txt;
+  }
+
+  getNextPlayingText() {
+    let txt = this.chapterArray[this.currentChapterSettings.audioProgress + 1];
     return txt;
   }
 
@@ -367,51 +364,29 @@ class Player {
       await this.playNext();
       return;
     }
-    if (await context.speech.isSpeakingAsync() && this.currentTextSpeacking == text)
+
+    if (this.currentTextSpeacking == text && this.playing())
       return;
-    //await this.stop();
+
+    await context.tts.stop();
     this.currentTextSpeacking = text;
-    context.speech.speak(this.currentTextSpeacking, {
-      onBoundary: boundaries => {
-        let { charIndex, charLength } = boundaries;
-
-        this.highlightedText = {
-          text: text,
-          index: charIndex,
-          length: charLength
-        };
-      },
-      language: undefined,
-      pitch: context.appSettings.pitch,
-      rate: context.appSettings.rate,
-      voice: context.appSettings.voice,
-      onDone: (async () => {
-        await this.stop();
-        if (this.playing()) await this.playNext();
-      }) as any
-    });
-  }
-
-  async testPlay(voice: string) {
-    await this.stop();
-    context.speech.speak(
-      `There are a number of ways to identify a hearing loss.`,
-      {
-        language: undefined,
-        pitch: context.appSettings.pitch,
-        rate: context.appSettings.rate,
-        voice: voice,
-        onDone: (async () => {
-          this.testVoice = "";
-        }) as any
+    await context.tts.speak({
+      nextText: this.getNextPlayingText(),
+      text: this.currentTextSpeacking, onDone: async (msg) => {
+        console.log("onDone", msg);
+        if (this.playing() && msg == "PlaybackFinished") await this.playNext();
       }
-    );
+    });
+
+    // await this.stop();
+
   }
+
 
   async stop() {
-    if (await context.speech.isSpeakingAsync())
-      await context.speech.stop();
+    await context.tts.stop();
   }
+
 }
 
 export default Player;

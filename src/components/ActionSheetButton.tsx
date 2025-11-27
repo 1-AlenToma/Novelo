@@ -43,7 +43,7 @@ export default ({
     tprops.onPress = onPress;
     tprops.onLongPress = () => setVisible(true);
   }
-
+  let extra = controller == "Modal" ?{css:`he-${props.size}`}:{}
   const CN = controller == "Modal" ? Modal : ActionSheet;
   const Container = ready !== false ? ReadyView : React.Fragment;
   let containerProps: any = {};
@@ -60,6 +60,7 @@ export default ({
       </SingleTouchableOpacity>
       <CN
         {...props}
+        {...extra}
         speed={400}
         isVisible={visible}
         onHide={() => setVisible(false)}

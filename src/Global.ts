@@ -367,7 +367,17 @@ String.prototype.htmlArray = function () {
         }
     });
 
-    return doc.documentElement.text().split(/\n/gim).filter(x => !x.empty()).map(x => `<p>${x}</p>`)
+    let txtArray = doc.documentElement.text().split(/\n/gim).filter(x => !x.empty());
+    let result: string[] = [];
+    for (let txt of txtArray) {
+        const sentences = txt
+            .split(/(?<=[.!?])\s+/g) // smart sentence split
+            .map(x => x.trim())
+            .filter(x => x.length > 0);
+        result.push(...sentences)
+    }
+
+    return result.map(x => `<p>${x}</p>`);
 };
 
 String.prototype.htmlImagesSources = function () {

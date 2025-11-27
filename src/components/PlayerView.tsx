@@ -2,10 +2,12 @@ import { View, AnimatedView, Text, TouchableOpacity, Icon } from "react-native-s
 import Slider from "./SliderView";
 import * as React from "react";
 import useDbHook from "../hooks/useDbHook";
-
 import useTimer from "../hooks/Timer"
+import useLoader from "./Loader";
+import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
 export default ({ isMenu }: { isMenu?: boolean }) => {
+  const loader = useLoader();
   context.hook(
     "player.showController",
     "appSettings",
@@ -15,6 +17,11 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
     "player.viewState",
     "player"
   );
+
+  context.useEffect(() => {
+    console.log("tts.initializing")
+    context.tts.initializing ? loader.show() : loader.hide();
+  }, "tts.initializing")
 
   const audioProgressTimer = useTimer(100);
 
@@ -44,8 +51,9 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
         }
       }
       css={`band zi:100 bac:black overflow he:40 juc:center ali:center pal:10 par:10 invert`}>
+      {loader.elem}
       <View css="row juc:center ali:center di:flex invert">
-        <TouchableOpacity
+        <SingleTouchableOpacity
           onPress={() => {
             context.nav
               .navigate("ReadChapter", {
@@ -61,7 +69,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
             type="Octicons"
             name="browser"
           />
-        </TouchableOpacity>
+        </SingleTouchableOpacity>
         <View
           css="wi:50 he:30 invert juc:center ali:center invert">
           <Text css="bold fos:10 tea:center invertco" numberOfLines={1}>
@@ -85,7 +93,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
             maximumValue={context.player.chapterArray.length - 1}
           />
         </View>
-        <TouchableOpacity
+        <SingleTouchableOpacity
           onPress={() =>
             context.player.playing(!context.player.playing())
           }>
@@ -97,7 +105,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
             type="Ionicons"
             css="fos-35"
           />
-        </TouchableOpacity>
+        </SingleTouchableOpacity>
         <TouchableOpacity
           onPress={() =>
             context.player.playPrev()

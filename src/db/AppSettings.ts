@@ -1,14 +1,12 @@
 import TableNames from "./TableNames";
 import { public_m } from "../Methods";
-import { DBInit } from "../Types"
+import { DBInit, TTSNames } from "../Types"
 
 
 class AppSettings extends DBInit {
     filesDataLocation?: string = undefined;
     parsers?: { name: string; content: string }[] = [];
     rate: number = 1;
-    pitch: number = 0.9;
-    voice: string = "";
     fontSize: number = 12;
     lineHeight: number = 30;
     fontName: string = "SourceSans3-Black";
@@ -39,6 +37,7 @@ class AppSettings extends DBInit {
         appendSelection?: boolean;
     } = {};
     autoUpdateFavoritNovels?: boolean = false;
+    ttsModol: TTSNames = null;
     constructor() {
         super("AppSettings");
     }
@@ -47,8 +46,6 @@ class AppSettings extends DBInit {
         return this.TableBuilder<AppSettings, TableNames>("AppSettings")
             .column("rate").decimal
             .column("parsers").json.nullable
-            .column("pitch").decimal
-            .column("voice")
             .column("fontSize").number
             .column("lineHeight").number
             .column("margin").nullable.number
@@ -69,6 +66,7 @@ class AppSettings extends DBInit {
             .column("filesDataLocation").nullable
             .column("sentenceMargin").nullable.number
             .column("autoUpdateFavoritNovels").nullable.boolean
+            .column("ttsModol").nullable
             .column("selectedParser").objectPrototype(AppSettings.prototype);
     }
 }

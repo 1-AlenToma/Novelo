@@ -14,7 +14,7 @@ import ParserWrapper from "./parsers/ParserWrapper";
 import DownloadManager from "./native/DownloadManager";
 import * as Speech from 'expo-speech';
 import dbContext from "./db/dbContext";
-
+import TTSManager from 'react_native_sherpa_onnx_offline_tts';
 import {
   IDatabase,
   Table
@@ -103,6 +103,7 @@ export const FilesPath = {
   Cache: "Memo",
   Images: "Images",
   Private: "Private",
+  Tts: "TTS",
   Temp: "Temp"
 }
 
@@ -171,11 +172,43 @@ export type WebViewProps = {
 }
 
 export type AppLocalSettings = {
-  serverIp: string
+  serverIp: string;
+}
+
+export type TTSNames = "Kristin(Low)" | "Kristin(Medium)" | "Ryan(Low)" | "Ryan(Medium)" | "Ryan(high)";
+
+export type TTSConfig = {
+  link: string;
+  name: TTSNames;
+  path: string;
+  sampleRate: number,
+  config: {
+    modelPath: string;
+    tokensPath: string;
+    dataDirPath: string;
+  }
+};
+
+
+
+export type TTS = {
+  loaded: boolean;
+  initializing: boolean;
+  stop: typeof TTSManager.stop;
+  lastChosenConfig?: TTSNames;
+  speak: typeof TTSManager.generateAndPlay;
+  initialize: (config?: TTSNames) => Promise<boolean>;
+  deinitialize: typeof TTSManager.deinitialize;
+  base: string;
+  nameLists?: TTSNames[],
+  nameList: () => TTSNames[],
+  male: TTSConfig[],
+  female: TTSConfig[]
 }
 
 export type GlobalType =
   {
+    tts: TTS;
     bgService: typeof BGService,
     appLocalSettings: {
       data: AppLocalSettings,
@@ -214,11 +247,9 @@ export type GlobalType =
     KeyboardState: boolean,
     isFullScreen: boolean,
     appSettings: AppSettings,
-    voices: undefined | Speech.Voice[],
     cache: FileHandler,
     files: FileHandler,
     imageCache: ImageCache,
-    speech: typeof Speech,
     nav: {
       option: any;
       navigate: (page: NavigationPage, item?: NavigationObject) => void;
