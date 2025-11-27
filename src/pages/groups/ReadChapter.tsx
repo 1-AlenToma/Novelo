@@ -358,6 +358,8 @@ const Controller = ({ state, ...props }: any) => {
     });
   };
 
+  const selectedTTsModel = context.tts.nameList().indexOf(context.appSettings.ttsModol);
+
   return (
     <>
       <View
@@ -835,15 +837,17 @@ const Controller = ({ state, ...props }: any) => {
                       }}
                     >
                       <FormItem css="mih-130" title="Voices">
-                        <Text css="desc fos-13 pal-10 mab-10">Choose TTS Model.{"\n"}
-                          <Text css="note co-red fos-12 fow-bold">For older phones, try using the medium or low models as those tend to be faster.</Text>
-                        </Text>
-                        <ButtonGroup scrollable={true}
-                          buttons={context.tts.nameList()}
-                          selectedIndex={[context.tts.nameList().indexOf(context.appSettings.ttsModol)]}
-                          onPress={x => {
-                            editSettings({ ttsModol: context.tts.nameList()[x[0]] })
-                          }} />
+                        <View css="he-100%">
+                          <Text css="desc fos-13 pal-10 mab-10">Choose TTS Model.{"\n"}
+                            <Text css="note co-red fos-12 fow-bold">For older phones, try using the low models as those tend to be faster.</Text>
+                          </Text>
+                          <ButtonGroup scrollable={true}
+                            buttons={context.tts.nameList()}
+                            selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
+                            onPress={x => {
+                              editSettings({ ttsModol: context.tts.nameList()[x[0]] })
+                            }} />
+                        </View>
                       </FormItem>
                       <FormItem title="Rate/Speed">
                         <Slider

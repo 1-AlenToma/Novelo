@@ -128,8 +128,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             ],
             male: [
                 generateTTsConfig("Ryan(Low)", "vits-piper-en_US-ryan-low", 16000),
-                generateTTsConfig("Ryan(Medium)", "vits-piper-en_US-ryan-medium"),
-                generateTTsConfig("Ryan(high)", "vits-piper-en_US-ryan-high")
+                generateTTsConfig("Ryan(Medium)", "vits-piper-en_US-ryan-medium")
             ]
         },
         bgService: BGService,
