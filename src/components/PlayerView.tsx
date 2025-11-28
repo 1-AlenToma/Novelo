@@ -82,11 +82,10 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
             value={context.player.currentChapterSettings.audioProgress}
             onValueChange={(value: number) => {
               audioProgressTimer(async () => {
-                await context.player.stop();
+                if (context.player.playing())
+                  await context.player.playing(false)
                 context.player.currentChapterSettings.audioProgress = value;
                 await context.player.currentChapterSettings.saveChanges();
-                if (context.player.playing())
-                  context.player.speak();
               });
             }}
             minimumValue={0}
@@ -107,8 +106,11 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </SingleTouchableOpacity>
         <TouchableOpacity
-          onPress={() =>
-            context.player.playPrev()
+          onPress={async () => {
+            if (context.player.playing())
+              await context.player.playing(false)
+            context.player.playPrev();
+          }
           }>
           <Icon
             name="play-back-circle"
@@ -117,8 +119,11 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() =>
-            context.player.playNext()
+          onPress={async () => {
+            if (context.player.playing())
+              await context.player.playing(false)
+            context.player.playNext();
+          }
           }>
           <Icon
             name="play-forward-circle"

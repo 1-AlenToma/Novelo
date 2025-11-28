@@ -307,7 +307,8 @@ class Player {
 
   playing(v?: boolean) {
     if (v == undefined) return this._playing;
-
+    if (!v)
+      this.currentTextSpeacking = "";
 
     if (!v) this.stop();
     else this.speak();
@@ -327,38 +328,37 @@ class Player {
     let txt = this.chapterArray[this.currentChapterSettings.audioProgress + 1];
     return txt;
   }
-
+  private speakingTimer = undefined;
   async playPrev() {
     await this.stop();
-    if (
-      this.currentChapterSettings.audioProgress -
-      1 >=
-      0
-    ) {
+    if (this.currentChapterSettings.audioProgress - 1 >= 0) {
       this.currentChapterSettings.audioProgress--;
+      clearTimeout(this.speakingTimer);
       await this.currentChapterSettings.saveChanges();
-      if (this.playing()) await this.speak();
+      this.speakingTimer = setTimeout(async () => {
+        if (this.playing()) await this.speak();
+      }, 50);
     }
   }
 
   async playNext() {
     await this.stop();
-    if (
-      this.currentChapterSettings.audioProgress +
-      1 >=
-      this.chapterArray.length
-    ) {
+    clearTimeout(this.speakingTimer);
+    if (this.currentChapterSettings.audioProgress + 1 >= this.chapterArray.length) {
       await this.next();
       return;
     } else {
       this.currentChapterSettings.audioProgress++;
       await this.currentChapterSettings.saveChanges();
-      if (this.playing()) await this.speak();
+      this.speakingTimer = setTimeout(async () => {
+        if (this.playing()) await this.speak();
+      }, 50);
     }
   }
 
   private currentTextSpeacking = "";
   async speak() {
+
     let text = this.currentPlaying()?.cleanText() ?? "";
     if (!/[a-zA-Z0-9]/gim.test(text)) {
       await this.playNext();
@@ -371,15 +371,13 @@ class Player {
     await context.tts.stop();
     this.currentTextSpeacking = text;
     await context.tts.speak({
-      nextText: this.getNextPlayingText(),
+      nextText: undefined,
       text: this.currentTextSpeacking, onDone: async (msg) => {
         console.log("onDone", msg);
         if (this.playing() && msg == "PlaybackFinished") await this.playNext();
       }
     });
-
     // await this.stop();
-
   }
 
 
