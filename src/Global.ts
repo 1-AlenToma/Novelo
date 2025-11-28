@@ -357,7 +357,7 @@ String.prototype.cleanText = function () {
     return clean(`@#$_&-+()/*"':;!?~|•√π÷×§∆£¢€¥^°=%©®™✓[]{}<>,.`);
 };
 
-String.prototype.htmlArray = function () {
+String.prototype.htmlArray = function () { 
     let str = new String(this).toString().replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
     const doc = IDOMParser.parse(`<div>${str}</div>`, {
         errorHandler: {
@@ -370,7 +370,7 @@ String.prototype.htmlArray = function () {
     let txtArray = doc.documentElement.text().split(/\n/gim).filter(x => !x.empty());
     let result: string[] = [];
     for (let txt of txtArray) {
-        const sentences = txt
+        const sentences = txt.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt)((\s+)?(\.)(\s+)?)/gi, "$1.")
             .split(/(?<=[.!?])\s+/g) // smart sentence split
             .map(x => x.trim())
             .filter(x => /[A-Za-z0-9]/.test(x));

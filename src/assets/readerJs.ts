@@ -199,7 +199,7 @@ export const JS = /*js*/`
                         if (p.querySelector(".custom"))
                                 return undefined;
                         let txt = p.innerText;
-                        txt = txt.replace(/(mr|Mrs|Ms|Miss|dr|Mt)((\\s)?(\\.)(\\s)?)/gi, "$1.");
+                        txt = txt.replace(/\\b(mr|Mrs|Ms|Miss|dr|Mt)((\\s+)?(\\.)(\\s+)?)/gi, "$1.");
                         let regex1 = /([.!])\\s(?=[A-Z])/g;
                         let index = 0;
                         let validIndex = txt.length / 2;
