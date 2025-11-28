@@ -373,7 +373,7 @@ String.prototype.htmlArray = function () {
         const sentences = txt
             .split(/(?<=[.!?])\s+/g) // smart sentence split
             .map(x => x.trim())
-            .filter(x => x.length > 0);
+            .filter(x => /[A-Za-z0-9]/.test(x));
         result.push(...sentences)
     }
 
