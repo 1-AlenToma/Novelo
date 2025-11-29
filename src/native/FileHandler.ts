@@ -1,7 +1,7 @@
 import { newId } from "../Methods";
 import useLoader from "../components/Loader";
 import RNF, { ReadDirItem } from "react-native-fs";
-import RNFetchBlob from "rn-fetch-blob";
+import RNFetchBlob, { Encoding } from "rn-fetch-blob";
 import { SystemDir, EncodingType, FileInfo } from "../Types";
 import MapCacher from "./MapCacher";
 
@@ -16,8 +16,9 @@ export default class FileHandler {
   ExternalStorageDirectoryPath: string;
   RNF = RNF;
   enableCaching: boolean;
-  DownloadedFiles = new MapCacher(100);
+  DownloadedFiles = new MapCacher(10000);
   root: FileInfo;
+  allFilesReaded: boolean = false;
 
   constructor(dir: string, dirType?: SystemDir, enableCaching?: boolean) {
     this.DocumentDirectoryPath = RNF.DocumentDirectoryPath;
@@ -100,7 +101,7 @@ export default class FileHandler {
     this.trigger("Delete", file, fileUri);
   }
 
-  async write(file: string, content: string | number[], options?: any) {
+  async write(file: string, content: string | number[], options?: Encoding) {
     let fileUri = this.getName(file);
     return methods.withLock<FileInfo>(fileUri, async () => {
       await this.checkDir(fileUri);
@@ -145,6 +146,7 @@ export default class FileHandler {
     if (__DEV__)
       console.log("Copy files", source, "to", des)
     await RNF.copyFile(source, des);
+    this.allFilesReaded = false;
     return des;
   }
 
@@ -175,8 +177,9 @@ export default class FileHandler {
     let fileUri = this.getName(file);
     if (__DEV__)
       console.log("reading", fileUri);
-    if (this.enableCaching && this.DownloadedFiles.has(fileUri))
-      return this.DownloadedFiles.get(fileUri) as string;
+    let dItem = this.enableCaching ? this.DownloadedFiles.get(fileUri) : undefined;
+    if (dItem)
+      return dItem as string;
     if (await this.exists(file)) {
       text = await RNFetchBlob.fs.readFile(fileUri, (type ?? "utf8") as any)
       if (this.enableCaching)
@@ -262,7 +265,15 @@ export default class FileHandler {
         }
       }
       // await loader.show();
-      files.current = await this.allFiles();
+      if (this.allFilesReaded && this.enableCaching)
+        files.current = this.DownloadedFiles.keys();
+      else {
+        files.current = await this.allFiles();
+        if (this.enableCaching)
+          this.DownloadedFiles.push(...files.current.map(x => ({ key: this.getName(x), value: undefined })))
+      }
+
+      this.allFilesReaded = true;
       await loadItems();
     };
 

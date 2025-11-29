@@ -10,6 +10,8 @@ export default class DownloadManager {
   items: Map<string, number> = new Map();
   prepItems: Map<string, { url: string, parserName: string, protected?: boolean }> = new Map();
   change(url: string, name: string) {
+    if (context.appState.inBackground)
+      return;
     let progress = this.items.get(url);
     context.bgService.updateProgressBar(name, progress);
     for (let k in this.events) {
@@ -186,7 +188,7 @@ export default class DownloadManager {
           this.items.set(url, novel.chapters.length.downloadPercent(savedItem.chapters.length));
           this.change(url, novel.name);
           // so that it gets not to heavy on the website
-          await sleep(5000);
+          await sleep(2000);
         } catch (e) {
           console.error(e);
           break;

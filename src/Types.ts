@@ -208,6 +208,10 @@ export type TTS = {
 
 export type GlobalType =
   {
+    appState: {
+      state: string;
+      inBackground: boolean
+    }
     tts: TTS;
     bgService: typeof BGService,
     appLocalSettings: {

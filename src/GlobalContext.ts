@@ -28,6 +28,7 @@ import BGService from "./native/BackgroundService";
 import { ConsoleInterceptor } from "./native/ConsoleInterceptor";
 import RNFS from 'react-native-fs';
 import TTSManager from 'react_native_sherpa_onnx_offline_tts';
+import { AppState, AppStateStatus } from "react-native"
 
 
 LogBox.ignoreLogs([
@@ -72,6 +73,10 @@ const generateTTsConfig = (name: TTSNames, fileName: string, sampleRate: number 
 
 const data: IGlobalState = StateBuilder<GlobalType>(
     {
+        appState: {
+            state: AppState.currentState,
+            inBackground: false
+        },
         tts: {
             initializing: false,
             loaded: false,
@@ -97,7 +102,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             initialize: async (config) => {
                 console.log("initializing tts")
                 try {
-                    
+
                     data.tts.initializing = true;
                     if (data.tts.loaded) {
                         if (data.tts.lastChosenConfig == config)
@@ -378,9 +383,25 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     data.size = { ...e };
                 });
 
+                const backGroundSubscription = AppState.addEventListener("change", (nextAppState: AppStateStatus) => {
+                    console.log('AppState changed to:', nextAppState);
+                    if (data.appState.state.match(/active/) && nextAppState.match(/background|inactive/)) {
+                        console.log('App has gone to the background!');
+                        data.appState.inBackground = true;
+                        // Do background logic here
+                    } else if (data.appState.state.match(/background|inactive/) && nextAppState === 'active') {
+                        data.appState.inBackground = false;
+                        console.log('App has come to the foreground!');
+                        // Resume logic here
+                    }
+                    data.appState.state = nextAppState;
+
+                })
+
                 await BGService.start();
                 return [
                     ...notification.event,
+                    backGroundSubscription,
                     zip.subscribeEvent,
                     hideSubscription,
                     showSubscription,
@@ -398,6 +419,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             return [];
         }
     }).ignore(
+        "appState.state",
         "tts.female",
         "tts.male",
         "files",
