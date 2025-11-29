@@ -111,29 +111,31 @@ export default memo(
             title={item.text}
           />
         ) : null}
-        <ItemList
-          onRefresh={{ loading: loader.loading && loader.get(), onRefresh: () => getItems(true) }}
-          onPress={item => {
-            context.nav.navigate("NovelItemDetail", {
-              url: item.url,
-              parserName: item.parserName
-            });
-          }}
-          vMode={vMode}
-          onEndReached={() => {
-            if (!loader.loading) {
-              loader.show();
-              getItems();
+        <View css="fl-1 bac-transparent">
+          <ItemList
+            onRefresh={{ loading: loader.loading && loader.get(), onRefresh: () => getItems(true) }}
+            onPress={item => {
+              context.nav.navigate("NovelItemDetail", {
+                url: item.url,
+                parserName: item.parserName
+              });
+            }}
+            vMode={vMode}
+            onEndReached={() => {
+              if (!loader.loading) {
+                loader.show();
+                getItems();
+              }
+            }}
+            itemCss={
+              !vMode
+                ? `boc:#ccc bow:1 he-220 wi:170 mal:5 bor:5 overflow clb`
+                : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
             }
-          }}
-          itemCss={
-            !vMode
-              ? `boc:#ccc bow:1 he-220 wi:170 mal:5 bor:5 overflow clb`
-              : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
-          }
-          items={state.items}
-          container={HomeNovelItem}
-        />
+            items={state.items}
+            container={({ ...props }: any) => <HomeNovelItem {...props} numberOfLines={imageSize ? 1 : 2} />}
+          />
+        </View>
       </View>
     );
   }

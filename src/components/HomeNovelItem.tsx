@@ -7,11 +7,13 @@ import { BlurView } from "./BlurView";
 export default ({
   item,
   vMode,
-  showParserName
+  showParserName,
+  numberOfLines
 }: {
   item: LightInfo;
   vMode?: boolean;
-  showParserName?: boolean
+  showParserName?: boolean,
+  numberOfLines?: number
 }) => {
 
   if (!vMode) {
@@ -35,9 +37,9 @@ export default ({
         <Text css="absolute le-2 to-2 pa-2 bor-5 bac-#ffa000 co-white" ifTrue={item.langType?.has() ?? false}>{item.langType}</Text>
         <View css="wi-100% ali-center bottom he:50% overflow invert bac-transparent">
           <BlurView css="bottom" />
-          <View css="bac-transparent overflow-hidden wi-95% mal-5 mar-5 he-100%"> 
+          <View css="bac-transparent overflow-hidden wi-95% mal-5 mar-5 he-100%">
             <Text
-              numberOfLines={1}
+              numberOfLines={numberOfLines ?? 1}
               css="clearwidth wi:99% header co:#fff pal-5 par-5 pat-5 tea:center">
               {item.name}
             </Text>
@@ -85,7 +87,7 @@ export default ({
         <Text css="absolute le-2 to-2 pa-2 bor-5 bac-#ffa000 co-white" ifTrue={item.langType?.has() ?? false}>{item.langType}</Text>
         <View css="flex clearboth pa:5 invert">
           <Text
-            css="header" numberOfLines={1}>
+            css="header" numberOfLines={numberOfLines ?? 1}>
             {item.name}
           </Text>
           <View ifTrue={() => item.decription?.length > 1} css="row clearwidth ali-center invert">
