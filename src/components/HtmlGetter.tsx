@@ -105,7 +105,7 @@ export default () => {
         htmlData.map(x => (
           <WebView
             key={x.id}
-            injectedJavaScript={htmlGetterJsCode(x)}
+            injectedJavaScript={htmlGetterJsCode(x)} 
             cacheEnabled={true}
             source={{
               uri: x.url

@@ -159,7 +159,7 @@ class Player {
   }
 
   getImage = async (...href: IImage[]) => {
-    let imgs: any[] = [];
+    let imgs: (IImage & {cn: any, path?: string,})[] = [];
     let path = this.novel.imagePath as string;
     if (path) {
       for (let image of href) {

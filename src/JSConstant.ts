@@ -1,21 +1,23 @@
-export const jsScript = /*js*/ `
+import { WebViewFetchData } from "./Types";
+
+export const jsScript = (js: string, fn: "load" | "DOMContentLoaded", timer: number = 0) => (/*js*/ `
 try{
 window.__DEV__ = ${__DEV__.toString().toLowerCase()};
 if (document.readyState === "loading") {
-document.addEventListener("load", (event) => {
-setTimeout(()=> #, timer)
+document.addEventListener("${fn}", (event) => {
+  setTimeout(()=> {${js}}, ${timer ?? 0})
 });
 }else {
-setTimeout(()=> #, timer)
+  setTimeout(()=> {${js}}, ${timer ?? 0})
 }
 }catch(e){
 if (window.__DEV__)
    alert(e)
 }
-`;
+`);
 
-export let htmlGetterJsCode = (x: any) => {
-    let data = /*js*/ `
+export let htmlGetterJsCode = (x: WebViewFetchData) => {
+  let data = /*js*/ `
     try {
       function sleep(ms) {
         return new Promise((r) => setTimeout(r, ms));
@@ -130,14 +132,12 @@ export let htmlGetterJsCode = (x: any) => {
         postData("html", payload);
       };
 
-      ${jsScript
-        .replace(/timer/g, x.props?.timer ?? "0")
-        .replace(/\#/g, " window.getHtml()")}
+      ${jsScript(" window.getHtml()", "load", x.props?.timer)} 
     } catch (e) {
       if (window.__DEV__) alert(e);
     }
     true;
   `;
 
-    return data;
+  return data;
 };

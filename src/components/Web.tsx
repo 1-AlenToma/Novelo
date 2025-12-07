@@ -12,24 +12,9 @@ import { Asset } from "expo-asset";
 import { View, Text as TextView, ProgressBar } from "react-native-short-style";
 import BattariView from "./BattariView";
 import WebOptions from "../native/WebOptions";
+import { jsScript } from "JSConstant";
 
-const jsScript = `
-try{
-window.__DEV__ = ${__DEV__.toString().toLowerCase()};
-if (document.readyState === "loading") {
-document.addEventListener("DOMContentLoaded", (event) => {
-${JS}
-});
-}else {
-${JS}
-}
-}catch(e){
-if (window.__DEV__)
-   alert(e)
-}
-true;
-`;
-
+const jsScriptFn = jsScript(JS, "DOMContentLoaded")
 
 
 const Clock = ({ secondEnabled }: any) => {
@@ -127,7 +112,7 @@ export default ({
     allowFileAccessFromFileURLs: true,
     allowUniversalAccessFromFileURLs: true,
     javaScriptEnabled: true,
-    injectedJavaScriptBeforeContentLoaded: jsScript,
+    injectedJavaScriptBeforeContentLoaded: jsScriptFn,
     contentMode: "mobile",
     scalesPageToFit: true,
     originWhitelist: ["*"],
@@ -512,7 +497,7 @@ export default ({
       </View>
       {loader.elem}
       {render(null, {
-        injectedJavaScriptBeforeContentLoaded: jsScript,
+        injectedJavaScriptBeforeContentLoaded: jsScriptFn,
         source: {
           html: `
           <!DOCTYPE html>

@@ -9,7 +9,7 @@ import { DBInit } from "../Types"
 class Book extends DBInit {
   url: string = "";
   name: string = "";
-  parserName: string = "";
+  parserName: "epub" | (string & {}) = "";
   inlineStyle: string = "";
   selectedChapterIndex: number = 0;
   favorit: boolean = false;

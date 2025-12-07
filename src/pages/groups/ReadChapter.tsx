@@ -864,8 +864,8 @@ const Controller = ({ state, ...props }: any) => {
                               rate
                             });
                           }}
-                          minimumValue={0.9}
-                          maximumValue={3}
+                          minimumValue={0.5}
+                          maximumValue={2}
                         />
                       </FormItem>
                     </TabView>
