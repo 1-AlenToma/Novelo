@@ -1,6 +1,6 @@
 import uuid from "react-native-uuid";
 import IDOMParser from "advanced-html-parser";
-import { Functions } from "react-native-ts-sqlite-orm/src/UsefullMethods";
+import { Functions } from "react-native-ts-sqlite-orm";
 
 /**
  * Converts a file size in bytes into a human-readable string.
