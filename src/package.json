@@ -83,6 +83,7 @@
     "@babel/core": "^7.20.0",
     "@types/node": "^22.7.5",
     "@types/react": "~19.1.10",
+    "babel-preset-expo": "^54.0.8",
     "baseline-browser-mapping": "^2.8.32",
     "bestzip": "^2.2.1",
     "cross-env": "^7.0.3",

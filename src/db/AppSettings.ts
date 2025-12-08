@@ -38,6 +38,7 @@ class AppSettings extends DBInit {
     } = {};
     autoUpdateFavoritNovels?: boolean = false;
     ttsModol: TTSNames = null;
+    chunkWords?: boolean = false;
     constructor() {
         super("AppSettings");
     }
@@ -67,6 +68,7 @@ class AppSettings extends DBInit {
             .column("sentenceMargin").nullable.number
             .column("autoUpdateFavoritNovels").nullable.boolean
             .column("ttsModol").nullable
+            .column("chunkWords").boolean.nullable
             .column("selectedParser").objectPrototype(AppSettings.prototype);
     }
 }

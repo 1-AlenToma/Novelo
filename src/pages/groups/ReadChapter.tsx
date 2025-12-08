@@ -319,6 +319,7 @@ const Controller = ({ state, ...props }: any) => {
     fontSize,
     fontName,
     ttsModol,
+    chunkWords,
     lockScreen,
     ...rest
   }: AppSettings | Record<string, any>) => {
@@ -335,6 +336,13 @@ const Controller = ({ state, ...props }: any) => {
             if (context.player.playing())
               context.player.playing(false);
             await context.tts.deinitialize();
+          }
+        }
+
+        if (chunkWords != undefined) {
+          context.appSettings.chunkWords = chunkWords;
+          if (context.player.playing()) {
+            context.player.playing(false);
           }
         }
 
@@ -836,18 +844,31 @@ const Controller = ({ state, ...props }: any) => {
                         type: "MaterialIcons"
                       }}
                     >
-                      <FormItem css="mih-130" title="Voices">
+                      <FormItem css="mih-130" title="Voices Choose TTS Model">
                         <View css="he-100%">
-                          <Text css="desc fos-13 pal-10 mab-10">Choose TTS Model.{"\n"}
-                            <Text css="note co-red fos-12 fow-bold">For older phones, try using the low models as those tend to be faster.</Text>
-                          </Text>
-                          <ButtonGroup scrollable={true}
+                            <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
+                          <ButtonGroup scrollable={false}
                             buttons={context.tts.nameList()}
                             selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
                             onPress={x => {
                               editSettings({ ttsModol: context.tts.nameList()[x[0]] })
                             }} />
                         </View>
+                      </FormItem>
+                      <FormItem title="Split Words into chunks">
+                        <Text css="note co-red fos-12 fow-bold wi-100% pal-10">Split sentences into chunks, This is optional if you have an old phone.</Text>
+                        <CheckBox
+                          css="pal:1 invert"
+                          checked={
+                            context.appSettings
+                              .chunkWords ?? false
+                          }
+                          onChange={() => {
+                            editSettings({
+                              chunkWords: !(context.appSettings.chunkWords ?? false)
+                            });
+                          }}
+                        />
                       </FormItem>
                       <FormItem title="Rate/Speed">
                         <Slider

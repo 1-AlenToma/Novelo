@@ -94,7 +94,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                 try {
                     if (!data.tts.loaded)
                         await data.tts.initialize(data.tts.lastChosenConfig ?? data.appSettings.ttsModol);
-                    return await TTSManager.generateAndPlay({ ...item, speed: data.appSettings.rate });
+                    return await TTSManager.generateAndPlay({ ...item, splitWords: data.appSettings.chunkWords ?? false, speed: data.appSettings.rate });
                 } catch (e) {
                     console.error(e)
                 }

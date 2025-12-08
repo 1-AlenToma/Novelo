@@ -371,7 +371,6 @@ class Player {
     await context.tts.stop();
     this.currentTextSpeacking = text;
     await context.tts.speak({
-      nextText: undefined,
       text: this.currentTextSpeacking, onDone: async (msg) => {
         console.log("onDone", msg);
         if (this.playing() && msg == "PlaybackFinished") await this.playNext();
