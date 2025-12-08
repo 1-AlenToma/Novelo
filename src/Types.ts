@@ -12,7 +12,6 @@ import FileHandler from "./native/FileHandler"
 import { AppSettings, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
 import DownloadManager from "./native/DownloadManager";
-import * as Speech from 'expo-speech';
 import dbContext from "./db/dbContext";
 import TTSManager from 'react_native_sherpa_onnx_offline_tts';
 import {

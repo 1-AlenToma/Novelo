@@ -57,15 +57,6 @@ export default {
         "initialOrientation": "DEFAULT"
       }
     ],
-    [
-      "expo-build-properties",
-      {
-        "android": {
-          "usesCleartextTraffic": true,
-          "requestLegacyExternalStorage": true
-        }
-      }
-    ],
     "expo-sqlite",
     "expo-font",
     "expo-asset"

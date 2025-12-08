@@ -1,7 +1,7 @@
 import { UpdateAPK } from 'rn-update-apk';
 import { TouchableOpacity, Text, Icon, ProgressBar, View, AlertDialog } from 'react-native-short-style';
 import * as React from "react";
-import * as Application from 'expo-application';
+import DeviceInfo from 'react-native-device-info';
 
 export default () => {
     const state = buildState(() =>
@@ -11,7 +11,7 @@ export default () => {
         updater: new UpdateAPK({
             //iosAppId: '123456', // iOS is app store only, but we can point the user there
             apkVersionUrl: 'https://raw.githubusercontent.com/1-AlenToma/Novelo/main/AppVersion_2.json',
-            fileProviderAuthority: `${Application.applicationId}.provider`,
+            fileProviderAuthority: `${DeviceInfo.getBundleId()}.provider`,
             needUpdateApp: (needUpdate, whatsNew) => {
                 AlertDialog.confirm({
                     message: `New version released, do you want to update?\n\n${whatsNew}`,

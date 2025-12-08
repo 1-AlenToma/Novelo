@@ -11,7 +11,7 @@ const veryIntensiveTask =
   async taskDataArguments => {
     // Example of an infinite loop task
     const { delay } = taskDataArguments;
-    console.info(taskDataArguments)
+    console.info("veryIntensiveTask",taskDataArguments)
     let tasks: EventEmitter<string>[] = [];
     let getDate = (days: number) => {
       const date = new Date();

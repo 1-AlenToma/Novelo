@@ -3,7 +3,7 @@ import {
 } from "../Methods";
 import * as React from "react";
 import { View, Text, Icon } from "react-native-short-style";
-import * as Battery from "expo-battery";
+import DeviceInfo from 'react-native-device-info';
 import useTimer from "../hooks/Timer";
 
 export default ({ color }: any) => {
@@ -12,7 +12,7 @@ export default ({ color }: any) => {
   const timer = useTimer(5000);
   const setLvl = async () => {
     const lvl =
-      await Battery.getBatteryLevelAsync();
+      await DeviceInfo.getBatteryLevel();
     if (lvl !== null && lvl !== undefined) {
       setBatteryLevel(lvl);
       timer(() => {

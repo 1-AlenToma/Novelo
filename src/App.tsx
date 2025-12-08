@@ -81,7 +81,7 @@ const testning = false;
 const App = () => {
     const fontLoader = useFonts();
     useKeepAwake();
-    context.hook("size", "selectedThemeIndex", "isFullScreen", "updater", "files");
+    context.hook("selectedThemeIndex", "isFullScreen", "updater");
 
     context.useEffect(
         () => {
@@ -101,7 +101,7 @@ const App = () => {
         "KeyboardState"
     );
 
-    const visibility = NavigationBar.useVisibility();
+    NavigationBar.useVisibility();
     const loader = useLoader(true);
     useEffect(() => {
         let itemToRemove: any[] = [];
@@ -121,7 +121,7 @@ const App = () => {
             // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
             if (!__DEV__ && !((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
                 RNExitApp.exitApp?.();
-            
+
             itemToRemove?.forEach(x => x.remove());
         };
 

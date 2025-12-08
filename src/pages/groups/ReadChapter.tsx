@@ -23,7 +23,7 @@ import Fonts from "../../assets/Fonts";
 import * as React from "react";
 import LANGUAGE_TABLE from "react-native-translator/dist/constants/languageMap";
 import { ScrollView, Linking } from "react-native";
-import * as Clipboard from "expo-clipboard";
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation, useTimer, useDbHook } from "../../hooks";
 import { Player, DetailInfo } from "../../native";
 import Header from "../../pages/Header";
@@ -967,7 +967,7 @@ const InternalWeb = ({ state, ...props }: any) => {
           if (item.text == "Translate")
             context.player.menuOptions.textToTranslate = item.selection;
           else if (item.text === "Copy") {
-            Clipboard.setStringAsync(item.selection);
+            Clipboard.setString(item.selection);
           } else if (item.text === "Define") {
             context.player.menuOptions.define = `https://www.google.com/search?q=define%3A${item.selection.replace(/ /g, "+")}&sca_esv=ae00ca4afbc9d4da&sxsrf=ACQVn09Tncl4Kw9jpIkzEAaZtuZjWgKj5Q%3A1708602991908&ei=bzbXZcP_Ns2mwPAPpd2WiAU&oq=define%3Asystem&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg1kZWZpbmU6c3lzdGVtSI9sUM4IWI5ocAJ4AZABAZgB4QGgAfMSqgEGMjAuNC4xuAEDyAEA-AEBqAIPwgIKEAAYRxjWBBiwA8ICDRAAGIAEGIoFGEMYsAPCAhMQLhiABBiKBRhDGMcBGNEDGLADwgIKECMYgAQYigUYJ8ICCBAAGIAEGMsBwgIHECMY6gIYJ8ICBBAjGCfCAgoQABiABBiKBRhDwgIUEC4YgAQYigUYsQMYgwEYxwEYrwHCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIOEC4YgAQYxwEYrwEYjgXCAg4QLhiABBiKBRixAxiDAcICCBAuGIAEGLEDwgIFEAAYgATCAgQQABgDwgIHEAAYgAQYCogGAZAGEQ&sclient=mobile-gws-wiz-serp`;
           } else if (item.text === "Edit") {
