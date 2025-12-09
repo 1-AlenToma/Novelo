@@ -43,7 +43,7 @@ export default ({
     tprops.onPress = onPress;
     tprops.onLongPress = () => setVisible(true);
   }
-  let extra = controller == "Modal" ?{css:`he-${props.size}`}:{}
+  let extra = controller == "Modal" ?{css:`he-${props.size} wi-95%`}:{}
   const CN = controller == "Modal" ? Modal : ActionSheet;
   const Container = ready !== false ? ReadyView : React.Fragment;
   let containerProps: any = {};

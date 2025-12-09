@@ -470,7 +470,9 @@ const Controller = ({ state, ...props }: any) => {
           {
             text: () => (
               <ActionSheetButton
-                size="80%"
+                controller="Modal"
+                addCloser={true}
+                size="95%"
                 btn={
                   <Icon
                     type="Ionicons"
@@ -696,7 +698,7 @@ const Controller = ({ state, ...props }: any) => {
                           context.player.book
                             .parserName !== "epub"
                         }
-                        css="desc fos:10"
+                        css="desc fos:12"
                       >
                         Enabling This Option Will Make
                         Novelo Try and Reorder the
@@ -838,7 +840,7 @@ const Controller = ({ state, ...props }: any) => {
                     </TabView>
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
-                      css="flex invert"
+                      css="flex invert mih-300"
                       icon={{
                         name: "settings-voice",
                         type: "MaterialIcons"
