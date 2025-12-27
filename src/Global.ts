@@ -81,6 +81,7 @@ declare global {
         ): string;
         safeSplit(c: string, index: number): string;
         toCode: () => number[];
+        niceSentences(): string;
     }
 
     interface Number {
@@ -357,7 +358,14 @@ String.prototype.cleanText = function () {
     return clean(`@#$_&-+()/*"':;!?~|•√π÷×§∆£¢€¥^°=%©®™✓[]{}<>,.`);
 };
 
-String.prototype.htmlArray = function () { 
+String.prototype.niceSentences = function (this: string) {
+    let str = new String(this).toString();
+    str = str.replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
+    str = str.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt|dr)((\s+)?(\.)(\s+)?)/gi, "$1.");
+    return str;
+}
+
+String.prototype.htmlArray = function () {
     let str = new String(this).toString().replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
     const doc = IDOMParser.parse(`<div>${str}</div>`, {
         errorHandler: {

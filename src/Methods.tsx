@@ -96,7 +96,7 @@ export const withLock = async function <T>(fileUri: string, fn: () => Promise<an
 
 function generateText(html, minLength) {
   try {
-    html = html.replace(/<( )?(\/)?strong( )?>/gim, "");
+    html = html.niceSentences();
     const doc = IDOMParser.parse(`<div>${html}</div>`).documentElement;
     while (true) {
       let breakIt = true;
@@ -231,7 +231,7 @@ function generateText(html, minLength) {
         t += text.charAt(i);
         if (t.length >= 5) break;
       }
-      const r = /((mr|Mrs|Ms|Miss|dr)+( \.|\.)).*/gim.test(t);
+      const r = /\b(mr|Mrs|Ms|Miss|dr|Mt|dr)((\s+)?(\.)(\s+)?)/gi.test(t);
       return r;
     }
 
