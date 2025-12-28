@@ -159,7 +159,7 @@ class Player {
   }
 
   getImage = async (...href: IImage[]) => {
-    let imgs: (IImage & {cn: any, path?: string,})[] = [];
+    let imgs: (IImage & { cn: any, path?: string, })[] = [];
     let path = this.novel.imagePath as string;
     if (path) {
       for (let image of href) {
@@ -371,9 +371,14 @@ class Player {
     await context.tts.stop();
     this.currentTextSpeacking = text;
     await context.tts.speak({
-      text: this.currentTextSpeacking, onDone: async (msg) => {
+      text: this.currentTextSpeacking,
+      onDone: async (msg) => {
         console.log("onDone", msg);
-        if (this.playing() && msg == "PlaybackFinished") await this.playNext();
+        if (this.playing() && msg == "PlaybackFinished") {
+          this.currentChapterSettings.audioPercent = this.chapterArray.length.downloadPercent(this.currentChapterSettings.audioProgress);
+          await this.currentChapterSettings.saveChanges();
+          await this.playNext();
+        }
       }
     });
     // await this.stop();

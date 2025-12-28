@@ -122,7 +122,7 @@ export const ChapterView = ({
             });
           }}
 
-          itemSize={{ size: 45 }}
+          itemSize={{ size: 50 }}
           initializeIndex={state.index.page == state.currentPage ? state.index.index : 0}
           items={chArray[state.currentPage]?.items ?? []}
           renderItem={({ item, index }: { item: ChapterInfo, index: number }) => (
@@ -133,13 +133,18 @@ export const ChapterView = ({
               }
             }}>
               <View
-                css={`pa-5 flex mih:40 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
+                css={`pa-5 flex mih:50 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
                 <Text
                   css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}`}>
                   {item.name.safeSplit("/", -1)}
                 </Text>
-                <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
-                  color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="_abc bo-0 he-5 wi-102%" />
+                <View css="_abc bo-0 wi-102% bac-transparent">
+                  <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
+                    color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="he-5" />
+                  <ProgressBar ifTrue={(settingsMap.get(item.url)?.audioPercent ?? 0) > 0}
+                    color="#a75512ff" value={(settingsMap.get(item.url)?.audioPercent ?? 0) / 100} css="he-5" />
+                </View>
+
                 <View css="row clb">
                   <Icon
                     css={(settingsMap.get(item.url)?.scrollProgress ?? 0) >= 200 ? "co-green" : undefined}
