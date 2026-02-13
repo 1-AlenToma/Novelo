@@ -10,12 +10,6 @@ const {
     Parser
 } = require("../native");
 
-const pIdentifier = {
-    props: {
-        protectionIdentifier: ["Enable JavaScript and cookies to continue", "Performing security verification"]
-    }
-}
-
 export default class MangaKakalot extends Parser {
     constructor() {
         super(
@@ -35,7 +29,7 @@ export default class MangaKakalot extends Parser {
 
     async load() {
         let html = (
-            await this.http.web_view(this.url, this.url, pIdentifier)
+            await this.http.web_view(this.url, this.url)
         ).html;
 
         this.settings.Genre(
@@ -98,7 +92,7 @@ export default class MangaKakalot extends Parser {
         })
 
         let html = (
-            await this.http.web_view(url, this.url, pIdentifier)
+            await this.http.web_view(url, this.url)
         ).html;
         return this.parse(html);
     }
@@ -111,7 +105,7 @@ export default class MangaKakalot extends Parser {
 
     async getByAuthor(url) {
         let html = (
-            await this.http.web_view(url, this.url, pIdentifier)
+            await this.http.web_view(url, this.url)
         ).html;
 
         return this.parse(html);
@@ -119,7 +113,7 @@ export default class MangaKakalot extends Parser {
 
     async chapter(url) {
         let html = (
-            await this.http.web_view(url, this.url, pIdentifier)
+            await this.http.web_view(url, this.url)
         ).html;
         let imgs = html.findAll(".container-chapter-reader img").map(x => `<img id="${methods.newId()}" src='${x.url("src", { Referer: this.url + "/" })}'  />`).join("\n");
         return imgs;
@@ -145,7 +139,7 @@ export default class MangaKakalot extends Parser {
 
     async detail(url) {
         let html = (
-            await this.http.web_view(url, this.url, pIdentifier)
+            await this.http.web_view(url, this.url)
         ).html;
         let body = html.find("body");
 

@@ -204,8 +204,12 @@ const WatchAnime = (props: any) => {
                         });
 
                         const videoCheck = async ()=> {
-                            while(document.querySelector("video") == null)
-                             await window.sleep(100);
+                            let counter = 20
+                            while(document.querySelector("video") == null && counter >0)
+                             {
+                                await window.sleep(100);
+                                counter--;
+                            }
                             const video = document.querySelector("video");
                             //video.parentElement.classList.add("videoSize")
 

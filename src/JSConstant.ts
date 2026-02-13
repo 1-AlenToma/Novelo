@@ -62,7 +62,8 @@ export let htmlGetterJsCode = (x: WebViewFetchData) => {
       }
 
       window.getHtml = async function () {
-        let protection = ["Verifying you are human", "Enable JavaScript and cookies to continue", "Performing security verification"];
+       let protection = ["Verifying you are human","Enable JavaScript and cookies to continue","Performing security verification","Checking your browser before accessing","Just a moment...","Please wait while we verify","DDoS protection by Cloudflare","cf-browser-verification","Attention Required! | Cloudflare","Security check","Access denied","Request blocked","Forbidden","Your request has been blocked","unusual traffic","detected unusual activity"]
+
         if (props && props.protectionIdentifier && props.protectionIdentifier.length > 0)
           protection = [...protection, ...props.protectionIdentifier];
       //  postData("LOG", protection);
