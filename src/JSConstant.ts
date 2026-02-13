@@ -62,17 +62,15 @@ export let htmlGetterJsCode = (x: WebViewFetchData) => {
       }
 
       window.getHtml = async function () {
-       let protection = ["Verifying you are human","Enable JavaScript and cookies to continue","Performing security verification","Checking your browser before accessing","Just a moment...","Please wait while we verify","DDoS protection by Cloudflare","cf-browser-verification","Attention Required! | Cloudflare","Security check","Access denied","Request blocked","Forbidden","Your request has been blocked","unusual traffic","detected unusual activity"]
+       let protection = ["Verifying you are human","Enable JavaScript and cookies to continue","Performing security verification","Checking your browser before accessing","Please wait while we verify","DDoS protection by Cloudflare","cf-browser-verification","Attention Required! | Cloudflare"]
 
         if (props && props.protectionIdentifier && props.protectionIdentifier.length > 0)
           protection = [...protection, ...props.protectionIdentifier];
       //  postData("LOG", protection);
         let text = document.documentElement.outerHTML;
-        if (
-          protection.find(
-            (x) => text.toLowerCase().indexOf(x.toLowerCase()) !== -1
-          )
-        ) {
+        const pr =  protection.find((x) => text.toLowerCase().indexOf(x.toLowerCase()) !== -1) 
+        if (pr) {
+       //   postData("log", pr);
           var payload = {
             id: "${x.id}",
             data: "${x.url}",
