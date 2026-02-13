@@ -10,6 +10,12 @@ const {
     Parser
 } = require("../native");
 
+const pIdentifier = {
+    props: {
+        protectionIdentifier: ["Enable JavaScript and cookies to continue", "Performing security verification"]
+    }
+}
+
 export default class MangaKakalot extends Parser {
     constructor() {
         super(
@@ -29,7 +35,7 @@ export default class MangaKakalot extends Parser {
 
     async load() {
         let html = (
-            await this.http.web_view(this.url)
+            await this.http.web_view(this.url, this.url, pIdentifier)
         ).html;
 
         this.settings.Genre(
@@ -61,7 +67,7 @@ export default class MangaKakalot extends Parser {
 
     parse(html) {
 
-        let items = html.$(".panel_story_list .story_item, .truyen-list .list-truyen-item-wrap, .list-comic-item-wrap")
+        let items = html.$(".panel_story_list .story_item,.truyen-list .list-truyen-item-wrap,.list-comic-item-wrap")
             .map(f => {
                 let name = f.find(".story_name a").hasValue ? f.find(".story_name a") : f.first("img").parent;
                 let title = name.attr("title").has() ? name.attr("title") : name.text;
@@ -73,7 +79,7 @@ export default class MangaKakalot extends Parser {
                     .Info(f.first(".story_item_right .story_chapter, .list-story-item-wrap-chapter").text)
                     .ParserName(this.name);
             });
-
+       // console.warn("items", items,  html.html)
         return items;
     }
 
@@ -92,7 +98,7 @@ export default class MangaKakalot extends Parser {
         })
 
         let html = (
-            await this.http.web_view(url, this.url)
+            await this.http.web_view(url, this.url, pIdentifier)
         ).html;
         return this.parse(html);
     }
@@ -105,7 +111,7 @@ export default class MangaKakalot extends Parser {
 
     async getByAuthor(url) {
         let html = (
-            await this.http.web_view(url, this.url)
+            await this.http.web_view(url, this.url, pIdentifier)
         ).html;
 
         return this.parse(html);
@@ -113,15 +119,33 @@ export default class MangaKakalot extends Parser {
 
     async chapter(url) {
         let html = (
-            await this.http.web_view(url, this.url)
+            await this.http.web_view(url, this.url, pIdentifier)
         ).html;
         let imgs = html.findAll(".container-chapter-reader img").map(x => `<img id="${methods.newId()}" src='${x.url("src", { Referer: this.url + "/" })}'  />`).join("\n");
         return imgs;
     }
 
+    async getChapters(uurl) {
+        try {
+            const url = `https://www.mangakakalot.gg/api/manga/${uurl.safeSplit("/", -1)}/chapters?limit=90000&offset=0`;
+            const data = await this.http.get_html(url, this.url);
+            const json = data.json;
+            if (json.data.chapters.length <= 0)
+                return [];
+            return json.data.chapters.map(a => ChapterInfo.n()
+                .Name(a.chapter_name)
+                .Url(uurl.join(a.chapter_slug))
+                .ParserName(this.name)).reverse();
+
+        } catch (e) {
+            console.error(e)
+            return [];
+        }
+    }
+
     async detail(url) {
         let html = (
-            await this.http.web_view(url, this.url)
+            await this.http.web_view(url, this.url, pIdentifier)
         ).html;
         let body = html.find("body");
 
@@ -163,15 +187,17 @@ export default class MangaKakalot extends Parser {
             )
             .ParserName(this.name);
 
-        item.Chapters(
-            body.findAll(".manga-info-chapter .chapter-list a")
-                .map(a =>
-                    ChapterInfo.n()
-                        .Name(a.text)
-                        .Url(a.url("href"))
-                        .ParserName(this.name)
-                ).reverse()
-        );
+        item.Chapters(await this.getChapters(url))
+
+        /*  item.Chapters(
+              body.findAll(".manga-info-chapter .chapter-list a")
+                  .map(a =>
+                      ChapterInfo.n()
+                          .Name(a.text)
+                          .Url(a.url("href"))
+                          .ParserName(this.name)
+                  ).reverse()
+          );*/
         return item;
     }
 }

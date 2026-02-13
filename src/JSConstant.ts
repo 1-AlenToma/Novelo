@@ -17,6 +17,7 @@ if (window.__DEV__)
 `);
 
 export let htmlGetterJsCode = (x: WebViewFetchData) => {
+  
   let data = /*js*/ `
     try {
       function sleep(ms) {
@@ -61,10 +62,10 @@ export let htmlGetterJsCode = (x: WebViewFetchData) => {
       }
 
       window.getHtml = async function () {
-        let protection = ["Verifying you are human"];
+        let protection = ["Verifying you are human", "Enable JavaScript and cookies to continue", "Performing security verification"];
         if (props && props.protectionIdentifier && props.protectionIdentifier.length > 0)
           protection = [...protection, ...props.protectionIdentifier];
-
+      //  postData("LOG", protection);
         let text = document.documentElement.outerHTML;
         if (
           protection.find(
