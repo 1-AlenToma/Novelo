@@ -1,5 +1,6 @@
 import BackgroundService from "react-native-background-actions";
 import EventEmitter from "./EventEmitter";
+import HTTPServer from "./HttpServer";
 
 
 const sleep = time =>
@@ -11,7 +12,7 @@ const veryIntensiveTask =
   async taskDataArguments => {
     // Example of an infinite loop task
     const { delay } = taskDataArguments;
-    console.info("veryIntensiveTask",taskDataArguments)
+    console.info("veryIntensiveTask", taskDataArguments)
     let tasks: EventEmitter<string>[] = [];
     let getDate = (days: number) => {
       const date = new Date();
@@ -84,10 +85,13 @@ const options = {
 export class BgService {
   async start() {
     try {
+
       await BackgroundService.start(
         veryIntensiveTask,
         options
       );
+
+      await HTTPServer.start();
     } catch (e) { console.error(e) }
   }
 
@@ -121,6 +125,7 @@ export class BgService {
   async stop() {
     try {
       await BackgroundService.stop();
+      HTTPServer.stop();
     } catch (e) { }
   }
 }

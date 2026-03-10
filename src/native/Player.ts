@@ -87,7 +87,7 @@ class Player {
   }
 
   procent(tempValue?: number) {
-    return `${tempValue ?? this.currentChapterIndex + 1}/${this.novel.chapters.length}`;
+    return `${(tempValue ? tempValue + 1 : undefined) ?? this.currentChapterIndex + 1}/${this.novel.chapters.length}`;
   }
 
   async clean(html?: string) {

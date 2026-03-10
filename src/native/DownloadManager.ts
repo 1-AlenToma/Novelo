@@ -29,38 +29,47 @@ export default class DownloadManager {
     let id = useRef(newId()).current;
     const [urls, setUrls] = useState<string[]>([]);
 
-    this.events[id] = (url: string) => {
-      const keys = [...this.prepItems.keys()].filter(x => !this.items.has(x));
-      if (keys.length !== urls.length)
-        setUrls(keys);
-    };
+
+    useEffect(() => {
+      this.events[id] = (url: string) => {
+        const keys = [...this.prepItems.keys()].filter(x => !this.items.has(x));
+        if (keys.length !== urls.length)
+          setUrls(keys);
+      };
+    }, [urls])
 
     return urls;
 
   }
 
   useDownload(parentUrl: string) {
-    let [infos, setInfos] = useState<number>(0);
+    let [infos, setInfos] = useState<number>(-1);
     let id = useRef(newId()).current;
-    this.events[id] = (url: string) => {
-      if (!url.has(parentUrl))
-        return;
-      let item = undefined;
-      let tms: { [key: string]: number } = {}
-      let items = [...this.prepItems.values()];
-      items.forEach(x => {
-        if (!parentUrl || x.url.has(parentUrl))
-          item = this.items.get(x.url) ?? 0.1;
-      });
-
-      if (item == undefined)
-        setInfos(0)
-      else
-        setInfos(item);
-    };
 
     useEffect(() => {
-      this.events[id](parentUrl);
+      this.events[id] = (url: string) => {
+        if (!url.has(parentUrl))
+          return;
+        let item = undefined;
+        let items = [...this.prepItems.values()];
+        items.forEach(x => {
+          if (!parentUrl || x.url.has(parentUrl))
+            item = this.items.get(x.url) ?? 0.1;
+        });
+
+        if (item == undefined)
+          setInfos(0)
+        else
+          setInfos(item);
+      };
+
+      if (infos == -1)
+        this.events[id]?.(parentUrl);
+
+    }, [infos]);
+
+    useEffect(() => {
+
       return () => { delete this.events[id] }
     }, []);
 
@@ -81,6 +90,8 @@ export default class DownloadManager {
               content: src,
               fileName: img
             });
+            await sleep(100); // try later until success
+
             break;
           } else if (src && (src as any).isNetwork?.()) {
             await sleep(10000); // try later until success

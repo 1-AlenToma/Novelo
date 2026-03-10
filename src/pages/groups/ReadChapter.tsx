@@ -317,7 +317,6 @@ const Controller = ({ state, ...props }: any) => {
 
   const editSettings = ({
     fontSize,
-    fontName,
     ttsModol,
     chunkWords,
     lockScreen,
@@ -400,7 +399,7 @@ const Controller = ({ state, ...props }: any) => {
                   });
                 }}
                 minimumValue={0}
-                maximumValue={context.player.novel.chapters.length}
+                maximumValue={context.player.novel.chapters.length-1}
               />
             </View></>)
         }} />

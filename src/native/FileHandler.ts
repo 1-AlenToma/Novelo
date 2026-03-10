@@ -226,12 +226,14 @@ export default class FileHandler {
   onDirDelete(func: (path?: string) => void) {
     const id = useRef(newId()).current;
 
-    this.events[id] = (op, folder) => {
-      if (op == "onClear")
-        func(folder);
-    }
+
 
     useEffect(() => {
+      this.events[id] = (op, folder) => {
+        if (op == "onClear")
+          func(folder);
+      }
+
       return () => {
         if (this.events[id]) {
           delete this.events[id];
@@ -249,35 +251,36 @@ export default class FileHandler {
     const files = useRef([] as string[]);
     const [fileItems, setItems] = useState<(T & { deleteFile: () => Promise<void> })[]>([]);
     const loader = useLoader(true);
-    this.events[id] = async (
-      op,
-      fileName,
-      fullName,
-      fromDisabled
-    ) => {
-      if (this.disabled) {
-        return;
-      }
-      if (!fromDisabled) {
-        if (
-          (updateState === "New" || (updateState == "NewDelete" && op != "Delete")) && files.current.find(x => x === fileName || x == fullName)) {
-          return;
-        }
-      }
-      // await loader.show();
-      if (this.allFilesReaded && this.enableCaching)
-        files.current = this.DownloadedFiles.keys();
-      else {
-        files.current = await this.allFiles();
-        if (this.enableCaching)
-          this.DownloadedFiles.push(...files.current.map(x => ({ key: this.getName(x), value: undefined })))
-      }
 
-      this.allFilesReaded = true;
-      await loadItems();
-    };
 
     useEffect(() => {
+      this.events[id] = async (
+        op,
+        fileName,
+        fullName,
+        fromDisabled
+      ) => {
+        if (this.disabled) {
+          return;
+        }
+        if (!fromDisabled) {
+          if (
+            (updateState === "New" || (updateState == "NewDelete" && op != "Delete")) && files.current.find(x => x === fileName || x == fullName)) {
+            return;
+          }
+        }
+        // await loader.show();
+        if (this.allFilesReaded && this.enableCaching)
+          files.current = this.DownloadedFiles.keys();
+        else {
+          files.current = await this.allFiles();
+          if (this.enableCaching)
+            this.DownloadedFiles.push(...files.current.map(x => ({ key: this.getName(x), value: undefined })))
+        }
+
+        this.allFilesReaded = true;
+        await loadItems();
+      };
       if (!this.disabled) this.events[id]();
       return () => {
         if (this.events[id]) {

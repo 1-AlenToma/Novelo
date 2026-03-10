@@ -12,7 +12,7 @@ export default () => {
       (async () => {
         console.log("Loading Fonts");
         loader.show();
-        if (!__DEV__)
+        // if (!__DEV__)
         await Font.loadAsync({
           ...Fonts
         });

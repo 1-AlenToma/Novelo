@@ -1,6 +1,4 @@
 import WebView from "react-native-webview";
-import Fonts from "../assets/Fonts";
-import { CSSStyle, JS } from "../assets/readerJs";
 import * as React from "react";
 import useView from "../hooks/useView";
 import useTimer from "../hooks/Timer"
@@ -8,13 +6,11 @@ import {
   invertColor,
   sleep
 } from "../Methods";
-import { Asset } from "expo-asset";
 import { View, Text as TextView, ProgressBar } from "react-native-short-style";
 import BattariView from "./BattariView";
 import WebOptions from "../native/WebOptions";
-import { jsScript } from "JSConstant";
+import httpServer from "native/HttpServer";
 
-const jsScriptFn = jsScript(JS, "DOMContentLoaded")
 
 
 const Clock = ({ secondEnabled }: any) => {
@@ -112,7 +108,6 @@ export default ({
     allowFileAccessFromFileURLs: true,
     allowUniversalAccessFromFileURLs: true,
     javaScriptEnabled: true,
-    injectedJavaScriptBeforeContentLoaded: jsScriptFn,
     contentMode: "mobile",
     scalesPageToFit: true,
     originWhitelist: ["*"],
@@ -126,7 +121,7 @@ export default ({
     }
   });
 
-  context.hook("appSettings.backgroundColor");
+  context.hook("appSettings.backgroundColor", "appSettings.fontName");
 
   const postMessage = async (
     type: string,
@@ -140,58 +135,6 @@ export default ({
     }
     let item = { type, data, id };
     state.refItem.webView.injectJavaScript(`${!method ? "window.loadData" : method}(${JSON.stringify(item)}); true;`);
-  };
-
-  const loadFonts = async () => {
-
-    try {
-      if (!state.refItem.assets[context.appSettings.fontName]) {
-        state.refItem.assets = {};
-        let asset = Asset.fromModule(require("../assets/gfont.ttf"));
-        await asset.downloadAsync();
-        let fontUri = asset.localUri;
-        asset = Asset.fromModule(Fonts[context.appSettings.fontName]);
-        await asset.downloadAsync();
-        state.refItem.assets[context.appSettings.fontName] = {
-          icons: fontUri,
-          font: asset.localUri
-        };
-      }
-      let css = `
-      @font-face {
-      font-family: 'Material Symbols Outlined';
-      font-style: normal;
-      font-weight: 400;
-      src: url("${state.refItem.assets[context.appSettings.fontName].icons}") format('woff2');
-      }
-      
-      @font-face {
-      font-family: '${context.appSettings.fontName}';
-      src: url("${state.refItem.assets[context.appSettings.fontName].font}") format('truetype');
-      }
-
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}`;
-
-      await postMessage("CSS", css, undefined, "fontCSS"); // font
-
-    } catch (e) {
-      return "";
-      console.error(e);
-    }
   };
 
   const loadCss = async () => {
@@ -298,7 +241,7 @@ export default ({
       `;
     }
     await postMessage("CSS", cssStyle, undefined, "dynamicCSS");
-    await loadFonts();
+    //  await loadFonts();
     await postMessage("CSS", cleanInlineStyle(), undefined, "inlineStyle");
   };
 
@@ -334,6 +277,9 @@ export default ({
         overflowY: "auto"
       };
 
+      if (context.appSettings.navigationType == "ScrollSnap")
+          options.viewStyle.paddingBottom = context.player.paddingBottom();
+
       let scrollType = context.player.novel.type?.isManga() ? "PaginationScroll" : (context.player.showPlayer ? "Player" : (context.appSettings.navigationType == "Snap" ? "Pagination" : (context.appSettings.navigationType == "ScrollSnap" ? "PaginationScroll" : "Scroll")));
       options.content = content.content;
       options.scrollDisabled = false;
@@ -357,7 +303,7 @@ export default ({
       }
       true;
     `);
-      await postMessage("CSS", CSSStyle);// reader style
+      // await postMessage("CSS", CSSStyle);// reader style
       state.refItem.webView?.injectJavaScript(sliderJs);
     } catch (e) {
       console.error(e)
@@ -497,20 +443,22 @@ export default ({
       </View>
       {loader.elem}
       {render(null, {
-        injectedJavaScriptBeforeContentLoaded: jsScriptFn,
         source: {
           html: `
           <!DOCTYPE html>
           <html>
             <head>
-              <meta name="viewport" content="width=device-width,  initial-scale=1" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
               <style class="custom">
                 body {
                   background:${context.appSettings.backgroundColor};
                 }
               </style>
+              <link type="text/css" rel="stylesheet" href="${httpServer.address}/novelCss" />
+              <link type="text/css" rel="stylesheet" href="${httpServer.address}/novelFonts/${context.appSettings.fontName}" />
+              <script src="${httpServer.address}/novelScript"></script>
             </head>
-            <body class="${context.player.novel.type}"></body>
+            <body class="${context.player.novel.type}" imageAddress="${httpServer.address}/images"></body>
           </html>
           `,
           basUrl: ""

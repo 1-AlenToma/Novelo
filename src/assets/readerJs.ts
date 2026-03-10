@@ -979,8 +979,14 @@ export const JS = /*js*/`
                                 return Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
                         }
 
+                        window.fetchImage =async (img, src)=> {
+                                let data =await fetch(src);
+                                img.src =await data.text();
+                        }
+
                         window.onImageLoadError = async (img)=> {
                         try{
+                         const imageAddress = document.body.getAttribute("imageAddress");
                           const setId =()=> {
                                 if (img && !img.id){
                                  img.id = window.getId();
@@ -996,18 +1002,26 @@ export const JS = /*js*/`
                         
                           if (src && typeof src == "string" && src.indexOf("header") != -1) {
                                  setId();
-                                  window.postmsg("Image", [{src, id: img.id}]);    
-                                  return;
+                                if (src.indexOf(imageAddress) != -1)
+                                return
+                                
+                                // window.postmsg("log",  addString(imageAddress, "/",encodeURIComponent(src),"/", img.id));
+                                //img.src = addString(imageAddress, "/",encodeURIComponent(src),"/", img.id); 
+                             await   window.fetchImage(img,addString(imageAddress, "/",encodeURIComponent(src),"/", img.id))
+                                 return;
                            }
                           if (window.isValidUrl(src))
                                 return; // it is an external image, cant do anything to load it.
                           
                           setId();
-                        window.postmsg("Image", [{src, id: img.id}]);
+                         //  window.postmsg("log",  addString(imageAddress, "/",encodeURIComponent(src),"/", img.id));
+                          //  img.src = addString(imageAddress, "/",encodeURIComponent(src),"/", img.id);
+                            await   window.fetchImage(img,addString(imageAddress, "/",encodeURIComponent(src),"/", img.id))
                         }catch(e){
                          window.postmsg("log", e.toString());
                         }
                         }
+                        
                           
                         window.renderImage = (items) => {
                                 try {
