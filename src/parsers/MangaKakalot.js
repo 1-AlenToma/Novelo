@@ -18,7 +18,7 @@ export default class MangaKakalot extends Parser {
             "/favicon.ico",
             "Manga"
         );
-        this.infoGeneratorName = "";
+        this.infoGeneratorName = "AnimePlanet";
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
@@ -73,7 +73,7 @@ export default class MangaKakalot extends Parser {
                     .Info(f.first(".story_item_right .story_chapter, .list-story-item-wrap-chapter").text)
                     .ParserName(this.name);
             });
-       // console.warn("items", items,  html.html)
+        // console.warn("items", items,  html.html)
         return items;
     }
 

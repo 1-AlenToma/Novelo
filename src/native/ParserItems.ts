@@ -89,11 +89,12 @@ abstract class NovelInfo {
   }
 
   abstract search(
-    item: DetailInfo
+    item: DetailInfo,
+    type?: string
   ): Promise<DetailInfo>;
 }
 
-export type InfoGeneratorName = "" | "NovelUpdate" | "MyAnimeList";
+export type InfoGeneratorName = "" | "NovelUpdate" | "MyAnimeList" | "AnimePlanet";
 
 class ParserDetail extends OmitType(SearchDetail, "text", "page") {
   searchCombination: SearchCombination[] = [];

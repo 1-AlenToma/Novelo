@@ -14,11 +14,12 @@ import NovelBin from "./Novelbin";
 import NovelBinCom from "./NovelBinCom";
 import GogoAnime from "./GogoAnime";
 import MangaKakalot from "./MangaKakalot";
-import NovLoveCom from "./NovLoveCom"
+import NovLoveCom from "./NovLoveCom";
 
 import NovelUpdate from "./infos/NovelUpdates";
 import MyAnimeList from "./infos/MyAnimeList";
 import WebNovel from "./infos/WebNovel";
+import AnimePlanet from "./infos/AnimePlanet";
 import Memo from "../attr/Memo";
 import { AlertDialog } from "react-native-short-style";
 const daysToSave = (nr: number = 5) => {
@@ -32,6 +33,7 @@ export default class ParserWrapper extends Parser {
   novelUpdate: NovelUpdate;
   webNovel: WebNovel;
   animeInfo: MyAnimeList;
+  animePlanetInfo: AnimePlanet;
   infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   infoEnabled: boolean = true;
   constructor(parser: Parser) {
@@ -41,6 +43,7 @@ export default class ParserWrapper extends Parser {
     this.novelUpdate = new NovelUpdate();
     this.animeInfo = new MyAnimeList();
     this.webNovel = new WebNovel();
+    this.animePlanetInfo = new AnimePlanet();
     this.infoGeneratorName = parser.infoGeneratorName;
     this.minVersion = parser.minVersion;
     this.protected = parser.protected ?? false;
@@ -113,7 +116,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: false,
+    isDebug: true,
     argsOverride: (args: any[]) => {
       return [args.firstOrDefault("url")];
     },
@@ -144,6 +147,9 @@ export default class ParserWrapper extends Parser {
         break;
       case "MyAnimeList":
         novel = await this.animeInfo.search(item);
+        break;
+      case "AnimePlanet":
+        novel = await this.animePlanetInfo.search(item, (item.type ?? "manga").toLowerCase() as any);
         break;
       default:
         novel = null;
@@ -217,7 +223,7 @@ export default class ParserWrapper extends Parser {
     isDebug: debugg,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `group_${key}${target.name}`,
-    argsOverride:(args)=> [args[0], args[1]],
+    argsOverride: (args) => [args[0], args[1]],
     validator: (data: any) => data && data.has() && !data[0].name.empty() && !data[0].url.empty()
   })
   async group(
