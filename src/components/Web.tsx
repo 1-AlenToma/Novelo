@@ -198,12 +198,11 @@ export default ({
         }
 
         body img {
-          max-width: 98%;
+          max-width: 100%;
         }
 
         .Manga img {
-          margin: auto;
-          margin-bottom: 0px;
+          margin: 0 auto 0;
           display: block;
         }
         
@@ -268,8 +267,8 @@ export default ({
         alignItems: (context.player.showPlayer ? "center" : "unset")
       };
       options.viewStyle = {
-        paddingLeft: (5).sureValue(context.appSettings.margin),
-        paddingRight: (5).sureValue(context.appSettings.margin),
+        paddingLeft: context.player.novel.type.isManga() ? 1 : (5).sureValue(context.appSettings.margin),
+        paddingRight: context.player.novel.type.isManga() ? 1 : (5).sureValue(context.appSettings.margin),
         paddingTop: "40px",
         lineHeight: context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight),
         fontSize: context.appSettings.fontSize,
@@ -278,7 +277,7 @@ export default ({
       };
 
       if (context.appSettings.navigationType == "ScrollSnap")
-          options.viewStyle.paddingBottom = context.player.paddingBottom();
+        options.viewStyle.paddingBottom = context.player.paddingBottom();
 
       let scrollType = context.player.novel.type?.isManga() ? "PaginationScroll" : (context.player.showPlayer ? "Player" : (context.appSettings.navigationType == "Snap" ? "Pagination" : (context.appSettings.navigationType == "ScrollSnap" ? "PaginationScroll" : "Scroll")));
       options.content = content.content;
@@ -384,6 +383,10 @@ export default ({
         break;
       case "enable":
         //  state.refItem.loading = false;
+        break;
+      case "savePage":
+        httpServer.lastPageCarche = data.data;
+        console.warn("Page Save", "size", data.data.length);
         break;
       case "Image":
         let images = await context.player.getImage(

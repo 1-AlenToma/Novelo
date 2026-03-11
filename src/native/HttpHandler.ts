@@ -239,6 +239,7 @@ class HttpHandler {
       if (item) url = this.queryString(url, item);
       console.info("web_view", url);
       const data = await getFetch(url, this.header(), this.ignoreAlert, this, true, props);
+      console.info("web_view, got result", url);
       return new HttpValue(data ? await data.text() : "", baseurl || url);
     } catch (e) {
       console.error("httget", e);
@@ -304,48 +305,30 @@ class HttpHandler {
       return null;
     }
   }
-
-  imageUrlToBase64(url: string, header?: any) {
+  async imageUrlToBase64(url: string, header?: any) {
     try {
-      console.log(
-        "getting image for",
-        url?.substring(0, 150)
-      );
-      if (!url || url.isBase64String()) {
-        console.info("url is a base64 or empty");
-        return url;
-      }
+      console.log("getting image for", url?.substring(0, 150));
+      if (!url || url.isBase64String()) return url;
+
       header = header ?? {};
       if (typeof url == "string" && url.has("header")) {
         let h = JSON.parse(url.split("header")[1].substring(1));
         url = url.split("header")[0].trim();
-        for (let k in h)
-          header[k] = h[k];
+        for (let k in h) header[k] = h[k];
       }
-      return new Promise(
-        async (onSuccess, onError) => {
-          try {
-            const response = await fetch(url, {
-              ...this.header(header),
-            });
-            const blob = await response.blob();
-            const reader = new FileReader();
-            reader.onerror = function (e) {
-              console.error(e);
-              onSuccess(new HttpError(e));
-            }
-            reader.onload = function () {
-              if (reader.result)
-                onSuccess(`data:image/jpg;base64,${reader.result.toString().safeSplit(",", 1)}`);
-            };
-            reader.readAsDataURL(blob);
-          } catch (e) {
 
-            console.error(e);
-            onSuccess(new HttpError(e));
-          }
-        }
-      );
+      const response = await fetch(url, { ...this.header(header) });
+      const blob = await response.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(`data:image/jpg;base64,${reader.result.toString().safeSplit(",", 1)}`);
+        reader.onerror = ()=> {
+          resolve("");
+          console.error("base64Image not found")
+        };
+        reader.readAsDataURL(blob);
+      });
+
     } catch (e) {
       console.error("HttpError", e);
       return new HttpError(e);

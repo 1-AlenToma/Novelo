@@ -4,17 +4,23 @@ import { jsScript } from "JSConstant";
 import { CSSStyle, JS } from "../assets/readerJs";
 import { Asset } from "expo-asset";
 import Fonts from "../assets/Fonts";
-
+import MapCacher from "./MapCacher";
+const tempImageData = new MapCacher<any>(200);
 
 class HttpServer {
     address: string = "";
     port: number = 61735;
+    lastPageCarche: string = "Ok";
     private started: boolean = false;
     async setIp() {
         let ip = await NetworkInfo.getIPAddress();
         this.address = ip && /[1-9]/g.test(ip) && __DEV__
-            ? `http://${ip}:${this.port}`
-            : `http://127.0.0.1:${this.port}`;
+            ? `http://${ip}:${this.port}/${context.version}`
+            : `http://127.0.0.1:${this.port}/${context.version}`;
+    }
+
+    getRoute(route: string) {
+        return "/" + context.version + route;
     }
     async start() {
         await this.setIp();
@@ -31,7 +37,25 @@ class HttpServer {
             });
 
 
-            server.route("/novelCss", "GET", async (request) => {
+            server.route(this.getRoute("/getLastPage"), "GET", async (request) => {
+
+                try {
+                    return {
+                        statusCode: 200,
+                        statusDescription: "OK - CUSTOM STATUS",
+                        contentType: "text/html; charset=UTF-8",
+                        headers: {
+                            "Access-Control-Allow-Origin": "*", // allow WebView fetch
+                        },
+                        body: this.lastPageCarche,
+                    };
+                } catch (e) {
+                    console.error(e)
+                }
+            });
+
+
+            server.route(this.getRoute("/novelCss"), "GET", async (request) => {
                 try {
                     return {
                         statusCode: 200,
@@ -49,7 +73,7 @@ class HttpServer {
 
 
 
-            server.route("/novelFonts/{fontName}", "GET", async (request) => {
+            server.route(this.getRoute("/novelFonts/{fontName}"), "GET", async (request) => {
                 try {
                     const { fontName } = JSON.parse(request.paramsJson);
 
@@ -104,27 +128,41 @@ class HttpServer {
                 }
             });
 
-            server.route("/images/{src}/{id}", "GET", async (request) => {
+
+            server.route(this.getRoute("/images/{src}/{id}"), "GET", async (request) => {
                 try {
                     // console.error("Request", "/imageAddress", "GET", request);
                     const { src, id } = JSON.parse(request.paramsJson);
+
+                    let data: any = undefined;
                     const img = { src: decodeURIComponent(src), id };
-                    let images = await context.player.getImage(img)
-                    //  console.warn("Image", images.firstOrDefault()?.cn)
+                    let key = img.src + context.player.book.name + context.player.currentChapter.name + context.player.novel.parserName;
+                    if (tempImageData.has(key))
+                        data = tempImageData.get(key);
+                    if (!data) {
+                        data = (await context.player.getImage(img)).firstOrDefault();
+                        if (data)
+                            tempImageData.set(key, data)
+                    }
+                    if (data) {
+                        data.id = id;
+                        data.src = src;
+                    }
+
                     return {
                         statusCode: 200,
-                        contentType: "text/plain",
+                        contentType: "application/json",
                         headers: {
-                            "Access-Control-Allow-Origin": "*", // allow WebView fetch
+                            "Access-Control-Allow-Origin": "*"
                         },
-                        body: images.firstOrDefault()?.cn
+                        body: JSON.stringify(data ?? {})
                     } as any;
                 } catch (e) {
                     console.error(e)
                 }
             });
 
-            server.route("/novelScript", "GET", async (request) => {
+            server.route(this.getRoute("/novelScript"), "GET", async (request) => {
                 //   console.error("Request", "/script", "GET", request);
                 const jsScriptFn = jsScript(JS, "DOMContentLoaded")
                 return {
