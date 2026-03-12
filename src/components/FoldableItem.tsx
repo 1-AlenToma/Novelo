@@ -104,7 +104,6 @@ export default ({
   return render(
     <>
       <View
-        onPress={() => alert("jkshad")}
         style={{
           height: ((state.childSize?.height ?? 0) as number) - 10,
           width: "100%"

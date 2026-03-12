@@ -13,6 +13,7 @@ const Stack = createNativeStackNavigator();
 export default () => {
   return (
     <Stack.Navigator
+      id="AppStack"
       initialRouteName="AppMenu"
       screenOptions={{
         headerShown: false

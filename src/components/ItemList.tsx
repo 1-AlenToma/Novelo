@@ -52,7 +52,7 @@ export default ({
     useRef(true);
   const ref = useRef();
   const selected = useRef();
-  const Render = memo(({ item, index }: any) => {
+  const Render = (({ item, index }: any) => {
     let d = { item, vMode, index };
     if (props) d = { ...d, ...props };
     let VR = container;
@@ -120,6 +120,7 @@ export default ({
           onContentSizeChange={() => {
             time(() => scrollTo());
           }}
+
           contentContainerStyle={{
             padding: 1
           }}
@@ -158,9 +159,11 @@ export default ({
           renderItem={({ item, index }) =>
             <Render item={item} index={index} />
           }
-          keyExtractor={(item, index) =>
-            index.toString()
-          }
+          keyExtractor={(item, index) => {
+            let key = typeof item == "object" ? item.name ?? "" : "";
+            key += index;
+            return key;
+          }}
         />) : null}
     </View>
   );

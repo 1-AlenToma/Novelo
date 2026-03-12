@@ -106,128 +106,132 @@ export default (props: any) => {
   };
 
   return (
-        <View css="flex clb ma-5" style={{paddingBottom:100}}>
-          <View
-            ifTrue={
-              context.zip._loading
-            }
-            css="he:30 clearwidth zi:99999 clb">
-            <context.zip.ProgressBar />
+    <ScrollView css="mah-100%">
+      <View css="flex clb ma-5 pab-100">
+
+        <View
+          ifTrue={
+            context.zip._loading
+          }
+          css="he:30 clearwidth zi:99999 clb">
+          <context.zip.ProgressBar />
+        </View>
+        {loader.elem}
+        <View
+          css="mih:99% ali:center bor:5 overflow invert">
+          <View css="he:30% juc:center ali:center">
+            <Image
+              url={require("../assets/ic_launcher_round.png")}
+              css="mat:2.5 clearwidth bor:2 miw:100 mih:100"
+            />
+            <Text css="desc co-red fow-bold">Version:{context.versionName}</Text>
           </View>
-          {loader.elem}
-          <View
-            css="mih:99% ali:center bor:5 overflow invert">
-            <View css="he:30% juc:center ali:center">
-              <Image
-                url={require("../assets/ic_launcher_round.png")}
-                css="mat:2.5 clearwidth bor:2 miw:100 mih:100"
-              />
-              <Text css="desc co-red fow-bold">Version:{context.versionName}</Text>
-            </View>
-            {dataLocation.elem}
-            <AppUpdate />
-            <AppServer />
-            <TouchableOpacity
-              css="invert settingButton"
-              onPress={download}>
-              <Icon
-                type="MaterialCommunityIcons"
-                name="database-import"
-                css="invertco"
-              />
-              <Text>
-                Download Backup
-              </Text>
-            </TouchableOpacity>
+          {dataLocation.elem}
+          <AppUpdate />
+          <AppServer />
+          <TouchableOpacity
+            css="invert settingButton"
+            onPress={download}>
+            <Icon
+              type="MaterialCommunityIcons"
+              name="database-import"
+              css="invertco"
+            />
+            <Text>
+              Download Backup
+            </Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              css="invert settingButton"
-              onPress={uploadBackup}>
-              <Icon
-                type="MaterialCommunityIcons"
-                name="database-export"
-                css="invertco"
-              />
-              <Text>
-                Upload Backup
+          <TouchableOpacity
+            css="invert settingButton"
+            onPress={uploadBackup}>
+            <Icon
+              type="MaterialCommunityIcons"
+              name="database-export"
+              css="invertco"
+            />
+            <Text>
+              Upload Backup
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            css="invert settingButton"
+            onPress={cleanData}>
+            <Icon
+              type="MaterialIcons"
+              name="cleaning-services"
+              css="invertco"
+            />
+            <Text>
+              Clean files
+              {"\n"}
+              <Text css="co:red desc">
+                Remove all none favorits novels from
+                cache and db
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              css="invert settingButton"
-              onPress={cleanData}>
-              <Icon
-                type="MaterialIcons"
-                name="cleaning-services"
-                css="invertco"
-              />
-              <Text>
-                Clean files
-                {"\n"}
-                <Text css="co:red desc">
-                  Remove all none favorits novels from
-                  cache and db
-                </Text>
+            </Text>
+          </TouchableOpacity>
+
+          <View css="invert settingButton">
+            <Icon
+              type="MaterialCommunityIcons"
+              name="update"
+              css="invertco"
+            />
+            <Text css="maw-70%">
+              AutoUpdate favorit novels
+              {"\n"}
+              <Text css="co:red desc">
+                This will update the chapters in favorit, each 5 dayes when you open favorit tab.{"\n"}
+                This could be demanding if you have many novels in favorit tab.{"\n"}
+                Recommend to disable this and use refresh on those novels/manga you like.
               </Text>
-            </TouchableOpacity>
+            </Text>
+            <CheckBox css="als-center _abc ri-10" checkBoxType="Switch" checked={context.appSettings.autoUpdateFavoritNovels ?? false} onChange={() => {
+              context.appSettings.autoUpdateFavoritNovels = !context.appSettings.autoUpdateFavoritNovels;
+              context.appSettings.saveChanges();
+            }} />
+          </View>
 
-            <View css="invert settingButton">
-              <Icon
-                type="MaterialCommunityIcons"
-                name="update"
-                css="invertco"
-              />
-              <Text css="maw-70%">
-                AutoUpdate favorit novels
-                {"\n"}
-                <Text css="co:red desc">
-                  This will update the chapters in favorit, each 5 dayes when you open favorit tab.{"\n"}
-                  This could be demanding if you have many novels in favorit tab.{"\n"}
-                  Recommend to disable this and use refresh on those novels/manga you like.
-                </Text>
-              </Text>
-              <CheckBox css="als-center _abc ri-10" checkBoxType="Switch" checked={context.appSettings.autoUpdateFavoritNovels ?? false} onChange={() => {
-                context.appSettings.autoUpdateFavoritNovels = !context.appSettings.autoUpdateFavoritNovels;
-                context.appSettings.saveChanges();
-              }} />
-            </View>
+          <View css="settingButton invert">
+            <Icon
+              type="MaterialCommunityIcons"
+              name="theme-light-dark"
+              css="invertco"
+            />
+            <DropDownLocalList
+              selectedValue={context.selectedThemeIndex}
+              css="invert wi-90%"
+              size={130}
+              items={[{ label: "Light", value: 0, }, { label: "Dark", value: 1 }]}
 
-            <View css="settingButton invert">
-              <Icon
-                type="MaterialCommunityIcons"
-                name="theme-light-dark"
-                css="invertco"
-              />
-              <DropDownLocalList
-                selectedValue={context.selectedThemeIndex}
-                css="invert wi-90%"
-                size={130}
-                items={[{ label: "Light", value: 0, }, { label: "Dark", value: 1 }]}
-
-                render={item => {
-                  return (
-                    <View
-                      css={`
+              render={item => {
+                return (
+                  <View
+                    css={`
                      ali:center bac:transparent pal:10 bor:5 flex row juc:space-between mih:24 clb
                   `}>
-                      <Text
-                        css={`desc fos:13 invertco`}>
-                        {item.label}
-                      </Text>
-                    </View>
-                  );
-                }}
-                onSelect={theme => {
-                  context.appSettings.selectedTheme = theme.value;
+                    <Text
+                      css={`desc fos:13 invertco`}>
+                      {item.label}
+                    </Text>
+                  </View>
+                );
+              }}
+              onSelect={theme => {
+                context.appSettings.selectedTheme = theme.value;
 
-                  context.selectedThemeIndex = theme.value;
-                  context.appSettings.saveChanges();
-                  return false;
-                  //Updates.reloadAsync();
-                }}
-              />
-            </View>
-            
+                context.selectedThemeIndex = theme.value;
+                context.appSettings.saveChanges();
+                return false;
+                //Updates.reloadAsync();
+              }}
+            />
           </View>
+
         </View>
+
+      </View>
+    </ScrollView>
   );
 };

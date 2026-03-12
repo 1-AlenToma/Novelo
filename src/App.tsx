@@ -20,7 +20,6 @@ import { Platform, Text } from "react-native";
 import * as icons from '@expo/vector-icons';
 import { useKeepAwake } from "expo-keep-awake";
 
-
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
     lightbg: "bac-#ffffff",
@@ -131,7 +130,6 @@ const App = () => {
 
     return (
         <ThemeContainer
-            localIp='192.168.1.239'
             icons={icons}
             themes={[lightTheme, darkTheme]}
             defaultTheme={CStyle}
