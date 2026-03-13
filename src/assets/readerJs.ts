@@ -111,7 +111,7 @@ export const CSSStyle = /*css */`
         }
 
         .emptyView p {
-            font-size: 150%;
+            font-size: 120%;
             font-weight: bold;
             text-shadow: #000000 1px 0 10px;
             text-align:center !important;
@@ -130,13 +130,39 @@ export const CSSStyle = /*css */`
             overflow: hidden;
         }
 
+        *{
+              touch-action: pan-x pan-y pinch-zoom;
+  /* pan-x and pan-y allow drag scrolling */
+  /* pinch-zoom allows pinch gestures */
+  overscroll-behavior: contain; /* prevent parent scroll */
+        }
+
         .manga-page {
   transition: transform 0.25s ease;
   transform-origin: center;
   cursor: zoom-in;
+  /*touch-action: none;*/
 }
 `
 export const JS = /*js*/` 
+ let mangaPage = {
+     page: undefined,
+     scale: 1,
+     offsetX: 0,
+     offsetY: 0,
+     getPoint: (e) => {
+         if (e.touches && e.touches.length) {
+             return {
+                 x: e.touches[0].clientX,
+                 y: e.touches[0].clientY
+             };
+         }
+         return {
+             x: e.clientX,
+             y: e.clientY
+         };
+     }
+ }
  let div = undefined;
  let chapter = undefined;
  let keyDown = false;
@@ -398,12 +424,6 @@ export const JS = /*js*/`
                      //img.setAttribute("onerror", "window.onImageLoadError(this)");
 
                  }
-                 /*  imgs.forEach(x => {
-                       setId(x)
-                       x.setAttribute("refSrc", x.src);
-                     //  window.onImageLoadError(x);
-                      x.setAttribute("onerror", "window.onImageLoadError(this)")
-                   });*/
              } catch (e) {
                  if (window.__DEV__)
                      window.postmsg("error", e.toString());
@@ -975,27 +995,11 @@ export const JS = /*js*/`
  }
 
 
- let mangaPage = {
-     page: document.querySelector(".manga-page"),
-     scale: 1,
-     offsetX: 0,
-     offsetY: 0,
-     getPoint: (e) => {
-         if (e.touches && e.touches.length) {
-             return {
-                 x: e.touches[0].clientX,
-                 y: e.touches[0].clientY
-             };
-         }
-         return {
-             x: e.clientX,
-             y: e.clientY
-         };
-     }
- }
+
  const mangaZoom = (e) => {
      const rect = mangaPage.page.getBoundingClientRect();
      if (mangaPage.scale === 1) {
+        mangaPage.page.style.overflowX = "auto";
          mangaPage.scale = 2;
          const pos = mangaPage.getPoint(e);
          const x = pos.x - rect.left;
@@ -1007,6 +1011,7 @@ export const JS = /*js*/`
          mangaPage.scale = 1;
          mangaPage.offsetX = 0;
          mangaPage.offsetY = 0;
+         mangaPage.page.style.overflowX = undefined;
      }
 
      mangaPage.page.style.transform = addString("scale(", mangaPage.scale, ") translate(", mangaPage.offsetX, "px,", mangaPage.offsetY, "px)");
@@ -1022,9 +1027,12 @@ export const JS = /*js*/`
          const dbClick = delta < 300;
 
          lastTap = now;
+       //  postmsg("log",dbClick);
 
          clearTimeout(timerClick);
          if (dbClick && mangaPage.page) {
+            event.preventDefault();
+            event.stopPropagation();
              mangaZoom(event);
              return;
          }
@@ -1229,6 +1237,7 @@ export const JS = /*js*/`
          try {
              window.removeEventListener("resize", onResize);
              await window.create(readerOption);
+             mangaPage.page= undefined;
              window.postmsg("loader", false); // hide loader
              window.addEventListener("resize", onResize);
              if (window.__DEV__) {

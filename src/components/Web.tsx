@@ -452,7 +452,7 @@ export default ({
           <!DOCTYPE html>
           <html>
             <head>
-              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes" />
               <style class="custom">
                 body {
                   background:${context.appSettings.backgroundColor};
