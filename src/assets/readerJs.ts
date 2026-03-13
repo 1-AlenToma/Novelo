@@ -129,15 +129,14 @@ export const CSSStyle = /*css */`
             max-height: 90vh;
             overflow: hidden;
         }
+
+        .manga-page {
+  transition: transform 0.25s ease;
+  transform-origin: center;
+  cursor: zoom-in;
+}
 `
 export const JS = /*js*/` 
-let totalImages = {
-    total: 0,
-    has:()=> totalImages.total > 0,
-    dec:()=> totalImages.total--,
-    inc:(value=1)=> totalImages.total+=value
-}
-window.imgOnload = (img) => totalImages--;
  let div = undefined;
  let chapter = undefined;
  let keyDown = false;
@@ -190,33 +189,36 @@ window.imgOnload = (img) => totalImages--;
 
  }
 
-        const setId = (img) => {
-                 if (img && !img.id && img.id.length <=0) {
-                     img.id = window.getId();
-                 }
-             }
-
-    window.fetchImage = async (url, img) => {
-        let base64 = {};
-        try{
-        if (window.__DEV__)
-            window.postmsg("info", "JsFetch:"  + url);
-         const response = await fetch(url, {
-            method: "GET", // default, optional
-            headers: {
-                "Accept": "application/json"
-            }
-        });
-         base64 = await response.json();
-         if (img) 
-            return base64;
-         window.renderImage([base64])
-        }catch(e){
-           // alert("Error fetching image: " + e.toString());
-           window.postmsg("warn", {msg: e.toString(),url});
-           return undefined;
-        }
+ const setId = (img) => {
+     if (img && !img.id && img.id.length <= 0) {
+         img.id = window.getId();
      }
+ }
+
+ window.fetchImage = async (url, img) => {
+     let base64 = {};
+     try {
+         if (window.__DEV__)
+             window.postmsg("info", "JsFetch:" + url);
+         const response = await fetch(url, {
+             method: "GET", // default, optional
+             headers: {
+                 "Accept": "application/json"
+             }
+         });
+         base64 = await response.json();
+         if (img)
+             return base64;
+         window.renderImage([base64])
+     } catch (e) {
+         // alert("Error fetching image: " + e.toString());
+         window.postmsg("warn", {
+             msg: e.toString(),
+             url
+         });
+         return undefined;
+     }
+ }
 
 
  const addString = (...data) => {
@@ -335,7 +337,7 @@ window.imgOnload = (img) => totalImages--;
  let createTimer = undefined;
  const create = async (option) => {
 
-        
+
      try {
          validateJson(option);
          rendering = false;
@@ -380,34 +382,31 @@ window.imgOnload = (img) => totalImages--;
                  view = view || document;
                  const imgs = [...document.querySelectorAll("img")];
                  const imageAddress = document.body.getAttribute("imageAddress");
-                totalImages.total= imgs.length;
-              //  alert("Total Images: " + totalImages.total);
                  for (let img of imgs) {
-                    setId(img);
-                    let src = img.getAttribute("src") ?? "";
-                    if (src.length==0 || img.getAttribute("refSrc") || src.startsWith("data:"))
-                    {
-                       // alert("skipping image with src: " + src);
-                        continue;
-                    }
-                    img.setAttribute("refSrc", src);
-                    let newSrc = addString(imageAddress,"/", encodeURIComponent(src),"/", img.id);
-                    let source =await window.fetchImage(newSrc, img);
-                    if (source && source.cn)
-                        img.src = source.cn;
-                    //img.setAttribute("onload", "window.imgOnload(this)")
-                    //img.setAttribute("onerror", "window.onImageLoadError(this)");
+                     setId(img);
+                     let src = img.getAttribute("src") ?? "";
+                     if (src.length == 0 || img.getAttribute("refSrc") || src.startsWith("data:")) {
+                         // alert("skipping image with src: " + src);
+                         continue;
+                     }
+                     img.setAttribute("refSrc", src);
+                     let newSrc = addString(imageAddress, "/", encodeURIComponent(src), "/", img.id);
+                     let source = await window.fetchImage(newSrc, img);
+                     if (source && source.cn)
+                         img.src = source.cn;
+                     //img.setAttribute("onload", "window.imgOnload(this)")
+                     //img.setAttribute("onerror", "window.onImageLoadError(this)");
 
                  }
-               /*  imgs.forEach(x => {
-                     setId(x)
-                     x.setAttribute("refSrc", x.src);
-                   //  window.onImageLoadError(x);
-                    x.setAttribute("onerror", "window.onImageLoadError(this)")
-                 });*/
+                 /*  imgs.forEach(x => {
+                       setId(x)
+                       x.setAttribute("refSrc", x.src);
+                     //  window.onImageLoadError(x);
+                      x.setAttribute("onerror", "window.onImageLoadError(this)")
+                   });*/
              } catch (e) {
-                if (window.__DEV__)
-                    window.postmsg("error", e.toString());
+                 if (window.__DEV__)
+                     window.postmsg("error", e.toString());
              }
 
          }
@@ -455,6 +454,7 @@ window.imgOnload = (img) => totalImages--;
                  const height = Math.min(window.innerHeight, sliderContainer.clientHeight, div.clientHeight) - (bottomPadding);
                  const mock = createView();
                  mock.classList.add("HTMLcontent");
+                 mock.classList.add(option.type.toLowerCase() + "-page");
                  let viewHeight = 0;
                  slider.appendChild(mock);
                  if (option.scrollType == "Pagination") {
@@ -506,10 +506,10 @@ window.imgOnload = (img) => totalImages--;
              }
          }
          createMock();
-        
+
 
          window.cleanStyle(".sliderView");
-        await validateImages();
+         await validateImages();
          if (option.addNext && ["Pagination", "PaginationScroll", "Player"].includes(option.scrollType)) {
              const mock = createView();
              mock.classList.add("emptyView");
@@ -566,6 +566,7 @@ window.imgOnload = (img) => totalImages--;
                  sliderContainer.scrollLeft += sliderContainer.clientWidth
              };
 
+
              const onDrag = (e) => {
                  const x = e.pageX || e.touches[0].pageX;
                  const deltaX = x - startX;
@@ -597,6 +598,8 @@ window.imgOnload = (img) => totalImages--;
                  // Re-enable text selection when dragging stops
                  enableSelection();
              };
+
+
 
              sliderContainer.addEventListener("mousedown", (e) => {
                  if (textSelection()) {
@@ -653,17 +656,17 @@ window.imgOnload = (img) => totalImages--;
 
              sliderContainer.addEventListener("mouseleave", stopDragging);
              sliderContainer.addEventListener("touchcancel", stopDragging);
-
-             sliderContainer.addEventListener("dblclick", (e) => {
-                 if (window.getSelection().toString().length <= 0 && option.scrollType == "Pagination") {
-                     e.preventDefault();
-                     sliderContainer.scrollTo({
-                         left: sliderContainer.scrollLeft + slider.children[0].offsetWidth,
-                         behavior: "smooth"
-                     });
-                 }
-             });
-
+             if (!document.querySelector(".manga-page")) {
+                 sliderContainer.addEventListener("dblclick", (e) => {
+                     if (window.getSelection().toString().length <= 0 && option.scrollType == "Pagination") {
+                         e.preventDefault();
+                         sliderContainer.scrollTo({
+                             left: sliderContainer.scrollLeft + slider.children[0].offsetWidth,
+                             behavior: "smooth"
+                         });
+                     }
+                 });
+             }
 
 
          } else {
@@ -971,10 +974,60 @@ window.imgOnload = (img) => totalImages--;
      }
  }
 
+
+ let mangaPage = {
+     page: document.querySelector(".manga-page"),
+     scale: 1,
+     offsetX: 0,
+     offsetY: 0,
+     getPoint: (e) => {
+         if (e.touches && e.touches.length) {
+             return {
+                 x: e.touches[0].clientX,
+                 y: e.touches[0].clientY
+             };
+         }
+         return {
+             x: e.clientX,
+             y: e.clientY
+         };
+     }
+ }
+ const mangaZoom = (e) => {
+     const rect = mangaPage.page.getBoundingClientRect();
+     if (mangaPage.scale === 1) {
+         mangaPage.scale = 2;
+         const pos = mangaPage.getPoint(e);
+         const x = pos.x - rect.left;
+         const y = pos.y - rect.top;
+
+         mangaPage.offsetX = rect.width / 2 - x;
+         mangaPage.offsetY = rect.height / 2 - y;
+     } else {
+         mangaPage.scale = 1;
+         mangaPage.offsetX = 0;
+         mangaPage.offsetY = 0;
+     }
+
+     mangaPage.page.style.transform = addString("scale(", mangaPage.scale, ") translate(", mangaPage.offsetX, "px,", mangaPage.offsetY, "px)");
+ }
+
  let timerClick = null;
+ let lastTap = 0;
  window.addEventListener('click', function(event) {
      try {
+         mangaPage.page ??= document.querySelector(".manga-page");
+         const now = Date.now();
+         const delta = now - lastTap;
+         const dbClick = delta < 300;
+
+         lastTap = now;
+
          clearTimeout(timerClick);
+         if (dbClick && mangaPage.page) {
+             mangaZoom(event);
+             return;
+         }
          let target = event.target;
          if (target.closest(".selection-menu"))
              return;
@@ -984,8 +1037,9 @@ window.imgOnload = (img) => totalImages--;
          }
          timerClick = setTimeout(() => {
              if (!selectionMenu || selectionMenu.style.display == "none") {
-                 if (!(event.detail >= 2 && ["Pagination"].includes(options.scrollType)))
+                 if (!((event.detail >= 2 || dbClick) && ["Pagination"].includes(options.scrollType))) {
                      window.postmsg("click", true);
+                 }
              }
          }, 300);
      } catch (e) {
@@ -1061,66 +1115,69 @@ window.imgOnload = (img) => totalImages--;
      }
      const genertatedID = new Map();
      window.getId = () => {
-         let id = "Id"+ Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
+         let id = "Id" + Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
          if (genertatedID.has())
-                return getId();
-        genertatedID.set(id, id);
-        return id;
+             return getId();
+         genertatedID.set(id, id);
+         return id;
      }
-const MAX_CONCURRENT = 1; // number of images to fetch at the same time
-let running = 0;
-const queue = [];
+     const MAX_CONCURRENT = 1; // number of images to fetch at the same time
+     let running = 0;
+     const queue = [];
 
-async function processQueue() {
-    if (running >= MAX_CONCURRENT || queue.length === 0) return;
+     async function processQueue() {
+         if (running >= MAX_CONCURRENT || queue.length === 0) return;
 
-    running++;
-    const { url } = queue.shift();
+         running++;
+         const {
+             url
+         } = queue.shift();
 
-    try {
-        await window.fetchImage(url); // your existing function
-    } catch (e) {
-        console.warn("Failed image fetch", url, e);
-    } finally {
-        running--;
-        processQueue(); // trigger next in queue
-    }
-}
+         try {
+             await window.fetchImage(url); // your existing function
+         } catch (e) {
+             console.warn("Failed image fetch", url, e);
+         } finally {
+             running--;
+             processQueue(); // trigger next in queue
+         }
+     }
 
-function queueImageFetch(url) {
-    queue.push({ url });
-    processQueue();
-}
+     function queueImageFetch(url) {
+         queue.push({
+             url
+         });
+         processQueue();
+     }
 
 
      window.onImageLoadError = (currentImage) => {
          try {
-                const skip =()=> {
-                        window.postmsg("warn", "Skip "+ currentImage.id);
-                        totalImages.dec();
-                        return false;
-                }
+             const skip = () => {
+                 window.postmsg("warn", "Skip " + currentImage.id);
+                 return false;
+             }
              let img = currentImage;
              const imageAddress = document.body.getAttribute("imageAddress");
-           
+
              let src = img.getAttribute("src");
-             
+
              if (!src || src.trim().length <= 0 || src == "undefined") {
                  return skip();
              }
-                let newSrc = addString(imageAddress,"/", encodeURIComponent(src),"/", img.id);
+             let newSrc = addString(imageAddress, "/", encodeURIComponent(src), "/", img.id);
 
              if (src && typeof src == "string" && src.indexOf("header") != -1) {
                  if (src.indexOf(imageAddress) !== -1)
                      return skip();
-                img.setAttribute("newSrc", newSrc)
+                 img.setAttribute("newSrc", newSrc)
                  queueImageFetch(newSrc)
                  return;
              }
              if (window.isValidUrl(src))
                  return skip(); // it is an external image, cant do anything to load it.
-                  img.setAttribute("newSrc", newSrc)
-                queueImageFetch(newSrc);
+             img.setAttribute("newSrc", newSrc)
+             queueImageFetch(newSrc);
          } catch (e) {
              window.postmsg("log", e.toString());
          }
@@ -1128,7 +1185,7 @@ function queueImageFetch(url) {
 
 
      window.renderImage = (items) => {
-     
+
          try {
              for (let item of (items.data ?? items)) {
                  let img = undefined;
@@ -1140,7 +1197,6 @@ function queueImageFetch(url) {
                  if (img && img.setAttribute) {
                      img.setAttribute("src", item.cn);
                  } else window.postmsg("log", "img not found " + item.id);
-                 totalImages.dec();
 
              }
          } catch (e) {
@@ -1175,13 +1231,13 @@ function queueImageFetch(url) {
              await window.create(readerOption);
              window.postmsg("loader", false); // hide loader
              window.addEventListener("resize", onResize);
-             if (window.__DEV__){
-            setTimeout(() => {
-                 requestIdleCallback(() => {
-                     postmsg("savePage", document.documentElement.outerHTML)
-                 });
-             }, 5000);
-            }
+             if (window.__DEV__) {
+                 setTimeout(() => {
+                     requestIdleCallback(() => {
+                         postmsg("savePage", document.documentElement.outerHTML)
+                     });
+                 }, 5000);
+             }
          } catch (e) {
              alert(e)
          }
@@ -1190,5 +1246,4 @@ function queueImageFetch(url) {
  } catch (e) {
      if (window.__DEV__)
          alert(e)
- }
-`
+ }`

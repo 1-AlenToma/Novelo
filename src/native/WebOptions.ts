@@ -14,6 +14,7 @@ export default class WebOptions {
     nextText: string = "";
     content: string = ""; // html string
     menu: any;
+    type: "Manga" | "Novel" = "Manga";
 
     addFunction(key: keyof WebOptions, func: string) {
         return this.func(key, this, func) as WebOptions;

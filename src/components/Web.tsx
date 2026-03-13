@@ -288,6 +288,7 @@ export default ({
       options.addPrev = context.player.hasPrev();
       options.prevText = "Previous Chapter";
       options.nextText = "Next Chapter";
+      options.type = context.player.novel.type as any;
       options.menu = options.func("click", menuItems, `(item)=> window.postmsg("menu", item)`);
       options.addFunction("onEnd", `()=> {window.postmsg("Next", true);}`);
       options.addFunction("onStart", `()=> {window.postmsg("Prev", true);}`);
