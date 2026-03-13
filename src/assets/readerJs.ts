@@ -131,7 +131,14 @@ export const CSSStyle = /*css */`
         }
 `
 export const JS = /*js*/` 
-                let div = undefined;
+let totalImages = {
+    total: 0,
+    has:()=> totalImages.total > 0,
+    dec:()=> totalImages.total--,
+    inc:(value=1)=> totalImages.total+=value
+}
+window.imgOnload = (img) => totalImages--;
+ let div = undefined;
  let chapter = undefined;
  let keyDown = false;
  let rendering = false;
@@ -188,6 +195,28 @@ export const JS = /*js*/`
                      img.id = window.getId();
                  }
              }
+
+    window.fetchImage = async (url, img) => {
+        let base64 = {};
+        try{
+        if (window.__DEV__)
+            window.postmsg("info", "JsFetch:"  + url);
+         const response = await fetch(url, {
+            method: "GET", // default, optional
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+         base64 = await response.json();
+         if (img) 
+            return base64;
+         window.renderImage([base64])
+        }catch(e){
+           // alert("Error fetching image: " + e.toString());
+           window.postmsg("warn", {msg: e.toString(),url});
+           return undefined;
+        }
+     }
 
 
  const addString = (...data) => {
@@ -346,19 +375,39 @@ export const JS = /*js*/`
              return view;
          }
 
-         const validateImages = (view) => {
-             //window.onImageLoadError
+         const validateImages = async (view) => {
              try {
                  view = view || document;
-                 const imgs = document.querySelectorAll("img");
-                 imgs.forEach(x => {
+                 const imgs = [...document.querySelectorAll("img")];
+                 const imageAddress = document.body.getAttribute("imageAddress");
+                totalImages.total= imgs.length;
+              //  alert("Total Images: " + totalImages.total);
+                 for (let img of imgs) {
+                    setId(img);
+                    let src = img.getAttribute("src") ?? "";
+                    if (src.length==0 || img.getAttribute("refSrc") || src.startsWith("data:"))
+                    {
+                       // alert("skipping image with src: " + src);
+                        continue;
+                    }
+                    img.setAttribute("refSrc", src);
+                    let newSrc = addString(imageAddress,"/", encodeURIComponent(src),"/", img.id);
+                    let source =await window.fetchImage(newSrc, img);
+                    if (source && source.cn)
+                        img.src = source.cn;
+                    //img.setAttribute("onload", "window.imgOnload(this)")
+                    //img.setAttribute("onerror", "window.onImageLoadError(this)");
+
+                 }
+               /*  imgs.forEach(x => {
                      setId(x)
                      x.setAttribute("refSrc", x.src);
                    //  window.onImageLoadError(x);
                     x.setAttribute("onerror", "window.onImageLoadError(this)")
-                 });
+                 });*/
              } catch (e) {
-                 alert(e);
+                if (window.__DEV__)
+                    window.postmsg("error", e.toString());
              }
 
          }
@@ -460,7 +509,7 @@ export const JS = /*js*/`
         
 
          window.cleanStyle(".sliderView");
-         validateImages();
+        await validateImages();
          if (option.addNext && ["Pagination", "PaginationScroll", "Player"].includes(option.scrollType)) {
              const mock = createView();
              mock.classList.add("emptyView");
@@ -1042,26 +1091,13 @@ function queueImageFetch(url) {
     queue.push({ url });
     processQueue();
 }
-     window.fetchImage = async (url) => {
-        let base64 = {};
-        try{
-         const response = await fetch(url, {
-            method: "GET", // default, optional
-            headers: {
-                "Accept": "application/json"
-            }
-        });
-         base64 = await response.json();
-         window.renderImage([base64])
-        }catch(e){
-                window.postmsg("warn", {msg: e.toString(),url});
-        }
-     }
+
 
      window.onImageLoadError = (currentImage) => {
          try {
                 const skip =()=> {
                         window.postmsg("warn", "Skip "+ currentImage.id);
+                        totalImages.dec();
                         return false;
                 }
              let img = currentImage;
@@ -1069,7 +1105,6 @@ function queueImageFetch(url) {
            
              let src = img.getAttribute("src");
              
-            //    setId(img);
              if (!src || src.trim().length <= 0 || src == "undefined") {
                  return skip();
              }
@@ -1085,7 +1120,7 @@ function queueImageFetch(url) {
              if (window.isValidUrl(src))
                  return skip(); // it is an external image, cant do anything to load it.
                   img.setAttribute("newSrc", newSrc)
-                queueImageFetch(newSrc)
+                queueImageFetch(newSrc);
          } catch (e) {
              window.postmsg("log", e.toString());
          }
@@ -1105,6 +1140,7 @@ function queueImageFetch(url) {
                  if (img && img.setAttribute) {
                      img.setAttribute("src", item.cn);
                  } else window.postmsg("log", "img not found " + item.id);
+                 totalImages.dec();
 
              }
          } catch (e) {
@@ -1139,11 +1175,11 @@ function queueImageFetch(url) {
              await window.create(readerOption);
              window.postmsg("loader", false); // hide loader
              window.addEventListener("resize", onResize);
-           /*  setTimeout(() => {
+            setTimeout(() => {
                  requestIdleCallback(() => {
                      postmsg("savePage", document.documentElement.outerHTML)
                  });
-             }, 5000);*/
+             }, 5000);
          } catch (e) {
              alert(e)
          }

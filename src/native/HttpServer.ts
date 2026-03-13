@@ -135,11 +135,12 @@ class HttpServer {
                     const { src, id } = JSON.parse(request.paramsJson);
 
                     let data: any = undefined;
-                    const img = { src: decodeURIComponent(src), id };
+                    const img = { src: src.decodeURIComponentSafe(), id };
                     let key = img.src + context.player.book.name + context.player.currentChapter.name + context.player.novel.parserName;
                     if (tempImageData.has(key))
                         data = tempImageData.get(key);
                     if (!data) {
+                       // console.log("Fetching image for", src, "decoded:", img.src)
                         data = (await context.player.getImage(img)).firstOrDefault();
                         if (data)
                             tempImageData.set(key, data)
@@ -158,7 +159,7 @@ class HttpServer {
                         body: JSON.stringify(data ?? {})
                     } as any;
                 } catch (e) {
-                    console.error(e)
+                    console.error("HttpServerError", e)
                 }
             });
 

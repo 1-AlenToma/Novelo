@@ -82,6 +82,7 @@ declare global {
         safeSplit(c: string, index: number): string;
         toCode: () => number[];
         niceSentences(): string;
+        decodeURIComponentSafe(): string;
     }
 
     interface Number {
@@ -125,6 +126,24 @@ String.prototype.normilzeStr = function () {
 
     }
     return r;
+}
+
+String.prototype.decodeURIComponentSafe = function(this: string) {
+    let current = this;
+
+    while (true) {
+        try {
+            const decoded = decodeURIComponent(current);
+
+            if (decoded === current) {
+                return current;
+            }
+
+            current = decoded;
+        } catch {
+            return current;
+        }
+    }
 }
 
 String.prototype.toCode = function () {
