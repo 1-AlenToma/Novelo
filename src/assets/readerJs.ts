@@ -1175,11 +1175,13 @@ function queueImageFetch(url) {
              await window.create(readerOption);
              window.postmsg("loader", false); // hide loader
              window.addEventListener("resize", onResize);
+             if (window.__DEV__){
             setTimeout(() => {
                  requestIdleCallback(() => {
                      postmsg("savePage", document.documentElement.outerHTML)
                  });
              }, 5000);
+            }
          } catch (e) {
              alert(e)
          }
