@@ -89,6 +89,7 @@ export const CSSStyle = /*css */`
             width: 100vw;
             min-height: 10%;
             overflow: hidden;
+            overscroll-behavior-y: contain;
             /* Full viewport width */
             /*  height: 100vh; /* Full viewport height */
 
@@ -111,7 +112,7 @@ export const CSSStyle = /*css */`
         }
 
         .emptyView p {
-            font-size: 120%;
+            font-size: 150%;
             font-weight: bold;
             text-shadow: #000000 1px 0 10px;
             text-align:center !important;
@@ -130,18 +131,25 @@ export const CSSStyle = /*css */`
             overflow: hidden;
         }
 
-        *{
-              touch-action: pan-x pan-y pinch-zoom;
-  /* pan-x and pan-y allow drag scrolling */
-  /* pinch-zoom allows pinch gestures */
-  overscroll-behavior: contain; /* prevent parent scroll */
-        }
 
         .manga-page {
   transition: transform 0.25s ease;
   transform-origin: center;
   cursor: zoom-in;
-  /*touch-action: none;*/
+  touch-action: pan-x pan-y pinch-zoom;
+  overscroll-behavior-y: contain;
+}
+
+progress {
+  height: 20px;
+  border: none;
+  width: 80%;
+  margin: auto;
+  border-radius: 5px;
+  position: fixed;
+  top:55%;
+  left:10%;
+  z-index: 10000;
 }
 `
 export const JS = /*js*/` 
@@ -213,6 +221,14 @@ export const JS = /*js*/`
          }
      }
 
+ }
+
+ const getProgress =(startValue, max=100)=> {
+    let loader = document.createElement("progress");
+        loader.value=startValue;
+        loader.max = max;
+        document.body.appendChild(loader);
+        return loader;
  }
 
  const setId = (img) => {
@@ -404,10 +420,12 @@ export const JS = /*js*/`
          }
 
          const validateImages = async (view) => {
+            let loader = undefined;
              try {
                  view = view || document;
                  const imgs = [...document.querySelectorAll("img")];
                  const imageAddress = document.body.getAttribute("imageAddress");
+                 loader = imgs.length>0 ? getProgress(0, imgs.length) : undefined;
                  for (let img of imgs) {
                      setId(img);
                      let src = img.getAttribute("src") ?? "";
@@ -420,6 +438,7 @@ export const JS = /*js*/`
                      let source = await window.fetchImage(newSrc, img);
                      if (source && source.cn)
                          img.src = source.cn;
+                    loader.value += 1;
                      //img.setAttribute("onload", "window.imgOnload(this)")
                      //img.setAttribute("onerror", "window.onImageLoadError(this)");
 
@@ -427,6 +446,9 @@ export const JS = /*js*/`
              } catch (e) {
                  if (window.__DEV__)
                      window.postmsg("error", e.toString());
+             }finally {
+                if (loader)
+                    loader.remove();
              }
 
          }
@@ -446,7 +468,7 @@ export const JS = /*js*/`
                  backgroundColor: "#000",
                  color: "white",
                  fontWeight: "bold",
-                 fontSize: "25px",
+                 fontSize: "18px",
                  opacity: 0.8,
                  paddingTop: "5px",
                  paddingBottom: "5px",
@@ -511,7 +533,7 @@ export const JS = /*js*/`
                          createMock();
                  } else {
                      mock.innerHTML = text;
-
+                    // mock.style.minHeight = option.scrollValue + "px";
                      if (!["Player", "PaginationScroll"].includes(option.scrollType))
                          slider.classList.remove("slider");
                      else {
