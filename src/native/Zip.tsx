@@ -1,5 +1,5 @@
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive';
-import RNFetchBlob from "rn-fetch-blob";
+import RNFetchBlob from "react-native-blob-util";
 import FileHandler from './FileHandler';
 import { ProgressBar } from 'react-native-short-style';
 import * as React from "react";

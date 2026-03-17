@@ -5,7 +5,7 @@ try {
     const pathToAndroidFiles = "../AndroidNativeLib";
     const nativeAndroid = "./android/app/src/main/java/com/alentoma/Novelo";
     let files = fs.readdirSync(pathToAndroidFiles);
-    let nativeFiles = fs.readdirSync(nativeAndroid); 
+    let nativeFiles = fs.readdirSync(nativeAndroid);  
     let appFile = undefined;
 
     for (let nFile of nativeFiles) {
@@ -18,7 +18,7 @@ try {
     let packageFile = files.find(x => x.indexOf("Package.java") != -1);
 
     const addString = (str) => {
-        let search = "              // add(MyReactNativePackage())";
+        let search = "        PackageList(this).packages.apply {";
         if (str.indexOf(search) == -1)
             return str;
         const text = `                add(${packageFile.split(".")[0]}())`;

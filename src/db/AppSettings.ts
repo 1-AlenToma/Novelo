@@ -13,7 +13,7 @@ class AppSettings extends DBInit {
     textAlign: string = "left";
     backgroundColor: string = "#FFF8E7";
     isBold: boolean = false;
-    lockScreen: boolean = false;
+    lockScreenType?: "Horizontal" | "Vertical" = undefined;
     margin?: number = 37;
     selectedParser: string = "";
     currentNovel?: {
@@ -55,7 +55,7 @@ class AppSettings extends DBInit {
             .column("selectedTheme").number.nullable
             .column("isBold").boolean
             .column("fontName")
-            .column("lockScreen").boolean
+            .column("lockScreenType").string.nullable
             .column("currentNovel").nullable.json
             .column("voiceWordSelectionsSettings").nullable.json
             .column("navigationType").nullable

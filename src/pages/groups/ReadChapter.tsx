@@ -10,13 +10,15 @@ import {
   ChapterView,
   ColorSelection,
   PlayerView,
-  ContextContainer
+  ContextContainer,
+  Tabbs
 } from "../../components/";
 import {
   View, Text, Icon, ButtonGroup,
   TabView,
   AlertDialog,
-  Button, Modal, CheckBox, TabBar, FormItem, TouchableOpacity
+  Button, Modal, CheckBox, TabBar, FormItem, TouchableOpacity,
+  CheckBoxList
 } from "react-native-short-style";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -308,8 +310,14 @@ const Controller = ({ state, ...props }: any) => {
   const Timer = useTimer(100);
 
   useEffect(() => {
-    if (context.appSettings.lockScreen) context.orientation("LANDSCAPE");
-
+    switch (context.appSettings.lockScreenType) {
+      case "Horizontal":
+        context.orientation("LANDSCAPE");
+        break;
+      case "Vertical":
+        context.orientation("PORTRAIT");
+        break;
+    }
     return () => {
       context.orientation("Default");
     };
@@ -319,7 +327,7 @@ const Controller = ({ state, ...props }: any) => {
     fontSize,
     ttsModol,
     chunkWords,
-    lockScreen,
+    lockScreenType,
     ...rest
   }: AppSettings | Record<string, any>) => {
     Timer(() => {
@@ -349,11 +357,11 @@ const Controller = ({ state, ...props }: any) => {
           context.appSettings[key] = rest[key];
         }
 
-        if (lockScreen != undefined) {
-          context.appSettings.lockScreen = lockScreen;
-          if (context.appSettings.lockScreen)
+        if (lockScreenType != undefined) {
+          context.appSettings.lockScreenType = lockScreenType;
+          if (context.appSettings.lockScreenType === "Horizontal")
             context.orientation("LANDSCAPE");
-          else context.orientation("Default");
+          else context.orientation("PORTRAIT");
         }
 
 
@@ -399,7 +407,7 @@ const Controller = ({ state, ...props }: any) => {
                   });
                 }}
                 minimumValue={0}
-                maximumValue={context.player.novel.chapters.length-1}
+                maximumValue={context.player.novel.chapters.length - 1}
               />
             </View></>)
         }} />
@@ -469,9 +477,10 @@ const Controller = ({ state, ...props }: any) => {
           {
             text: () => (
               <ActionSheetButton
-                controller="Modal"
+                ready={false}
+                controller="ActionSheet"
                 addCloser={true}
-                size="95%"
+                size="80%"
                 btn={
                   <Icon
                     type="Ionicons"
@@ -481,12 +490,7 @@ const Controller = ({ state, ...props }: any) => {
                 }
               >
                 <View css="flex">
-                  <TabBar lazyLoading={true} position="Top" header={{
-                    style: "invert",
-                    overlayStyle: {
-                      content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
-                    }
-                  }}>
+                  <Tabbs lazyLoading={true} css="mat-5" position="Top">
                     <TabView
                       icon={{
                         name: "format-font",
@@ -494,31 +498,39 @@ const Controller = ({ state, ...props }: any) => {
                       }}
                       css="invert"
                     >
-                      <FormItem title="LockScreen:" labelPosition="Left">
-                        <CheckBox
-                          css="pal:1 invert"
-                          checked={
-                            context.appSettings
-                              .lockScreen
-                          }
-                          onChange={() => {
-                            editSettings({
-                              lockScreen:
-                                !context.appSettings
-                                  .lockScreen
-                            });
-                          }}
-                        />
+                      <FormItem title="LockScreen:" labelPosition="Top">
+                        <CheckBoxList selectionType="Radio" labelPostion="Left" checkBoxType="RadioButton" onChange={(chks) => {
+                          if (chks[0].checked) editSettings({ lockScreenType: "Horizontal" });
+                          else if (chks[1].checked) editSettings({ lockScreenType: "Vertical" });
+                        }}>
+                          <CheckBox
+                            css="pal:1 invert"
+                            label="Horizental"
+                            checked={
+                              context.appSettings
+                                .lockScreenType === "Horizontal"
+                            }
+                          />
+
+                          <CheckBox
+                            css="pal:1 invert"
+                            label="Vertical"
+                            checked={
+                              context.appSettings
+                                .lockScreenType === "Vertical"
+                            }
+                          />
+                        </CheckBoxList>
                       </FormItem>
-                      <FormItem title="NavigationMethod" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="NavigationMethod">
                         <ButtonGroup
-                          buttons={["Scroll", "Snap", "ScrollSnap"]}
+                          buttons={["Scroll", "Snap", "ScrollSnap"].filter(x => state.novel.type?.isManga() ? x !== "Snap" : true)}
                           onPress={(_, items) => {
                             editSettings({
                               navigationType: items[0]
                             });
                           }}
-                          selectedIndex={[context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? 2 : 1)]}
+                          selectedIndex={[context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (state.novel.type?.isManga() ? 1 : 2) : 1)]}
                         />
                       </FormItem>
                       <FormItem title="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
@@ -693,10 +705,7 @@ const Controller = ({ state, ...props }: any) => {
                       }}
                     >
                       <Text
-                        ifTrue={() =>
-                          context.player.book
-                            .parserName !== "epub"
-                        }
+                        ifTrue={() => context.player.book.parserName !== "epub"}
                         css="desc fos:12"
                       >
                         Enabling This Option Will Make
@@ -847,7 +856,7 @@ const Controller = ({ state, ...props }: any) => {
                     >
                       <FormItem css="mih-130" title="Voices Choose TTS Model">
                         <View css="he-100%">
-                            <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
+                          <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
                           <ButtonGroup scrollable={false}
                             buttons={context.tts.nameList()}
                             selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
@@ -940,7 +949,7 @@ const Controller = ({ state, ...props }: any) => {
                         />
                       </View>
                     </TabView>
-                  </TabBar>
+                  </Tabbs>
                 </View >
               </ActionSheetButton >
             )

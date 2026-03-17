@@ -92,7 +92,7 @@ const App = () => {
             );
             setStatusBarHidden(context.isFullScreen);
             if (!context.isFullScreen) {
-                NavigationBar.setBehaviorAsync("overlay-swipe");
+              //  NavigationBar.setBehaviorAsync("overlay-swipe");
             }
 
         },
@@ -118,7 +118,7 @@ const App = () => {
         context.isFullScreen = false;
         return () => {
             // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
-            if (!__DEV__ && !((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
+            if (!((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
                 RNExitApp.exitApp?.();
 
             itemToRemove?.forEach(x => x.remove());

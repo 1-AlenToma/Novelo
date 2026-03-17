@@ -1,7 +1,7 @@
 import { newId } from "../Methods";
 import useLoader from "../components/Loader";
 import RNF, { ReadDirItem } from "react-native-fs";
-import RNFetchBlob, { Encoding } from "rn-fetch-blob";
+import RNFetchBlob, { Encoding } from "react-native-blob-util";
 import { SystemDir, EncodingType, FileInfo } from "../Types";
 import MapCacher from "./MapCacher";
 
@@ -239,7 +239,7 @@ export default class FileHandler {
           delete this.events[id];
         }
       };
-    }, [])
+    }, [func])
   }
 
   useFile<T extends {}>(

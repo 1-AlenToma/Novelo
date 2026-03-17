@@ -19,6 +19,7 @@ interface Props<T> {
   loader?: {
     text?: string;
     value?: boolean;
+    onPress?: () => void;
   },
   ref?: (c: any) => void;
   [key: string]: any;
@@ -36,7 +37,9 @@ export default function <T>({
   const timer = useTimer(gProps.timer ?? 100);
   const loader = useLoader(
     gProps.loader?.value ?? false,
-    gProps.loader?.text
+    gProps.loader?.text,
+    undefined,
+    gProps.loader?.onPress
   );
   const itemState = buildState<ViewState<T>>(() =>
   (

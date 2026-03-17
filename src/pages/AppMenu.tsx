@@ -17,7 +17,7 @@ export default ({ ...props }) => {
 
   const themeBackground = context.selectedThemeIndex == 1 ? "#000" : "#ffffff";
   const activeColor = context.selectedThemeIndex !== 1 ? "#000" : "#ffffff";
-  const getColor = (focus: boolean) => (focus ? "#007AFF" : activeColor) as ColorValue;
+  const getColor = (focus: boolean) => (focus ? "#007AFF" : activeColor) as ColorValue; 
 
   return (
     <View style={{ flex: 1 }} css="root">

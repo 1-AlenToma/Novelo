@@ -257,7 +257,7 @@ export type GlobalType =
       option: any;
       navigate: (page: NavigationPage, item?: NavigationObject) => void;
     },
-    orientation: (value: "Default" | "LANDSCAPE") => void,
+    orientation: (value: "Default" | "LANDSCAPE" | "PORTRAIT") => void,
     parser: {
       default: string;
       parserCodes: Map<string, any>;

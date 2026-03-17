@@ -95,7 +95,10 @@ export default ({
     component: WebView,
     loader: {
       text: "Loading, Please wait",
-      value: true
+      value: true,
+      onPress:()=> {
+        click();
+      }
     },
     ref: r => {
       if (r) {
@@ -272,14 +275,19 @@ export default ({
         paddingTop: "40px",
         lineHeight: context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight),
         fontSize: context.appSettings.fontSize,
-        maxHeight: "100%",
-        overflowY: "auto"
+        maxHeight: !context.player.novel.type.isManga() ? "100%" : undefined,
+        overflowY: !context.player.novel.type.isManga() ? "auto" : "hidden"
       };
 
       if (context.appSettings.navigationType == "ScrollSnap")
         options.viewStyle.paddingBottom = context.player.paddingBottom();
+      const nav = {
+        Snap: context.player.novel.type?.isManga() ? undefined : "Pagination",
+        Scroll: "Scroll",
+        ScrollSnap: "PaginationScroll",
+      }
 
-      let scrollType = context.player.novel.type?.isManga() ? "PaginationScroll" : (context.player.showPlayer ? "Player" : (context.appSettings.navigationType == "Snap" ? "Pagination" : (context.appSettings.navigationType == "ScrollSnap" ? "PaginationScroll" : "Scroll")));
+      let scrollType = context.player.novel.type?.isManga() ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : nav[context.appSettings.navigationType] ?? "Pagination";
       options.content = content.content;
       options.scrollDisabled = false;
       options.scrollValue = content.scroll;
@@ -433,7 +441,7 @@ export default ({
   );
 
   return (
-    <>
+    <View css={"flex wi-100% he-100%"} style={{ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }}>
       <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center clb">
         <Scroller />
       </View>
@@ -481,6 +489,6 @@ export default ({
         ],
         onMessage: onMessage
       })}
-    </>
+    </View>
   );
 };

@@ -22,6 +22,7 @@ export * from "./ChapterView";
 export * from "./AppServer";
 export * from "./SingleTouchableOpacity";
 export * from "./StartUp";
+export * from "./Tabbs";
 
 export {
   useLoader,

@@ -216,11 +216,13 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                 data.nav.option?.nav(page).add(item).push();
             }
         },
-        orientation: (value: "Default" | "LANDSCAPE") => {
+        orientation: (value: "Default" | "LANDSCAPE" | "PORTRAIT") => {
             ScreenOrientation.lockAsync(
                 value === "Default"
                     ? ScreenOrientation.OrientationLock.DEFAULT
-                    : ScreenOrientation.OrientationLock.LANDSCAPE
+                    : (value === "LANDSCAPE"
+                        ? ScreenOrientation.OrientationLock.LANDSCAPE
+                        : ScreenOrientation.OrientationLock.PORTRAIT)
             );
         },
         parser: {

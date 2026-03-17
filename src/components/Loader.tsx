@@ -6,7 +6,8 @@ import { View, AnimatedView, Text, TouchableOpacity, ScrollView, ProgressBar, us
 export default (
   initValue?: boolean,
   text?: string,
-  size?: number | "small" | "large"
+  size?: number | "small" | "large",
+  onPress?: () => void
 ) => {
   const [state, setState] = useState({
     loading: initValue ?? false,
@@ -38,9 +39,10 @@ export default (
     extraData.current = value;
     return { show, hide, loading: state.loading, get, set };
   }
+  const Container = onPress ? TouchableOpacity : View;
 
   let elem = !state.loading ? null : (
-    <View css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center clb">
+    <Container activeOpacity={1} onPress={onPress} css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center clb">
       <View css="clearboth blur absolute zi:1" />
       <ActivityIndicator
         size={size ?? "large"}
@@ -59,7 +61,7 @@ export default (
         css="bold co:#ffffff fos:18 zi:3">
         {text}
       </Text>
-    </View>
+    </Container>
   );
   return { show, hide, elem, loading: state.loading, get, set };
 };

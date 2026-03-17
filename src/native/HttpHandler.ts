@@ -305,33 +305,38 @@ class HttpHandler {
       return null;
     }
   }
-  async imageUrlToBase64(url: string, header?: any) {
-    try {
-      console.log("getting image for", url?.substring(0, 150));
-      if (!url || url.isBase64String()) return url;
+  async imageUrlToBase64(url: string, header?: any, timeoutMs = 20000) {
+    if (!url || url.isBase64String()) return url;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
       header = header ?? {};
       if (typeof url == "string" && url.has("header")) {
-        let h = JSON.parse(url.split("header")[1].substring(1));
+        const h = JSON.parse(url.split("header")[1].substring(1));
         url = url.split("header")[0].trim();
         for (let k in h) header[k] = h[k];
       }
 
-      const response = await fetch(url, { ...this.header(header) });
+      const response = await fetch(url, { ...this.header(header), signal: controller.signal });
       const blob = await response.blob();
+
       return await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(`data:image/jpg;base64,${reader.result.toString().safeSplit(",", 1)}`);
-        reader.onerror = ()=> {
+        reader.onerror = () => {
+          console.error("base64Image not found");
           resolve("");
-          console.error("base64Image not found")
         };
         reader.readAsDataURL(blob);
       });
-
-    } catch (e) {
-      console.error("HttpError", e);
+    } catch (e: any) {
+      if (e.name === "AbortError") console.warn("Fetch aborted due to timeout:", url);
+      else console.error("HttpError", e);
       return new HttpError(e);
+    } finally {
+      clearTimeout(timeout);
     }
   }
 }

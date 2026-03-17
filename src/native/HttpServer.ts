@@ -135,28 +135,32 @@ class HttpServer {
                     const { src, id } = JSON.parse(request.paramsJson);
 
                     let data: any = undefined;
-                    const img = { src: src.decodeURIComponentSafe(), id };
-                    let key = img.src + context.player.book.name + context.player.currentChapter.name + context.player.novel.parserName;
-                    if (tempImageData.has(key))
-                        data = tempImageData.get(key);
-                    if (!data) {
-                       // console.log("Fetching image for", src, "decoded:", img.src)
-                        data = (await context.player.getImage(img)).firstOrDefault();
-                        if (data)
-                            tempImageData.set(key, data)
-                    }
-                    if (data) {
-                        data.id = id;
-                        data.src = src;
-                    }
+                   // if (context.player.hooked) {
+                        const img = { src: src.decodeURIComponentSafe(), id };
+                        let key = img.src + context.player.book.name + context.player.currentChapter.name + context.player.novel.parserName;
+                        if (tempImageData.has(key))
+                            data = tempImageData.get(key);
+                        if (!data) {
+                            if (__DEV__)
+                                console.log("Fetching image for", src, "decoded:", img.src)
+                            data = (await context.player.getImage(img)).firstOrDefault();
+                            if (data && data.cn)
+                                tempImageData.set(key, data)
+                        }
+                        if (data && data.cn) {
+                            data.id = id;
+                            data.src = src;
+                        }
 
+
+                    
                     return {
                         statusCode: 200,
-                        contentType: "application/json",
+                        contentType: "text/plain; charset=utf-8",
                         headers: {
                             "Access-Control-Allow-Origin": "*"
                         },
-                        body: JSON.stringify(data ?? {})
+                        body: data  && data.cn ? `${data.cn}|${data.id}|${data.src}` : ""
                     } as any;
                 } catch (e) {
                     console.error("HttpServerError", e)

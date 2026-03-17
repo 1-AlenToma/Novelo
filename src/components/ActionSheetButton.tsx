@@ -10,6 +10,7 @@ export default ({
   refItem,
   controller,
   ready,
+  speed,
   ...props
 }: {
   onPress?: any;
@@ -17,6 +18,7 @@ export default ({
   btn?: any;
   ifTrue: any;
   refItem?: any;
+  speed?: number;
   controller?: "Modal" | "ActionSheet"
 } & any) => {
   if (ifSelector(ifTrue) === false) return null;
@@ -61,7 +63,7 @@ export default ({
       <CN
         {...props}
         {...extra}
-        speed={400}
+        speed={speed ?? 300}
         isVisible={visible}
         onHide={() => setVisible(false)}
       >
