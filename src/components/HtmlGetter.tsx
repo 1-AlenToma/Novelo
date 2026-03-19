@@ -105,7 +105,7 @@ export default () => {
         htmlData.map(x => (
           <WebView
             key={x.id}
-            injectedJavaScript={htmlGetterJsCode(x)} 
+            injectedJavaScript={htmlGetterJsCode(x)}
             cacheEnabled={true}
             source={{
               uri: x.url
@@ -116,6 +116,7 @@ export default () => {
                 // console.log(data)
                 switch (data.type) {
                   case "html":
+                  case "ajax":
                     htmlContext.html.data.find(x => x.id == data.id)?.func(data.data as any)
                     break;
                   case "protection":
@@ -125,6 +126,10 @@ export default () => {
                         state.protection = [{ url: data.data, id: data.id }]
                       else state.protection.push({ url: data.data, id: data.id });
                     }
+                    break;
+                  case "error":
+                    htmlContext.html.data.find(x => x.id == data.id)?.func("")
+                    console.error("WebViewError", data);
                     break;
                   default:
                     console.warn(data)

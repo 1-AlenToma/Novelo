@@ -539,13 +539,16 @@ const getElements = (html) => {
         throw e
     }
 }
-        window.imageRetry = (btn) => {
+        window.imageRetry = (event, btn) => {
+            e.preventDefault();
             btn.parentNode.classList.remove('error', 'loaded');
             const img = btn.parentElement.querySelector("img");
 
             const src = img.src;
             img.src = "";
             img.src = src;
+            event.preventDefault();
+            event.stopPropagation();
         };
 
         const loadImages =(view, option)=>{
@@ -572,7 +575,7 @@ const getElements = (html) => {
                             const btnRetry = document.createElement("div");
                             btnRetry.className = "retry";
                             btnRetry.innerHTML = "Retry";
-                            btnRetry.setAttribute("onclick", "window.imageRetry(this)");
+                            btnRetry.setAttribute("onclick", "window.imageRetry(event, this)");
                             imgContainer.appendChild(btnRetry);
                         }
                     }

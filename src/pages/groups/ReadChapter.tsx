@@ -286,7 +286,8 @@ const Controller = ({ state, ...props }: any) => {
     "player._playing",
     "size",
     "appSettings",
-    "player.book.textReplacements"
+    "player.book.textReplacements",
+    "player.currentChapterSettings"
   );
 
   const oSettings = useRef({

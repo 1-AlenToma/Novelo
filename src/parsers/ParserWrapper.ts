@@ -15,6 +15,8 @@ import NovelBinCom from "./NovelBinCom";
 import GogoAnime from "./GogoAnime";
 import MangaKakalot from "./MangaKakalot";
 import NovLoveCom from "./NovLoveCom";
+import KunManga from "./KunManga";
+import RizzFables from "./RizzFables";
 
 import NovelUpdate from "./infos/NovelUpdates";
 import MyAnimeList from "./infos/MyAnimeList";
@@ -74,7 +76,7 @@ export default class ParserWrapper extends Parser {
   }
 
   static getAllParsers(parserName?: string) {
-    let prs = [ReadNovelFull, NovelFullCom, NovelFull, NovLoveCom, NovelBinCom, NovelBin, MangaKakalot, MangaBerri, GogoAnime].map(
+    let prs = [ReadNovelFull, NovelFullCom, NovelFull, NovLoveCom, NovelBinCom, NovelBin,RizzFables, KunManga, MangaKakalot, MangaBerri, GogoAnime].map(
       x => new ParserWrapper(new (x as any)())
     );
     if (parserName)

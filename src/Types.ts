@@ -155,7 +155,12 @@ export type ISize = {
   y?: number
 }
 
-export type Ajax = { url: string, type: "post" | "get", query: object };
+export type Ajax = {
+  url: string,
+  type: "post" | "get",
+  method: "encodedPost" | "formPost"
+  query: object
+};
 export type WebViewProps = {
   type?: "base64" | "webp";
   selector?: string;

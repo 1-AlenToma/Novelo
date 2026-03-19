@@ -48,12 +48,13 @@ export default ({
     ...(hooks ?? [])
   );
   const time = useTimer(100);
+  const horizental = useRef(vMode).current;
   const onEndReachedCalledDuringMomentum =
     useRef(true);
   const ref = useRef();
   const selected = useRef();
   const Render = (({ item, index }: any) => {
-    let d = { item, vMode, index };
+    let d = { item, vMode:horizental, index };
     if (props) d = { ...d, ...props };
     let VR = container;
     let CN =
@@ -131,7 +132,7 @@ export default ({
           }}
           nestedScrollEnabled={nested}
           initialScrollIndex={scrollIndex}
-          horizontal={vMode !== true}
+          horizontal={horizental !== true}
           data={items ?? []}
           refreshing={onRefresh?.loading}
           onRefresh={onRefresh?.onRefresh}

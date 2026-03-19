@@ -53,8 +53,10 @@ class Html {
     return new Html(this.getItems(selector).firstOrDefault(), this.uurl);
   }
 
-  find(selector) {
-    return new Html(this.getItems(selector), this.uurl);
+  find(selector: string | ((x: Html, index: number) => any)) {
+    if (typeof selector == "string")
+      return new Html(this.getItems(selector), this.uurl);
+    if (selector) return this.one(selector)
   }
 
   // this method are for special tags like dc:identifier where it containe :
@@ -78,6 +80,15 @@ class Html {
   eq(index: number) {
     let item = this.filter((x, i) => i == index);
     return item;
+  }
+
+  one(fn: (x: Html, index: number) => boolean) {
+    return new Html(
+      this.elements.find((x, i) =>
+        fn(new Html(x, this.uurl), i)
+      ),
+      this.uurl
+    );
   }
 
   filter(fn: (x: Html, index: number) => boolean) {
@@ -177,7 +188,7 @@ class Html {
       if (!value || value.empty()) {
         value = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length > 0)?.getAttribute(k);
         if (value && !value.empty() && this.uurl) {
-          value = this.uurl.join(value);
+          value = serilize ? this.uurl.join(serilize(value)) : this.uurl.join(value);
         }
       }
     });

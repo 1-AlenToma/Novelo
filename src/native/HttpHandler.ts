@@ -43,7 +43,7 @@ const getFetch = async (
   fromWebView?: boolean,
   props?: WebViewProps
 ) => {
-  let key = createKey({ url, options });
+  let key = createKey({ url, options, props });
   if (tempData.has(key))
     return tempData.get(key);
   const timer = new FetchTimer();
@@ -227,6 +227,16 @@ class HttpHandler {
     }
   }
 
+  encodedPostWeb_view(url: string, ajax: Ajax, baseurl?: string) {
+    console.log("encodedPostWeb_view", ajax.url)
+    let data = [];
+    if (ajax.query instanceof FormData) {
+      ajax.query.forEach((v, k) => data.push({ key: k, value: v }))
+      ajax.query = data;
+    }
+    return this.web_view(url, baseurl, { props: { ajax } })
+  }
+
   async web_view(
     url: string,
     baseurl?: string,
@@ -252,18 +262,24 @@ class HttpHandler {
     }
   }
 
-  async formPost(url: string, item: any) {
+  async formPost(url: string, item: object | FormData) {
     try {
       var data = new FormData();
-      for (let k in item) {
-        data.append(k, item[k]);
+      if (item instanceof FormData)
+        data = item;
+      else if (item) {
+        for (let k in item) {
+          data.append(k, item[k]);
+        }
       }
+
+      console.log("formPost", url)
       let res = await getFetch(
         url,
         {
           ...this.header(),
           method: "POST",
-          body: data
+          body: data,
         },
         this.ignoreAlert,
         this
@@ -271,17 +287,24 @@ class HttpHandler {
       return new HttpValue(await res.text());
     } catch (e) {
       this.httpError = new HttpError(e);
-      console.error(e);
+      console.error("formPost", e, "body", item);
       return null;
     }
   }
 
-  async encodedPost(url: any, item: any) {
+  async encodedPost(url: any, item: object | FormData) {
     try {
       var formBody: any = [];
-      for (var property in item) {
-        var encodedKey = encodeURIComponent(property);
-        var encodedValue = encodeURIComponent(item[property]);
+      let values = [];
+      if (item instanceof FormData) {
+        (item as FormData).forEach((value, key) => {
+          values.push({ key, value })
+        })
+      } else if (item) Object.keys(item).forEach(x => values.push({ key: x, value: item[x] }))
+
+      for (var property of values) {
+        var encodedKey = encodeURIComponent(property.key);
+        var encodedValue = encodeURIComponent(property.value);
 
         formBody.push(encodedKey + "=" + encodedValue);
       }
@@ -313,10 +336,28 @@ class HttpHandler {
 
     try {
       header = header ?? {};
+      let useWebView = false;
       if (typeof url == "string" && url.has("header")) {
         const h = JSON.parse(url.split("header")[1].substring(1));
         url = url.split("header")[0].trim();
+        if (h.webView)
+          useWebView = true;
         for (let k in h) header[k] = h[k];
+      }
+      console.log("base64Img", url)
+      if (useWebView) {
+        let html = await this.web_view(url, url, {
+          props: {
+            imageSelector: {
+              selector: "img",
+              attr: "src"
+            }
+          }
+        });
+
+        let img = html.html.first("img").attr("src").toBase64Url();
+        return img;
+
       }
 
       const response = await fetch(url, { ...this.header(header), signal: controller.signal });

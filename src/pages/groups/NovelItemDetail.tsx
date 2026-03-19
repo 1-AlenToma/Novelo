@@ -32,11 +32,12 @@ export default ({ ...props }: any) => {
       novel: {} as DetailInfo,
       viewChapters: false,
       cText: "",
-      infoLoading: false,
+      infoLoading: true,
       book: {} as Book | undefined,
       authorNovels: [] as any[],
       showNovelUpdateWebView: false,
-      downloadSheetView: false
+      downloadSheetView: false,
+      recuValidation: undefined
     })).ignore(
       "book",
       "novel",
@@ -72,7 +73,7 @@ export default ({ ...props }: any) => {
               .firstOrDefault();
           }
 
-          if (parser.infoEnabled) loadInfo(novel);
+          loadInfo(novel);
           await fetchAuthorNovels();
         }
       } catch (e) {
@@ -86,17 +87,20 @@ export default ({ ...props }: any) => {
   let loadInfo = async (novel: any) => {
     try {
       //return;
-      state.infoLoading = true;
-      if (novel && (novel.name?.has() ?? false)) {
-        let item = await parser.novelInfo(novel, true);
-        if (item && item.name) {
-          state.novel = item;
+      if (parser.infoEnabled) {
+        state.infoLoading = true;
+        if (novel && (novel.name?.has() ?? false)) {
+          let item = await parser.novelInfo(novel, true);
+          if (item && item.name) {
+            state.novel = item;
+          }
         }
       }
     } catch (e) {
       console.error(e);
     } finally {
       state.infoLoading = false;
+      state.recuValidation = state.novel.novelUpdateRecommendations.some(x => x.image?.has());
     }
   };
 
@@ -389,35 +393,39 @@ export default ({ ...props }: any) => {
                     css="header fos:18 pab:5">
                     Recommendations
                   </Text>
-                  <ItemList
-                    onPress={item => {
-                      if (!item.parserName) {
-                        context
-                          .nav.navigate("Search", {
-                            searchTxt: item.name,
-                            parserName
-                          });
-                      } else {
-                        context
-                          .nav.navigate("NovelItemDetail", {
-                            url: item.url,
-                            parserName: item.parserName
-                          });
+                  {
+                    !loader.loading && !state.infoLoading ? (<ItemList
+                      onPress={item => {
+                        if (!item.parserName) {
+                          context
+                            .nav.navigate("Search", {
+                              searchTxt: item.name,
+                              parserName
+                            });
+                        } else {
+                          context
+                            .nav.navigate("NovelItemDetail", {
+                              url: item.url,
+                              parserName: item.parserName
+                            });
+                        }
+                      }}
+                      itemCss={!(state.recuValidation) ? "wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray" : "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"}
+                      container={({ item, index }: any) => {
+                        if (!state.recuValidation)
+                          item.image = undefined;
+                        if (item.image?.has())
+                          return <HomeNovelItem item={item} vMode={false} />
+                        return <Text css="fow-bold fos-15 pal-10">{item.name}</Text>
                       }
-                    }}
-                    itemCss={!((state.novel.novelUpdateRecommendations?.firstOrDefault("image") ?? "").toString().has()) ? "wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray" : "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"}
-                    container={({ item, index }: any) => {
-                      if (item.image?.has())
-                        return <HomeNovelItem item={item} vMode={false} />
-                      return <Text css="fow-bold fos-15 pal-10">{item.name}</Text>
-                    }
-                    }
-                    items={
-                      state.novel.novelUpdateRecommendations
-                    }
-                    nested={true}
-                    vMode={!((state.novel.novelUpdateRecommendations?.firstOrDefault("image") ?? "").toString().has())}
-                  />
+                      }
+                      items={
+                        state.novel.novelUpdateRecommendations?.filter(x => x.name && x.name.has())
+                      }
+                      nested={true}
+                      vMode={!(state.recuValidation)}
+                    />) : null
+                  }
                 </View>
               </View>
             </ScrollView>
@@ -461,14 +469,14 @@ export default ({ ...props }: any) => {
                         title: "Attention",
                         message: `The ${parser?.type ?? "Novel"} will start downloading shortly.
                         ${parser.protected
-                          ? `\n\nNote\n"${parser.name}" contains protection and it's requires WebView to access its data.\nBecause of this, the download will pause if the app is minimized or runs in the background. Please keep the app open until it finishes.`
-                          : ""
+                            ? `\n\nNote\n"${parser.name}" contains protection and it's requires WebView to access its data.\nBecause of this, the download will pause if the app is minimized or runs in the background. Please keep the app open until it finishes.`
+                            : ""
                           }`,
                       });
-                      
+
                     }}
                     current={
-                        undefined
+                      undefined
                     }
                   />
                 </ActionSheet>

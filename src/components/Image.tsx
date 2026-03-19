@@ -21,6 +21,7 @@ export default ({
     Referer: undefined
   }).current
   const imageSize = parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined;
+  const http = context.parser.current.http;
   header.Referer = header.Referer ?? (parserName ? context.parser.find(parserName)?.url : undefined)
   let loadImage = async () => {
     try {
@@ -41,11 +42,20 @@ export default ({
 
         if (typeof url == "string" && url.has("header")) {
           let h = JSON.parse(url.split("header")[1].substring(1));
-          url = url.split("header")[0].trim();
-          for (let k in h)
-            header[k] = h[k];
+          if (h.webView) {
+            let img = await http.imageUrlToBase64(url);
+            if (typeof img == "string")
+              url = img;
+          } else {
+            url = url.split("header")[0].trim();
+
+            for (let k in h)
+              header[k] = h[k];
+          }
         } else if (url && typeof url == "string" && url.isBase64String())
           url = url.toBase64Url();
+
+
         setSource(url);
       }
     } catch (e) {
