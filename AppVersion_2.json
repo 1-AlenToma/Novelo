@@ -1,6 +1,6 @@
 {
-  "versionName": "1.3.8",
-  "apkUrl": "https://github.com/1-AlenToma/Novelo/releases/download/2.1.9/app-release.apk",
+  "versionName": "1.3.9",
+  "apkUrl": "https://github.com/1-AlenToma/Novelo/releases/download/2.2.0/app-release.apk",
   "forceUpdate": false,
   "whatsNew": "Bug fixes.\nAdded http server to handle parsing css and js to the webview, which should work alot faster"
 }

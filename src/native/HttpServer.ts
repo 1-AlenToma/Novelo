@@ -19,10 +19,9 @@ class HttpServer {
     private server?: httpService.HttpServer;
 
     async setIp() {
-        this.ip = await NetworkInfo.getIPAddress();
-        this.address = this.ip && /[1-9]/g.test(this.ip) && __DEV__
-            ? `http://${this.ip}:${this.port}/${context.version}`
-            : `http://127.0.0.1:${this.port}/${context.version}`;
+        let ip = await NetworkInfo.getIPAddress();
+        this.ip = ip && /[1-9]/g.test(this.ip) && __DEV__ ? ip : "127.0.0.1";
+        this.address = `http://${this.ip}:${this.port}/${context.version}`;
     }
 
     getRoute(route: string) {

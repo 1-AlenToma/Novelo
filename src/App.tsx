@@ -92,7 +92,7 @@ const App = () => {
             );
             setStatusBarHidden(context.isFullScreen);
             if (!context.isFullScreen) {
-              //  NavigationBar.setBehaviorAsync("overlay-swipe");
+                NavigationBar.setBehaviorAsync("overlay-swipe");
             }
 
         },

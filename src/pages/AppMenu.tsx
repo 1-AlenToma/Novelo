@@ -20,7 +20,7 @@ export default ({ ...props }) => {
   const getColor = (focus: boolean) => (focus ? "#007AFF" : activeColor) as ColorValue; 
 
   return (
-    <View style={{ flex: 1 }} css="root">
+    <View style={{ flex: 1 }}>
       <Tab.Navigator
         id="main-tabs"
         initialRouteName="HOME"

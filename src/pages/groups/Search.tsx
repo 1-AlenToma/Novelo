@@ -260,7 +260,7 @@ export default ({ ...props }: any) => {
     return loader.elem;
   return (
     <View
-      css="flex root">
+      css="flex">
       <Header
         value={state.text.text}
         inputEnabled={true}

@@ -275,8 +275,10 @@ export default class FileHandler {
           files.current = this.DownloadedFiles.keys();
         else {
           files.current = await this.allFiles();
-          if (this.enableCaching)
-            this.DownloadedFiles.push(...files.current.map(x => ({ key: this.getName(x), value: undefined })))
+          if (this.enableCaching){
+            this.DownloadedFiles.push(...files.current.map(x => ({ key: this.getName(x), value: undefined })));
+            
+          }
         }
 
         this.allFilesReaded = true;
@@ -290,7 +292,7 @@ export default class FileHandler {
           delete this.events[id];
         }
       };
-    }, [loader.loading]);
+    }, []);
 
     const loadItems = async () => {
       await loader.show();

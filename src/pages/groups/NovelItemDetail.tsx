@@ -107,7 +107,7 @@ export default ({ ...props }: any) => {
   //console.warn([state.novel].niceJson("chapters"), state.novel.alternativeNames?.has() )
   return (
     <View
-      css="flex root">
+      css="flex">
       <Modal addCloser={true} css="he-90% wi-95%" isVisible={state.showNovelUpdateWebView} onHide={() => state.showNovelUpdateWebView = false}>
         <View css="flex mat-30 mab-10">
           <WebView
