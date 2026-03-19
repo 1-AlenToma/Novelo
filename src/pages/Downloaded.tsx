@@ -174,11 +174,7 @@ const ItemRender = React.memo(({
       x => x.url == b.url
     );
     if (novel) {
-      itemState.info = `(${b.selectedChapterIndex + 1
-        }/${novel.chapters.filter(
-          x => x.content && x.content.has()
-        ).length
-        })`;
+      itemState.info = `(${b.selectedChapterIndex + 1}/${novel.chapters.filter(x => x.content && x.content.has()).length})`;
     }
     loader.hide();
   };
@@ -251,7 +247,8 @@ const ItemRender = React.memo(({
               .prepDownload(
                 item.url,
                 item.parserName,
-                context.parser.find(item.parserName)?.protected
+                context.parser.find(item.parserName)?.protected,
+                novelInfo.startFromIndex ?? 0
               );
             return true;
           }

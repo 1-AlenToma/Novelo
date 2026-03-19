@@ -7,7 +7,8 @@ import { StyleSheet, TextInputProps } from "react-native";
 type Props = TextInputProps & StyledProps & {
   isModole?: boolean,
   inputVisible?: boolean,
-  serachBar?: boolean
+  serachBar?: boolean;
+  label?: string;
 }
 
 export default React.forwardRef(
@@ -18,6 +19,7 @@ export default React.forwardRef(
       isModole,
       inputVisible,
       serachBar,
+      label,
       ...props
     }: Props,
     ref: any
@@ -26,8 +28,9 @@ export default React.forwardRef(
     const inputRef = React.useRef<typeof TextInput>(null);
     const [visible, setVisible] = React.useState(inputVisible || false);
     const [size, setSize] = React.useState<ISize | undefined>();
+    const [hasFocus, setHasfocus] = React.useState<boolean>(false);
     const [txt, setTxt] = React.useState(
-      props.defaultValue
+      props.value ?? props.defaultValue ?? ""
     );
 
     if (methods.ifSelector(props.ifTrue) === false)
@@ -79,6 +82,13 @@ export default React.forwardRef(
       );
     }
 
+    const hasText = txt.length>0 // safer
+    const lblBackground: any = { backgroundColor: hasFocus || hasText ? null : "transparent" }
+    if (!lblBackground.backgroundColor)
+    {
+      delete lblBackground.backgroundColor;
+     
+    }else  lblBackground.color= "gray";
     return (
       <View
         style={[styles.container, {
@@ -86,6 +96,23 @@ export default React.forwardRef(
         }]}
         css={`wi:100% ali:center fl-1 juc-center he-30 bor-2 View`}>
         <Icon ifTrue={serachBar == true} name="search" type="Ionicons" css="Text" size={20} style={styles.icon} />
+        <Text
+          ifTrue={label != undefined}
+          css="invert"
+          style={{
+            position: "absolute",
+            left: 5,
+            fontSize: 12,
+            top:
+              hasFocus || hasText
+                ? -((size?.height as number ?? 20) / 2 + 2)
+                : ((size?.height as number ?? 20) / 2) - 5,
+            zIndex: 2,
+            ...lblBackground
+          }}
+        >
+          {label}
+        </Text>
         <TextInput
           onLayout={e => {
             setSize(e.nativeEvent.layout);
@@ -98,11 +125,19 @@ export default React.forwardRef(
             }
             inputRef.current = c as any;
           }}
+          onFocus={() => setHasfocus(true)}
+          onBlur={() => {
+            setHasfocus(false)
+          }}
           disableFullscreenUI={true}
           textAlignVertical={props.multiline ? "top" : undefined}
           inputMode="search"
           placeholderTextColor={context.selectedThemeIndex == 0 ? "#000000" : "#FFFFFF"}
           {...props}
+          onChangeText={text=> {
+            setTxt(text);
+            props?.onChangeText?.(text);
+          }}
           style={[
             styles.input,
             {
@@ -120,19 +155,19 @@ export default React.forwardRef(
         <TouchableOpacity
           style={{
             marginTop: ((size?.height ?? 1) as number - 24) / 2,
-            left: (size?.width ?? 0) as number + (size?.x ?? 0) - 24
+            left: (size?.width ?? 0) as number + (size?.x ?? 0) - 34
           }}
           css="absolute zi-2 bac-transparent"
           ifTrue={() => (
             props.readOnly !== true && (
-              props.value?.has() ||
-              props.defaultValue?.has()
-              || txt?.has()
+              props.value?.has()
+              || hasText
             )) as any
           }
           onPress={() => {
             inputRef.current?.clear();
             inputRef.current?.focus();
+            setTxt("");
             props.onChangeText?.("");
             props.onSubmitEditing?.(null);
           }}>

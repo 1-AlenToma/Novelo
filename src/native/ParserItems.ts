@@ -7,6 +7,7 @@ class ChapterInfo extends GenericType {
   url: string = "";
   parserName: string = "";
   content?: string; // only used in player
+  empty?: boolean;
 }
 
 type ParserType = "Novel" | "Manga" | "Anime";
@@ -45,6 +46,7 @@ class DetailInfo extends LightInfo {
   chapters: ChapterInfo[] = [];
   lastUpdated: string = "";
   commentScript: CommentScript = new CommentScript();
+  startFromIndex?:number; // only used when downloading the novel 
 }
 
 class Value {

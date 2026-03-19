@@ -25,7 +25,7 @@ const veryIntensiveTask =
       const keys = [...dm.prepItems.keys()].filter(x => !dm.items.has(x) && dm.prepItems.get(x)?.protected !== true);
       for (let url of keys) {
         let item = dm.prepItems.get(url);
-        dm.download(url, item.parserName);
+        dm.download(url, item.parserName, item.startFromIndex);
       }
     }));
 

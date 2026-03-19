@@ -8,7 +8,7 @@ import { DetailInfo } from "./ParserItems";
 export default class DownloadManager {
   events: { [key: string]: Function } = {};
   items: Map<string, number> = new Map();
-  prepItems: Map<string, { url: string, parserName: string, protected?: boolean }> = new Map();
+  prepItems: Map<string, { url: string, parserName: string, protected?: boolean, startFromIndex: number }> = new Map();
   change(url: string, name: string) {
     if (context.appState.inBackground)
       return;
@@ -90,7 +90,7 @@ export default class DownloadManager {
               content: src,
               fileName: img
             });
-            await sleep(100); // try later until success
+            await sleep(1); // try later until success
 
             break;
           } else if (src && (src as any).isNetwork?.()) {
@@ -108,16 +108,17 @@ export default class DownloadManager {
 
   }
 
-  async prepDownload(url: string, parserName: string, _protected: boolean) {
-    this.prepItems.set(url, { url, parserName, protected: _protected });
+  async prepDownload(url: string, parserName: string, _protected: boolean, startFromIndex: number = 0) {
+    this.prepItems.set(url, { url, parserName, protected: _protected, startFromIndex });
     if (_protected)
-      this.download(url, parserName);
+      this.download(url, parserName, startFromIndex);
     this.change(url, parserName);
   }
 
   async download(
     url: string,
-    parserName: string
+    parserName: string,
+    startFromIndex?: number
   ) {
     try {
       if (this.items.has(url)) return;
@@ -142,17 +143,38 @@ export default class DownloadManager {
         );
       let key = "".fileName(novel.name, parserName);
       let file = await context.files.read(key);
-      let savedItem = (file && file.has("{") ? JSON.parse(file) : { ...novel, chapters: [] }) as DetailInfo;
+      let savedItem = (file && file.has("{") ? JSON.parse(file) : { ...novel, chapters: [], startFromIndex }) as DetailInfo;
       savedItem.files = savedItem.files ?? []; // as temp for now
+      savedItem.startFromIndex = startFromIndex ?? savedItem.startFromIndex ?? 0;
       let index = savedItem.chapters.length;
       let tries = 0;
       if (!file)
         await context.files.write(key, JSON.stringify(savedItem));
       this.change(url, novel.name);
-      for (let ch of novel.chapters.filter(x => !savedItem.chapters.find(a => a.url == x.url))) {
+      for (let i = 0; i < novel.chapters.length; i++) {
+
         try {
+
+          let ch = novel.chapters[i];
+          let savedChapter = savedItem.chapters.find(x => x.url == ch.url);
           index++;
-          let chapterIndex = novel.chapters.indexOf(ch).toString();
+          if (savedItem.startFromIndex > i) {
+            if (!savedChapter) {
+              console.info("Skip downloading chapter at index ", i);
+              ch.content = "Not Downloaded";
+              ch.empty = true;
+              savedItem.chapters.push(ch);
+            }
+            continue;
+          }
+          if (savedChapter) {
+            if (savedChapter.empty) {
+              ch = savedChapter;
+              ch.empty = false;
+              ch.content = undefined;
+            } else continue;
+          }
+          let chapterIndex = i.toString();
           let cn = ch.content;
           if (cn === undefined) {
             cn = (await parser.chapter(ch.url)) as string
@@ -183,7 +205,7 @@ export default class DownloadManager {
             })]
           }
 
-          if (!savedItem.chapters.find(x => x.url == ch.url))
+          if (savedChapter == undefined)
             savedItem.chapters.push(ch);
           if (index % 10 === 0 || savedItem.chapters.length == 1 || !this.items.has(savedItem.url)) {
             if (savedItem.files.length > 0) {

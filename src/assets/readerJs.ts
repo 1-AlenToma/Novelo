@@ -193,6 +193,83 @@ export const CSSStyle = /*css */`
   left: 0;
   top: 0;
   z-index: 1;
+}
+  
+.lazy {
+  position: relative;
+  width: 100%;
+  height: 35px;
+}
+
+/* spinner */
+.lazy::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  margin: -15px;
+  border: 3px solid #ccc;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* image */
+.lazy img {
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+  display: none;
+}
+
+/* loaded */
+.lazy.loaded::before {
+  display: none;
+}
+
+.lazy.loaded img {
+  display: block !important;
+}
+
+/* error state */
+.lazy.error::before {
+  display: none;
+}
+
+.lazy .retry {
+  display: none;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 80px;
+  height: 30px;
+  cursor: pointer;
+  border-radius: 5px;
+  text-align:center;
+  border: 1px solid #CCC !important;
+}
+
+.lazy .retry:active{
+  border: 1px solid #CCC;
+   transform: scale(0.95);
+}
+
+.lazy.error .retry {
+  display: block;
+
+}
+
+.lazy.loaded{
+  height:auto !important;
+}
+
+.lazy.loaded > .retry{
+  display: none !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }`
 
 
@@ -308,8 +385,9 @@ const getProgress = (startValue, max = 100) => {
 }
 
 const setId = (img) => {
-    if (img && !img.id && img.id.length <= 0) {
+    if (img && (img.id == null || img.id.length <= 0)) {
         img.id = window.getId();
+        img.setAttribute("id", img.id);
     }
 }
 
@@ -461,7 +539,48 @@ const getElements = (html) => {
         throw e
     }
 }
+        window.imageRetry = (btn) => {
+            btn.parentNode.classList.remove('error', 'loaded');
+            const img = btn.parentElement.querySelector("img");
 
+            const src = img.src;
+            img.src = "";
+            img.src = src;
+        };
+
+        const loadImages =(view, option)=>{
+            if (typeof view == "string") {
+                  const item = document.createElement("div");
+                  item.innerHTML = view;
+                  view = item;
+             } else return view;
+             const imgs = Array.from(view.querySelectorAll("img"));
+             for (let img of imgs) 
+                {
+
+                    setId(img);
+                    const src = img.getAttribute("src") || "";
+                    if (src.length > 0 && !src.startsWith("data:")) {
+                        img.src = addString(document.body.getAttribute("imageAddress"), "/", encodeURIComponent(src), "/", img.id);
+                        if (option.type== "Manga"){
+                            const imgContainer = document.createElement("div");
+                            imgContainer.className = "lazy";
+                            img.replaceWith(imgContainer);
+                            imgContainer.appendChild(img);
+                            img.setAttribute("onload", "this.parentNode.classList.add('loaded')");
+                            img.setAttribute("onerror", "this.parentNode.classList.add('error')");
+                            const btnRetry = document.createElement("div");
+                            btnRetry.className = "retry";
+                            btnRetry.innerHTML = "Retry";
+                            btnRetry.setAttribute("onclick", "window.imageRetry(this)");
+                            imgContainer.appendChild(btnRetry);
+                        }
+                    }
+                }
+                return view.innerHTML;
+        }
+
+      
 
 const pageSleeper = (ms) => new Promise(r => setTimeout(r, ms))
 let createTimer = undefined;
@@ -478,11 +597,10 @@ const create = async (option) => {
         div.id = "chapter";
         div.className = "novel";
         document.body.appendChild(div);
-        option.content = cleanHtml(option.content);
+        option.content =loadImages(cleanHtml(option.content), option) ;
         chapter = getElements(option.content);
 
-        const text = option.scrollType == "Pagination" ? chapter.map(x => x.outerHTML) : chapter;
-
+        let text = option.scrollType == "Pagination" ? chapter.map(x => x.outerHTML) : chapter;
 
         const sliderContainer = scrollabeView = document.createElement("div");
         const slider = document.createElement("div");
@@ -507,77 +625,8 @@ const create = async (option) => {
             return view;
         }
 
-        const chunkArray = (arr, size) => {
-            const result = [];
-            for (let i = 0; i < arr.length; i += size) {
-                result.push(arr.slice(i, i + size));
-            }
-            return result;
-        }
 
-        const validateImages = async (view) => {
-            let loader = undefined;
-            
-            try {
-                view = view || document;
-
-                const imgs = Array.from(view.querySelectorAll("img"));
-                const imageAddress = document.body.getAttribute("imageAddress");
-                 if (window.__DEV__)
-                    window.postmsg("log", "Found " + imgs.length + " images");
-                loader = imgs.length > 0 ? getProgress(0, imgs.length) : undefined;
-
-                const validImgs = imgs.filter(function(img) {
-                    const src = img.getAttribute("src") || "";
-                    return src.length > 0 &&
-                        !img.getAttribute("refSrc") &&
-                        !src.startsWith("data:");
-                });
-
-                const groupSize = 5;
-                const groups = chunkArray(validImgs, groupSize);
-
-                const worker = async (group) => {
-                    for (let i = 0; i < group.length; i++) {
-                        const img = group[i];
-
-                        try {
-                            setId(img);
-
-                             const src = img.getAttribute("src");
-                             img.setAttribute("refSrc", src);
-                             let newSrc = addString(imageAddress, "/", encodeURIComponent(src), "/", img.id);
-
-                            const source = await window.fetchImage(newSrc, img);
-
-                            if (source && source.cn) {
-                                img.src = source.cn;
-                            }
-
-                        } catch (e) {
-                            if (window.__DEV__)
-                                console.warn("img error", e);
-                        }
-
-                        if (loader) loader.value += 1;
-                    }
-                }
-
-                const promises = [];
-                for (let i = 0; i < groups.length; i++) {
-                    promises.push(worker(groups[i]));
-                }
-
-                await Promise.all(promises);
-
-            } catch (e) {
-                if (window.__DEV__)
-                    window.postmsg("error", e.toString());
-            } finally {
-                if (loader)
-                    loader.remove();
-            }
-        }
+ 
 
         const createScrollPreview = () => {
             scrollPerview = document.createElement("div");
@@ -665,6 +714,8 @@ const create = async (option) => {
 
                         mock.classList.remove("manga-page");
                         scrollabeView.classList.add(option.type.toLowerCase() + "-page");
+                        if (option.type == "Manga")
+                            mock.style.minHeight = (option.scrollValue) + "px"
                         //  slider.classList.add("unset");
 
                     } else {
@@ -682,7 +733,7 @@ const create = async (option) => {
 
 
         window.cleanStyle(".sliderView");
-        await validateImages();
+        
         if (option.addNext && ["Pagination", "PaginationScroll", "Player"].includes(option.scrollType)) {
             const mock = createView();
             mock.classList.add("emptyView");

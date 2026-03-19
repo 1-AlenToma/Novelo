@@ -7,7 +7,7 @@ import {
   ExpandableDescription,
   SingleTouchableOpacity
 } from "../../components/";
-import { View, Text, Icon, AlertDialog, Modal, TabBar, TabView, TouchableOpacity } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, Modal, TabBar, TabView, TouchableOpacity, ActionSheet } from "react-native-short-style";
 import HomeNovelItem from "../../components/HomeNovelItem";
 import WebView from "react-native-webview";
 import * as React from "react";
@@ -35,7 +35,8 @@ export default ({ ...props }: any) => {
       infoLoading: false,
       book: {} as Book | undefined,
       authorNovels: [] as any[],
-      showNovelUpdateWebView: false
+      showNovelUpdateWebView: false,
+      downloadSheetView: false
     })).ignore(
       "book",
       "novel",
@@ -431,19 +432,7 @@ export default ({ ...props }: any) => {
                 ifTrue={["Novel", "Manga"].includes(parser?.type)}
                 css="button mar:5 clearheight juc:center invert"
                 onPress={async () => {
-                  context
-                    .downloadManager().prepDownload(
-                      state.novel.url,
-                      state.novel.parserName,
-                      parser.protected
-                    );
-                  AlertDialog.alert({
-                    title: "Attention",
-                    message: `The ${parser?.type ?? "Novel"} will start downloading shortly.${parser.protected
-                      ? `\n\nNote\n"${parser.name}" contains protection and it's requires WebView to access its data.\nBecause of this, the download will pause if the app is minimized or runs in the background. Please keep the app open until it finishes.`
-                      : ""
-                      }`,
-                  });
+                  state.downloadSheetView = true;
 
                 }}>
                 <View css="blur" />
@@ -452,6 +441,37 @@ export default ({ ...props }: any) => {
                   name="download"
                   css="mar:0 invert"
                 />
+                <ActionSheet size={"80%"} isVisible={state.downloadSheetView} onHide={() => state.downloadSheetView = false}>
+                  <Text css="header invert fow-bold">Start Downloading from (Chapter)</Text>
+                  <ChapterView
+                    ignoreChapterValidation={true}
+                    book={state.book as Book}
+                    novel={state.novel}
+                    onPress={item => {
+                      state.downloadSheetView = false;
+                      let startIndex = state.novel.chapters.findIndex(x => x.url == item.url);
+                      context
+                        .downloadManager().prepDownload(
+                          state.novel.url,
+                          state.novel.parserName,
+                          parser.protected,
+                          startIndex
+                        );
+                      AlertDialog.alert({
+                        title: "Attention",
+                        message: `The ${parser?.type ?? "Novel"} will start downloading shortly.
+                        ${parser.protected
+                          ? `\n\nNote\n"${parser.name}" contains protection and it's requires WebView to access its data.\nBecause of this, the download will pause if the app is minimized or runs in the background. Please keep the app open until it finishes.`
+                          : ""
+                          }`,
+                      });
+                      
+                    }}
+                    current={
+                        undefined
+                    }
+                  />
+                </ActionSheet>
               </SingleTouchableOpacity>
               <SingleTouchableOpacity
                 css="mar:5 button pa:5 wi:65% clearheight invert"

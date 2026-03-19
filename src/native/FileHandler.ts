@@ -254,6 +254,8 @@ export default class FileHandler {
 
 
     useEffect(() => {
+      if (loader.loading && this.events[id])
+        return;
       this.events[id] = async (
         op,
         fileName,
@@ -264,13 +266,12 @@ export default class FileHandler {
           return;
         }
         if (!fromDisabled) {
-          if (
-            (updateState === "New" || (updateState == "NewDelete" && op != "Delete")) && files.current.find(x => x === fileName || x == fullName)) {
+          if ((updateState === "New" || (updateState == "NewDelete" && op != "Delete")) && files.current.find(x => x === fileName || x == fullName)) {
             return;
           }
         }
         // await loader.show();
-        if (this.allFilesReaded && this.enableCaching)
+        if (this.allFilesReaded && this.enableCaching && !fromDisabled)
           files.current = this.DownloadedFiles.keys();
         else {
           files.current = await this.allFiles();
@@ -279,6 +280,8 @@ export default class FileHandler {
         }
 
         this.allFilesReaded = true;
+        if (fromDisabled)
+          console.info("reloading useFiles")
         await loadItems();
       };
       if (!this.disabled) this.events[id]();
@@ -287,7 +290,7 @@ export default class FileHandler {
           delete this.events[id];
         }
       };
-    }, []);
+    }, [loader.loading]);
 
     const loadItems = async () => {
       await loader.show();
@@ -312,7 +315,7 @@ export default class FileHandler {
         if (breakit) break;
       }
 
-      await setItems(ims);
+      setItems(prev => ims);
       await loader.hide();
     };
 

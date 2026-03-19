@@ -282,12 +282,12 @@ export default ({
       if (context.appSettings.navigationType == "ScrollSnap")
         options.viewStyle.paddingBottom = context.player.paddingBottom();
       const nav = {
-        Snap: context.player.novel.type?.isManga() ? undefined : "Pagination",
+        Snap: context.player.novel.type?.isManga() || context.player.showPlayer ? undefined : "Pagination",
         Scroll: "Scroll",
         ScrollSnap: "PaginationScroll",
       }
 
-      let scrollType = context.player.novel.type?.isManga() ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : nav[context.appSettings.navigationType] ?? "Pagination";
+      let scrollType = context.player.novel.type?.isManga() ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player": nav[context.appSettings.navigationType] ?? "Pagination";
       options.content = content.content;
       options.scrollDisabled = false;
       options.scrollValue = content.scroll;
@@ -394,7 +394,7 @@ export default ({
         //  state.refItem.loading = false;
         break;
       case "savePage":
-        httpServer.lastPageCarche = data.data;
+        httpServer.lastPageCache = data.data;
         console.warn("Page Save", "size", data.data.length);
         break;
       case "Image":

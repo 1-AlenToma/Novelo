@@ -481,7 +481,7 @@ const public_m = (...Items: any[]) => {
 };
 
 const newId = () => {
-  return "id" + uuid.v4() as string;
+  return ("id" + uuid.v4() as string).replace(/-/g, "");
 };
 
 const sleep = (ms: number) => {

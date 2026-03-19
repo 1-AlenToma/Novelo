@@ -1,92 +1,106 @@
-import * as server from "expo-http-server";
-import { NetworkInfo } from "react-native-network-info";
+import * as httpService from 'react-native-nitro-http-server';
+import { NetworkInfo } from 'react-native-network-info';
 import { jsScript } from "JSConstant";
 import { CSSStyle, JS } from "../assets/readerJs";
 import { Asset } from "expo-asset";
 import Fonts from "../assets/Fonts";
 import MapCacher from "./MapCacher";
+import { Base64 } from 'js-base64';
+
+
 const tempImageData = new MapCacher<any>(200);
 
 class HttpServer {
     address: string = "";
     port: number = 61735;
-    lastPageCarche: string = "Ok";
+    lastPageCache: string = "Ok";
+    private ip: string = "";
     private started: boolean = false;
+    private server?: httpService.HttpServer;
+
     async setIp() {
-        let ip = await NetworkInfo.getIPAddress();
-        this.address = ip && /[1-9]/g.test(ip) && __DEV__
-            ? `http://${ip}:${this.port}/${context.version}`
+        this.ip = await NetworkInfo.getIPAddress();
+        this.address = this.ip && /[1-9]/g.test(this.ip) && __DEV__
+            ? `http://${this.ip}:${this.port}/${context.version}`
             : `http://127.0.0.1:${this.port}/${context.version}`;
     }
 
     getRoute(route: string) {
-        return "/" + context.version + route;
+        return `/${context.version}${route}`;
     }
+
+    queryString = (path, route) => {
+        const routeParts = route.split('/').filter(Boolean);
+        const pathParts = path.split('/').filter(Boolean);
+
+        const result = {};
+
+        for (let i = 0; i < routeParts.length; i++) {
+            const routePart = routeParts[i];
+            const pathPart = pathParts[i];
+
+            if (routePart.startsWith('{') && routePart.endsWith('}')) {
+                const key = routePart.slice(1, -1);
+                result[key] = decodeURIComponent(pathPart);
+            }
+        }
+
+        return result as any;
+    };
+
     async start() {
         await this.setIp();
-        try {
-            if (this.started) return;
-            this.started = true;
-            server.setup(this.port, (event: server.StatusEvent) => {
-                console.warn("SERVER EVENT:", event);
-                if (event.status === "ERROR") {
-                    // there was an error...
-                } else {
-                    // server was STARTED, PAUSED, RESUMED or STOPPED
-                }
-            });
-
-
-            server.route(this.getRoute("/getLastPage"), "GET", async (request) => {
-
-                try {
+        if (this.started) return;
+        this.started = true;
+        this.server = new httpService.HttpServer();
+        this.server.start(this.port, async (request) => {
+            const { method, path } = request;
+            //console.log(`Received request: ${method} ${path}`, request);
+            // parse paramsJson if any
+            let paramsJson: any = {};
+            try {
+                if (request.body) paramsJson = JSON.parse(request.body);
+            } catch (e) { }
+            try {
+                // ----------------------
+                // ROUTING
+                // ----------------------
+                if (path === this.getRoute("/getLastPage") && method === "GET") {
                     return {
                         statusCode: 200,
-                        statusDescription: "OK - CUSTOM STATUS",
-                        contentType: "text/html; charset=UTF-8",
                         headers: {
-                            "Access-Control-Allow-Origin": "*", // allow WebView fetch
+                            "Access-Control-Allow-Origin": "*",
+                            "Content-Type": "text/html; charset=UTF-8"
                         },
-                        body: this.lastPageCarche,
+                        body: this.lastPageCache,
                     };
-                } catch (e) {
-                    console.error(e)
                 }
-            });
 
-
-            server.route(this.getRoute("/novelCss"), "GET", async (request) => {
-                try {
+                if (path === this.getRoute("/novelCss") && method === "GET") {
                     return {
                         statusCode: 200,
-                        statusDescription: "OK - CUSTOM STATUS",
-                        contentType: "text/css; charset=utf-8",
                         headers: {
-                            "Access-Control-Allow-Origin": "*", // allow WebView fetch
+                            "Access-Control-Allow-Origin": "*",
+                            "Content-Type": "text/css; charset=utf-8"
                         },
                         body: CSSStyle,
                     };
-                } catch (e) {
-                    console.error(e)
                 }
-            });
 
+                if (path.startsWith(this.getRoute("/novelFonts/")) && method === "GET") {
+                    try {
+                        const fontName = paramsJson.fontName || path.split("/").pop();
 
-
-            server.route(this.getRoute("/novelFonts/{fontName}"), "GET", async (request) => {
-                try {
-                    const { fontName } = JSON.parse(request.paramsJson);
-
-                    let asset = Asset.fromModule(require("../assets/gfont.ttf"));
-                    await asset.downloadAsync();
-                    let fontUri = asset.localUri;
-                    asset = Asset.fromModule(Fonts[fontName]);
-                    await asset.downloadAsync();
-                    const fontItem = {
-                        icons: fontUri,
-                        font: asset.localUri
-                    };
-                    let css = `
+                        let asset = Asset.fromModule(require("../assets/gfont.ttf"));
+                        await asset.downloadAsync();
+                        let fontUri = asset.localUri;
+                        asset = Asset.fromModule(Fonts[fontName]);
+                        await asset.downloadAsync();
+                        const fontItem = {
+                            icons: fontUri,
+                            font: asset.localUri
+                        };
+                        let css = `
                     @font-face {
                       font-family: 'Material Symbols Outlined';
                       font-style: normal;
@@ -115,89 +129,84 @@ class HttpServer {
                   -webkit-font-smoothing: antialiased;
                 }`;
 
-                    return {
-                        statusCode: 200,
-                        contentType: "text/css; charset=utf-8",
-                        headers: {
-                            "Access-Control-Allow-Origin": "*", // allow WebView fetch
-                        },
-                        body: css,
-                    };
-                } catch (e) {
-                    console.error(e);
+                        return {
+                            statusCode: 200,
+                            contentType: "text/css; charset=utf-8",
+                            headers: {
+                                "Access-Control-Allow-Origin": "*", // allow WebView fetch
+                            },
+                            body: css,
+                        };
+                    } catch (e) {
+                        console.error(e);
+                        return { statusCode: 500, body: "Error" };
+                    }
                 }
-            });
 
+                // ----------------------
+                // IMAGES (return bytes)
+                // ----------------------
+                if (path.startsWith(this.getRoute("/images/")) && method === "GET") {
+                    try {
+                        const { src, id } = this.queryString(path, this.getRoute("/images/{src}/{id}"));
+                        const decodedSrc = src.decodeURIComponentSafe();
+                        const imgKey = `${decodedSrc}${context.player.book.name}${context.player.currentChapter.name}${context.player.novel.parserName}`;
 
-            server.route(this.getRoute("/images/{src}/{id}"), "GET", async (request) => {
-                try {
-                    // console.error("Request", "/imageAddress", "GET", request);
-                    const { src, id } = JSON.parse(request.paramsJson);
-
-                    let data: any = undefined;
-                   // if (context.player.hooked) {
-                        const img = { src: src.decodeURIComponentSafe(), id };
-                        let key = img.src + context.player.book.name + context.player.currentChapter.name + context.player.novel.parserName;
-                        if (tempImageData.has(key))
-                            data = tempImageData.get(key);
+                        let data = tempImageData.get(imgKey);
                         if (!data) {
-                            if (__DEV__)
-                                console.log("Fetching image for", src, "decoded:", img.src)
-                            data = (await context.player.getImage(img)).firstOrDefault();
-                            if (data && data.cn)
-                                tempImageData.set(key, data)
+                            data = (await context.player.getImage({ src: decodedSrc, id })).firstOrDefault();
+                            if (data && data.cn) tempImageData.set(imgKey, data);
                         }
+
                         if (data && data.cn) {
-                            data.id = id;
-                            data.src = src;
+                            // write data to a temporary file
+                            let base64Data = data.cn.toBase64Url().split(',')[1];
+                            let uint8 = Base64.toUint8Array(base64Data);
+                            // const uint8 = Uint8Array.from(Buffer.from(data.cn.split(',')[1], 'base64'));
+
+                            return {
+                                statusCode: 200,
+                                headers: {
+                                    "Access-Control-Allow-Origin": "*",
+                                    "Content-Type": "image/png"
+                                },
+                                body: uint8.buffer as any, // Nitro supports Uint8Array as binary body
+                            };
+                        } else {
+                            return { statusCode: 404, body: "" };
                         }
+                    } catch (e) {
+                        console.error("HttpServerError", e);
+                        return { statusCode: 500, body: "" };
+                    }
+                }
 
-
-                    
+                if (path === this.getRoute("/novelScript") && method === "GET") {
+                    const jsScriptFn = jsScript(JS, "DOMContentLoaded");
                     return {
                         statusCode: 200,
-                        contentType: "text/plain; charset=utf-8",
-                        headers: {
-                            "Access-Control-Allow-Origin": "*"
-                        },
-                        body: data  && data.cn ? `${data.cn}|${data.id}|${data.src}` : ""
-                    } as any;
-                } catch (e) {
-                    console.error("HttpServerError", e)
+                        contentType: "application/javascript",
+                        headers: { "Access-Control-Allow-Origin": "*" },
+                        body: jsScriptFn,
+                    };
                 }
-            });
+            } catch (e) {
+                console.error("HttpServerError", e);
+                return { statusCode: 500, body: "" };
+            }
 
-            server.route(this.getRoute("/novelScript"), "GET", async (request) => {
-                //   console.error("Request", "/script", "GET", request);
-                const jsScriptFn = jsScript(JS, "DOMContentLoaded")
-                return {
-                    statusCode: 200,
-                    statusDescription: "OK - CUSTOM STATUS",
-                    contentType: "application/javascript",
-                    headers: {
-                        "Access-Control-Allow-Origin": "*", // allow WebView fetch
-                    },
-                    body: jsScriptFn,
-                };
-            });
+            // fallback
+            return { statusCode: 404, body: "Not found" };
+        }, this.ip);
 
-
-            server.start();
-
-        } catch (e) {
-            console.error(e);
-        }
-
-        console.warn("server started", this.address)
+        // await this.server.start();
     }
 
     stop() {
-        console.warn("Server Stopped");
+        if (!this.started || !this.server) return;
+        this.server.stop();
         this.started = false;
-        server.stop();
-    }
-    reqGet() {
-
+        console.warn("Server stopped");
     }
 }
 

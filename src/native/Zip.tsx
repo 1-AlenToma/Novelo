@@ -27,18 +27,20 @@ class EventTrigger<T, tKey extends string> {
     ifTrue(keys: tKey, func: (value: any) => boolean) {
         let id = useRef(methods.newId()).current;
         const [update, setUpdate] = useState("");
-        this.set(id, (v: any) => {
-            if (func(v))
-                setUpdate(methods.newId())
-        }, ...[keys]);
+        useEffect(() => {
+            this.set(id, (v: any) => {
+                if (func(v))
+                    setUpdate(methods.newId())
+            }, ...[keys]);
+        }, [update])
 
         return id;
     }
 
     public trigger(key: tKey, value?: T) {
 
-        for (let key of [...this.event.keys()].filter(x => x.has(key)))
-            this.event.get(key)?.(value)
+        for (let k of [...this.event.keys()].filter(x => x.has(key)))
+            this.event.get(k)?.(value)
     }
 }
 
@@ -129,18 +131,23 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
     }
 
     data(...data: { content: string; path: string }[]) {
+        console.info("data to zip", ...data.map(x => x.path))
         data.forEach(x => this._data.push(x))
         return this;
     }
 
     async zipFiles(des: string, root: string) {
         try {
+             console.warn("Zipping Files")
             this.loading = true;
             this._des = des;
             let tPath = this.tempPath();
+           
             let handler = new FileHandler(tPath);
+            
             await handler.checkDir();
             let index = 0;
+            
             for (let file of this._files) {
                 index++;
                 let info = getFileInfo(file, file.has(root) ? root : file.split("/").reverse().skip(0).reverse().join("/"));
@@ -148,6 +155,7 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
                 await handler.copy(file, tPath.path(info.filePath ?? ""));
                 this.trigger("CopyProgress", { progress: this._files.length.procent(index), color: "green", filePath: file });
             }
+
             for (let data of this._data) {
                 index++;
                 await handler.write(data.path, data.content);
@@ -157,7 +165,7 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
             await zip(handler.dir, this._fullPath);
             await handler.deleteDir();
         } catch (e) {
-            console.error(e);
+            console.error("ZipFiles", e, "des", des, "root", root);
         } finally {
             this.loading = false;
         }

@@ -98,45 +98,42 @@ const Modoles = () => {
       >
         <ScrollView>
           <View css="flex mat:20 invert">
-            <FormItem
-              title="TextToEdit">
-              <TextInput
-                onChangeText={x => (context.player.menuOptions.textEdit.edit = x)}
-                css="pa:5 bor:2 flg:1"
-                multiline={true}
-                defaultValue={
-                  context.player.menuOptions.textEdit?.edit
-                }
-              />
-            </FormItem>
-            <FormItem title="EditWith">
-              <TextInput
-                onChangeText={x =>
-                (context.player.menuOptions.textEdit.editWith =
-                  x)
-                }
-                css="pa:5 bor:2 flg:1 he-40"
-                multiline={true}
-                defaultValue={
-                  context.player.menuOptions.textEdit
-                    ?.editWith
-                }
-              />
-            </FormItem>
-            <FormItem title="Comment">
-              <TextInput
-                onChangeText={x =>
-                (context.player.menuOptions.textEdit.comments =
-                  x)
-                }
-                css="pa:5 bor:2 flg:1"
-                multiline={true}
-                defaultValue={
-                  context.player.menuOptions.textEdit
-                    ?.comments
-                }
-              />
-            </FormItem>
+            <TextInput
+              label="TextToEdit"
+              onChangeText={x => (context.player.menuOptions.textEdit.edit = x)}
+              css="pa:5 bor:2 flg:1"
+              multiline={true}
+              defaultValue={
+                context.player.menuOptions.textEdit?.edit
+              }
+            />
+            <TextInput
+              onChangeText={x =>
+              (context.player.menuOptions.textEdit.editWith =
+                x)
+              }
+              label="EditWith"
+              css="pa:5 bor:2 flg:1"
+              multiline={true}
+              defaultValue={
+                context.player.menuOptions.textEdit
+                  ?.editWith
+              }
+            />
+
+            <TextInput
+              label="Comment"
+              onChangeText={x =>
+              (context.player.menuOptions.textEdit.comments =
+                x)
+              }
+              css="pa:5 bor:2 flg:1"
+              multiline={true}
+              defaultValue={
+                context.player.menuOptions.textEdit
+                  ?.comments
+              }
+            />
             <FormItem title="BackgroundColor" labelPosition="Left">
               <ColorPicker
                 value={
@@ -1089,12 +1086,12 @@ export default (props: any) => {
 
           if (!state.novel || !state.novel.name)
             return;
-          if (context.player._playing)
+          if (context.player?._playing)
             context.player.playing(false);
           if (
-            !context.player.novel ||
-            context.player.novel.url !== url ||
-            context.player.isEpup != (epub === true)
+            !context.player?.novel ||
+            context.player?.novel.url !== url ||
+            context.player?.isEpup != (epub === true)
           ) {
             context.player = undefined as any;
             let book = await context

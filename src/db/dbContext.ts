@@ -17,6 +17,7 @@ import {
 } from "../Methods";
 import { DetailInfo, ZipBook } from "../native";
 import { AlertDialog } from "react-native-short-style";
+import { Base64 } from 'js-base64';
 let encKey = "novelo.enc";
 let encKeys = ["url", "parserName", "image"];
 export default class DbContext extends Database<TableNames> {
@@ -28,7 +29,7 @@ export default class DbContext extends Database<TableNames> {
 
   async sendToServer(sql, args, operation) {
     try {
-     
+
       let rep = await methods.fetchWithTimeout(this.appLocalSettings.serverIp.join("sql"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,7 +41,7 @@ export default class DbContext extends Database<TableNames> {
           return JSON.parse(txt);
       }
     } catch (e) {
-      AlertDialog.alert({title:"Novelo Server", message: `Could not connect to Novelo server, Check your internet settings or make sure that Novelo server is reachable\nError Message:${e.toString()}`})
+      AlertDialog.alert({ title: "Novelo Server", message: `Could not connect to Novelo server, Check your internet settings or make sure that Novelo server is reachable\nError Message:${e.toString()}` })
       console.error(e);
     }
 
@@ -252,11 +253,13 @@ export default class DbContext extends Database<TableNames> {
         "parent_Id",
         "tableName"
       );
+      console.log("enc begun")
       this.encryptItem(item);
-      context.zip.data({ content: JSON.stringify(item), path: "Novelo_Backup.json" });
+      console.log("enc end")
+      context.zip.data({ content: `#${Base64.encode(JSON.stringify(item))}`, path: "Novelo_Backup.json" });
       await context.zip.zipFiles(folder, context.appSettings.filesDataLocation ?? context.files.DocumentDirectoryPath);
     } catch (e) {
-      console.error(e);
+      console.error("DownloadDatabase", e);
       return e.message;
     }
   };
@@ -275,17 +278,18 @@ export default class DbContext extends Database<TableNames> {
     try {
       context.zip.beginNew();
       await context.zip.unzip(uri, context.appSettings.filesDataLocation ?? context.files.DocumentDirectoryPath, "Novelo_Backup")
-      let file = context.zip._data.find(x => x.path.has("Novelo_Backup"))?.content;
-      if (!file) {
+      let Novelo_BackupFile = context.zip._data.find(x => x.path.has("Novelo_Backup"))?.content;
+      if (!Novelo_BackupFile) {
         console.error("Could not find Novel_Backup file")
         return;
-
       }
+      if (Novelo_BackupFile.startsWith("#"))
+        Novelo_BackupFile = Base64.decode(Novelo_BackupFile.substring(1));
       await this.disableWatchers();
       await this.disableHooks();
       await this.beginTransaction();
       context.files.disable();
-      let item = JSON.parse(file);
+      let item = JSON.parse(Novelo_BackupFile);
       if (item) {
         let total =
           item.books.length +
