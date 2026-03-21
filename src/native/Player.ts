@@ -159,34 +159,39 @@ class Player {
   }
 
   getImage = async (...href: IImage[]) => {
-    let imgs: (IImage & { cn: any, path?: string, })[] = [];
-    let path = this.novel.imagePath as string;
-    if (path) {
-      for (let image of href) {
-        if (image.src && (image.src?.has(" header") || ["http", "https", "www"].some(x => image.src?.startsWith(x)))) {
-          imgs.push({ ...image, cn: await context.parser.current.http.imageUrlToBase64(image.src) });
-          continue;
+    try {
+      let imgs: (IImage & { cn: any, path?: string, })[] = [];
+      let path = this.novel.imagePath as string;
+      if (path) {
+        for (let image of href) {
+          if (image.src && (image.src?.has(" header") || ["http", "https", "www"].some(x => image.src?.startsWith(x)))) {
+            imgs.push({ ...image, cn: await context.parser.current.http.imageUrlToBase64(image.src) });
+            continue;
+          }
+          if (image.src.isBase64Url()) {
+            imgs.push({ ...image, path, cn: image.src.toBase64Url() });
+            continue;
+          }
+          const chapterIndex = image.chapterIndex == undefined ? this.currentChapterIndex.toString() : image.chapterIndex;
+          let src = this.book.parserName != "epub" ? path.path(chapterIndex.toString(), image.src).trimEnd("/") : path.path(getFileInfoFromUrl(image.src)).trimEnd("/");
+          let imageData = await context.imageCache.read(src);
+          if (!imageData || imageData.empty())
+            console.warn("could not find", src, "-", image.src)
+          imgs.push({ ...image, path, cn: imageData });
         }
-        if (image.src.isBase64String()) {
-          imgs.push({ ...image, path, cn: image.src.toBase64Url() });
-          continue;
+      } else {
+        for (let image of href) {
+          if (image.src && (image.src?.has(" header") || ["http", "https", "www"].some(x => image.src?.startsWith(x)))) {
+            imgs.push({ ...image, cn: (await context.parser.current.http.imageUrlToBase64(image.src)) });
+            continue;
+          }
         }
-        const chapterIndex = image.chapterIndex == undefined ? this.currentChapterIndex.toString() : image.chapterIndex;
-        let src = this.book.parserName != "epub" ? path.path(chapterIndex.toString(), image.src).trimEnd("/") : path.path(getFileInfoFromUrl(image.src)).trimEnd("/");
-        let imageData = await context.imageCache.read(src);
-        if (!imageData || imageData.empty())
-          console.warn("could not find", src, "-", image.src)
-        imgs.push({ ...image, path, cn: imageData });
       }
-    } else {
-      for (let image of href) {
-        if (image.src && (image.src?.has(" header") || ["http", "https", "www"].some(x => image.src?.startsWith(x)))) {
-          imgs.push({ ...image, cn: (await context.parser.current.http.imageUrlToBase64(image.src)) });
-          continue;
-        }
-      }
+      return imgs;
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
-    return imgs;
   };
 
   paddingBottom() {

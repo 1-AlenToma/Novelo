@@ -2,11 +2,12 @@ import { newId, sleep } from "../Methods";
 import { NovelFile } from "../Types";
 import { Book } from "../db";
 import ParserWrapper from "../parsers/ParserWrapper";
+import EventTrigger from "./EventTrigger";
 import HttpHandler from "./HttpHandler";
 import { DetailInfo } from "./ParserItems";
 
-export default class DownloadManager {
-  events: { [key: string]: Function } = {};
+export default class DownloadManager extends EventTrigger<any, "Prep" | "Progress"> {
+
   items: Map<string, number> = new Map();
   prepItems: Map<string, { url: string, parserName: string, protected?: boolean, startFromIndex: number }> = new Map();
   change(url: string, name: string) {
@@ -14,9 +15,14 @@ export default class DownloadManager {
       return;
     let progress = this.items.get(url);
     context.bgService.updateProgressBar(name, progress);
-    for (let k in this.events) {
-      this.events[k](url);
+
+    if (this.prepItems.has(url)) {
+      this.prepItems.delete(url);
+      this.trigger("Prep", url)
     }
+
+    this.trigger("Progress", url, progress)
+
   }
 
   stop(url: string) {
@@ -26,17 +32,17 @@ export default class DownloadManager {
   }
 
   prepLoading() {
-    let id = useRef(newId()).current;
     const [urls, setUrls] = useState<string[]>([]);
-
-
     useEffect(() => {
-      this.events[id] = (url: string) => {
+      return this.use((op, url: string) => {
         const keys = [...this.prepItems.keys()].filter(x => !this.items.has(x));
-        if (keys.length !== urls.length)
-          setUrls(keys);
-      };
-    }, [urls])
+        setUrls(() => keys);
+        if (keys.length !== urls.length || keys.some(x => !urls.includes(x)) || urls.some(x => !keys.includes(x))) {
+          console.warn(keys)
+
+        }
+      }, "Prep")
+    }, [])
 
     return urls;
 
@@ -44,33 +50,37 @@ export default class DownloadManager {
 
   useDownload(parentUrl: string) {
     let [infos, setInfos] = useState<number>(-1);
-    let id = useRef(newId()).current;
-
     useEffect(() => {
-      this.events[id] = (url: string) => {
-        if (!url.has(parentUrl))
-          return;
-        let item = undefined;
-        let items = [...this.prepItems.values()];
-        items.forEach(x => {
-          if (!parentUrl || x.url.has(parentUrl))
-            item = this.items.get(x.url) ?? 0.1;
-        });
+      const getData = (op, url: string, progress?: any) => {
+        try {
+          if (!url.has(parentUrl)) {
+            // console.warn("url not found", url, parentUrl)
+            return;
+          }
+          let item = this.items.get(url);
+          if (item === undefined) {
+            let items = [...this.prepItems.values()];
+            items.forEach(x => {
+              if (!parentUrl || x.url.has(parentUrl))
+                item = this.items.get(x.url) ?? 0.1;
+            });
+          }
 
-        if (item == undefined)
-          setInfos(0)
-        else
-          setInfos(item);
-      };
+          //  console.log("UUR", url, op, item, "orgProgress", progress)
+          if (item == undefined)
+            setInfos(() => 0)
+          else
+            setInfos(() => item);
+        } catch (e) {
+          console.error(e);
+        }
+
+      }
+      let off = this.use(getData, "Progress")
 
       if (infos == -1)
-        this.events[id]?.(parentUrl);
-
-    }, [infos]);
-
-    useEffect(() => {
-
-      return () => { delete this.events[id] }
+        getData("", parentUrl);
+      return off;
     }, []);
 
     return infos;
@@ -112,7 +122,7 @@ export default class DownloadManager {
     this.prepItems.set(url, { url, parserName, protected: _protected, startFromIndex });
     if (_protected)
       this.download(url, parserName, startFromIndex);
-    this.change(url, parserName);
+    this.trigger("Prep", url, parserName);
   }
 
   async download(
@@ -149,7 +159,7 @@ export default class DownloadManager {
       let index = savedItem.chapters.length;
       let tries = 0;
       if (!file)
-        await context.files.write(key, JSON.stringify(savedItem));
+        await context.files.write(key, await JSON.stringify(savedItem).encodeAsync());
       this.change(url, novel.name);
       for (let i = 0; i < novel.chapters.length; i++) {
 
@@ -214,7 +224,7 @@ export default class DownloadManager {
               }
             }
             savedItem.files = [];
-            await context.files.write(key, JSON.stringify(savedItem));
+            await context.files.write(key, await JSON.stringify(savedItem).encodeAsync());
           }
           if (!this.items.has(savedItem.url))
             break; // stop btn pressed

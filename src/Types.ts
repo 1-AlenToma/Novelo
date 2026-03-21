@@ -79,7 +79,12 @@ export type NotificationData = {
   type: "File" | "Story"
 }
 
-export type ZipEventData = { progress?: number, color?: string, filePath?: string, loading?: boolean }
+export type ZipEventData = {
+  progress?: number,
+  color?: string,
+  filePath?: string,
+  loading?: boolean
+}
 export type SystemDir = "Cache" | "File";
 export type EncodingType = "json" | "utf8" | "base64";
 export type FileFnc = (

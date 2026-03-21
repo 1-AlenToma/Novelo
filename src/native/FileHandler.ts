@@ -4,11 +4,12 @@ import RNF, { ReadDirItem } from "react-native-fs";
 import RNFetchBlob, { Encoding } from "react-native-blob-util";
 import { SystemDir, EncodingType, FileInfo } from "../Types";
 import MapCacher from "./MapCacher";
+import EventTrigger from "./EventTrigger";
+import { useTimer } from "react-native-short-style";
 
 
-export default class FileHandler {
+export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | "onClear" | "enabled"> {
   dir: string;
-  events: any = {};
   disabled: boolean = false;
   CachesDirectoryPath: string;
   DocumentDirectoryPath: string;
@@ -21,17 +22,12 @@ export default class FileHandler {
   allFilesReaded: boolean = false;
 
   constructor(dir: string, dirType?: SystemDir, enableCaching?: boolean) {
+    super()
     this.DocumentDirectoryPath = RNF.DocumentDirectoryPath;
     this.CachesDirectoryPath = RNF.CachesDirectoryPath;
     this.DownloadDirectoryPath = RNF.DownloadDirectoryPath;
     this.ExternalStorageDirectoryPath = RNF.ExternalStorageDirectoryPath;
     this.enableCaching = enableCaching || false;
-    this.events = {
-      values: () =>
-        Object.keys(this.events)
-          .filter(x => x !== "values")
-          .map(x => this.events[x])
-    };
     if (dir.indexOf("/") === -1) {
       this.dir = (
         !dirType || dirType == "Cache"
@@ -54,28 +50,10 @@ export default class FileHandler {
   enable() {
     if (this.disabled) {
       this.disabled = false;
-      this.trigger("", "", "", true);
+      this.trigger("enabled", "", "", true);
     }
   }
 
-  trigger(
-    op: string,
-    fileName: string,
-    fullName: string,
-    fromDisabled?: boolean
-  ) {
-    this.events
-      .values()
-      .forEach(
-        x =>
-          x?.(
-            op,
-            fileName,
-            fullName,
-            fromDisabled
-          )
-      );
-  }
 
 
   getName(file: string) {
@@ -102,6 +80,7 @@ export default class FileHandler {
   }
 
   async write(file: string, content: string | number[], options?: Encoding) {
+
     let fileUri = this.getName(file);
     return methods.withLock<FileInfo>(fileUri, async () => {
       await this.checkDir(fileUri);
@@ -119,9 +98,12 @@ export default class FileHandler {
         options ?? "utf8"
       );
 
+
+      if (content && this.enableCaching && typeof content == "string") {
+        console.info("Decoding")
+        this.DownloadedFiles.set(fileUri, await content.decodeAsync());
+      }
       console.log("Finished Wrting", fileUri)
-      if (this.enableCaching)
-        this.DownloadedFiles.set(fileUri, content);
       this.trigger("Write", file, fileUri);
       return getFileInfo(fileUri, this.dir).filePath ?? fileUri;
     });
@@ -178,10 +160,14 @@ export default class FileHandler {
     if (__DEV__)
       console.log("reading", fileUri);
     let dItem = this.enableCaching ? this.DownloadedFiles.get(fileUri) : undefined;
-    if (dItem)
+    if (dItem) {
+      console.log("reading from cach", fileUri);
       return dItem as string;
+    }
     if (await this.exists(file)) {
-      text = await RNFetchBlob.fs.readFile(fileUri, (type ?? "utf8") as any)
+      text = (await RNFetchBlob.fs.readFile(fileUri, (type ?? "utf8") as any) as string);
+      if (!fileUri.isImage())
+        text = await text.decodeAsync();
       if (this.enableCaching)
         this.DownloadedFiles.set(fileUri, text);
       return text as string;
@@ -224,21 +210,10 @@ export default class FileHandler {
   }
 
   onDirDelete(func: (path?: string) => void) {
-    const id = useRef(newId()).current;
-
-
-
     useEffect(() => {
-      this.events[id] = (op, folder) => {
-        if (op == "onClear")
-          func(folder);
-      }
-
-      return () => {
-        if (this.events[id]) {
-          delete this.events[id];
-        }
-      };
+      return this.use((op, folder) => {
+        func(folder);
+      }, "onClear")
     }, [func])
   }
 
@@ -247,51 +222,63 @@ export default class FileHandler {
     validator?: (x: any) => boolean,
     updateState?: "New" | "NewDelete"
   ) {
-    const id = useRef(newId()).current;
+    const localCach = useRef(new Map<string, { changed: boolean, item: any }>()).current;
     const files = useRef([] as string[]);
     const [fileItems, setItems] = useState<(T & { deleteFile: () => Promise<void> })[]>([]);
     const loader = useLoader(true);
+    const timer = useTimer(10);
 
 
     useEffect(() => {
-      if (loader.loading && this.events[id])
-        return;
-      this.events[id] = async (
-        op,
-        fileName,
-        fullName,
-        fromDisabled
+
+      const getData = async (
+        op: string,
+        fileName?: string,
+        fullName?: string,
+        fromDisabled?: string
       ) => {
-        if (this.disabled) {
-          return;
-        }
-        if (!fromDisabled) {
-          if ((updateState === "New" || (updateState == "NewDelete" && op != "Delete")) && files.current.find(x => x === fileName || x == fullName)) {
+        timer(async () => {
+          console.warn("op", op, fileName)
+          if (this.disabled) {
             return;
           }
-        }
-        // await loader.show();
-        if (this.allFilesReaded && this.enableCaching && !fromDisabled)
-          files.current = this.DownloadedFiles.keys();
-        else {
-          files.current = await this.allFiles();
-          if (this.enableCaching){
-            this.DownloadedFiles.push(...files.current.map(x => ({ key: this.getName(x), value: undefined })));
-            
-          }
-        }
 
-        this.allFilesReaded = true;
-        if (fromDisabled)
-          console.info("reloading useFiles")
-        await loadItems();
-      };
-      if (!this.disabled) this.events[id]();
-      return () => {
-        if (this.events[id]) {
-          delete this.events[id];
-        }
-      };
+          if (fromDisabled || ["Delete", "onClear"].includes(op)) {
+            if (fromDisabled || op == "onClear")
+              localCach.clear();
+            else {
+              localCach.delete(fileName);
+              localCach.delete(fullName);
+            }
+          }
+          if (!fromDisabled) {
+            if ((updateState === "New" || (updateState == "NewDelete" && op != "Delete")) && files.current.find(x => x === fileName || x == fullName)) {
+              return;
+            }
+          }
+          // await loader.show();
+          if (this.allFilesReaded && this.enableCaching && !fromDisabled)
+            files.current = this.DownloadedFiles.keys();
+          else {
+            files.current = await this.allFiles();
+            if (this.enableCaching) {
+              this.DownloadedFiles.push(...files.current.map(x => ({ key: this.getName(x), value: undefined })));
+
+            }
+          }
+
+          this.allFilesReaded = true;
+          if (fromDisabled)
+            console.info("reloading useFiles")
+          await loadItems();
+        });
+      }
+      const off = this.use(getData, "Delete", "Write", "onClear", "enabled");
+      if (!this.disabled) {
+        getData(undefined)
+      }
+
+      return off;
     }, []);
 
     const loadItems = async () => {
@@ -316,8 +303,16 @@ export default class FileHandler {
         }
         if (breakit) break;
       }
-
-      setItems(prev => ims);
+      let changed = ims.length != fileItems.length;
+      for (let [key, item] of localCach.entries()) {
+        if (item.changed) {
+          changed = true;
+          item.changed = false;
+        }
+      }
+      if (changed)
+        setItems(prev => ims);
+      else console.info("no changed made, skip update")
       await loader.hide();
     };
 
@@ -325,11 +320,14 @@ export default class FileHandler {
       file: string,
       type?: EncodingType
     ) => {
+      let k = file + (type && type != "json" ? type : "utf8")
       let item = await this.read(
         file,
         type && type != "json" ? type : "utf8"
       );
+
       if (!item) return item;
+      localCach.set(file, { item, changed: item === localCach.get(file)?.item })
       if (type === "json") {
         try {
           let tm = JSON.parse(item);

@@ -24,5 +24,4 @@ export default class WebOptions {
         item[key] = ("#Func " + func);
         return item;
     }
-
 }

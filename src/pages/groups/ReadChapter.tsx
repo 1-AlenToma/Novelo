@@ -1095,6 +1095,7 @@ export default (props: any) => {
             context.player?.isEpup != (epub === true)
           ) {
             context.player = undefined as any;
+            console.log("loading Book")
             let book = await context
               .db.Books.query.load("chapterSettings")
               .where.column(x => x.url)

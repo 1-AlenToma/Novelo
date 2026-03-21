@@ -32,6 +32,8 @@ const EpubHandler = ({
 }: any) => {
   const [render, state, loader] = useView({
     component: false,
+    stateTimeOut: 2,
+    ignore: ["progress"],
     state: {
       skipImages: false,
       progress: {
@@ -434,6 +436,7 @@ export default ({ ...props }: any) => {
 
   const renderItems: any[] = books?.filter(x => {
     const file = fileItems.find(x => x.url == x.url)
+
     return (
       !state.text.has() ||
       x.name.has(state.text) || x.parserName.has(state.text) ||
@@ -441,7 +444,6 @@ export default ({ ...props }: any) => {
       file?.type?.has(state.text)
     )
   })
-
   renderItems.push(...prepLoading.filter(x => !renderItems.find(f => f.url == x)));
   return (
     <View css="flex mih:100 invert ali-center">

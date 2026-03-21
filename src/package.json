@@ -1,6 +1,6 @@
 {
   "name": "novelo",
-  "version": "1.3.8",
+  "version": "1.4.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "link": "npm link file:../../react-native-short-style/styled file:../../react-native-short-style/react-native-short-style-devtools --legacy-peer-deps",
@@ -11,6 +11,7 @@
     "gradlew": "npm run zip && cd android && gradlew app:assembleRelease -PreactNativeArchitectures=arm64-v8a",
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start -c",
+    "clearDemo": "cd android && gradlew.bat --stop",
     "android": "npx expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",

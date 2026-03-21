@@ -12,7 +12,7 @@ import { useLocationSelection, AppUpdate } from "../hooks";
 export default (props: any) => {
   let loader = useLoader();
   const dataLocation = useLocationSelection();
-  context.zip.on("Loading")
+  context.zip.value("Loading")
   const state = buildState(() =>
   (
     {

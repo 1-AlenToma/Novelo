@@ -7,8 +7,7 @@ import Player from "./Player";
 import { FilesPath, ZipFileItem, OPFContent } from "../Types";
 import { unzip, subscribe } from 'react-native-zip-archive';
 import FileHandler from "./FileHandler";
-import { NativeModules } from 'react-native';
-const { EpubZipper } = NativeModules;
+
 
 class ZipBase {
   name: string = "";
@@ -126,7 +125,7 @@ export const readEpub = async (uri: string, onUpdate: (item: {
     oPFContent.description = book.decription = opfHtml.find("metadata").byTag("dc:description").text;
     oPFContent.identifier = book.identifier = opfHtml.find("metadata").byTag("dc:identifier").text;
     oPFContent.novelType = opfHtml.find("metadata").byTag("dc:noveltype").text;
-    oPFContent.manifest.item = opfHtml.find("manifest item").map(x => ({
+    oPFContent.manifest.item = opfHtml.find("manifest item").filter(x => x.attr("href")?.has(".html") || x.attr("href")?.has(".xhtml")).map(x => ({
       id: x.attr("id"),
       href: x.attr("href"),
       mediaType: x.attr("media-type")
@@ -268,7 +267,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     let player = new Player(novel, book, true);
     let cover = book.imageBase64 ? book.imageBase64 : undefined;
     function extractBase64(rawDataUrl: string): string {
-      if (rawDataUrl.isBase64String()) {
+      if (rawDataUrl.isBase64Url()) {
         const match = rawDataUrl.match(/^data:image\/[^;]+;base64,(.*)$/);
         if (!match) return rawDataUrl;
         return match[1];
@@ -378,45 +377,10 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     ].filter(x => x))
     zip.file("OEBPS/toc.ncx", tocContent);
 
-    // Step 3: Add OEBPS files
-    zip.file(
-      "OEBPS/content.opf", `
-    <?xml version="1.0" encoding="utf-8"?>
-    <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="BookId">
-      <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-        <dc:title>${novel.name}</dc:title>
-        <dc:language>en</dc:language>
-        <dc:identifier id="BookId">${novel.url}</dc:identifier>
-        <dc:description>${novel.decription}</dc:description>
-        <dc:noveltype>${novel.type}</dc:noveltype>
-        <meta name="cover" content="cover-image"/>
-      </metadata>
-      <manifest>
-       <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
-       <item id="style" href="style.css" media-type="text/css"/>
-      ${cover
-          ? `<item id="cover-image" href="images/cover.jpg" media-type="image/jpeg"/>`
-          : ""
-        }
-       ${cover ? `<item id="cover-page" href="chapters/cover.xhtml" />` : ""}
-      ${novelChapters
-          .map(
-            (x, index) =>
-              `<item id="chapter${index}" href="chapters/${index}.xhtml" media-type="application/xhtml+xml"/>`
-          )
-          .join("\n")}
-      </manifest>
-      <spine toc="ncx">
-       ${cover ? `<itemref idref="cover-page" />` : ""}
-       ${novelChapters
-          .map((x, index) => `<itemref idref="chapter${index}" />`)
-          .join("\n")}
-      </spine>
-    </package>
-  `.trim()
-    );
+
     let chapterIndex = 0;
     let imageIndex = 0;
+    let generatedImages: string[] = [];
     const validateContent = async (content: string) => {
       if (!content || content.empty())
         return "";
@@ -443,6 +407,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
             })).firstOrDefault("cn");
             if (img) {
               zip.file(`OEBPS/images/${filename}`, extractBase64(img), true);
+              generatedImages.push(`images/${filename}`)
               item.setAttribute("src", `../images/${filename}`);
             }
           }
@@ -475,6 +440,35 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
 
       chapterIndex++;
     }
+
+    // Step 3: Add OEBPS files
+    zip.file(
+      "OEBPS/content.opf", `
+    <?xml version="1.0" encoding="utf-8"?>
+    <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="BookId">
+      <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+        <dc:title>${novel.name}</dc:title>
+        <dc:language>en</dc:language>
+        <dc:identifier id="BookId">${novel.url}</dc:identifier>
+        <dc:description>${novel.decription}</dc:description>
+        <dc:noveltype>${novel.type}</dc:noveltype>
+        <meta name="cover" content="cover-image"/>
+      </metadata>
+      <manifest>
+       <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+       <item id="style" href="style.css" media-type="text/css"/>
+      ${cover ? `<item id="cover-image" href="images/cover.jpg" media-type="image/jpeg"/>` : ""}
+       ${cover ? `<item id="cover-page" href="chapters/cover.xhtml" media-type="application/xhtml+xml" />` : ""}
+      ${novelChapters.map((x, index) => `<item id="chapter${index}" href="chapters/${index}.xhtml" media-type="application/xhtml+xml" />`).join("\n")}
+      ${generatedImages.map((x, index) => `<item id="img${index}" href="${x}" media-type="image/jpeg" />`).join("\n")}
+      </manifest>
+      <spine toc="ncx">
+       ${cover ? `<itemref idref="cover-page" />` : ""}
+       ${novelChapters.map((x, index) => `<itemref idref="chapter${index}" />`).join("\n")}
+      </spine>
+    </package>
+  `.trim()
+    );
 
     // Step 4: Generate ZIP as base64
     console.log("Generating Zip");
@@ -514,7 +508,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
         currentFile: `Genereting Epub`
       });
       //  await ZipFile(folder, path);
-      const result = await EpubZipper.zipEpubFolder(folder, path);
+      const result = await methods.EpubModule.zipEpubFolder(folder, path);
       await fileHandler.deleteDir();
 
     }

@@ -15,6 +15,9 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 public class EpubZipperModule extends ReactContextBaseJavaModule {
 
     public EpubZipperModule(ReactApplicationContext reactContext) {
@@ -24,6 +27,122 @@ public class EpubZipperModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return "EpubZipper";
+    }
+
+    private static final String BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+
+    public static boolean isValidBase64Fast(String s) {
+    if (s == null || s.isEmpty()) return false;
+
+    int len = s.length();
+    int paddingCount = 0;
+
+    // Determine padding by scanning from end
+    for (int i = len - 1; i >= 0; i--) {
+        char c = s.charAt(i);
+        if (c == '#') continue;
+        if (c == '=') paddingCount++;
+        else break;
+    }
+
+    int validLen = 0;
+    for (int i = 0; i < len; i++) {
+        char c = s.charAt(i);
+        if (c == '#') continue;
+        if (validLen >= len - paddingCount) { // padding region
+            if (c != '=') return false;
+        } else {
+            if (BASE64_CHARS.indexOf(c) == -1) return false;
+        }
+        validLen++;
+    }
+
+    return validLen % 4 == 0;
+}
+
+    // Synchronous method
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public boolean isBase64(String str) {
+        return isValidBase64Fast(str);
+    }
+
+    @ReactMethod
+    public void isBase64Async(String str, Promise promise) {
+        promise.resolve(isValidBase64Fast(str));
+    }
+
+            // Encode string to Base64 asynchronously
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public String encode(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        // Run on background thread
+            try {
+                byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+                String base64 = Base64.getEncoder().encodeToString(bytes);
+                return base64;
+            } catch (Exception e) {
+                return "not valid ENCODE_ERROR";
+            }
+    }
+
+    // Decode Base64 string to normal string asynchronously
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public String decode(String base64Input) {
+        if (base64Input == null) {
+            return null;
+        }
+
+            try {
+                byte[] bytes = Base64.getDecoder().decode(base64Input.replace("#", ""));
+                String decoded = new String(bytes, StandardCharsets.UTF_8);
+                return decoded;
+            } catch (Exception e) {
+                return ("DECODE_ERROR");
+            }
+    }
+
+
+        // Encode string to Base64 asynchronously
+    @ReactMethod
+    public void encodeAsync(String input, Promise promise) {
+        if (input == null) {
+            promise.resolve(null);
+            return;
+        }
+
+        // Run on background thread
+        new Thread(() -> {
+            try {
+                byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+                String base64 = Base64.getEncoder().encodeToString(bytes);
+                promise.resolve(base64);
+            } catch (Exception e) {
+                promise.reject("ENCODE_ERROR", e);
+            }
+        }).start();
+    }
+
+    // Decode Base64 string to normal string asynchronously
+    @ReactMethod
+    public void decodeAsync(String base64Input, Promise promise) {
+        if (base64Input == null) {
+            promise.resolve(null);
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                byte[] bytes = Base64.getDecoder().decode(base64Input.replace("#", ""));
+                String decoded = new String(bytes, StandardCharsets.UTF_8);
+                promise.resolve(decoded);
+            } catch (Exception e) {
+                promise.reject("DECODE_ERROR", e);
+            }
+        }).start();
     }
 
     @ReactMethod

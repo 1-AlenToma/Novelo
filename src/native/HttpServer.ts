@@ -154,12 +154,11 @@ class HttpServer {
                         let data = tempImageData.get(imgKey);
                         if (!data) {
                             data = (await context.player.getImage({ src: decodedSrc, id })).firstOrDefault();
-                            if (data && data.cn) tempImageData.set(imgKey, data);
                         }
-
-                        if (data && data.cn) {
+                        let base64Data = data && data.cn && typeof data.cn == "string" ? data.cn.toBase64Url().split(',')[1] : undefined;
+                        if (base64Data && base64Data.has()) {
+                            tempImageData.set(imgKey, data);
                             // write data to a temporary file
-                            let base64Data = data.cn.toBase64Url().split(',')[1];
                             let uint8 = Base64.toUint8Array(base64Data);
                             // const uint8 = Uint8Array.from(Buffer.from(data.cn.split(',')[1], 'base64'));
 

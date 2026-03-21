@@ -329,7 +329,7 @@ class HttpHandler {
     }
   }
   async imageUrlToBase64(url: string, header?: any, timeoutMs = 20000) {
-    if (!url || url.isBase64String()) return url;
+    if (!url || url.isBase64Url()) return url?.toBase64Url();
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);

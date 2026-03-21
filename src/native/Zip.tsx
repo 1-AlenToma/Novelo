@@ -5,44 +5,9 @@ import { ProgressBar } from 'react-native-short-style';
 import * as React from "react";
 import { newId } from '../Methods';
 import { ZipEventData } from "../Types";
+import EventTrigger from './EventTrigger';
 
 
-class EventTrigger<T, tKey extends string> {
-    private event = new Map<string, Function>();
-
-    private set(id: string, func: Function, ...keys: tKey[]) {
-        id = keys.join(".") + id;
-        this.event.set(id, func);
-
-    }
-
-    on(...keys: tKey[]) {
-        let id = useRef(methods.newId()).current;
-        let [value, setValue] = useState<T | undefined>({} as T);
-        this.set(id, (v: any) => setValue(v), ...keys);
-
-        return value;
-    }
-
-    ifTrue(keys: tKey, func: (value: any) => boolean) {
-        let id = useRef(methods.newId()).current;
-        const [update, setUpdate] = useState("");
-        useEffect(() => {
-            this.set(id, (v: any) => {
-                if (func(v))
-                    setUpdate(methods.newId())
-            }, ...[keys]);
-        }, [update])
-
-        return id;
-    }
-
-    public trigger(key: tKey, value?: T) {
-
-        for (let k of [...this.event.keys()].filter(x => x.has(key)))
-            this.event.get(k)?.(value)
-    }
-}
 
 export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progress" | "CopyProgress" | "Loading"> {
     _files: string[] = [];
@@ -58,7 +23,7 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
         if (!fileTypes.find(x => this._name.toLocaleLowerCase().endsWith(x)))
             this._name += ".zip";
         this.subscribeEvent = subscribe(({ progress, filePath }) => {
-            this.trigger("Zip_Progress", { progress, color: "red", filePath })
+            this.trigger("Zip_Progress", { progress: progress * 100, color: "red", filePath })
         });
 
     }
@@ -138,16 +103,16 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
 
     async zipFiles(des: string, root: string) {
         try {
-             console.warn("Zipping Files")
+            console.warn("Zipping Files")
             this.loading = true;
             this._des = des;
             let tPath = this.tempPath();
-           
+
             let handler = new FileHandler(tPath);
-            
+
             await handler.checkDir();
             let index = 0;
-            
+
             for (let file of this._files) {
                 index++;
                 let info = getFileInfo(file, file.has(root) ? root : file.split("/").reverse().skip(0).reverse().join("/"));
@@ -172,9 +137,8 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
     }
 
     ProgressBar() {
-        let state = context.zip.on("CopyProgress", "Zip_Progress");
-        let loading = context.zip.on("Loading");
-
+        let state = context.zip.value("CopyProgress", "Zip_Progress");
+        let loading = context.zip.value("Loading");
 
         return (
             <ProgressBar value={(state?.progress ?? .1) / 100} text={state?.filePath} color={state?.color} />

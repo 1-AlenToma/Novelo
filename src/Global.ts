@@ -9,6 +9,7 @@ import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
 import HtmlContext from "./HtmlContext";
 import { Base64 } from 'js-base64';
+
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
 
@@ -50,8 +51,8 @@ declare global {
         isImage: () => boolean;
         isLocalPath(incBase64?: boolean): boolean;
         isBase64String(): boolean;
+        isBase64Url(): boolean;
         toBase64Url(): string;
-        toBase64(): string;
         escapeRegExp(): string;
         join(...relative: String[]): string;
         path(...relative: string[]): string;
@@ -60,6 +61,11 @@ declare global {
         query(item: any): string;
         trimEnd(...items): string;
         trimStr(...items): string; // TrimStart
+        encode(): string;
+        decode(): string;
+        encodeAsync(): Promise<string>;
+        decodeAsync(): Promise<string>;
+        getValidBase64String(): string;
         has(selector?: string): boolean;
         count(count: number): boolean;
         imageUrlSize: (size: string) => string;
@@ -105,12 +111,12 @@ Date.prototype.formatDateMMDDYY = function (this: Date) {
 }
 
 String.prototype.isImage = function () {
-    let path = new String(this).toString();
+    let path = this.toString();
     return imageFileTypes.find(x => path.toLowerCase().endsWith(x.toLowerCase())) != undefined;
 }
 
 String.prototype.normilzeStr = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     let index = 0;
     let r = "";
     while (index < str.length) {
@@ -128,7 +134,7 @@ String.prototype.normilzeStr = function () {
     return r;
 }
 
-String.prototype.decodeURIComponentSafe = function(this: string) {
+String.prototype.decodeURIComponentSafe = function (this: string) {
     let current = this;
 
     while (true) {
@@ -147,7 +153,7 @@ String.prototype.decodeURIComponentSafe = function(this: string) {
 }
 
 String.prototype.toCode = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     let code: number[] = [];
     for (let i = 0; i < str.length; i++) {
         code.push(str.charCodeAt(i))
@@ -156,15 +162,43 @@ String.prototype.toCode = function () {
     return code;
 }
 
+String.prototype.getValidBase64String = function (this: string) {
+    return (/#/i.test(this.toString())) ? this.toString().replace(/#/g, "") : this.toString();
+}
+
+String.prototype.encodeAsync = async function (this: string) {
+    if (!await methods.EpubModule.isBase64Async(this.toString()))
+        return await methods.EpubModule.encodeAsync(this.toString());
+    return this;
+}
+
+String.prototype.decodeAsync = async function (this: string) {
+    if (await methods.EpubModule.isBase64Async(this.toString()))
+        return await methods.EpubModule.decodeAsync(this.toString());
+    return this.toString();
+}
+
+String.prototype.encode = function (this: string) {
+    if (!methods.EpubModule.isBase64(this.toString()))
+        return Base64.encode(this.toString());
+    return this;
+}
+
+String.prototype.decode = function (this: string) {
+    if (methods.EpubModule.isBase64(this.toString()))
+        return Base64.decode(this.toString());
+    return this.toString();
+}
+
 String.prototype.onEmpty = function (defaultValue: string) {
 
-    let str = new String(this).toString();
+    let str = this.toString();
     return !str.empty() ? str : defaultValue;
 }
 
 String.prototype.isManga = function () {
     let mng = ["manhwa", "manga", "manhua"];
-    let str = new String(this).toString();
+    let str = this.toString();
     return mng.find(x => str.toLowerCase() == x) != undefined;
 }
 
@@ -172,22 +206,17 @@ String.prototype.fileName = function (name: string, parserName: string) {
     return parserName.path(name.replace(/(\/|\.|:|"|'|\{|\}|\[|\]|\,|\’)/gim, "").toLowerCase() + ".json").trimEnd("/");
 };
 
-String.prototype.isBase64String = function () {
-    const str = String(this);
-    // Quick check for data:image URIs
-    if (str.startsWith("data:image") || str.startsWith("data:text")) return true;
-
-    // Optional: check raw base64 (simple version)
-    const base64regex = /^([0-9A-Za-z+/]{4})*([0-9A-Za-z+/]{2}==|[0-9A-Za-z+/]{3}=)?$/;
-    return base64regex.test(str);
+String.prototype.isBase64Url = function (this: string) {
+    return (this.toString().startsWith("data:image") || this.toString().startsWith("data:text") || this.toString().isBase64String());
 }
 
-String.prototype.toBase64 = function () {
-    return Base64.encode(new String(this).toString())
+String.prototype.isBase64String = function (this: string) {
+    return methods.EpubModule.isBase64(this.toString());
 }
+
 
 String.prototype.toBase64Url = function () {
-    const str = new String(this).toString();
+    const str = this.toString();
     if (str.isBase64String()) {
         if (/data\:image/g.test(str))
             return str;
@@ -197,18 +226,18 @@ String.prototype.toBase64Url = function () {
 }
 
 String.prototype.isLocalPath = function (base64?: boolean) {
-    const str = new String(this).toString();
+    const str = this.toString();
     let res = !/http(s)?:|www\./g.test(str);
     return !base64 ? res : res && !/data\:image/g.test(str);
 };
 
 String.prototype.displayName = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     return str[0].toUpperCase() + str.substring(1);
 };
 
 String.prototype.escapeRegExp = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
@@ -325,14 +354,14 @@ String.prototype.imageFetchBuilder = function (
     baseUrl: string,
     attr?: string
 ) {
-    let url = new String(this).toString();
+    let url = this.toString();
     attr = attr || "src";
     return `[${baseUrl}][${url}][${selector}][${attr}]`;
 };
 
 String.prototype.splitSearch = function (searchFor: string) {
     if (!this) return false;
-    let str = new String(this).toString().trim();
+    let str = this.toString().trim();
     if (str.empty()) return false;
     if (!searchFor || searchFor.empty()) return false;
     for (let s of searchFor.split(" ")) {
@@ -342,7 +371,7 @@ String.prototype.splitSearch = function (searchFor: string) {
 };
 
 String.prototype.cleanHtml = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     let html = IDOMParser.parse(`<div>${str}</div>`, {
         errorHandler: {
             error: (e: string) => { },
@@ -355,13 +384,13 @@ String.prototype.cleanHtml = function () {
 };
 
 String.prototype.html = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     let html = new Html(`<div>${str}</div>`, "");
     return html;
 };
 
 String.prototype.cleanText = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     const doc = IDOMParser.parse(`<div>${str}</div>`);
     str = doc.documentElement
         .text()
@@ -378,14 +407,14 @@ String.prototype.cleanText = function () {
 };
 
 String.prototype.niceSentences = function (this: string) {
-    let str = new String(this).toString();
+    let str = this.toString();
     str = str.replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
     str = str.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt|dr)((\s+)?(\.)(\s+)?)/gi, "$1.");
     return str;
 }
 
 String.prototype.htmlArray = function () {
-    let str = new String(this).toString().replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
+    let str = this.toString().replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
     const doc = IDOMParser.parse(`<div>${str}</div>`, {
         errorHandler: {
             error: () => { },
@@ -408,7 +437,7 @@ String.prototype.htmlArray = function () {
 };
 
 String.prototype.htmlImagesSources = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     const doc = IDOMParser.parse(`<div>${str}</div>`);
     let elems = [...doc.documentElement.querySelectorAll("img")];
     return elems.map(x => x.getAttribute("src"));
@@ -435,7 +464,7 @@ String.prototype.eSpace = function (total?: number) {
 };
 
 String.prototype.safeSplit = function (c: string, index: number) {
-    let ar = new String(this).toString().split(c);
+    let ar = this.toString().split(c);
     if (index === -1) return (ar.lastOrDefault() ?? "") as string;
     return ar[index] ?? "";
 };
@@ -447,17 +476,17 @@ String.prototype.css = function (id?: string) {
 };
 
 String.prototype.imageUrlSize = function (size: string) {
-    let url = new String(this).toString();
+    let url = this.toString();
     return url.replace(/\d+[x]\d+/gim, size);
 };
 
 String.prototype.count = function (nr: number) {
-    let str = new String(this).toString();
+    let str = this.toString();
     return str.length >= nr;
 };
 
 String.prototype.has = function (selector: string) {
-    if (!selector || selector.trim().length <= 0) return !(new String(this).toString().empty());
+    if (!selector || selector.trim().length <= 0) return !(this.toString().empty());
     return (
         new String(this)
             .toString()
@@ -467,12 +496,12 @@ String.prototype.has = function (selector: string) {
 };
 
 String.prototype.empty = function () {
-    let str = new String(this).toString();
+    let str = this.toString();
     return str === null || str.match(/^ *$/) !== null;
 };
 
 String.prototype.trimEnd = function (...items) {
-    let str = new String(this).toString().trim();
+    let str = this.toString().trim();
     items.forEach(x => {
         if (str.endsWith(x)) str = str.substring(0, str.length - 1);
     });
@@ -481,7 +510,7 @@ String.prototype.trimEnd = function (...items) {
 };
 
 String.prototype.trimStr = function (...items) {
-    let str = new String(this).toString().trim();
+    let str = this.toString().trim();
     items.forEach(x => {
         if (str.startsWith(x)) str = str.substring(x.length);
     });
@@ -490,7 +519,7 @@ String.prototype.trimStr = function (...items) {
 };
 
 String.prototype.query = function (item: any) {
-    let url = new String(this).toString();
+    let url = this.toString();
     if (url.endsWith("/")) url = url.substring(0, url.length - 1);
     Object.keys(item).forEach(x => {
         let v = item[x];
@@ -507,7 +536,7 @@ String.prototype.query = function (item: any) {
 };
 
 String.prototype.path = function (...relative: string[]) {
-    let url = new String(this).toString().trim();
+    let url = this.toString().trim();
     relative
         .filter(x => x != undefined && x !== null && x.has())
         .map(x => x.toString())
@@ -521,7 +550,7 @@ String.prototype.path = function (...relative: string[]) {
 };
 
 String.prototype.join = function (this: string, ...relative: String[]) {
-    let url = new String(this).toString();
+    let url = this.toString();
 
     relative
         .filter(x => x && x.has())

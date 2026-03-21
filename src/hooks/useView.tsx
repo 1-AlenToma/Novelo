@@ -16,6 +16,8 @@ interface Props<T> {
   component: any;
   timer?: number;
   key?: string;
+  stateTimeOut?: number;
+  ignore?: string[];
   loader?: {
     text?: string;
     value?: boolean;
@@ -51,7 +53,7 @@ export default function <T>({
       id: methods.newId()
     })).ignore(
       "refItem", "size", ...(gProps.ignore ?? [])
-    ).build();
+    ).timeout(props.stateTimeOut).build();
 
   let render = (children: any, prs?: any) => {
     if (component !== false) {
@@ -62,7 +64,7 @@ export default function <T>({
 
           {...prs}
           key={props.key}
-          onLayout={(event : any) => {
+          onLayout={(event: any) => {
 
             itemState.size = { ...event.nativeEvent.layout };
             gProps.onLayout?.(event);

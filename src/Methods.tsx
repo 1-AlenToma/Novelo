@@ -1,6 +1,63 @@
 import uuid from "react-native-uuid";
 import IDOMParser from "advanced-html-parser";
 import { Functions } from "react-native-ts-sqlite-orm";
+import { NativeModules } from 'react-native';
+const { EpubZipper } = NativeModules;
+
+export class EpubModule {
+  static async zipEpubFolder(folder: string, path: string) {
+    return (await EpubZipper.zipEpubFolder(folder, path)) as boolean;
+  }
+
+  static async isBase64Async(str: string) {
+    return (await EpubZipper.isBase64Async(str)) as boolean;
+  }
+
+  static isBase64(str: string) {
+    return (EpubZipper.isBase64(str)) as boolean;
+  }
+
+  // base64
+  static decode(base64Input: string) {
+    try {
+      return (EpubZipper.decode(base64Input)) as string;
+    } catch (e) {
+      console.error(e);
+      return base64Input;
+    }
+  }
+
+  // base64
+  static encode(input: string) {
+    try {
+      return (EpubZipper.encode(input)) as string;
+    } catch (e) {
+      console.error(e);
+      return input;
+    }
+  }
+
+
+  // base64
+  static async decodeAsync(base64Input: string) {
+    try {
+      return (await EpubZipper.decodeAsync(base64Input)) as string;
+    } catch (e) {
+      console.error(e);
+      return base64Input;
+    }
+  }
+
+  // base64
+  static async encodeAsync(input: string) {
+    try {
+      return (await EpubZipper.encodeAsync(input)) as string;
+    } catch (e) {
+      console.error(e);
+      return input;
+    }
+  }
+}
 
 /**
  * Converts a file size in bytes into a human-readable string.

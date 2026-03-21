@@ -32,7 +32,7 @@ export default ({
           .fetchSelectorImage(url)
           .then(x => setSource(x))
           .catch(x => { });
-      } else if (url && typeof url === "string" && !url.isBase64String() && url.toString().isLocalPath(true)) {
+      } else if (url && typeof url === "string" && !url.isBase64Url() && url.toString().isLocalPath(true)) {
         context.imageCache.read(url.trimStr("/")).then(x => {
           if (x && !x.empty())
             setSource(x)
@@ -52,7 +52,7 @@ export default ({
             for (let k in h)
               header[k] = h[k];
           }
-        } else if (url && typeof url == "string" && url.isBase64String())
+        } else if (url && typeof url == "string" && url.isBase64Url())
           url = url.toBase64Url();
 
 
