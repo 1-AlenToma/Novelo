@@ -52,6 +52,8 @@ declare global {
         isLocalPath(incBase64?: boolean): boolean;
         isBase64String(): boolean;
         isBase64Url(): boolean;
+        isBase64UrlAsync(): Promise<boolean>;
+        toBase64UrlAsync(): Promise<string>;
         toBase64Url(): string;
         escapeRegExp(): string;
         join(...relative: String[]): string;
@@ -210,10 +212,24 @@ String.prototype.isBase64Url = function (this: string) {
     return (this.toString().startsWith("data:image") || this.toString().startsWith("data:text") || this.toString().isBase64String());
 }
 
+String.prototype.isBase64UrlAsync = async function (this: string) {
+    return (this.toString().startsWith("data:image") || this.toString().startsWith("data:text") || await Methods.EpubModule.isBase64Async(this.toString()));
+}
+
+
 String.prototype.isBase64String = function (this: string) {
     return methods.EpubModule.isBase64(this.toString());
 }
 
+String.prototype.toBase64UrlAsync = async function () {
+    const str = this.toString();
+    if (await str.isBase64UrlAsync()) {
+        if (/data\:image/g.test(str))
+            return str;
+        return `data:image/jpg;base64,${str}`;
+    }
+    return str;
+}
 
 String.prototype.toBase64Url = function () {
     const str = this.toString();

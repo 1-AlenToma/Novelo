@@ -329,7 +329,9 @@ class HttpHandler {
     }
   }
   async imageUrlToBase64(url: string, header?: any, timeoutMs = 20000) {
-    if (!url || url.isBase64Url()) return url?.toBase64Url();
+    if (!url)
+      return url;
+    if (await url.isBase64UrlAsync()) return url.toBase64UrlAsync();
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -355,7 +357,7 @@ class HttpHandler {
           }
         });
 
-        let img = html.html.first("img").attr("src").toBase64Url();
+        let img = await html.html.first("img").attr("src").toBase64UrlAsync();
         return img;
 
       }

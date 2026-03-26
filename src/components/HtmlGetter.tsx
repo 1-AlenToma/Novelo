@@ -3,10 +3,13 @@ import WebView from "react-native-webview";
 import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
-import { htmlGetterJsCode } from "../JSConstant";
+import { htmlGetterJsCode, webViewCheckVerification } from "../JSConstant";
+import Timer from "hooks/Timer";
 
 const debug = false;
 const maxCalls = 3;
+
+
 
 const baseUrl = (url: string) => {
   if (!url)
@@ -20,25 +23,63 @@ const baseUrl = (url: string) => {
   return protocol + (hasProtocol ? '//' : "") + host;
 }
 
-const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () => void }) => {
+const webViewDefaultProps = {
+  sharedCookiesEnabled: true,
+  thirdPartyCookiesEnabled: true,
+  javaScriptEnabled: true,
+  domStorageEnabled: true,
+  cacheEnabled: true,
+  //            userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+
+}
+
+const ProtectionModal = (({ url, onHide }: { url?: string, onHide: () => void }) => {
+  const webView = useRef<WebView>();
+  const lastCheck = useRef();
+  const checkTimer = Timer(1000)
   return (<Modal addCloser={true} css="wi-90% he-90%" isVisible={url != undefined} onHide={onHide}>
     <View style={{ flex: 1, marginTop: 15 }}>
       <Text css="fos-15 fow-bold co-red">
         This {baseUrl(url ?? "")} containe ICloude protection, so you need to validate it from time to time.
         {"\n"}
-        Found ICloude protection, please check in the box and close the modal and then reload the page if needed
+        Found ICloude protection, please check in the box and close the modal.
         {"\n"}
         Note: if you dont find the ICloude protection, then simple close it and continue.
       </Text>
       <WebView
-        cacheEnabled={true}
+        ref={webView}
+        injectedJavaScript={webViewCheckVerification()}
         androidLayerType="software"
         source={{
           uri: url as string
         }}
+        onNavigationStateChange={() => {
+          checkTimer(() => {
+            webView.current?.injectJavaScript(`
+                window.checkProtection?.();
+                true;
+              `)
+          })
+        }}
+        onMessage={async ({ nativeEvent }) => {
+          try {
+            let data = JSON.parse(nativeEvent.data);
+            //  console.warn("webViw", data)
+            if (data.type == "pCheck") {
+              if (!lastCheck.current && data.data) {
+                lastCheck.current = true;
+              } else if (lastCheck.current && !data.data)
+                onHide();
+            }
+          } catch (e) {
+            console.error(e);
+          }
+
+        }}
+
+        {...webViewDefaultProps}
         contentMode="mobile"
         originWhitelist={["*"]}
-        userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
         setSupportMultipleWindows={false}
         style={
           {
@@ -48,7 +89,6 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
         allowFileAccess={true}
         allowFileAccessFromFileURLs={true}
         allowUniversalAccessFromFileURLs={true}
-        javaScriptEnabled={true}
       />
 
     </View>
@@ -74,15 +114,15 @@ export default () => {
     state.data = [...htmlContext.html.data];
   }, "html.data")
 
+  let nonImages = state.data.filter(x => !x.url.isImage());
+  let images = state.data.filter(x => x.url.isImage());
+  let urls = [...nonImages, ...images];
+  const iProtected = urls.filter(d => !state.protection.some(x => baseUrl(d.url) === baseUrl(x.url)))
 
+  let htmlData = iProtected.filter((item, index, self) => index === self.findIndex(other => baseUrl(other.url) === baseUrl(item.url))).slice(0, maxCalls);
+  if (htmlData.length < maxCalls && iProtected.length >= maxCalls)
+    htmlData = iProtected.slice(0, maxCalls);
 
-
-
-  const htmlData = state.data
-    .filter(d => !state.protection.some(x => baseUrl(d.url) === baseUrl(x.url)))
-    .filter((item, index, self) =>
-      index === self.findIndex(other => baseUrl(other.url) === baseUrl(item.url))
-    ).slice(0, maxCalls);
 
   const protection = state.protection.firstOrDefault() as { url: string, id: string } | undefined;
 
@@ -106,7 +146,7 @@ export default () => {
           <WebView
             key={x.id}
             injectedJavaScript={htmlGetterJsCode(x)}
-            cacheEnabled={true}
+            {...webViewDefaultProps}
             source={{
               uri: x.url
             }}
@@ -143,7 +183,6 @@ export default () => {
             }}
             contentMode="mobile"
             originWhitelist={["*"]}
-            userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
             setSupportMultipleWindows={false}
             style={
               {
@@ -154,7 +193,6 @@ export default () => {
             allowFileAccess={true}
             allowFileAccessFromFileURLs={true}
             allowUniversalAccessFromFileURLs={true}
-            javaScriptEnabled={true}
           />))}
     </View>)
 }

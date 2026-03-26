@@ -13,14 +13,12 @@ document.addEventListener("${fn}", (event) => {
 }catch(e){
 if (window.__DEV__)
    alert(e)
-}
-`);
+}`);
 
-export let htmlGetterJsCode = (x: WebViewFetchData) => {
-
-  let data = /*js*/ `
+export const dataPost = (id) => {
+    return `
     const postData = async (type, data) => {
-        const id= "${x.id}";
+        const id= "${id}";
         let item = {
             type,
             id,
@@ -33,6 +31,36 @@ export let htmlGetterJsCode = (x: WebViewFetchData) => {
         };
         window.ReactNativeWebView.postMessage(JSON.stringify(item));
     };
+    window.postData = postData;`
+}
+
+export const webViewCheckVerification = () => {
+    const js = `
+${dataPost("protection")}
+window.checkProtection = () => {
+  const protection = [
+    "Verifying you are human",
+    "Enable JavaScript and cookies to continue",
+    "Performing security verification",
+    "Checking your browser before accessing",
+    "Please wait while we verify",
+    "DDoS protection by Cloudflare",
+    "cf-browser-verification",
+    "Attention Required! | Cloudflare"
+  ];
+
+  const text = document.documentElement.outerHTML.toLowerCase();
+  const isProtected = protection.some(p => text.includes(p.toLowerCase()));
+  window.postData("pCheck", isProtected)
+}
+true;`;
+    return js;
+}
+
+export const htmlGetterJsCode = (x: WebViewFetchData) => {
+
+    let data = /*js*/ `
+    ${dataPost(x.id)}
     try {
     function sleep(ms) {
         return new Promise((r) => setTimeout(r, ms));
@@ -213,5 +241,5 @@ export let htmlGetterJsCode = (x: WebViewFetchData) => {
 }
 true;`;
 
-  return data;
+    return data;
 };
