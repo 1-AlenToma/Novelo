@@ -1,14 +1,22 @@
 import { WebViewFetchData } from "./Types";
 
+export const timerJs = (js: string, timer: number = 0) => {
+    if ((timer ?? 0) < 0)
+        return js;
+    return `
+    clearTimeout(window.globalTimer);
+    window.globalTimer = setTimeout(()=> {${js}}, ${timer ?? 0})`
+}
+
 export const jsScript = (js: string, fn: "load" | "DOMContentLoaded", timer: number = 0) => (/*js*/ `
 try{
 window.__DEV__ = ${(typeof __DEV__ !== "undefined" ? __DEV__ : false).toString().toLowerCase()};
 if (document.readyState === "loading") {
 document.addEventListener("${fn}", (event) => {
-  setTimeout(()=> {${js}}, ${timer ?? 0})
+  ${timerJs(js, timer)}
 }, { once: true });
 }else {
-  setTimeout(()=> {${js}}, ${timer ?? 0})
+  ${timerJs(js, timer)}
 }
 }catch(e){
 if (window.__DEV__)
@@ -233,8 +241,9 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
         };
         postData("html", payload);
     };
-
-     ${jsScript(" window.getHtml()", "DOMContentLoaded", x.props?.timer)}
+    const isImage =${x.url.isImage().toString().toLowerCase()};
+    if (isImage)
+      ${jsScript("window.getHtml()", "DOMContentLoaded", x.props?.timer ?? -1)}
 } catch (e) {
     if (window.__DEV__) alert(e);
     postData("error", e.message);

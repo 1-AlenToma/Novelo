@@ -24,7 +24,7 @@ export default memo(
     const state = buildState({
       items: [] as LightInfo[],
       mounted: false
-    }).build()
+    }).ignore("items").timeout(2).build()
 
     const page = useRef(0);
     const item = context.parser.current.settings.group[itemIndex];
@@ -120,6 +120,7 @@ export default memo(
                 parserName: item.parserName
               });
             }}
+            
             vMode={vMode}
             onEndReached={() => {
               if (!loader.loading) {

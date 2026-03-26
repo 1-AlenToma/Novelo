@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import WebView from "react-native-webview";
 import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
-import { htmlGetterJsCode, webViewCheckVerification } from "../JSConstant";
+import { htmlGetterJsCode, jsScript, webViewCheckVerification } from "../JSConstant";
 import Timer from "hooks/Timer";
 
 const debug = false;
@@ -11,17 +11,7 @@ const maxCalls = 3;
 
 
 
-const baseUrl = (url: string) => {
-  if (!url)
-    return "";
-  var pathArray = url.split('/');
-  let hasProtocol = /(http)(s)?/gim.test(url);
-  var protocol = hasProtocol ? pathArray[0] : "";
-  var host = hasProtocol ? pathArray[2] : pathArray[0];
-  if (host.indexOf("?") != -1)
-    host = host.substring(0, host.indexOf("?"))
-  return protocol + (hasProtocol ? '//' : "") + host;
-}
+
 
 const webViewDefaultProps = {
   sharedCookiesEnabled: true,
@@ -29,18 +19,30 @@ const webViewDefaultProps = {
   javaScriptEnabled: true,
   domStorageEnabled: true,
   cacheEnabled: true,
-  //            userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+  // userAgent: "Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
 
 }
 
-const ProtectionModal = (({ url, onHide }: { url?: string, onHide: () => void }) => {
+const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () => void }) => {
+  const [isVisible, setIsVisible] = useState(url !== undefined);
   const webView = useRef<WebView>();
   const lastCheck = useRef();
-  const checkTimer = Timer(1000)
-  return (<Modal addCloser={true} css="wi-90% he-90%" isVisible={url != undefined} onHide={onHide}>
+  const checkTimer = Timer(2);
+  useEffect(() => {
+    if (!isVisible)
+      onHide();
+  }, [isVisible])
+
+  useEffect(() => {
+    if (isVisible && (!url || !url.has()))
+      setIsVisible(false);
+    else if (!isVisible && url?.has())
+      setIsVisible(true)
+  }, [url])
+  return (<Modal addCloser={true} css="wi-80% he-90%" isVisible={isVisible} onHide={() => setIsVisible(false)}>
     <View style={{ flex: 1, marginTop: 15 }}>
       <Text css="fos-15 fow-bold co-red">
-        This {baseUrl(url ?? "")} containe ICloude protection, so you need to validate it from time to time.
+        This {methods.baseUrl(url ?? "")} containe ICloude protection, so you need to validate it from time to time.
         {"\n"}
         Found ICloude protection, please check in the box and close the modal.
         {"\n"}
@@ -48,18 +50,16 @@ const ProtectionModal = (({ url, onHide }: { url?: string, onHide: () => void })
       </Text>
       <WebView
         ref={webView}
-        injectedJavaScript={webViewCheckVerification()}
+        injectedJavaScriptBeforeContentLoaded={webViewCheckVerification()}
         androidLayerType="software"
         source={{
           uri: url as string
         }}
         onNavigationStateChange={() => {
-          checkTimer(() => {
-            webView.current?.injectJavaScript(`
-                window.checkProtection?.();
-                true;
-              `)
-          })
+          webView.current?.injectJavaScript(
+            `${jsScript("window.checkProtection?.();", "DOMContentLoaded", -1)}
+           true;`
+          );
         }}
         onMessage={async ({ nativeEvent }) => {
           try {
@@ -69,7 +69,7 @@ const ProtectionModal = (({ url, onHide }: { url?: string, onHide: () => void })
               if (!lastCheck.current && data.data) {
                 lastCheck.current = true;
               } else if (lastCheck.current && !data.data)
-                onHide();
+                setIsVisible(false)
             }
           } catch (e) {
             console.error(e);
@@ -97,12 +97,15 @@ const ProtectionModal = (({ url, onHide }: { url?: string, onHide: () => void })
 })
 
 export default () => {
-  //htmlContext.hook("html.data");
+  htmlContext.hook("html.updatedNr");
   const state = buildState(() =>
   ({
-    protection: [] as { url: string, id: string }[],
-    data: [] as WebViewFetchData[]
-  })).timeout(2).build();
+    updateNr: 0,
+    protection: [] as { url: string, id: string, baseUrl: string }[],
+  })).build();
+  const timeout = 1;
+  const webViews = useRef<(WebView | null)[]>([]);
+  const timers = [useTimer(timeout), useTimer(timeout), useTimer(timeout)]
 
   useEffect(() => {
     return () => {
@@ -110,26 +113,35 @@ export default () => {
     }
   }, [])
 
-  htmlContext.useEffect(() => {
-    state.data = [...htmlContext.html.data];
-  }, "html.data")
-
-  let nonImages = state.data.filter(x => !x.url.isImage());
-  let images = state.data.filter(x => x.url.isImage());
-  let urls = [...nonImages, ...images];
-  const iProtected = urls.filter(d => !state.protection.some(x => baseUrl(d.url) === baseUrl(x.url)))
-
-  let htmlData = iProtected.filter((item, index, self) => index === self.findIndex(other => baseUrl(other.url) === baseUrl(item.url))).slice(0, maxCalls);
-  if (htmlData.length < maxCalls && iProtected.length >= maxCalls)
-    htmlData = iProtected.slice(0, maxCalls);
+  htmlContext.useEffect(()=> {
+   // state.updateNr = htmlContext.html.updatedNr;
+  },"html.updatedNr")
 
 
-  const protection = state.protection.firstOrDefault() as { url: string, id: string } | undefined;
+
+  const iProtected = useMemo(() =>
+    htmlContext.html.data.filter(d =>
+      !state.protection.some(x => d.baseUrl === x.baseUrl)
+    ),
+    [htmlContext.html.updatedNr, state.protection]);
+
+  const htmlData = useMemo(() => {
+    let unique = iProtected.filter((item, index, self) =>
+      index === self.findIndex(o => o.baseUrl === item.baseUrl)
+    );
+
+    if (unique.length < maxCalls && iProtected.length >= maxCalls)
+      return iProtected.slice(0, maxCalls);
+
+    return unique.slice(0, maxCalls);
+  }, [iProtected]);
+
+
+  const protection = state.protection.firstOrDefault() as { url: string, id: string, baseUrl: string } | undefined;
 
   const handleHide = React.useCallback(() => {
     state.protection = state.protection.filter(x => x.id !== protection?.id)
   }, [protection?.id]);
-
 
   return (
     <View style={!debug ? {
@@ -142,13 +154,22 @@ export default () => {
     } : { flex: 1, height: 200 }}>
       <ProtectionModal url={protection?.url} onHide={handleHide} />
       {
-        htmlData.map(x => (
+        htmlData.map((x, i) => (
           <WebView
+            ref={c => webViews[i] = c as any}
             key={x.id}
-            injectedJavaScript={htmlGetterJsCode(x)}
+            injectedJavaScriptBeforeContentLoaded={htmlGetterJsCode(x)}
             {...webViewDefaultProps}
             source={{
               uri: x.url
+            }}
+            onNavigationStateChange={() => {
+              if (x.url.isImage())
+                return;
+              timers[i](() => {
+                webViews[i]?.injectJavaScript(`${jsScript("window.getHtml();", "DOMContentLoaded", -1)}
+                true;`)
+              });
             }}
             onMessage={async ({ nativeEvent }) => {
               try {
@@ -161,10 +182,10 @@ export default () => {
                     break;
                   case "protection":
                     console.warn("Icloude found")
-                    if (!state.protection.find(x => baseUrl(data.data) == baseUrl(x.url))) {
+                    if (!state.protection.find(x => methods.baseUrl(data.data) == x.baseUrl)) {
                       if (!protection)
-                        state.protection = [{ url: data.data, id: data.id }]
-                      else state.protection.push({ url: data.data, id: data.id });
+                        state.protection = [{ url: data.data, id: data.id, baseUrl: methods.baseUrl(data.data) }]
+                      else state.protection.push({ url: data.data, id: data.id, baseUrl: methods.baseUrl(data.data) });
                     }
                     break;
                   case "error":

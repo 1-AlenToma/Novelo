@@ -59,6 +59,18 @@ export class EpubModule {
   }
 }
 
+export const baseUrl = (url: string) => {
+  if (!url)
+    return "";
+  var pathArray = url.split('/');
+  let hasProtocol = /(http)(s)?/gim.test(url);
+  var protocol = hasProtocol ? pathArray[0] : "";
+  var host = hasProtocol ? pathArray[2] : pathArray[0];
+  if (host.indexOf("?") != -1)
+    host = host.substring(0, host.indexOf("?"))
+  return protocol + (hasProtocol ? '//' : "") + host;
+}
+
 /**
  * Converts a file size in bytes into a human-readable string.
  * @param bytes - The file size in bytes.

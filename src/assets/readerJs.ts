@@ -1266,11 +1266,8 @@ window.addEventListener('click', function(event) {
         mangaPage.page ??= document.querySelector(".manga-page");
         const now = Date.now();
         const delta = now - lastTap;
-        const dbClick = delta < 300;
-
+        const dbClick = delta < 300 && lastTap > 0;
         lastTap = now;
-        //  postmsg("log",dbClick);
-
         clearTimeout(timerClick);
         if (dbClick && mangaPage.page) {
             event.preventDefault();
@@ -1287,7 +1284,7 @@ window.addEventListener('click', function(event) {
         }
         timerClick = setTimeout(() => {
             if (!selectionMenu || selectionMenu.style.display == "none") {
-                if (!((event.detail >= 2 || dbClick) && ["Pagination"].includes(options.scrollType))) {
+                if (!((dbClick) && ["Pagination"].includes(options.scrollType))) {
                     window.postmsg("click", true);
                 }
             }

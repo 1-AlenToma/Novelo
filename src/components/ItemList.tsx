@@ -8,7 +8,7 @@ import useTimer from "../hooks/Timer";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
 
-export default ({
+export default function <T>({
   items,
   container,
   props,
@@ -26,13 +26,13 @@ export default ({
   page,
   numColumns
 }: {
-  items: any[];
+  items: T[];
   container: any;
-  onLongPress?: any;
+  onLongPress?: ((item: T) => void);
   props?: any;
-  itemCss?: string | ((item: any) => string);
+  itemCss?: string | ((item: T) => string);
   vMode?: boolean;
-  onPress?: (item: any) => void;
+  onPress?: (item: T) => void;
   onEndReached?: () => void;
   scrollIndex?: number;
   nested?: boolean;
@@ -42,19 +42,18 @@ export default ({
   onRefresh?: { loading: boolean, onRefresh: () => void },
   page?: number,
   numColumns?: number;
-}) => {
+}) {
   context.hook(
     "selectedThemeIndex",
     ...(hooks ?? [])
   );
   const time = useTimer(100);
   const horizental = useRef(vMode).current;
-  const onEndReachedCalledDuringMomentum =
-    useRef(true);
+  const onEndReachedCalledDuringMomentum = useRef(true);
   const ref = useRef();
   const selected = useRef();
-  const Render = (({ item, index }: any) => {
-    let d = { item, vMode:horizental, index };
+  const Render = React.useCallback(({ item, index }: { item: T, index: number }) => {
+    let d = { item, vMode: horizental, index };
     if (props) d = { ...d, ...props };
     let VR = container;
     let CN =
@@ -73,7 +72,7 @@ export default ({
         <VR {...d} />
       </CN>
     );
-  });
+  }, [vMode, itemCss, onPress, onLongPress, container, props]);
 
   const scrollTo = () => {
     if (
@@ -87,6 +86,15 @@ export default ({
       });
     }
   };
+
+  const extraData = React.useMemo(() => {
+    return [
+      ...(updater ?? []),
+      selectedIndex,
+      context.selectedThemeIndex,
+      numColumns
+    ]
+  }, [updater, selectedIndex, context.selectedThemeIndex, numColumns])
 
 
   useEffect(() => {
@@ -112,60 +120,55 @@ export default ({
         flex: 0
       }}
       css="flg:1 mah:100% bac-transparent po-relative">
-      {items?.has() ?? false ? (
-        <FlashList
-          ref={c => {
-            ref.current = c;
-          }}
 
-          onContentSizeChange={() => {
-            time(() => scrollTo());
-          }}
+      <FlashList
+        ref={c => {
+          ref.current = c;
+        }}
+        
+        onContentSizeChange={() => {
+          time(() => scrollTo());
+        }}
 
-          contentContainerStyle={{
-            padding: 1
-          }}
-          numColumns={numColumns == 0 ? undefined : numColumns}
+        contentContainerStyle={{
+          padding: 1
+        }}
+        numColumns={numColumns == 0 ? undefined : numColumns}
 
-          onScrollBeginDrag={() => {
-            selected.current = true;
-          }}
-          nestedScrollEnabled={nested}
-          initialScrollIndex={scrollIndex}
-          horizontal={horizental !== true}
-          data={items ?? []}
-          refreshing={onRefresh?.loading}
-          onRefresh={onRefresh?.onRefresh}
-          onEndReachedThreshold={0.5}
-          onMomentumScrollBegin={() => {
+        onScrollBeginDrag={() => {
+          selected.current = true;
+        }}
+        nestedScrollEnabled={nested}
+        initialScrollIndex={scrollIndex}
+        horizontal={horizental !== true}
+        data={items ?? []}
+        refreshing={onRefresh?.loading}
+        onRefresh={onRefresh?.onRefresh}
+        onEndReachedThreshold={0.5}
+        onMomentumScrollBegin={() => {
+          onEndReachedCalledDuringMomentum.current =
+            false;
+        }}
+
+        extraData={extraData}
+        onEndReached={() => {
+          if (
+            !onEndReachedCalledDuringMomentum.current
+          ) {
+            onEndReached?.();
             onEndReachedCalledDuringMomentum.current =
-              false;
-          }}
-
-          extraData={[
-            ...(updater ?? []),
-            selectedIndex,
-            context.selectedThemeIndex,
-            numColumns
-          ]}
-          onEndReached={() => {
-            if (
-              !onEndReachedCalledDuringMomentum.current
-            ) {
-              onEndReached?.();
-              onEndReachedCalledDuringMomentum.current =
-                true;
-            }
-          }}
-          renderItem={({ item, index }) =>
-            <Render item={item} index={index} />
+              true;
           }
-          keyExtractor={(item, index) => {
-            let key = typeof item == "object" ? item.name ?? "" : "";
+        }}
+        renderItem={Render}
+        keyExtractor={(item, index) => {
+          let tm: any = item;
+          let key = typeof item == "object" ? tm.name ?? tm.url ?? "" : "";
+          if (!key || !key.has())
             key += index;
-            return key;
-          }}
-        />) : null}
+          return key;
+        }}
+      />
     </View>
   );
 };

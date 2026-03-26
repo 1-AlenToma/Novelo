@@ -4,7 +4,7 @@ import { LightInfo } from "../native/ParserItems";
 import * as React from "react";
 import { BlurView } from "./BlurView";
 
-export default ({
+export default React.memo(({
   item,
   vMode,
   showParserName,
@@ -117,4 +117,4 @@ export default ({
         </View>
       </View>
     );
-};
+})
