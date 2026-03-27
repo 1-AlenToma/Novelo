@@ -1,25 +1,41 @@
 package com.alentoma.Novelo;
 
-import com.facebook.react.ReactPackage;
+import com.facebook.react.BaseReactPackage;
 import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-public class EpubZipperPackage implements ReactPackage {
-
-    @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        List<NativeModule> modules = new ArrayList<>();
-        modules.add(new EpubZipperModule(reactContext));
-        return modules;
-    }
+public class EpubZipperPackage extends BaseReactPackage {
 
     @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+    public NativeModule getModule(String name, ReactApplicationContext reactContext) {
+       if (name.equals(EpubZipperModule.NAME)) {
+          return new EpubZipperModule(reactContext);
+      } else {
+      return null;
     }
+    }
+
+  @Override
+  public ReactModuleInfoProvider getReactModuleInfoProvider() {
+    return new ReactModuleInfoProvider() {
+      @Override
+      public Map<String, ReactModuleInfo> getReactModuleInfos() {
+        Map<String, ReactModuleInfo> map = new HashMap<>();
+        map.put(EpubZipperModule.NAME, new ReactModuleInfo(
+          EpubZipperModule.NAME,       // name
+          EpubZipperModule.NAME,       // className
+          false, // canOverrideExistingModule
+          false, // needsEagerInit
+          false, // isCXXModule
+          true   // isTurboModule
+        ));
+        return map;
+      }
+    };
+  }
 }

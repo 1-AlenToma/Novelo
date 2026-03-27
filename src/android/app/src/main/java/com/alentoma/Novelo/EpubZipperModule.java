@@ -18,15 +18,20 @@ import java.util.zip.ZipOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class EpubZipperModule extends ReactContextBaseJavaModule {
+import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.turbomodule.core.interfaces.TurboModule;
 
+@ReactModule(name = EpubZipperModule.NAME)
+public class EpubZipperModule extends ReactContextBaseJavaModule implements TurboModule {
+
+    public static final String NAME = "EpubZipper";
     public EpubZipperModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
 
     @Override
     public String getName() {
-        return "EpubZipper";
+        return NAME;
     }
 
     private static final String BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

@@ -11,7 +11,8 @@ export default class ImageCache extends FileHandler {
   async downloadImage(imgUrl: string, path: string | ParserWrapper) {
     if (typeof path == "object")
       path = path.name;
-    path = this.dir.join("db", path, imgUrl.safeSplit("/", -1));
+
+    path = this.dir.join("db", path, imgUrl.split("header")[0].trim().safeSplit("/", -1));
     console.log("fileName", getFileInfo(path, this.dir));
     let imgContent = await context.parser.current.http.imageUrlToBase64(imgUrl);
     if (imgContent && typeof imgContent == "string") {

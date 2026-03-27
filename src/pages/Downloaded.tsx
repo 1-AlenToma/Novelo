@@ -152,7 +152,7 @@ const ItemRender = React.memo(({
     );
   });
   const loader = useLoader(true);
-  const epubDownloadTimer = useTimer(100);
+  const epubDownloadTimer = useTimer(500);
   const downloadProgress = context.downloadManager().useDownload(item.url);
 
   const itemState = buildState(() =>
@@ -190,7 +190,6 @@ const ItemRender = React.memo(({
     if (file) {
       const path = await context.browser.pickFolder("Choose where to save the file", ["epub"]);
       if (path) {
-
         loader.show();
         epubDownloadTimer(async () => {
           try {

@@ -517,9 +517,9 @@ export default ({ ...props }: any) => {
                           .ParserName(parserName)
                           .ImageBase64(
                             await context
-                              .http()
-                              .imageUrlToBase64(
-                                state.novel.image
+                              .imageCache.downloadImage(
+                                state.novel.image,
+                                state.novel.parserName
                               )
                           )
                       ));

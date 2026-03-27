@@ -24,14 +24,22 @@
     "connect": "adb connect 127.0.0.1:58526",
     "clearGrade": "cd D: && python \"cureppted files check.py\" \"C:\\Users\\alen\\.gradle\\caches.old\""
   },
+  "codegenConfig": {
+    "name": "EpubZipperSpec",
+    "type": "modules",
+    "jsSrcsDir": "./localModules",
+    "android": {
+      "javaPackageName": "com.alentoma.Novelo"
+    }
+  },
   "dependencies": {
-    "@expo/vector-icons": "^15.0.3",
+    "@expo/vector-icons": "^15.1.1",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-navigation/bottom-tabs": "^7.15.5",
     "@react-navigation/material-top-tabs": "^7.4.18",
     "@react-navigation/native": "^7.1.25",
     "@react-navigation/native-stack": "^7.8.6",
-    "@shopify/flash-list": "2.0.2",
+    "@shopify/flash-list": "^2.3.1",
     "advanced-html-parser": "^1.1.0",
     "expo": "~55.0.5",
     "expo-asset": "~55.0.8",
@@ -83,7 +91,7 @@
     "@types/react": "~19.2.10",
     "babel-preset-expo": "~55.0.8",
     "baseline-browser-mapping": "^2.9.5",
-    "bestzip": "^2.2.1",
+    "bestzip": "^2.2.3",
     "cross-env": "^10.1.0",
     "expo-dev-client": "~55.0.16",
     "madge": "^8.0.0",

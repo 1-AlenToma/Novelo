@@ -148,10 +148,15 @@ class HttpServer {
                 if (path.startsWith(this.getRoute("/images/")) && method === "GET") {
                     try {
                         const { src, id } = this.queryString(path, this.getRoute("/images/{src}/{id}"));
-                        const decodedSrc = src.decodeURIComponentSafe();
+                        const decodedSrc = (src as string).replace(/\?(\s)?time(\s)?=.*/ig, "").trim().decodeURIComponentSafe();
                         const imgKey = `${decodedSrc}${context.player.book.name}${context.player.currentChapter.name}${context.player.novel.parserName}`;
 
                         let data = tempImageData.get(imgKey);
+                        if (/\?(\s)?time(\s)?=.*/ig.test(src)) {
+                            data = undefined;
+                            tempImageData.set(imgKey, undefined);
+                        }
+
                         if (!data) {
                             data = (await context.player.getImage({ src: decodedSrc, id })).firstOrDefault();
                         }
@@ -160,8 +165,7 @@ class HttpServer {
                             tempImageData.set(imgKey, data);
                             // write data to a temporary file
                             let uint8 = Base64.toUint8Array(base64Data);
-                            // const uint8 = Uint8Array.from(Buffer.from(data.cn.split(',')[1], 'base64'));
-
+                            
                             return {
                                 statusCode: 200,
                                 headers: {

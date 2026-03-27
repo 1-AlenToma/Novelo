@@ -184,7 +184,7 @@ export const CSSStyle = /*css */`
     z-index: 2;
 }
 
-.progressBar >div{
+.progressBar > div{
   width: 50%;
   transition: width 0.5s ease;
   height: 100%;
@@ -540,13 +540,11 @@ const getElements = (html) => {
     }
 }
         window.imageRetry = (event, btn) => {
-            e.preventDefault();
             btn.parentNode.classList.remove('error', 'loaded');
             const img = btn.parentElement.querySelector("img");
-
-            const src = img.src;
-            img.src = "";
-            img.src = src;
+            
+            const src = addString(img.getAttribute("src").replace(/\\?(\\s)?time(\\s)?=.*/ig, "").trim(), "?time=", Date.now());
+            img.setAttribute("src", src);
             event.preventDefault();
             event.stopPropagation();
         };
@@ -560,7 +558,6 @@ const getElements = (html) => {
              const imgs = Array.from(view.querySelectorAll("img"));
              for (let img of imgs) 
                 {
-
                     setId(img);
                     const src = img.getAttribute("src") || "";
                     if (src.length > 0 && !src.startsWith("data:")) {
@@ -1263,6 +1260,8 @@ let timerClick = null;
 let lastTap = 0;
 window.addEventListener('click', function(event) {
     try {
+        if (event.target.classList.contains("retry") || event.target.classList.contains("lazy"))
+            return;
         mangaPage.page ??= document.querySelector(".manga-page");
         const now = Date.now();
         const delta = now - lastTap;

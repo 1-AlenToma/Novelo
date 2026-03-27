@@ -47,7 +47,7 @@ declare global {
 
     interface String {
         isManga(): boolean;
-        fileName(name: string, parserName: string): string;
+        fileName(name: string, parserName: string, ext?: string): string;
         isImage: () => boolean;
         isLocalPath(incBase64?: boolean): boolean;
         isBase64String(): boolean;
@@ -204,8 +204,11 @@ String.prototype.isManga = function () {
     return mng.find(x => str.toLowerCase() == x) != undefined;
 }
 
-String.prototype.fileName = function (name: string, parserName: string) {
-    return parserName.path(name.replace(/(\/|\.|:|"|'|\{|\}|\[|\]|\,|\’)/gim, "").toLowerCase() + ".json").trimEnd("/");
+String.prototype.fileName = function (name: string, parserName: string, ext?: string) {
+    let fileName = name
+        .replace(/[\\/.:"'{}\[\],|?*%#<>_\-’]+/gi, "")
+        .toLowerCase().slice(0, 50)
+    return parserName.path(fileName + (ext ?? ".json")).replace(/\/+$/, "");
 };
 
 String.prototype.isBase64Url = function (this: string) {
