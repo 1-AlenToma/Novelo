@@ -82,7 +82,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
   async write(file: string, content: string | number[], options?: Encoding) {
 
     let fileUri = this.getName(file);
-    return methods.withLock<FileInfo>(fileUri, async () => {
+    return methods.withLock<string>(fileUri, async () => {
       await this.checkDir(fileUri);
       console.log(
         "writing",

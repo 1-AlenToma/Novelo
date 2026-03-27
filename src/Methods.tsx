@@ -588,14 +588,14 @@ const removeProps = (
   return item;
 };
 
-const joinKeys = (
-  a: any,
+const joinKeys = function <T>(
+  a: T,
   b: any,
-  ...ignoreKeys: string[]
-) => {
+  ...ignoreKeys: (keyof T)[]
+) {
   let keys = Object.keys(a);
   for (let k in b) {
-    if (ignoreKeys.includes(k)) continue;
+    if (ignoreKeys.includes(k as any)) continue;
     if (
       keys.find(f => f === k) &&
       (k != "id" || b[k] != undefined)

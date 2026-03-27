@@ -1,7 +1,7 @@
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive';
 import RNFetchBlob from "react-native-blob-util";
 import FileHandler from './FileHandler';
-import { ProgressBar } from 'react-native-short-style';
+import { ProgressBar, Text } from 'react-native-short-style';
 import * as React from "react";
 import { newId } from '../Methods';
 import { ZipEventData } from "../Types";
@@ -86,12 +86,18 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
     }
 
     fileName() {
-        let id = methods.newId();
-        return `${id.substring(0, id.length / 2)}_Novelo_${id.substring(id.length / 2)}.zip`
+        const id = methods.newId();
+        const date = new Date().toISOString().replace(/[:.]/g, "-");
+        return `Novelo_Backup_${date}_${id.slice(0, 6)}.zip`;
     }
 
     files(...files: string[]) {
         this._files = files;
+        return this;
+    }
+
+    appendFiles(...files: string[]) {
+        this._files = [...this._files, ...files];
         return this;
     }
 
@@ -141,7 +147,9 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
         let loading = context.zip.value("Loading");
 
         return (
-            <ProgressBar value={(state?.progress ?? .1) / 100} text={state?.filePath} color={state?.color} />
+            <ProgressBar value={(state?.progress ?? .1) / 100} text={state?.filePath} color={state?.color} >
+                <Text css="fow-bold co-white pal-5 tea-center">{state?.filePath?.safeSplit("/", -1)}</Text>
+            </ProgressBar>
         )
     }
 }

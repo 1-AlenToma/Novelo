@@ -660,7 +660,7 @@ global.getFileName = (file: string, dir?: string) => {
     }
     if (file.startsWith("/") || file.startsWith("file")) return file;
 
-    if (dir)
+    if (dir && !file.trimStr("/").startsWith(dir.trimStr("/")))
         file = dir.join(file)
     return file;
 }

@@ -148,7 +148,7 @@ export default class DownloadManager extends EventTrigger<any, "Prep" | "Progres
             .Name(novel.name)
             .ParserName(parserName)
             .ImageBase64(
-              await context.http().imageUrlToBase64(novel.image)
+              await context.imageCache.downloadImage(novel.image, parserName)
             )
         );
       let key = "".fileName(novel.name, parserName);

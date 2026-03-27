@@ -122,6 +122,7 @@ const App = () => {
                 RNExitApp.exitApp?.();
 
             itemToRemove?.forEach(x => x.remove());
+            context.db.rollbackTransaction(); // if there is an open connection
         };
 
 

@@ -209,12 +209,18 @@ export const readEpub = async (uri: string, onUpdate: (item: {
     console.info("finished reading files")
 
     await context.files.write(book.fileName, JSON.stringify(book));
+    if (cover && cover.isBase64Url()) {
+      let path = "db".join("epub", newId() + ".jpg");
+      cover = (await context.imageCache.write(path, cover)) ?? path;
+      console.info("new cover path", cover)
 
+    }
     let dbBook = Book.n()
       .Name(book.name)
       .Url(book.url)
       .Favorit(false)
-      .InlineStyle("").ImageBase64(cover)
+      .InlineStyle("")
+      .ImageBase64(cover ?? "")
       .ParserName("epub");
     await context.db.Books.save(dbBook);
 
@@ -277,6 +283,8 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
     // Step 1: Add mimetype (must be first, uncompressed)
     zip.file("mimetype", "application/epub+zip");
     if (cover) {
+      if (cover && cover.isLocalPath(true))
+        cover = await context.imageCache.read(cover)
       zip.file("OEBPS/images/cover.jpg", extractBase64(cover), true);
       const coverPage = `
     <?xml version="1.0" encoding="utf-8"?>

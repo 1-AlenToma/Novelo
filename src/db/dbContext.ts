@@ -139,10 +139,17 @@ export default class DbContext extends Database<TableNames> {
           .in(options.items.map(x => x.parserName))
           .toList();
       }
+      let bookImages = item.books.map(x => {
+        if (x.imageBase64 && !x.imageBase64.isBase64Url() && x.imageBase64.isLocalPath())
+          return x.imageBase64
+        return undefined
+      }).filter(x => x != undefined)
+      context.zip.files(...bookImages)
       if (options.epubs) {
         let files = await context.files.allFiles();
         let images = await context.imageCache.allFiles();
-        context.zip.files(...files, ...images);
+        images = images.filter(x => !x.has("db/"));
+        context.zip.appendFiles(...files, ...images);
 
         for (let file of files) {
           let novel: ZipBook = JSON.parse(
@@ -166,7 +173,7 @@ export default class DbContext extends Database<TableNames> {
         "parent_Id",
         "tableName"
       );
-      context.zip.data({ content: await JSON.stringify(item).encodeAsync(), path: "Novelo_Backup.json" });
+      context.zip.data({ content: await JSON.stringify(item), path: "Novelo_Backup.json" });
       await context.zip.zipFiles(folder, context.appSettings.filesDataLocation ?? context.files.DocumentDirectoryPath);
     } catch (e) {
       console.error("DownloadDatabase", e);
@@ -179,11 +186,12 @@ export default class DbContext extends Database<TableNames> {
   ) => {
     let total = 0;
     let index = 0;
-    const calc = (finished?: boolean) => {
+    const calc = async (finished?: boolean, filePath?: string) => {
       index++;
       let p = total.procent(index)
       if (finished) p = 100;
-      context.zip.trigger("CopyProgress", { progress: p, filePath: "Copy content" })
+      context.zip.trigger("CopyProgress", { progress: p, filePath: filePath ?? "Copy content", color: "green" });
+      if (index % 30 === 0) await sleep(10);
     };
     try {
       context.zip.beginNew();
@@ -193,18 +201,23 @@ export default class DbContext extends Database<TableNames> {
         console.error("Could not find Novel_Backup file")
         return;
       }
+      context.zip.loading = true;
       Novelo_BackupFile = await Novelo_BackupFile.decodeAsync();
       await this.disableWatchers();
       await this.disableHooks();
       await this.beginTransaction();
       context.files.disable();
-      let item = JSON.parse(Novelo_BackupFile);
+      let item = JSON.parse(Novelo_BackupFile) as {
+        appSettings: AppSettings | undefined,
+        books: Book[],
+        epubs: any[]
+      };
       if (item) {
-        let total =
+        total =
           item.books.length +
           item.epubs.length +
           1;
-        calc();
+        await calc();
         await sleep(30);
         if (item.appSettings) {
           joinKeys(
@@ -238,13 +251,18 @@ export default class DbContext extends Database<TableNames> {
 
           book.tableName = "Books";
           await this.save(book);
+          total += book.chapterSettings.length;
+          const bulk =await this.Books.bulkSave()
           for (let ch of book.chapterSettings) {
             ch.tableName = "Chapters";
             ch.parent_Id = book.id;
+            await calc(false, book.name);
             await this.save(ch);
+
+
           }
-          calc();
-          if (index % 5 === 0) await sleep(10);
+          await calc(false, book.name);
+
         }
       }
 
@@ -257,16 +275,22 @@ export default class DbContext extends Database<TableNames> {
       await this.enableHooks();
       await this.enableWatchers();
       context.files.enable();
+      context.zip.loading = false;
       calc(true);
     }
   };
 
   async deleteBook(id: number) {
+    let book = await this.Books.byId(id);
     await this.Books.query
       .where
       .column(x => x.id)
       .equalTo(id)
       .delete();
+
+    if (book && book.imageBase64 && !book.imageBase64.isBase64String() && book.imageBase64.isLocalPath(false)) {
+      await context.imageCache.delete(book.imageBase64)
+    }
 
     if (context.player && context.player.book?.id == id) {
       await context.player.stop();

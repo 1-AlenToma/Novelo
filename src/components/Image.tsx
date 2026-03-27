@@ -31,8 +31,10 @@ export default ({
         _source = await context.parser.current.fetchSelectorImage(url);
       } else if (url && typeof url === "string" && !await url.isBase64UrlAsync() && url.toString().isLocalPath(true)) {
         let data = await context.imageCache.read(url.trimStr("/"));
-        if (data && !data.empty())
+        if (data && !data.empty()) {
           _source = data;
+        }
+
       } else if (url && url.toString().has()) {
 
         if (typeof url == "string" && url.has("header")) {

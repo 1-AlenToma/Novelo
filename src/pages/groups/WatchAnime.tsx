@@ -50,7 +50,7 @@ const WatchAnime = (props: any) => {
                     .Url(anime.url)
                     .Name(anime.name)
                     .ParserName(parserName)
-                    .ImageBase64(await context.http().imageUrlToBase64(anime.image)));
+                    .ImageBase64(await context.imageCache.downloadImage(anime.image, parserName)));
             context.appSettings.currentNovel = {
                 url: url,
                 parserName: parserName,

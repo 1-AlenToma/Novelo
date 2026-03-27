@@ -1106,7 +1106,7 @@ export default (props: any) => {
                   .Url(state.novel.url)
                   .Name(state.novel.name)
                   .ParserName(parserName)
-                  .ImageBase64(await context.http().imageUrlToBase64(state.novel.image)));
+                  .ImageBase64(await context.imageCache.downloadImage(state.novel.image, state.parser)));
 
             if (!book.textReplacements) book.textReplacements = [];
             state.book = book;
