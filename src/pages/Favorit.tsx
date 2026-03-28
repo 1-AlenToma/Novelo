@@ -5,7 +5,7 @@ import {
   FoldableItem,
   ChapterView,
 } from "../components";
-import { View, Text, Icon, AlertDialog, ActionSheet } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, ActionSheet, ReadyView } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
 import { Book } from "../db";
@@ -17,7 +17,11 @@ const ItemRender = React.memo(({
   url: string
 }) => {
   const itemLoader = useLoader(false);
-  const [novel, setNovel] = useState(undefined as DetailInfo | undefined);
+  const state = buildState({
+    novel: undefined as DetailInfo | undefined,
+    showChapter: false
+  }).ignore("novel").build();
+
   context.hook("novelFavoritInfo");
   const [books, dataIsLoading] = context.db.Books.useQuery(
     context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(url),
@@ -55,8 +59,9 @@ const ItemRender = React.memo(({
       itemLoader.show();
       let parser = context.parser.find(item.parserName);
       if (parser) {
-        const nov = await parser.detail(item.url, true);
-        setNovel(nov)
+        if (!state.novel)
+          state.novel = await parser.detail(item.url, true);
+        state.showChapter = true;
       } else console.error("parser not founc", item.parserName)
     } finally {
       itemLoader.hide();
@@ -75,30 +80,32 @@ const ItemRender = React.memo(({
     return null;
   return (
     <>
-      <ActionSheet size={"80%"} isVisible={novel != undefined} onHide={() => setNovel(undefined)}>
+
+      <ActionSheet size={"80%"} speed={100} css="invert" isVisible={state.showChapter} onHide={() => state.showChapter = false}>
         <ChapterView
           ignoreChapterValidation={true}
           book={item}
-          novel={novel as any}
+          novel={state.novel}
           onPress={item => {
-            if (novel) {
+            if (state.novel) {
               context
-                .nav.navigate(novel.type == "Anime" || context.parser.find(novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                  name: novel.name,
+                .nav.navigate(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                  name: state.novel.name,
                   chapter: item.url,
-                  url: novel.url,
-                  parserName: novel.parserName
+                  url: state.novel.url,
+                  parserName: state.novel.parserName
                 });
             }
-            setNovel(undefined);
+            state.showChapter = false;
           }}
           current={
-            novel?.chapters?.at(
+            state.novel?.chapters?.at(
               item?.selectedChapterIndex ?? 0
             )?.url
           }
         />
       </ActionSheet>
+
       {itemLoader.elem}
       <FoldableItem
         single={true}
@@ -156,6 +163,7 @@ const ItemRender = React.memo(({
           {
             ifTrue: item.isOnline?.(),
             onPress: async () => {
+              itemLoader.show();
               return await loadNovel()
             },
             icon: (<Icon

@@ -1,6 +1,6 @@
 import useLoader from "./Loader";
 import * as React from "react";
-import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer } from "react-native-short-style";
+import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer, ReadyView } from "react-native-short-style";
 import { Book, Chapter } from "../db";
 import { DetailInfo, ChapterInfo } from "../native";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
@@ -85,101 +85,101 @@ export const ChapterView = ({
   }, [current]);
 
 
-
-
   if (chArray[state.currentPage] && !chArray[state.currentPage].items && chArray.length > 0)
     hasReadContent(state.currentPage);
 
   return (
     <View css="clearboth juc:flex-start mah:98% invert po:relative">
-      <View
-        ifTrue={chArray.length > 1}
-        css="clearwidth he:50 mat:10">
-        <ItemList
-          updater={[state.currentPage]}
-          selectedIndex={state.currentPage}
-          items={chArray}
-          onPress={item => {
-            state.currentPage = item.index;
-          }}
-          container={({ item, index }) => {
-            return (
-              <View
-                css={`row di:flex ali:center bor:5 listButton invert ${state.currentPage === item.index ? " selectedRow pal:5 par:5" : ""}`}>
-                <Text
-                  css="desc fos:15 wi-100% tea-center">
-                  {item.index > 0 ? item.index * size + 1 + " - " : "1 - "}
-                  {((item.index + 1) * size) > novel.chapters.length ? novel.chapters.length : ((item.index + 1) * size)}
-                </Text>
-                <Icon
-                  ifTrue={item.index == state.index.page}
-                  color="yellow"
-                  css="absolute le:2 to:2 fos-15 co-yellow"
-                  type="MaterialIcons"
-                  name="star"
-                />
-                <Icon
-                  ifTrue={hasReadContent(item.index)}
-                  css="absolute ri:0 to:2 fos-12 co-green"
-                  type="AntDesign"
-                  name="check-circle"
-                />
-              </View>
-            )
-          }}
-          itemCss="pa-5 bobw-1 boc-gray invert wi-115 he-50"
-        />
-      </View>
-      <View css="clearwidth mih:50 flex invert mat-5 po-relative">
-        <ItemList
-          onload={() => initTimer(() => initLoading.hide())}
-          vMode={true}
-          updater={[current]}
-          selectedIndex={state.index.page == state.currentPage ? state.index.index : 0}
-          items={chArray[state.currentPage]?.items}
-          container={({ item, index }: { item: ChapterInfo, index: number }) => {
-            const cssEmpty = item.empty ? "op-0.5" : "";
-            return (
-              <SingleTouchableOpacity css="fl-1" onPress={async () => {
-                if (current != item.url || ignoreChapterValidation) {
-                  loader.show();
-                  await onPress(item);
-                }
-              }}>
+      <ReadyView timeout={20}>
+        <View
+          ifTrue={chArray.length > 1}
+          css="clearwidth he:50 mat:10">
+          <ItemList
+            updater={[state.currentPage]}
+            selectedIndex={state.currentPage}
+            items={chArray}
+            onPress={item => {
+              state.currentPage = item.index;
+            }}
+            container={({ item, index }) => {
+              return (
                 <View
-                  css={`pa-5 flex mih:50 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
+                  css={`row di:flex ali:center bor:5 listButton invert ${state.currentPage === item.index ? " selectedRow pal:5 par:5" : ""}`}>
                   <Text
-                    css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}${cssEmpty}`}>
-                    {item.name.safeSplit("/", -1)}
+                    css="desc fos:15 wi-100% tea-center">
+                    {item.index > 0 ? item.index * size + 1 + " - " : "1 - "}
+                    {((item.index + 1) * size) > novel.chapters.length ? novel.chapters.length : ((item.index + 1) * size)}
                   </Text>
-                  <View css="_abc bo-0 wi-102% bac-transparent">
-                    <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
-                      color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="he-5 bor-0" />
-                    <ProgressBar ifTrue={(settingsMap.get(item.url)?.audioPercent ?? 0) > 0}
-                      color="#a75512ff" value={(settingsMap.get(item.url)?.audioPercent ?? 0) / 100} css="he-5 bor-0" />
-                  </View>
-
-                  <View css="row clb" ifTrue={item.empty != true}>
-                    <Icon
-                      css={(settingsMap.get(item.url)?.scrollProgress ?? 0) >= 200 ? "co-green" : undefined}
-                      size={20}
-                      type="MaterialIcons"
-                      name="preview"
-                    />
-                    <Icon
-                      css={settingsMap.get(item.url)?.isFinished ? "co-green" : undefined}
-                      size={20}
-                      type="AntDesign"
-                      name="check-circle"
-                    />
-                  </View>
+                  <Icon
+                    ifTrue={item.index == state.index.page}
+                    color="yellow"
+                    css="absolute le:2 to:2 fos-15 co-yellow"
+                    type="MaterialIcons"
+                    name="star"
+                  />
+                  <Icon
+                    ifTrue={hasReadContent(item.index)}
+                    css="absolute ri:0 to:2 fos-12 co-green"
+                    type="AntDesign"
+                    name="check-circle"
+                  />
                 </View>
-              </SingleTouchableOpacity>
-            )
-          }}
-          itemCss="fl-1 wi-100% he-50 bobw-1 boc-gray invert"
-        />
-      </View>
+              )
+            }}
+            itemCss="pa-5 bobw-1 boc-gray invert wi-115 he-50"
+          />
+        </View>
+        <View css="clearwidth mih:50 flex invert mat-5 po-relative">
+          <ItemList
+            onload={() => initTimer(() => initLoading.hide())}
+            vMode={true}
+            updater={[current]}
+            selectedIndex={state.index.page == state.currentPage ? state.index.index : 0}
+            items={chArray[state.currentPage]?.items}
+            container={({ item, index }: { item: ChapterInfo, index: number }) => {
+              const cssEmpty = item.empty ? "op-0.5" : "";
+              return (
+                <SingleTouchableOpacity css="fl-1" onPress={async () => {
+                  if (current != item.url || ignoreChapterValidation) {
+                    loader.show();
+                    await onPress(item);
+                  }
+                }}>
+                  <View
+                    css={`pa-5 flex mih:50 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
+                    <Text
+                      css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}${cssEmpty}`}>
+                      {item.name.safeSplit("/", -1)}
+                    </Text>
+                    <View css="_abc bo-0 wi-102% bac-transparent">
+                      <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
+                        color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="he-5 bor-0" />
+                      <ProgressBar ifTrue={(settingsMap.get(item.url)?.audioPercent ?? 0) > 0}
+                        color="#a75512ff" value={(settingsMap.get(item.url)?.audioPercent ?? 0) / 100} css="he-5 bor-0" />
+                    </View>
+
+                    <View css="row clb" ifTrue={item.empty != true}>
+                      <Icon
+                        css={(settingsMap.get(item.url)?.scrollProgress ?? 0) >= 200 ? "co-green" : undefined}
+                        size={20}
+                        type="MaterialIcons"
+                        name="preview"
+                      />
+                      <Icon
+                        css={settingsMap.get(item.url)?.isFinished ? "co-green" : undefined}
+                        size={20}
+                        type="AntDesign"
+                        name="check-circle"
+                      />
+                    </View>
+                  </View>
+                </SingleTouchableOpacity>
+              )
+            }}
+            itemCss="fl-1 wi-100% he-50 bobw-1 boc-gray invert"
+          />
+        </View>
+      </ReadyView>
       {loader.elem ?? initLoading.elem}
     </View>
   );

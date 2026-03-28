@@ -2,7 +2,7 @@ import {
   memo
 } from "react";
 import * as React from "react";
-import { FlashList } from "@shopify/flash-list";
+import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "react-native-short-style";
 import useTimer from "../hooks/Timer";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
@@ -52,7 +52,7 @@ export default function <T>({
   const time = useTimer(100);
   const horizental = useRef(vMode).current;
   const onEndReachedCalledDuringMomentum = useRef(true);
-  const ref = useRef();
+  const ref = useRef<FlashListRef<T>>();
   const selected = useRef();
   const Render = React.useCallback(({ item, index }: { item: T, index: number }) => {
     let d = { item, vMode: horizental, index };
