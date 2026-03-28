@@ -21,7 +21,7 @@ export const formatDateMMDDYY = (time: number | Date) => {
   if (time instanceof Date)
     return time.formatDateMMDDYY();
   if (typeof time == "number")
-    return new Date(time).formatDateMMDDYY();
+    return new Date(time * 1000).formatDateMMDDYY();
   return time;
 }
 
@@ -113,7 +113,10 @@ const locks = new Map<string, Promise<any>>();
 
 export const withLock = async function <T>(fileUri: string, fn: () => Promise<any>) {
   const prev = locks.get(fileUri) ?? Promise.resolve();
-  const next = prev.then(fn).finally(() => {
+  const next = prev.then(fn).catch(e => {
+    console.error('withLock previous promise failed', e);
+    return fn(); // still run fn even if prev fails
+  }).finally(() => {
     if (locks.get(fileUri) === next) locks.delete(fileUri);
   });
   locks.set(fileUri, next);

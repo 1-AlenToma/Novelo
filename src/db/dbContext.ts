@@ -138,7 +138,7 @@ export default class DbContext extends Database<TableNames> {
       }
       let bookImages = item.books.map(x => {
         if (x.imageBase64 && !x.imageBase64.isBase64Url() && x.imageBase64.isLocalPath())
-          return x.imageBase64
+          return context.imageCache.dir.path(x.imageBase64)
         return undefined
       }).filter(x => x != undefined)
       context.zip.files(...bookImages)
@@ -249,7 +249,7 @@ export default class DbContext extends Database<TableNames> {
           book.tableName = "Books";
           await this.save(book);
           total += book.chapterSettings.length;
-          const bulk =await this.Books.bulkSave()
+          const bulk = await this.Books.bulkSave()
           for (let ch of book.chapterSettings) {
             ch.tableName = "Chapters";
             ch.parent_Id = book.id;

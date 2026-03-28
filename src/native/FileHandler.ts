@@ -126,6 +126,8 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
     await this.checkDir(des);
     if (__DEV__)
       console.log("Copy files", source, "to", des)
+    if (await this.exists(des))
+      await RNF.unlink(des);
     await RNF.copyFile(source, des);
     this.allFilesReaded = false;
     return des;
@@ -136,11 +138,11 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
     if (!await this.RNF.exists(fileUri))
       return [];
     let files: string[] = [];
-    let dirs = await RNF.readDir(fileUri);
-    for (let dir of dirs.filter(x => x.isDirectory())) {
+    let dirs = await RNF.readDir(fileUri, true);
+    for (let dir of dirs.filter(x => x.isDirectory)) {
       files = [...files, ...(await this.allFiles(dir.path))]
     }
-    files = [...files, ...dirs.filter(x => x.isFile()).map(x => x.path)]
+    files = [...files, ...dirs.filter(x => x.isFile).map(x => x.path)]
     return files;
   }
 

@@ -11,6 +11,8 @@ export default class ImageCache extends FileHandler {
   async downloadImage(imgUrl: string, path: string | ParserWrapper) {
     if (typeof path == "object")
       path = path.name;
+    if (!imgUrl)
+      return "";
     let imgName = imgUrl.split("header")[0].trim().safeSplit("/", -1);
     if (!imgName.isImage())
       imgName += ".jpg";

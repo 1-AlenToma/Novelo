@@ -157,11 +157,17 @@ public class EpubZipperModule extends ReactContextBaseJavaModule implements Turb
             File epubFile = new File(epubOutputPath);
             FileOutputStream fos = new FileOutputStream(epubFile);
             ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(fos));
+             // Prepare mimetype bytes
+              File mimetypeFile = new File(sourceDir, "mimetype");
+             byte[] mimeBytes;
 
-            // Write mimetype first and uncompressed
-            File mimetypeFile = new File(sourceDir, "mimetype");
             if (mimetypeFile.exists()) {
-                byte[] mimeBytes = readAllBytes(mimetypeFile);
+               mimeBytes = readAllBytes(mimetypeFile);
+             } else {
+                // Create a default mimetype file
+                mimeBytes = "application/epub+zip".getBytes("UTF-8");
+              }
+
                 ZipEntry mimetypeEntry = new ZipEntry("mimetype");
                 mimetypeEntry.setMethod(ZipEntry.STORED);
                 mimetypeEntry.setSize(mimeBytes.length);
@@ -170,10 +176,6 @@ public class EpubZipperModule extends ReactContextBaseJavaModule implements Turb
                 zos.putNextEntry(mimetypeEntry);
                 zos.write(mimeBytes);
                 zos.closeEntry();
-            } else {
-                promise.reject("NO_MIMETYPE", "mimetype file not found in source directory.");
-                return;
-            }
 
             // Add all other files
             zipDirectoryRecursive(sourceDir, sourceDir, zos);

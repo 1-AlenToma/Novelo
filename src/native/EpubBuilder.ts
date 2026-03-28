@@ -281,7 +281,7 @@ export const createEpub = async (novel: DetailInfo, book: Book, path: string, on
       return rawDataUrl;
     }
     // Step 1: Add mimetype (must be first, uncompressed)
-    zip.file("mimetype", "application/epub+zip");
+    //zip.file("mimetype", "application/epub+zip");
     if (cover) {
       if (cover && cover.isLocalPath(true))
         cover = await context.imageCache.read(cover)

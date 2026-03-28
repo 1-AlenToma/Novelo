@@ -58,15 +58,15 @@ class Player {
   }
 
   usePlayerLoader = () => {
-    const loader = useLoader(this.isloading);
+    const localLoader = useLoader(this.isloading);
     useEffect(() => {
       this.loader = {
         hide: () => {
           this.isloading = false;
-          loader.hide();
+          localLoader?.hide();
         },
         show: () => {
-          loader.show();
+          localLoader?.show();
           this.isloading = true;
         }
       }
@@ -74,7 +74,7 @@ class Player {
       return () => this.loader = undefined;
     }, [])
 
-    return loader;
+    return localLoader ?? { elem: null };
   }
 
   show() {

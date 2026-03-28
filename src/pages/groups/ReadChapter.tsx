@@ -1095,7 +1095,7 @@ export default (props: any) => {
             context.player?.isEpup != (epub === true)
           ) {
             context.player = undefined as any;
-            console.log("loading Book")
+            console.log("loading Book", "parserName", parserName, "url", url)
             let book = await context
               .db.Books.query.load("chapterSettings")
               .where.column(x => x.url)
@@ -1125,7 +1125,7 @@ export default (props: any) => {
             await context.player.jumpTo(chapter);
           }
         } catch (e) {
-          console.error(e);
+          console.error("ReaderChapter", e);
         } finally {
           if (loader.loading)
             loader.hide();
@@ -1146,11 +1146,13 @@ export default (props: any) => {
     context.isFullScreen = true;
     if (parserName != "epub" && !epub) loadData();
     return () => {
-      context.player.loader = undefined;
-      context.isFullScreen = false;
-      context.player.hooked = false;
-      if (context.player.showPlayer && context.player.playing())
-        context.player.viewState = "Folded";
+      if (context.player) {
+        context.player.loader = undefined;
+        context.isFullScreen = false;
+        context.player.hooked = false;
+        if (context.player.showPlayer && context.player.playing())
+          context.player.viewState = "Folded";
+      }
     };
   }, []);
 

@@ -17,7 +17,7 @@ const base64Chunk = (str: string) => {
     const lastIndex = str.lastIndexOf("#");
     const start = lastIndex >= 0 ? lastIndex + 1 : 0;
 
-    const rawLen = 100;
+    const rawLen = Math.min(100, str.length - start);
     const len = rawLen - (rawLen % 4); // ensure multiple of 4
 
     return str.slice(start, start + len);

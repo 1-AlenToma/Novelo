@@ -25,7 +25,7 @@ export const ChapterView = ({
   const size = 100;
   const loader = useLoader(true, "Loading Chapter");
   const initLoading = useLoader(novel?.chapters.length > 0, "Loading Chapter");
-  const initTimer = useTimer(100)
+  const initTimer = useTimer(100);
   const getChapterItems = (chunkIndex: number) => {
     const chapters = novel?.chapters ?? [];
     const start = chunkIndex * size;
@@ -67,7 +67,8 @@ export const ChapterView = ({
 
   const settingsMap = React.useMemo(() => {
     const map = new Map<string, Chapter>();
-    for (const s of book?.chapterSettings ?? []) map.set(s.url, s);
+    for (const s of book?.chapterSettings ?? [])
+      map.set(s.url, s);
     return map;
   }, [book?.chapterSettings]);
 
@@ -99,9 +100,7 @@ export const ChapterView = ({
                 <Icon
                   ifTrue={item.index == state.index.page}
                   color="yellow"
-                  flash="green"
-                  css="absolute le:0 to:0"
-                  size={16}
+                  css="absolute le:2 to:2 fos-15"
                   type="MaterialIcons"
                   name="star"
                 />
