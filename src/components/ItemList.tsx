@@ -24,8 +24,10 @@ export default function <T>({
   selectedIndex,
   onRefresh,
   page,
-  numColumns
+  numColumns,
+  onload
 }: {
+  onload?: () => void,
   items: T[];
   container: any;
   onLongPress?: ((item: T) => void);
@@ -125,7 +127,9 @@ export default function <T>({
         ref={c => {
           ref.current = c;
         }}
-        
+
+        onLoad={onload}
+
         onContentSizeChange={() => {
           time(() => scrollTo());
         }}

@@ -4,6 +4,7 @@ import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer } from "react-
 import { Book, Chapter } from "../db";
 import { DetailInfo, ChapterInfo } from "../native";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
+import ItemList from "./ItemList";
 export const ChapterView = ({
   book,
   current,
@@ -39,10 +40,29 @@ export const ChapterView = ({
     const totalChunks = Math.ceil(chapters.length / size);
     const data = Array.from({ length: totalChunks }, (_, chunkIndex) => ({
       index: chunkIndex,
-      items: undefined as ChapterInfo[] | undefined
+      items: undefined as ChapterInfo[] | undefined,
+      hasReadContent: undefined
     }));
     return data;
   }, [novel?.chapters?.length]);
+
+  const settingsMap = React.useMemo(() => {
+    const map = new Map<string, Chapter>();
+    for (const s of book?.chapterSettings ?? [])
+      map.set(s.url, s);
+    return map;
+  }, [book?.chapterSettings]);
+
+  const hasReadContent = (index: number) => {
+    let arr = chArray[index];
+    if (arr.hasReadContent == undefined) {
+      if (!arr.items)
+        arr.items = getChapterItems(index);
+      arr.hasReadContent = arr.items.some(x => [settingsMap.get(x.url)?.scrollProgress, settingsMap.get(x.url)?.audioPercent, settingsMap.get(x.url)?.readPercent].some(f => f != undefined && f > 0))
+    }
+
+    return arr.hasReadContent;
+  }
 
 
   useEffect(() => {
@@ -65,30 +85,24 @@ export const ChapterView = ({
   }, [current]);
 
 
-  const settingsMap = React.useMemo(() => {
-    const map = new Map<string, Chapter>();
-    for (const s of book?.chapterSettings ?? [])
-      map.set(s.url, s);
-    return map;
-  }, [book?.chapterSettings]);
+
 
   if (chArray[state.currentPage] && !chArray[state.currentPage].items && chArray.length > 0)
-    chArray[state.currentPage].items = getChapterItems(state.currentPage);
+    hasReadContent(state.currentPage);
 
   return (
     <View css="clearboth juc:flex-start mah:98% invert po:relative">
       <View
         ifTrue={chArray.length > 1}
         css="clearwidth he:50 mat:10">
-        <VirtualScroller
-          updateOn={[state.currentPage]}
-          initializeIndex={state.currentPage}
+        <ItemList
+          updater={[state.currentPage]}
+          selectedIndex={state.currentPage}
           items={chArray}
-          itemSize={{ size: 115 }}
-          onItemPress={({ item }) => {
+          onPress={item => {
             state.currentPage = item.index;
           }}
-          renderItem={({ item, index }) => {
+          container={({ item, index }) => {
             return (
               <View
                 css={`row di:flex ali:center bor:5 listButton invert ${state.currentPage === item.index ? " selectedRow pal:5 par:5" : ""}`}>
@@ -100,31 +114,30 @@ export const ChapterView = ({
                 <Icon
                   ifTrue={item.index == state.index.page}
                   color="yellow"
-                  css="absolute le:2 to:2 fos-15"
+                  css="absolute le:2 to:2 fos-15 co-yellow"
                   type="MaterialIcons"
                   name="star"
+                />
+                <Icon
+                  ifTrue={hasReadContent(item.index)}
+                  css="absolute ri:0 to:2 fos-12 co-green"
+                  type="AntDesign"
+                  name="check-circle"
                 />
               </View>
             )
           }}
-          itemStyle="pa-5 wi-100% bobw-1 boc-gray invert"
-          horizontal={true}
+          itemCss="pa-5 bobw-1 boc-gray invert wi-115 he-50"
         />
       </View>
       <View css="clearwidth mih:50 flex invert mat-5 po-relative">
-        <VirtualScroller
-          showsVerticalScrollIndicator={false}
-          updateOn={[current]}
-          ref={() => {
-            initTimer(() => {
-              initLoading.hide()
-            });
-          }}
-
-          itemSize={{ size: 50 }}
-          initializeIndex={state.index.page == state.currentPage ? state.index.index : 0}
-          items={chArray[state.currentPage]?.items ?? []}
-          renderItem={({ item, index }: { item: ChapterInfo, index: number }) => {
+        <ItemList
+          onload={() => initTimer(() => initLoading.hide())}
+          vMode={true}
+          updater={[current]}
+          selectedIndex={state.index.page == state.currentPage ? state.index.index : 0}
+          items={chArray[state.currentPage]?.items}
+          container={({ item, index }: { item: ChapterInfo, index: number }) => {
             const cssEmpty = item.empty ? "op-0.5" : "";
             return (
               <SingleTouchableOpacity css="fl-1" onPress={async () => {
@@ -141,9 +154,9 @@ export const ChapterView = ({
                   </Text>
                   <View css="_abc bo-0 wi-102% bac-transparent">
                     <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
-                      color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="he-5" />
+                      color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="he-5 bor-0" />
                     <ProgressBar ifTrue={(settingsMap.get(item.url)?.audioPercent ?? 0) > 0}
-                      color="#a75512ff" value={(settingsMap.get(item.url)?.audioPercent ?? 0) / 100} css="he-5" />
+                      color="#a75512ff" value={(settingsMap.get(item.url)?.audioPercent ?? 0) / 100} css="he-5 bor-0" />
                   </View>
 
                   <View css="row clb" ifTrue={item.empty != true}>
@@ -164,7 +177,7 @@ export const ChapterView = ({
               </SingleTouchableOpacity>
             )
           }}
-          itemStyle="wi-100% bobw-1 boc-gray invert"
+          itemCss="fl-1 wi-100% he-50 bobw-1 boc-gray invert"
         />
       </View>
       {loader.elem ?? initLoading.elem}
