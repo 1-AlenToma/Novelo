@@ -8,7 +8,6 @@ import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
 import HtmlContext from "./HtmlContext";
-import { Base64 } from 'js-base64';
 
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
@@ -182,13 +181,13 @@ String.prototype.decodeAsync = async function (this: string) {
 
 String.prototype.encode = function (this: string) {
     if (!methods.EpubModule.isBase64(this.toString()))
-        return Base64.encode(this.toString());
+        return methods.EpubModule.encode(this.toString());
     return this;
 }
 
 String.prototype.decode = function (this: string) {
     if (methods.EpubModule.isBase64(this.toString()))
-        return Base64.decode(this.toString());
+        return methods.EpubModule.decode(this.toString());
     return this.toString();
 }
 

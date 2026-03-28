@@ -1,8 +1,8 @@
 import * as React from "react";
 import { View, Text, TouchableOpacity, ScrollView, Icon, Modal, AlertDialog, TextInput, ActionSheet } from "react-native-short-style";
 import FileHandler from "../native/FileHandler";
-import { EXT, SelectionType } from "../Types";
-import { ReadDirItem } from "react-native-fs";
+import { EXT, IReadDirItem, SelectionType } from "../Types";
+
 
 import {
     checkManagePermission,
@@ -12,15 +12,15 @@ import {
 const FileBrowser = (
     { path, use, ext, selectionType }
         :
-        { selectionType: SelectionType, ext?: EXT[], path?: string, use: (uri: (ReadDirItem)) => void }) => {
+        { selectionType: SelectionType, ext?: EXT[], path?: string, use: (uri: (IReadDirItem)) => void }) => {
     const root = context.files.RNF.ExternalStorageDirectoryPath;
     const state = buildState(() =>
     ({
         containerPath: path ?? root,
-        containerDirItem: undefined as ReadDirItem | undefined,
-        selectedPath: undefined as ReadDirItem | undefined,
+        containerDirItem: undefined as IReadDirItem | undefined,
+        selectedPath: undefined as IReadDirItem | undefined,
         create: false,
-        files: [] as ReadDirItem[],
+        files: [] as IReadDirItem[],
         handler: undefined as FileHandler | undefined,
         newFolderName: "",
         managedFiles: false
@@ -41,9 +41,9 @@ const FileBrowser = (
             return;
         }
         let fileHandler = new FileHandler(state.containerPath);
-        let files = await fileHandler.RNF.readDir(state.containerPath);
-        state.containerDirItem = root == state.containerPath ? undefined : (await fileHandler.RNF.readDir(state.containerPath.split("/").reverse().skip(0).reverse().join("/"))).find(x => x.path == state.containerPath)
-        files = files.filter(x => x.isDirectory() || (x.isFile() && (ext?.includes("*") || ext?.find(e => x.name.toLowerCase().endsWith("." + e)))));
+        let files = await fileHandler.RNF.readDir(state.containerPath, true);
+        state.containerDirItem = root == state.containerPath ? undefined : (await fileHandler.RNF.readDir(state.containerPath.split("/").reverse().skip(0).reverse().join("/"), true)).find(x => x.path == state.containerPath)
+        files = files.filter(x => x.isDirectory || (x.isFile && (ext?.includes("*") || ext?.find(e => x.name.toLowerCase().endsWith("." + e)))));
         state.files = files;
         state.handler = fileHandler;
     }
@@ -60,7 +60,7 @@ const FileBrowser = (
 
     const deleteItem = () => {
         if (state.selectedPath) {
-            let msg = state.selectedPath.isDirectory() ? "Are you sure, you want to remove this folder and its content?" :
+            let msg = state.selectedPath.isDirectory ? "Are you sure, you want to remove this folder and its content?" :
                 "Are you sure, you want to remove this File?"
             AlertDialog.confirm({ message: msg, title: "Attention" })
                 .then(async confirm => {
@@ -93,8 +93,8 @@ const FileBrowser = (
         }
     }
 
-    const getFileName = (file: ReadDirItem) => {
-        if (file.isDirectory())
+    const getFileName = (file: IReadDirItem) => {
+        if (file.isDirectory)
             return { ...file, ext: "Folder" };
         let name = file.name.split(".").reverse().filter((_, i) => i > 0).reverse().join(".");
         let ext = file.name.split(".").reverse()[0];
@@ -179,7 +179,7 @@ const FileBrowser = (
                                     return
                                 }
                                 state.selectedPath = undefined;
-                                if (x.isDirectory()) {
+                                if (x.isDirectory) {
                                     state.containerPath = x.path;
                                 }
                                 else {
@@ -194,14 +194,14 @@ const FileBrowser = (
                                 <Icon
                                     css="invertco"
                                     type="MaterialCommunityIcons"
-                                    name={x.isDirectory() ? "folder" : (x.name.toLowerCase().endsWith(".epub") || x.name.toLowerCase().endsWith(".zip") ? "zip-box" : "card-text-outline")}
+                                    name={x.isDirectory ? "folder" : (x.name.toLowerCase().endsWith(".epub") || x.name.toLowerCase().endsWith(".zip") ? "zip-box" : "card-text-outline")}
                                 />
                                 <View css={"wi-100%"}>
                                     <Text css="fos:12 wi:90% invertco">{getFileName(x).name}</Text>
 
-                                    <Text ifTrue={x.isFile()} css="fos:12 wi:90% invertco">
+                                    <Text ifTrue={x.isFile} css="fos:12 wi:90% invertco">
                                         {getFileName(x).ext?.toUpperCase()}
-                                        {" " + x.mtime?.formatDateMMDDYY()}
+                                        {" " + methods.formatDateMMDDYY(x.mtime)}
                                         {" | " + methods.formatFileSize(x.size)}
                                     </Text>
 

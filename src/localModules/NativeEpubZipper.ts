@@ -11,6 +11,20 @@ interface Spec extends TurboModule {
     decodeAsync(input: string): Promise<string>;
     encodeAsync(input: string): Promise<string>;
 }
+
+
+const base64Chunk = (str: string) => {
+    const lastIndex = str.lastIndexOf("#");
+    const start = lastIndex >= 0 ? lastIndex + 1 : 0;
+
+    const rawLen = 100;
+    const len = rawLen - (rawLen % 4); // ensure multiple of 4
+
+    return str.slice(start, start + len);
+
+}
+
+
 const EpubZipper = TurboModuleRegistry.getEnforcing<Spec>('EpubZipper');
 
 export class EpubModule {
@@ -19,11 +33,11 @@ export class EpubModule {
     }
 
     static async isBase64Async(str: string) {
-        return await EpubZipper.isBase64Async(str);
+        return await EpubZipper.isBase64Async(base64Chunk(str));
     }
 
     static isBase64(str: string) {
-        return EpubZipper.isBase64(str);
+        return EpubZipper.isBase64(base64Chunk(str));
     }
 
     // base64

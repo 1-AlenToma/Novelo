@@ -18,7 +18,7 @@ import {
   IDatabase,
   Table
 } from "react-native-ts-sqlite-orm";
-import { ReadDirItem } from "react-native-fs";
+import { ReadDirItem, EncodingType as Encoding } from "react-native-fs-turbo";
 import { DimensionValue } from "react-native";
 import { ReturnState } from "react-smart-state";
 
@@ -93,7 +93,7 @@ export type ZipEventData = {
   loading?: boolean
 }
 export type SystemDir = "Cache" | "File";
-export type EncodingType = "json" | "utf8" | "base64";
+export type EncodingType = "json" | Encoding;
 export type FileFnc = (
   type: "Write" | "Delete",
   file: string
@@ -222,6 +222,8 @@ export type TTS = {
   female: TTSConfig[]
 }
 
+export type IReadDirItem = ReadDirItem<boolean, number>; 
+
 export type GlobalType =
   {
     appState: {
@@ -246,8 +248,8 @@ export type GlobalType =
     notification: Notification,
     browser: {
       data?: { func: Function, onCancel: (value?: any) => void, desc?: string, props: { selectionType: SelectionType, ext?: EXT[] } };
-      pickFile: (eXT: EXT[], desc?: string) => Promise<ReadDirItem | undefined>;
-      pickFolder: (desc?: string, ext?: EXT[]) => Promise<ReadDirItem | undefined>;
+      pickFile: (eXT: EXT[], desc?: string) => Promise<IReadDirItem | undefined>;
+      pickFolder: (desc?: string, ext?: EXT[]) => Promise<IReadDirItem | undefined>;
     },
     selection: {
       downloadSelectedItem: any,

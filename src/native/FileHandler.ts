@@ -1,8 +1,7 @@
 import { newId } from "../Methods";
 import useLoader from "../components/Loader";
-import RNF, { ReadDirItem } from "react-native-fs";
-import RNFetchBlob, { Encoding } from "react-native-blob-util";
-import { SystemDir, EncodingType, FileInfo } from "../Types";
+import RNF from "react-native-fs-turbo";
+import { SystemDir, EncodingType, FileInfo, IReadDirItem } from "../Types";
 import MapCacher from "./MapCacher";
 import EventTrigger from "./EventTrigger";
 import { useTimer } from "react-native-short-style";
@@ -79,7 +78,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
     this.trigger("Delete", file, fileUri);
   }
 
-  async write(file: string, content: string | number[], options?: Encoding) {
+  async write(file: string, content: string | number[], options?: EncodingType) {
 
     let fileUri = this.getName(file);
     return methods.withLock<string>(fileUri, async () => {
@@ -92,10 +91,10 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
       );
 
 
-      await RNFetchBlob.fs.writeFile(
+      await RNF.writeFile(
         fileUri,
         content,
-        options ?? "utf8"
+        options !== "json" ? (options ?? "utf8") : "utf8"
       );
 
 
@@ -113,13 +112,13 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
     if (!path)
       await this.checkDir();
     let fileUri = path ?? this.getName("");
-    let dirs: ReadDirItem[] = [];
-    dirs = await RNF.readDir(fileUri);
+    let dirs: IReadDirItem[] = [];
+    dirs = await RNF.readDir(fileUri, true);
     console.log("getting fileInfos for ", fileUri)
     if (recrusive)
-      for (let item of dirs.filter(x => x.isDirectory()))
+      for (let item of dirs.filter(x => x.isDirectory))
         dirs = [...dirs, ...(await this.allFilesInfos(recrusive, item.path))]
-    return dirs.filter(x => x.isFile());
+    return dirs.filter(x => x.isFile);
   }
 
   async copy(source: string, des: string) {
@@ -147,7 +146,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
 
   async search(fileName: string) {
     let lst = await this.allFilesInfos(true);
-    let item = lst.find(x => x.isFile() && x.name.has(fileName));
+    let item = lst.find(x => x.isFile && x.name.has(fileName));
     if (item)
       return await this.read(item.path);
     return undefined;
@@ -165,7 +164,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
       return dItem as string;
     }
     if (await this.exists(file)) {
-      text = (await RNFetchBlob.fs.readFile(fileUri, (type ?? "utf8") as any) as string);
+      text = (await RNF.readFile(fileUri, type != "json" ? (type ?? "utf8") : "utf8") as string);
       if (!fileUri.isImage())
         text = await text.decodeAsync();
       if (this.enableCaching)

@@ -3,7 +3,7 @@ import {
     checkManagePermission,
     requestManagePermission,
 } from 'manage-external-storage';
-import RNFS from 'react-native-fs';
+import RNFS from 'react-native-fs-turbo';
 import { TTSConfig } from "Types";
 import { unzip, subscribe } from 'react-native-zip-archive';
 

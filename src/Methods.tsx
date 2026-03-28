@@ -3,7 +3,6 @@ import IDOMParser from "advanced-html-parser";
 import { Functions } from "react-native-ts-sqlite-orm";
 export * from "./localModules/NativeEpubZipper";
 
-
 export const baseUrl = (url: string) => {
   if (!url)
     return "";
@@ -16,14 +15,27 @@ export const baseUrl = (url: string) => {
   return protocol + (hasProtocol ? '//' : "") + host;
 }
 
+export const formatDateMMDDYY = (time: number | Date) => {
+  if (time == undefined || time == null)
+    return "";
+  if (time instanceof Date)
+    return time.formatDateMMDDYY();
+  if (typeof time == "number")
+    return new Date(time).formatDateMMDDYY();
+  return time;
+}
+
 /**
  * Converts a file size in bytes into a human-readable string.
  * @param bytes - The file size in bytes.
  * @param decimals - Number of decimal places to display (default: 2)
  * @returns A formatted string like "10.25 MB", "500 KB", or "1.2 GB".
  */
-export function formatFileSize(bytes: number, decimals: number = 2): string {
-  if (bytes === 0) return "0 Bytes";
+export function formatFileSize(byte: number | string, decimals: number = 2): string {
+  let bytes = typeof byte == "string" ? parseFloat(byte) : byte;
+
+
+  if (isNaN(bytes) || bytes === 0) return "0 Bytes";
 
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB"];

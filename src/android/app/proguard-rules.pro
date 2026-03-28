@@ -12,5 +12,6 @@
 -keep class com.facebook.react.turbomodule.** { *; }
 -keep class com.alentoma.Novelo.** { *; }
 -keepnames class com.alentoma.Novelo.** { *; }
+-keep class com.cmpayc.rnfsturbo.** { *; }
 
 # Add any project specific keep options here:

@@ -17,9 +17,6 @@ import {
 } from "../Methods";
 import { DetailInfo, ZipBook } from "../native";
 import { AlertDialog } from "react-native-short-style";
-import { Base64 } from 'js-base64';
-let encKey = "novelo.enc";
-let encKeys = ["url", "parserName", "image"];
 export default class DbContext extends Database<TableNames> {
   databaseName: string = "Novelo";
   appLocalSettings: AppLocalSettings;

@@ -1,7 +1,7 @@
 import { AlertDialog, newId } from "react-native-short-style";
 import { Book } from "../db";
 import { DetailInfo } from "./ParserItems";
-import RNFS from 'react-native-fs';
+import RNFS from 'react-native-fs-turbo';
 import IDOMParser from "advanced-html-parser";
 import Player from "./Player";
 import { FilesPath, ZipFileItem, OPFContent } from "../Types";

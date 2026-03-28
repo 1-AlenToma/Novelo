@@ -26,7 +26,7 @@ import Player from "./native/Player";
 import ImageCache from "./native/ImageCache";
 import BGService from "./native/BackgroundService";
 import { ConsoleInterceptor } from "./native/ConsoleInterceptor";
-import RNFS from 'react-native-fs';
+import RNFS from 'react-native-fs-turbo';
 import TTSManager from 'react_native_sherpa_onnx_offline_tts';
 import { AppState, AppStateStatus } from "react-native"
 

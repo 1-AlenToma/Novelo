@@ -1,4 +1,4 @@
-import RNF from "react-native-fs";
+import RNF from "react-native-fs-turbo";
 import FileHandler from "./FileHandler";
 import ParserWrapper from "../parsers/ParserWrapper";
 

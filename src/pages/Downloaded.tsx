@@ -26,7 +26,8 @@ import {
   readEpub
 } from "../native";
 import FileHandler from "../native/FileHandler"
-import { ReadDirItem } from "react-native-fs";
+import { IReadDirItem } from "Types";
+
 const EpubHandler = ({
   parentState
 }: any) => {
@@ -43,7 +44,7 @@ const EpubHandler = ({
     }
   });
   const timer = useTimer(10)
-  const loadEpub = (item: ReadDirItem) => {
+  const loadEpub = (item: IReadDirItem) => {
     loader.show();
     timer(async () => {
       try {

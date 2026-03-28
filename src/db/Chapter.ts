@@ -19,8 +19,7 @@ class Chapter extends DBInit {
   config() {
     return this.TableBuilder<Chapter, TableNames>("Chapters")
       .column("id").primary.autoIncrement.number.column("name")
-      .column("url")
-      .encrypt("novelo.enc")
+      .column("url").encrypt("novelo.enc")
       .column("parent_Id").number.nullable
       .constrain<Book>(
         "parent_Id",

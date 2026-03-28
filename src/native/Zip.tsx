@@ -1,5 +1,5 @@
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive';
-import RNFetchBlob from "react-native-blob-util";
+import RNF from "react-native-fs-turbo";
 import FileHandler from './FileHandler';
 import { ProgressBar, Text } from 'react-native-short-style';
 import * as React from "react";
@@ -81,7 +81,7 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
 
 
     tempPath() {
-        let id = RNFetchBlob.fs.dirs.CacheDir.path(methods.newId());
+        let id = RNF.CachesDirectoryPath.path(methods.newId());
         return id
     }
 
