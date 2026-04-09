@@ -167,7 +167,7 @@ export default () => {
               if (x.url.isImage())
                 return;
               timers[i](() => {
-                webViews[i]?.injectJavaScript(`${jsScript("window.getHtml();", "DOMContentLoaded", -1)}
+                webViews[i]?.injectJavaScript(`${jsScript("window.getHtml();", "DOMContentLoaded", 5)}
                 true;`)
               });
             }}

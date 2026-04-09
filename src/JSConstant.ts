@@ -42,11 +42,7 @@ export const dataPost = (id) => {
     window.postData = postData;`
 }
 
-export const webViewCheckVerification = () => {
-    const js = `
-${dataPost("protection")}
-window.checkProtection = () => {
-  const protection = [
+const protecttionList = [
     "Verifying you are human",
     "Enable JavaScript and cookies to continue",
     "Performing security verification",
@@ -55,7 +51,13 @@ window.checkProtection = () => {
     "DDoS protection by Cloudflare",
     "cf-browser-verification",
     "Attention Required! | Cloudflare"
-  ];
+];
+
+export const webViewCheckVerification = () => {
+    const js = `
+${dataPost("protection")}
+window.checkProtection = () => {
+  const protection = ${JSON.stringify(protecttionList)};
 
   const text = document.documentElement.outerHTML.toLowerCase();
   const isProtected = protection.some(p => text.includes(p.toLowerCase()));
@@ -135,6 +137,8 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
     window.sleep = sleep;
 
     function fetchWebPToBase64(url, referer) {
+        if (window.__DEV__)
+            postData("log", "getting image for "+ url);
         return new Promise(async (resolve) => {
             try {
                 referer = referer ?? window.location.origin;
@@ -150,6 +154,8 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
                 reader.readAsDataURL(blob);
                 reader.onloadend = () => resolve(reader.result);
                 reader.onerror = (event) => {
+                    if (window.__DEV__)
+                       postData("log", "error fetching image:" +url);
                     resolve(null);
                 };
             } catch (e) {
@@ -159,7 +165,7 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
     }
 
     window.getHtml = async function() {
-        let protection = ["Verifying you are human", "Enable JavaScript and cookies to continue", "Performing security verification", "Checking your browser before accessing", "Please wait while we verify", "DDoS protection by Cloudflare", "cf-browser-verification", "Attention Required! | Cloudflare"]
+        let protection = ${JSON.stringify(protecttionList)}
 
         if (props && props.protectionIdentifier && props.protectionIdentifier.length > 0)
             protection = [...protection, ...props.protectionIdentifier];
