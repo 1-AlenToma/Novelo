@@ -47,7 +47,8 @@ declare global {
     interface String {
         isManga(): boolean;
         fileName(name: string, parserName: string, ext?: string): string;
-        isImage: () => boolean;
+        cleanFileName(): string;
+        isImage: (globalSearch?: boolean) => boolean;
         isLocalPath(incBase64?: boolean): boolean;
         isBase64String(): boolean;
         isBase64Url(): boolean;
@@ -111,9 +112,11 @@ Date.prototype.formatDateMMDDYY = function (this: Date) {
     return `${mm}/${dd}/${yy}`;
 }
 
-String.prototype.isImage = function () {
+String.prototype.isImage = function (globalSearch?: boolean) {
     let path = this.toString();
-    return imageFileTypes.find(x => path.toLowerCase().endsWith(x.toLowerCase())) != undefined;
+    if (!globalSearch)
+        return imageFileTypes.find(x => path.toLowerCase().endsWith(x.toLowerCase())) != undefined;
+    return imageFileTypes.find(x => path.has(x)) != undefined;
 }
 
 String.prototype.normilzeStr = function () {
@@ -203,9 +206,12 @@ String.prototype.isManga = function () {
     return mng.find(x => str.toLowerCase() == x) != undefined;
 }
 
+String.prototype.cleanFileName = function (this: string) {
+    return this.toString().replace(/[&=\\/.:"'{}\[\],|?*%#<>_\-’]+/gi, "");
+}
+
 String.prototype.fileName = function (name: string, parserName: string, ext?: string) {
-    let fileName = name
-        .replace(/[\\/.:"'{}\[\],|?*%#<>_\-’]+/gi, "")
+    let fileName = name.cleanFileName()
         .toLowerCase().slice(0, 50)
     return parserName.path(fileName + (ext ?? ".json")).replace(/\/+$/, "");
 };
@@ -539,6 +545,12 @@ String.prototype.trimStr = function (...items) {
 String.prototype.query = function (item: any) {
     let url = this.toString();
     if (url.endsWith("/")) url = url.substring(0, url.length - 1);
+    url.split("?")[1]?.split("&").forEach(pair => {
+        if (!pair) return;
+        const [k, v] = pair.split("=");
+        if (k in item)
+            url = url.replace(pair, "")
+    });
     Object.keys(item).forEach(x => {
         let v = item[x];
         if (x.startsWith("$"))

@@ -57,7 +57,7 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
         }}
         onNavigationStateChange={() => {
           webView.current?.injectJavaScript(
-            `${jsScript("window.checkProtection?.();", "DOMContentLoaded", -1)}
+            `${jsScript("window.checkProtection?.();", "DOMContentLoaded", 20)}
            true;`
           );
         }}
@@ -113,9 +113,9 @@ export default () => {
     }
   }, [])
 
-  htmlContext.useEffect(()=> {
-   // state.updateNr = htmlContext.html.updatedNr;
-  },"html.updatedNr")
+  htmlContext.useEffect(() => {
+    // state.updateNr = htmlContext.html.updatedNr;
+  }, "html.updatedNr")
 
 
 
@@ -164,10 +164,10 @@ export default () => {
               uri: x.url
             }}
             onNavigationStateChange={() => {
-              if (x.url.isImage())
+              if (x.url.isImage(true))
                 return;
               timers[i](() => {
-                webViews[i]?.injectJavaScript(`${jsScript("window.getHtml();", "DOMContentLoaded", 5)}
+                webViews[i]?.injectJavaScript(`${jsScript("window.getHtml();", "DOMContentLoaded", x.props?.timer ?? 5)}
                 true;`)
               });
             }}

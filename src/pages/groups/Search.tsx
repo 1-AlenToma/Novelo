@@ -340,7 +340,7 @@ export default ({ ...props }: any) => {
               return `boc:#ccc bow:1 overflow he-${imageSize?.height ?? "170"} wi:98% mat:5 mal:5 bor:5`
             }}
             items={state.items}
-            container={({ item }: any) => <HomeNovelItem item={item} vMode={true} showParserName={globalParser.hasSelection()} />}
+            container={({ item }: any) => <HomeNovelItem item={item} vMode={true} numberOfLines={2} showParserName={globalParser.hasSelection()} />}
           />
         </View>
       </View>

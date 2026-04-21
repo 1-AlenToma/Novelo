@@ -15,7 +15,7 @@ export default class ImageCache extends FileHandler {
       return "";
     let imgName = imgUrl.split("header")[0].trim().safeSplit("/", -1);
     if (!imgName.isImage())
-      imgName += ".jpg";
+      imgName = imgName.cleanFileName() + ".jpg";
     path = this.dir.join("db", path, imgName);
     console.log("fileName", getFileInfo(path, this.dir));
     let imgContent = await context.parser.current.http.imageUrlToBase64(imgUrl);

@@ -18,6 +18,7 @@ import NovLoveCom from "./NovLoveCom";
 import KunManga from "./KunManga";
 import RizzFables from "./RizzFables";
 import ManHwaClan from "./ManHwaClan";
+import WTRLabCom from "./WtrLabCom";
 
 import NovelUpdate from "./infos/NovelUpdates";
 import MyAnimeList from "./infos/MyAnimeList";
@@ -88,7 +89,8 @@ export default class ParserWrapper extends Parser {
       MangaKakalot,
       MangaBerri,
       GogoAnime,
-      ManHwaClan
+      ManHwaClan,
+      WTRLabCom
     ].map(
       x => new ParserWrapper(new (x as any)())
     );

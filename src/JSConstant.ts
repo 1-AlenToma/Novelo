@@ -43,6 +43,11 @@ export const dataPost = (id) => {
 }
 
 const protecttionList = [
+    "Please complete the challenge below to continue",
+    "Please complete the security check",
+    "Please stand by, while we are checking your browser",
+    "Checking if the site connection is secure",
+    "Security Check Required",
     "Verifying you are human",
     "Enable JavaScript and cookies to continue",
     "Performing security verification",
@@ -247,7 +252,7 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
         };
         postData("html", payload);
     };
-    const isImage =${x.url.isImage().toString().toLowerCase()};
+    const isImage =${x.url.isImage(true).toString().toLowerCase()};
     if (isImage)
       ${jsScript("window.getHtml()", "DOMContentLoaded", x.props?.timer ?? -1)}
 } catch (e) {
