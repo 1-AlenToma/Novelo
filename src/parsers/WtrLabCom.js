@@ -122,7 +122,7 @@ export default class WTRLabCom extends Parser {
                 timer: 1500
             }
         })).html;
-        return html.$(".chapter-body").remove(".footer").html;
+        return html.$(".chapter-tracker.active").find(".chapter-body").remove(".footer").html;
     }
 
     async detail(url) {
