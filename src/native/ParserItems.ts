@@ -46,7 +46,7 @@ class DetailInfo extends LightInfo {
   chapters: ChapterInfo[] = [];
   lastUpdated: string = "";
   commentScript: CommentScript = new CommentScript();
-  startFromIndex?:number; // only used when downloading the novel 
+  startFromIndex?: number; // only used when downloading the novel 
 }
 
 class Value {
@@ -114,6 +114,7 @@ abstract class Parser {
   type: ParserType = "Novel";
   minVersion?: number;
   protected: boolean = false;
+  baseUrl?: string;
   constructor(
     url: string,
     name: string,

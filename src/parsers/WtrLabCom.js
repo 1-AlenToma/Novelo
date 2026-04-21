@@ -127,12 +127,16 @@ export default class WTRLabCom extends Parser {
 
     async detail(url) {
         try {
-            let html = (await this.http.web_view(url, this.baseUrl)).html;
+            let html = (await this.http.web_view(url, this.baseUrl, {
+                props: {
+                    timer: 100
+                }
+            })).html;
             let body = html.$("body");
 
             let item = DetailInfo.n();
             item
-                .Name(body.find(".long-title").text)
+                .Name(body.find(".title-wrap h1").text)
                 .Url(url)
                 .Image(
                     body
@@ -153,7 +157,7 @@ export default class WTRLabCom extends Parser {
                 .AuthorUrl(body.first('.sig-author a:first-child').url("href"))
                 .Genre(
                     body
-                        .find('.tag-category-label .genre')
+                        .find('.genres .genre')
                         .map(x => x.text)
                 )
                 .Status(
@@ -175,16 +179,21 @@ export default class WTRLabCom extends Parser {
             let cHhtml = (
                 await this.http.web_view(
                     this.baseUrl.join("api/chapters", id),
-                    this.baseUrl
+                    this.baseUrl,
+                    {
+                        props: {
+                            timer: 100
+                        }
+                    }
                 )
             ).html.find("pre").text;
 
             // console.warn("chpater", cHhtml)
             item.Chapters(
-                JSON.parse(cHhtml.trim()).chapters.map((a, i) =>
+                JSON.parse(cHhtml.trim()).chapters.map((a, index) =>
                     ChapterInfo.n()
                         .Name(a.title)
-                        .Url(url.join(`chapter-${i + 1}?service=webplus`))
+                        .Url(url.join(`chapter-${index + 1}?service=webplus`))
                         .ParserName(this.name)
                 )
             );
