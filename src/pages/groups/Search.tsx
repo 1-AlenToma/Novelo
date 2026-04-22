@@ -21,6 +21,7 @@ import {
   SearchDetail
 } from "../../native";
 import Header from "../../pages/Header";
+import { sleep } from "react-smart-state";
 
 const ActionItem = ({
   keyName,
@@ -95,13 +96,14 @@ export default ({ ...props }: any) => {
     currentPage: 0,
     parser: parser,
     loadedParser: {} as any,
-    procent: {
-      parser: "",
-      value: 0,
-      found: 0,
-      stop: false
-    }
   })).ignore("parser", "items", "loadedParser").build();
+
+  const percentState = buildState({
+    parser: "",
+    value: 0,
+    found: 0,
+    stop: false
+  }).build();
   const globalParser = useParserSelector(() => {
     if (globalParser.hasSelection()) {
       state.text = new SearchDetail(state.text?.text ?? "");
@@ -118,7 +120,7 @@ export default ({ ...props }: any) => {
       try {
 
         let parser = state.parser;
-        state.procent.value = 0;
+        percentState.value = 0;
         if (state.text == undefined) {
           parser.settings = await parser.load("RenewMemo") as any;
           state.loadedParser[parser.name] = true;
@@ -137,23 +139,27 @@ export default ({ ...props }: any) => {
         let currentItems: any[] = txt.page > 1 ? [...state.items] : [];
 
         for (let p of prs) {
-          if (state.procent.stop && globalParser.hasSelection())
-            break;
-          state.procent.parser = p.name;
-          if (!state.loadedParser[p.name]) {
-            await p.load("RenewMemo");
-            state.loadedParser[p.name] = true;
+          try {
+            if (percentState.stop && globalParser.hasSelection())
+              break;
+            percentState.parser = p.name;
+            if (!state.loadedParser[p.name]) {
+              await p.load("RenewMemo");
+              state.loadedParser[p.name] = true;
+            }
+
+            let items = await p.search(txt);
+            if (txt.page <= 1 && !globalParser.hasSelection()) currentItems = items;
+            else {
+              currentItems = currentItems.distinct("url", items);
+            }
+          } catch {
+            // ignore
+          } finally {
+            percentState.value = prs.length.procent(prs.indexOf(p) + 1) / 100;
+            percentState.found += currentItems.length;
+            await sleep(100)
           }
-
-          let items = await p.search(txt);
-
-          state.procent.value = prs.length.procent(prs.indexOf(p) + 1) / 100;
-          state.procent.found += items.length;
-          if (txt.page <= 1 && !globalParser.hasSelection()) currentItems = items;
-          else {
-            currentItems = currentItems.distinct("url", items);
-          }
-
         }
 
         if (txt.page == 1 || currentItems.length > 0) {
@@ -164,7 +170,7 @@ export default ({ ...props }: any) => {
       } finally {
         loader.hide();
         state.currentPage = state.text?.page ?? 0;
-        state.procent.stop = false;
+        percentState.stop = false;
       }
     });
   };
@@ -281,9 +287,9 @@ export default ({ ...props }: any) => {
         height: globalParser.hasSelection() && loader.loading ? 60 : undefined
       }}>
         {globalParser.elem}
-        <ProgressBar ifTrue={loader.loading && globalParser.hasSelection()} value={state.procent.value} css="wi-100% he-30 position-relative" >
-          <Text css="_abc le-5 co-red fow-bold wi-100%">Searching {state.procent.parser} Found {state.procent.found} Items</Text>
-          <TouchableOpacity css="_abc ri-10 bac-transparent" onPress={() => state.procent.stop = true}>
+        <ProgressBar ifTrue={loader.loading && globalParser.hasSelection()} value={percentState.value} css="wi-100% he-30 position-relative" >
+          <Text css="_abc le-5 co-red fow-bold wi-100%">Searching {percentState.parser} Found {percentState.found} Items</Text>
+          <TouchableOpacity css="_abc ri-10 bac-transparent" onPress={() => percentState.stop = true}>
             <Icon
               name="controller-stop"
               type="Entypo"

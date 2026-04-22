@@ -1,32 +1,37 @@
 import IDOMParser from "advanced-html-parser";
+import nlp from 'compromise'
 export function generateText(html, minLength) {
     try {
-        html = html.niceSentences();
+        html = html.htmlArray(true).join("\n")
+        
         const doc = IDOMParser.parse(`<div>${html}</div>`).documentElement;
-        while (true) {
-            let breakIt = true;
-            let headers = [
-                ...doc.querySelectorAll(
-                    "h1,h2,h3,h4,h5,h6"
-                )
-            ];
+        /*   while (true) {
+               let breakIt = true;
+   
+               let txts = [...doc.querySelectorAll("h1,h2,h3,h4,h5,h6, p")];
+               for (let txt of txts) {
+                   let nplDoc = nlp(txt.text());
+                   nplDoc.normalize({
+                       whitespace: true,
+                       punctuation: true,
+                   });
+                   let textAfter = nplDoc.out("text").trim();
+                   txt.textContent = textAfter;
+               }
+   
+               let headers = [...doc.querySelectorAll("h1,h2,h3,h4,h5,h6")];
+               for (let h of headers) {
+                   if (h.textContent.indexOf("#{h0}") == -1) {
+                       h.textContent = `#{h0}${h.textContent}#{h${h.tagName.replace(/([^1-6])/g, "").trim()}}`;
+                       breakIt = false;
+                       break;
+                   }
+               }
+               if (breakIt) break;
+           }*/
 
-            for (let h of headers) {
-                if (
-                    h.textContent.indexOf("#{h0}") == -1
-                ) {
-                    h.textContent = `#{h0}${h.textContent
-                        }#{h${h.tagName
-                            .replace(/([^1-6])/g, "")
-                            .trim()}}`;
-                    breakIt = false;
-                    break;
-                }
-            }
-            if (breakIt) break;
-        }
+        let text = doc.text().replace(/\;/gim, ",");
 
-        const text = doc.text().replace(/\;/gim, ",");
         // console.warn(text);
         let charMap = [];
 

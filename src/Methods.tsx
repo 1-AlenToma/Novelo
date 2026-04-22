@@ -130,8 +130,7 @@ const public_m = (...Items: any[]) => {
     Items.forEach(Item => {
       let instance = Functions.createSqlInstaceOfType(Item.prototype);
       let keys = (instance?.config?.().props ?? Object.keys(new Item())).map(x => x.columnName || x);
-      Item["n"] = (...args: any[]) =>
-        new Item(...args);
+      Item["n"] = (...args: any[]) => new Item(...args);
       Item.prototype.clone = function () {
         let item = Item.n();
         for (let k in this) item[k] = this[k];

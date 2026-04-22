@@ -48,7 +48,7 @@ export default ({
   const sourceContainer = useRef({ close: () => { } });
   const state = buildState(() =>
   ({
-    text: "",
+    text: value ?? "",
     inputAnimator: {
       state: undefined
     } as any

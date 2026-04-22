@@ -115,7 +115,7 @@ class Player {
     } finally {
     }
 
-    this.chapterArray = txt.htmlArray();
+    this.chapterArray = txt.htmlArray(true);
     this.html = txt;
     return txt;
   }

@@ -222,7 +222,7 @@ export type TTS = {
   female: TTSConfig[]
 }
 
-export type IReadDirItem = ReadDirItem<boolean, number>; 
+export type IReadDirItem = ReadDirItem<boolean, number>;
 
 export type GlobalType =
   {

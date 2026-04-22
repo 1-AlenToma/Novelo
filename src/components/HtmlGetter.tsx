@@ -119,13 +119,21 @@ export default () => {
 
 
 
-  const iProtected = useMemo(() =>
-    htmlContext.html.data.filter(d =>
+  const iProtected = useMemo(() => {
+  /*  htmlContext.html.data.forEach(x => {
+      if (state.protection.some(p => p.baseUrl == x.baseUrl)) {
+        x.created = new Date();
+      }
+    });*/
+
+    return htmlContext.html.data.filter(d =>
       !state.protection.some(x => d.baseUrl === x.baseUrl)
-    ),
+    )
+  },
     [htmlContext.html.updatedNr, state.protection]);
 
   const htmlData = useMemo(() => {
+
     let unique = iProtected.filter((item, index, self) =>
       index === self.findIndex(o => o.baseUrl === item.baseUrl)
     );

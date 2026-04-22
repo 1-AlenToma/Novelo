@@ -253,6 +253,10 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                 let parser = parsers.find(x => x.name == name);
                 if (!parser)
                     parser = all.find(x => x.name == name);
+                let ps = data.parser.find(parser.name);
+                if (ps && ps.settings){
+                    parser.settings = {...ps.settings};
+                }
                 return parser as ParserWrapper;
 
             },

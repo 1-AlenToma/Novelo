@@ -8,6 +8,7 @@ import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "native/Html";
 import HtmlContext from "./HtmlContext";
+import nlp from 'compromise'
 
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
@@ -76,7 +77,7 @@ declare global {
         eSpace(total?: number): string;
         cleanHtml(): string;
         cleanText(): string;
-        htmlArray(): string[];
+        htmlArray(normalize?: boolean): string[];
         html(): Html;
         htmlImagesSources(): string[];
         normilzeStr(): string;
@@ -437,8 +438,8 @@ String.prototype.niceSentences = function (this: string) {
     return str;
 }
 
-String.prototype.htmlArray = function () {
-    let str = this.toString().replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
+String.prototype.htmlArray = function (normalize?: boolean) {
+    let str = this.toString().replace(/((<)(strong|i|b|span)(>))|((<\/)(strong|i|b|span)(>))/gim, "");
     const doc = IDOMParser.parse(`<div>${str}</div>`, {
         errorHandler: {
             error: () => { },
@@ -447,7 +448,10 @@ String.prototype.htmlArray = function () {
         }
     });
 
-    let txtArray = doc.documentElement.text().split(/\n/gim).filter(x => !x.empty());
+    let txtArray = doc.documentElement.text().split(/\r\n|\r|\n/).filter(x => !x.empty());
+
+
+
     let result: string[] = [];
     for (let txt of txtArray) {
         const sentences = txt.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt)((\s+)?(\.)(\s+)?)/gi, "$1.")
@@ -455,6 +459,18 @@ String.prototype.htmlArray = function () {
             .map(x => x.trim())
             .filter(x => /[A-Za-z0-9]/.test(x));
         result.push(...sentences)
+    }
+
+    if (normalize) {
+        result = result.map(x => {
+            let nplDoc = nlp(x);
+            nplDoc.normalize({
+                whitespace: true,
+                contractions: true
+            });
+            const textAfter = nplDoc.out("text").trim();
+            return textAfter;
+        })
     }
 
     return result.map(x => `<p>${x}</p>`);

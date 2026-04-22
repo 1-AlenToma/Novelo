@@ -246,7 +246,8 @@ export default ({ ...props }: any) => {
                 <View
                   css="box pal:10 par:10 mih:30 invert"
                   ifTrue={() => state.novel.genre?.has() || state.novel.tags?.has()}>
-                  <View css="he:29 clearwidth">
+                  <View css="he:29 clearwidth fld:row ali-center">
+                    <Text css="fos-15 fow-bold par-5">Genre:</Text>
                     <ScrollView
                       horizontal={true}
                       contentContainerStyle={{
@@ -267,7 +268,7 @@ export default ({ ...props }: any) => {
                               key={i}>
                               <Text
                                 css="desc fos:15">
-                                #{x}
+                                {parser.settings.genre.some(s => s.text.has(x) || s.value?.toString().has(x)) == false ? "#" : ""}{x?.displayName()}
                               </Text>
                             </TouchableOpacity>
                           )
@@ -277,7 +278,8 @@ export default ({ ...props }: any) => {
                   </View>
                   <View
                     ifTrue={() => state.novel.tags?.has()}
-                    css="he:29 mat:6 clearwidth">
+                    css="he:29 mat:6 clearwidth fld:row ali-center">
+                    <Text css="fos-15 fow-bold par-5">Tags:</Text>
                     <ScrollView
                       horizontal={true}
                       contentContainerStyle={{
@@ -298,7 +300,7 @@ export default ({ ...props }: any) => {
                               key={i}>
                               <Text
                                 css="desc fos:15">
-                                #{x}
+                                #{x?.displayName()}
                               </Text>
                             </TouchableOpacity>
                           )

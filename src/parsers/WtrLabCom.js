@@ -70,8 +70,8 @@ export default class WTRLabCom extends Parser {
                                     .find(".image-section img")
                                     .url("src", { Referer: this.baseUrl + "/", webView: true })
                             )
-                            .Info(f.find(".detail-buttons >span").eq(1).text)
-                            .Decription(f.find(".rawtitle").text)
+                            .Info(f.find(".detail-buttons > div").eq(1).text)
+                            .Decription(f.find(".detail-buttons > div").eq(0).text)
                             .ParserName(this.name);
                 });
             })
@@ -122,7 +122,7 @@ export default class WTRLabCom extends Parser {
                 timer: 1500
             }
         })).html;
-        return html.$(".chapter-tracker.active").find(".chapter-body").remove(".footer").html;
+        return html.$(".chapter-tracker.active").find(".chapter-body").html.replace(/<div/gim, "<p").replace(/div>/gim, "p>");
     }
 
     async detail(url) {
@@ -160,6 +160,9 @@ export default class WTRLabCom extends Parser {
                         .find('.genres .genre')
                         .map(x => x.text)
                 )
+                .Tags(body
+                    .find('.tag-category-tags a:not(.genre)')
+                    .map(x => x.text))
                 .Status(
                     body
                         .find(
@@ -178,22 +181,26 @@ export default class WTRLabCom extends Parser {
 
             let cHhtml = (
                 await this.http.web_view(
-                    this.baseUrl.join("api/chapters", id),
+                    url,
                     this.baseUrl,
                     {
                         props: {
-                            timer: 100
+                            timer: 100,
+                            ajax: {
+                                url: this.baseUrl.join("api/chapters", id),
+                                method: "formPost",
+                                type: "get"
+                            }
                         }
                     }
                 )
-            ).html.find("pre").text;
+            ).json;
 
-            // console.warn("chpater", cHhtml)
             item.Chapters(
-                JSON.parse(cHhtml.trim()).chapters.map((a, index) =>
+                cHhtml.chapters.map((a, index) =>
                     ChapterInfo.n()
                         .Name(a.title)
-                        .Url(url.join(`chapter-${index + 1}?service=webplus`))
+                        .Url(url.join(`chapter-${index + 1}`))
                         .ParserName(this.name)
                 )
             );

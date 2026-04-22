@@ -88,7 +88,7 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
      async function formPost(ajax) {
          try {
              var data = new FormData();
-             if (Array.isArray(ajax.query)) {
+             if (ajax.query && Array.isArray(ajax.query)) {
                  ajax.query.forEach(x => {
                      data.append(x.key, x.value);
                  })
@@ -98,10 +98,15 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
                  }
              }
 
-             const res = await fetch(ajax.url, {
+             const options ={
                  method: ajax.type.toUpperCase(),
                  body: data
-             });
+             }
+
+             if (options.method == "GET" || options.method == "HEAD")
+                delete options.body;
+
+             const res = await fetch(ajax.url, options);
 
              const text = await res.text();
 
@@ -142,8 +147,6 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
     window.sleep = sleep;
 
     function fetchWebPToBase64(url, referer) {
-        if (window.__DEV__)
-            postData("log", "getting image for "+ url);
         return new Promise(async (resolve) => {
             try {
                 referer = referer ?? window.location.origin;
