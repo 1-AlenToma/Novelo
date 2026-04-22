@@ -10,7 +10,7 @@ class ChapterInfo extends GenericType {
   empty?: boolean;
 }
 
-type ParserType = "Novel" | "Manga" | "Anime";
+type ParserType = "Novel" | "Manga" | "Anime" | "Unknown";
 type LangType = "" | "Sub" | "Dub" | "Raw";
 
 class LightInfo extends ChapterInfo {

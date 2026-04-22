@@ -704,7 +704,7 @@ const Controller = ({ state, ...props }: any) => {
                     >
 
                       <Text
-                        ifTrue={() => context.player.book.parserName !== "epub"}
+                        ifTrue={() => context.player.isNovelType}
                         css="desc fos:12"
                       >
                         Enabling This Option Will Make
@@ -717,10 +717,7 @@ const Controller = ({ state, ...props }: any) => {
                         Depending on How The Auther
                         wrote it.
                       </Text>
-                      <FormItem ifTrue={() =>
-                        context.player.book
-                          .parserName !== "epub"
-                      } title="UseSentenceBuilder:" labelPosition="Left">
+                      <FormItem ifTrue={() => context.player.isNovelType} title="UseSentenceBuilder:" labelPosition="Left">
                         <CheckBox
                           css="pal:1 invert"
                           checked={
@@ -784,10 +781,7 @@ const Controller = ({ state, ...props }: any) => {
                           maximumValue={400}
                         />
                       </FormItem>
-                      <FormItem ifTrue={() =>
-                        context.player.book
-                          .parserName !== "epub"
-                      } title="NormalizeText:" labelPosition="Left">
+                      <FormItem ifTrue={() => context.player.isNovelType} title="NormalizeText:" labelPosition="Left">
                         <CheckBox
                           css="pal:1 invert"
                           checked={
@@ -863,7 +857,7 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                     </TabView>
                     <TabView
-                      ifTrue={() => !(state.novel.type?.isManga())}
+                      ifTrue={() => context.player.isNovelType}
                       css="flex invert mih-300"
                       icon={{
                         name: "settings-voice",
@@ -1102,6 +1096,8 @@ export default (props: any) => {
           state.novel = parserName == "epub" || epub
             ? files.fileItems.find(x => x.url === url) as DetailInfo
             : await state.parser?.detail(url, true);
+
+
 
           if (!state.novel || !state.novel.name)
             return;

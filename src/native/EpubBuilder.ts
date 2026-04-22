@@ -29,10 +29,9 @@ export class ZipBook extends ZipBase {
   decription: string = "";
   type: string;
   identifier: string = "";
-
 }
 
-export const readEpub = async (uri: string, onUpdate: (item: {
+export const readEpub = async (uri: string, epubType: "" | "Unknown" | "Novel" | "Manga", onUpdate: (item: {
   percent: number;
   currentFile: string | null;
 }) => void) => {
@@ -147,7 +146,7 @@ export const readEpub = async (uri: string, onUpdate: (item: {
     }
     const length = Object.keys(zip.files).length * 2;
     let index = 0;
-    book.type = oPFContent.novelType && oPFContent.novelType.has() ? oPFContent.novelType : "Unknown";
+    book.type = oPFContent.novelType && oPFContent.novelType.has() ? oPFContent.novelType : epubType ?? "Unknown";
     book.name = oPFContent.title && oPFContent.title.has() ? oPFContent.title : cleanNames(uri);
     book.fileName = "".fileName(book.name, "epub");
     if (await context.files.exists(book.fileName))

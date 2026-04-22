@@ -11,7 +11,9 @@ import {
   Icon,
   ProgressBar,
   AlertDialog,
-  useTimer
+  useTimer,
+  Modal,
+  ButtonGroup
 } from "react-native-short-style";
 import Header from "./Header";
 import * as React from "react";
@@ -37,6 +39,8 @@ const EpubHandler = ({
     ignore: ["progress"],
     state: {
       skipImages: false,
+      loadedEpubPath: undefined as IReadDirItem,
+      loadedEpubType: "Unknown",
       progress: {
         percent: 0,
         currentFile: ""
@@ -48,7 +52,7 @@ const EpubHandler = ({
     loader.show();
     timer(async () => {
       try {
-        await readEpub(item.path, (info) => {
+        await readEpub(item.path, state.loadedEpubType as any, (info) => {
           state.progress = { ...info, percent: info.percent / 100 } as any
         });
       } catch (e) {
@@ -59,7 +63,7 @@ const EpubHandler = ({
       }
     })
   };
-
+  const types = ["Unknown", "Novel", "Manga"];
   return render(
     <>
       <View
@@ -74,6 +78,14 @@ const EpubHandler = ({
           </ProgressBar>
         </View>
       </View>
+      <Modal addCloser={true} css="wi-90% he-200" isVisible={state.loadedEpubPath != undefined} disableBlurClick={true} onHide={() => { state.loadedEpubPath = undefined }}>
+        <Text css="desc co-red fow-bold">Please how should the epub be treated as</Text>
+        <ButtonGroup css="mat-15" selectedIndex={[types.findIndex(x => x == state.loadedEpubType)]} buttons={types} onPress={(x) => {
+          state.loadedEpubType = types[x[0]];
+          loadEpub({ ...state.loadedEpubPath })
+          state.loadedEpubPath = undefined;
+        }} />
+      </Modal>
 
       <Header
         buttons={[
@@ -88,7 +100,8 @@ const EpubHandler = ({
             press: async () => {
               let uri = await context.browser.pickFile(["epub"], "Select Epub file");
               if (uri)
-                loadEpub(uri)
+                state.loadedEpubPath = uri;
+              //  loadEpub(uri)
             }
           }
         ]}
@@ -166,9 +179,7 @@ const ItemRender = React.memo(({
   })).ignore("downloadFileInfo").build();
 
   useEffect(() => {
-    getInfo(
-      books.find(x => x.url === item.url) ?? item
-    );
+    getInfo(books.find(x => x.url === item.url) ?? item);
   }, [books, fileItems]);
 
   let getInfo = async (b: any) => {

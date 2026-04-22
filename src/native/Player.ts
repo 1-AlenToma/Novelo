@@ -95,12 +95,13 @@ class Player {
       return (this.html = html ?? "");
     }
     let txt = html ?? this.currentChapter.content ?? this.html;
+    const isEpubTypeChapter = !/(<img )|(<table )/g.test(html) && this.isNovelType;
 
     txt = new Html(txt).remove("script, style, iframe").html;
-    if (context.appSettings.normalizeText && this.book.parserName != "epub" && !context.appSettings.useSentenceBuilder?.enabled)
+    if (isEpubTypeChapter && context.appSettings.normalizeText && !context.appSettings.useSentenceBuilder?.enabled)
       txt = txt.htmlArray(true, false).join("\n");
 
-    txt = context.appSettings.useSentenceBuilder?.enabled && this.book.parserName != "epub" ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
+    txt = context.appSettings.useSentenceBuilder?.enabled && isEpubTypeChapter ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
     try {
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(t.edit.escapeRegExp(), "gim");
@@ -346,6 +347,20 @@ class Player {
         if (this.playing()) await this.speak();
       }, 50);
     }
+  }
+
+  get isNovelChapterType() {
+    return !/(<img )|(<table )/g.test(this.html) && this.isNovelType;
+  }
+
+  get isNovelType() {
+    
+    if (this.novel.parserName != "epub")
+      return this.novel.type !== "Unknown" && !this.novel.type.isManga();
+    if (this.novel.type)
+      return this.novel.type !== "Unknown" && !this.novel.type.isManga();
+
+    return !this.isEpup;
   }
 
   async playNext() {

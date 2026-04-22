@@ -185,7 +185,7 @@ export default () => {
             }}
             onHttpError={(e) => {
               x.func("")
-              console.error("WebViewError", x.url, e);
+              console.error("onHttpError", x.url, e);
             }}
             onMessage={async ({ nativeEvent }) => {
               try {

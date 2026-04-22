@@ -270,24 +270,24 @@ export default ({
         alignItems: (context.player.showPlayer ? "center" : "unset")
       };
       options.viewStyle = {
-        paddingLeft: context.player.novel.type.isManga() ? 1 : (5).sureValue(context.appSettings.margin),
-        paddingRight: context.player.novel.type.isManga() ? 1 : (5).sureValue(context.appSettings.margin),
+        paddingLeft: !context.player.isNovelChapterType ? 1 : (5).sureValue(context.appSettings.margin),
+        paddingRight: !context.player.isNovelChapterType ? 1 : (5).sureValue(context.appSettings.margin),
         paddingTop: "40px",
         lineHeight: context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight),
         fontSize: context.appSettings.fontSize,
-        maxHeight: !context.player.novel.type.isManga() ? "100%" : undefined,
-        overflowY: !context.player.novel.type.isManga() ? "auto" : "hidden"
+        maxHeight: context.player.isNovelChapterType ? "100%" : undefined,
+        overflowY: context.player.isNovelChapterType ? "auto" : "hidden"
       };
 
       if (context.appSettings.navigationType == "ScrollSnap")
         options.viewStyle.paddingBottom = context.player.paddingBottom();
       const nav = {
-        Snap: context.player.novel.type?.isManga() || context.player.showPlayer ? undefined : "Pagination",
+        Snap: !context.player.isNovelChapterType || context.player.showPlayer ? undefined : "Pagination",
         Scroll: "Scroll",
         ScrollSnap: "PaginationScroll",
       }
 
-      let scrollType = context.player.novel.type?.isManga() ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player": nav[context.appSettings.navigationType] ?? "Pagination";
+      let scrollType = !context.player.isNovelChapterType ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player": nav[context.appSettings.navigationType] ?? "Pagination";
       options.content = content.content;
       options.scrollDisabled = false;
       options.scrollValue = content.scroll;
