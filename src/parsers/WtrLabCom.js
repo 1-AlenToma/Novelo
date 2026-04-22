@@ -117,6 +117,9 @@ export default class WTRLabCom extends Parser {
     }
 
     async chapter(url) {
+        url = url.query({
+            service: "webplus"
+        });
         let html = (await this.http.web_view(url, this.baseUrl, {
             props: {
                 timer: 1500
@@ -200,7 +203,7 @@ export default class WTRLabCom extends Parser {
                 cHhtml.chapters.map((a, index) =>
                     ChapterInfo.n()
                         .Name(a.title)
-                        .Url(url.join(`chapter-${index + 1}?service=webplus`))
+                        .Url(url.join(`chapter-${index + 1}`))
                         .ParserName(this.name)
                 )
             );
