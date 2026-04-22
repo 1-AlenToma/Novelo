@@ -200,7 +200,7 @@ export default class WTRLabCom extends Parser {
                 cHhtml.chapters.map((a, index) =>
                     ChapterInfo.n()
                         .Name(a.title)
-                        .Url(url.join(`chapter-${index + 1}`))
+                        .Url(url.join(`chapter-${index + 1}?service=webplus`))
                         .ParserName(this.name)
                 )
             );
