@@ -10,6 +10,7 @@
     "update": "eas update --message [dbclick fix]",
     "clean": "cd android && gradlew clean",
     "gradlew": "npm run zip && cd android && gradlew app:assembleRelease -PreactNativeArchitectures=arm64-v8a",
+    "gradLewAll":"npm run zip && cd android && gradlew app:assembleRelease",
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start -c",
     "clearDemo": "cd android && gradlew.bat --stop",
