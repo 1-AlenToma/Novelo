@@ -8,6 +8,21 @@ export const timerJs = (js: string, timer: number = 0) => {
     window.globalTimer = setTimeout(()=> {${js}}, ${timer ?? 0})`
 }
 
+export const tryUntilSuccess = (method: string) => {
+
+    return `
+        window.tryUntilSuccess = ()=> {
+            if (typeof ${method} !== "function"){
+                setTimeout(()=> window.tryUntilSuccess(), 10);
+                return;
+            }   
+            ${method}();
+        }
+
+        window.tryUntilSuccess();
+    `
+}
+
 export const jsScript = (js: string, fn: "load" | "DOMContentLoaded", timer: number = 0) => (/*js*/ `
 try{
 window.__DEV__ = ${(typeof __DEV__ !== "undefined" ? __DEV__ : false).toString().toLowerCase()};
@@ -256,8 +271,10 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
         postData("html", payload);
     };
     const isImage =${x.url.isImage(true).toString().toLowerCase()};
-    if (isImage)
+
+     if (isImage)
       ${jsScript("window.getHtml()", "DOMContentLoaded", x.props?.timer ?? -1)}
+
 } catch (e) {
     if (window.__DEV__) alert(e);
     postData("error", e.message);

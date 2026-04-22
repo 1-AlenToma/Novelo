@@ -366,7 +366,7 @@ const Controller = ({ state, ...props }: any) => {
 
         await context.appSettings.saveChanges();
 
-        if (rest.useSentenceBuilder) context.player.clean();
+        if (rest.useSentenceBuilder || rest.normalizeText != undefined) context.player.clean();
       });
     });
   };
@@ -702,6 +702,7 @@ const Controller = ({ state, ...props }: any) => {
                         type: "MaterialIcons"
                       }}
                     >
+
                       <Text
                         ifTrue={() => context.player.book.parserName !== "epub"}
                         css="desc fos:12"
@@ -783,6 +784,23 @@ const Controller = ({ state, ...props }: any) => {
                           maximumValue={400}
                         />
                       </FormItem>
+                      <FormItem ifTrue={() =>
+                        context.player.book
+                          .parserName !== "epub"
+                      } title="NormalizeText:" labelPosition="Left">
+                        <CheckBox
+                          css="pal:1 invert"
+                          checked={
+                            context.appSettings
+                              .normalizeText ?? false
+                          }
+                          onChange={(isChecked) => {
+                            editSettings({
+                              normalizeText: isChecked
+                            });
+                          }}
+                        />
+                      </FormItem>
                       <FormItem title="Add Shadow:" labelPosition="Left">
                         <CheckBox
                           css="pal:1 invert"
@@ -853,9 +871,9 @@ const Controller = ({ state, ...props }: any) => {
                       }}
                     >
                       <FormItem css="mih-130" title="Voices Choose TTS Model">
-                        <View css="he-100%">
+                        <View css="he-100% wi-100%">
                           <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
-                          <ButtonGroup scrollable={false}
+                          <ButtonGroup scrollable={true}
                             buttons={context.tts.nameList()}
                             selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
                             onPress={x => {
@@ -1102,7 +1120,7 @@ export default (props: any) => {
               .equalTo(url)
               .and.column(x => x.parserName).equalTo(parserName)
               .findOrSave(
-                Book.n()
+                async () => Book.n()
                   .Url(state.novel.url)
                   .Name(state.novel.name)
                   .ParserName(parserName)

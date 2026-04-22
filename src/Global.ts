@@ -77,7 +77,7 @@ declare global {
         eSpace(total?: number): string;
         cleanHtml(): string;
         cleanText(): string;
-        htmlArray(normalize?: boolean): string[];
+        htmlArray(normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean): string[];
         html(): Html;
         htmlImagesSources(): string[];
         normilzeStr(): string;
@@ -433,13 +433,14 @@ String.prototype.cleanText = function () {
 
 String.prototype.niceSentences = function (this: string) {
     let str = this.toString();
-    str = str.replace(/((<)(strong|i)(>))|((<\/)(strong|i)(>))/gim, "");
+    str = str.replace(/<\/?(strong|i|b|span)\b[^<>]*>/gim, "");
     str = str.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt|dr)((\s+)?(\.)(\s+)?)/gi, "$1.");
     return str;
 }
 
-String.prototype.htmlArray = function (normalize?: boolean) {
-    let str = this.toString().replace(/((<)(strong|i|b|span)(>))|((<\/)(strong|i|b|span)(>))/gim, "");
+String.prototype.htmlArray = function (normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean) {
+    let str = this.toString().replace(/<\/?(strong|i|b|span)\b[^<>]*>/gim, "");
+    // console.log(str)
     const doc = IDOMParser.parse(`<div>${str}</div>`, {
         errorHandler: {
             error: () => { },
@@ -448,17 +449,40 @@ String.prototype.htmlArray = function (normalize?: boolean) {
         }
     });
 
-    let txtArray = doc.documentElement.text().split(/\r\n|\r|\n/).filter(x => !x.empty());
+    let text = doc.documentElement.text().replace(/[;]/g, ",");
+    if (forAudio)
+        text = text.replace(/["'`\]\)”’\[\(“‘\^\~]/gim, "");
 
-
+    let txtArray = text.split(/\r\n|\r|\n/).filter(x => !x.empty());
 
     let result: string[] = [];
     for (let txt of txtArray) {
-        const sentences = txt.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt)((\s+)?(\.)(\s+)?)/gi, "$1.")
-            .split(/(?<=[.!?])\s+/g) // smart sentence split
-            .map(x => x.trim())
-            .filter(x => /[A-Za-z0-9]/.test(x));
+        let sentences = [txt.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt)((\s+)?(\.)(\s+)?)/gi, "$1.")];
+        if (useSmartSentences !== false) {
+            sentences = sentences[0].split(/(?<=[.!?])\s+/g) // smart sentence split
+                .map(x => x.trim())
+                .filter(x => /[A-Za-z0-9]/.test(x));
+        }
         result.push(...sentences)
+    }
+    if (forAudio) {
+        let temp = [...result];
+        result = [];
+
+        for (let i = 0; i < temp.length; i++) {
+            let txt = temp[i]?.trim();
+            let next = temp[i + 1]?.trim();
+
+            if (txt && next && txt.length <= 30) {
+                if (!/[.?!]\s*$/.test(txt)) {
+                    txt += ".";
+                }
+                txt = `${txt} ${next}`;
+                i++;
+            }
+
+            if (txt) result.push(txt);
+        }
     }
 
     if (normalize) {

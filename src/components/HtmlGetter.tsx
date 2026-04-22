@@ -3,7 +3,7 @@ import WebView from "react-native-webview";
 import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
-import { htmlGetterJsCode, jsScript, webViewCheckVerification } from "../JSConstant";
+import { htmlGetterJsCode, jsScript, tryUntilSuccess, webViewCheckVerification } from "../JSConstant";
 import Timer from "hooks/Timer";
 
 const debug = false;
@@ -57,7 +57,7 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
         }}
         onNavigationStateChange={() => {
           webView.current?.injectJavaScript(
-            `${jsScript("window.checkProtection?.();", "DOMContentLoaded", 20)}
+            `${jsScript(tryUntilSuccess("window.checkProtection"), "DOMContentLoaded", 20)}
            true;`
           );
         }}
@@ -120,11 +120,11 @@ export default () => {
 
 
   const iProtected = useMemo(() => {
-  /*  htmlContext.html.data.forEach(x => {
-      if (state.protection.some(p => p.baseUrl == x.baseUrl)) {
-        x.created = new Date();
-      }
-    });*/
+    /*  htmlContext.html.data.forEach(x => {
+        if (state.protection.some(p => p.baseUrl == x.baseUrl)) {
+          x.created = new Date();
+        }
+      });*/
 
     return htmlContext.html.data.filter(d =>
       !state.protection.some(x => d.baseUrl === x.baseUrl)
@@ -175,9 +175,17 @@ export default () => {
               if (x.url.isImage(true))
                 return;
               timers[i](() => {
-                webViews[i]?.injectJavaScript(`${jsScript("window.getHtml();", "DOMContentLoaded", x.props?.timer ?? 5)}
+                webViews[i]?.injectJavaScript(`${jsScript(tryUntilSuccess("window.getHtml"), "DOMContentLoaded", (x.props?.timer ?? -1))}
                 true;`)
               });
+            }}
+            onError={(e) => {
+              x.func("")
+              console.error("WebViewLoadError", x.url, e);
+            }}
+            onHttpError={(e) => {
+              x.func("")
+              console.error("WebViewError", x.url, e);
             }}
             onMessage={async ({ nativeEvent }) => {
               try {

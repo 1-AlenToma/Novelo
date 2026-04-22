@@ -28,10 +28,14 @@ class AppSettings extends DBInit {
     selectedTheme: number;
     lang?: string = "English";
     sentenceMargin?: number = 15;
+    normalizeText?: boolean;
     useSentenceBuilder?: {
         enabled: boolean;
         minLength: number;
-    } = { enabled: false, minLength: 100 };
+    } = {
+            enabled: false,
+            minLength: 100
+        };
     voiceWordSelectionsSettings?: {
         color?: string;
         appendSelection?: boolean;
@@ -47,6 +51,7 @@ class AppSettings extends DBInit {
         return this.TableBuilder<AppSettings, TableNames>("AppSettings")
             .column("rate").decimal
             .column("parsers").json.nullable
+            .column("normalizeText").boolean.nullable
             .column("fontSize").number
             .column("lineHeight").number
             .column("margin").nullable.number

@@ -97,6 +97,8 @@ class Player {
     let txt = html ?? this.currentChapter.content ?? this.html;
 
     txt = new Html(txt).remove("script, style, iframe").html;
+    if (context.appSettings.normalizeText && this.book.parserName != "epub" && !context.appSettings.useSentenceBuilder?.enabled)
+      txt = txt.htmlArray(true, false).join("\n");
 
     txt = context.appSettings.useSentenceBuilder?.enabled && this.book.parserName != "epub" ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
     try {
@@ -115,7 +117,7 @@ class Player {
     } finally {
     }
 
-    this.chapterArray = txt.htmlArray(true);
+    this.chapterArray = txt.htmlArray(true, true, true);
     this.html = txt;
     return txt;
   }
@@ -362,6 +364,7 @@ class Player {
   }
 
   private currentTextSpeacking = "";
+  private lastSpeekDate = new Date();
   async speak() {
 
     let text = this.currentPlaying()?.cleanText() ?? "";
@@ -374,7 +377,9 @@ class Player {
       return;
 
     await context.tts.stop();
+
     this.currentTextSpeacking = text;
+    this.lastSpeekDate = new Date();
     await context.tts.speak({
       text: this.currentTextSpeacking,
       onDone: async (msg) => {

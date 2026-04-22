@@ -9,23 +9,28 @@ export default class ImageCache extends FileHandler {
   }
 
   async downloadImage(imgUrl: string, path: string | ParserWrapper) {
-    if (typeof path == "object")
-      path = path.name;
-    if (!imgUrl)
-      return "";
-    let imgName = imgUrl.split("header")[0].trim().safeSplit("/", -1);
-    if (!imgName.isImage())
-      imgName = imgName.cleanFileName() + ".jpg";
-    path = this.dir.join("db", path, imgName);
-    console.log("fileName", getFileInfo(path, this.dir));
-    let imgContent = await context.parser.current.http.imageUrlToBase64(imgUrl);
-    if (imgContent && typeof imgContent == "string") {
-      let data = await this.write(path, imgContent);
-      console.info("image written", data)
-      return data ?? path
-    }
+    try {
+      if (typeof path == "object")
+        path = path.name;
+      if (!imgUrl)
+        return "";
+      let imgName = imgUrl.split("header")[0].trim().safeSplit("/", -1);
+      if (!imgName.isImage())
+        imgName = imgName.cleanFileName() + ".jpg";
+      path = this.dir.join("db", path, imgName);
+      console.log("fileName", getFileInfo(path, this.dir));
+      let imgContent = await context.parser.current.http.imageUrlToBase64(imgUrl);
+      if (imgContent && typeof imgContent == "string") {
+        let data = await this.write(path, imgContent);
+        console.info("image written", data)
+        return data ?? path
+      }
 
-    return path;
+      return path;
+    } catch (e) {
+      console.error(e)
+      return "";
+    }
 
   }
 

@@ -1,7 +1,7 @@
 import uuid from "react-native-uuid";
 import { Functions } from "react-native-ts-sqlite-orm";
 export * from "./localModules/NativeEpubZipper";
-export * from "./native/SentencesSplitter"
+export * from "./native/SentencesSplitter";
 
 export const baseUrl = (url: string) => {
   if (!url)
