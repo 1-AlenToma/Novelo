@@ -1121,6 +1121,7 @@ export default (props: any) => {
                   .Name(state.novel.name)
                   .ParserName(parserName)
                   .ImageBase64(await context.imageCache.downloadImage(state.novel.image, state.parser)));
+            console.log("book loaded")
 
             if (!book.textReplacements) book.textReplacements = [];
             state.book = book;

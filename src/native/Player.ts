@@ -98,8 +98,9 @@ class Player {
     const isEpubTypeChapter = !/(<img )|(<table )/g.test(html) && this.isNovelType;
 
     txt = new Html(txt).remove("script, style, iframe").html;
-    if (isEpubTypeChapter && context.appSettings.normalizeText && !context.appSettings.useSentenceBuilder?.enabled)
-      txt = txt.htmlArray(true, false).join("\n");
+    if (this.isNovelType && context.appSettings.normalizeText)
+      txt = txt.normalizeHtml();
+
 
     txt = context.appSettings.useSentenceBuilder?.enabled && isEpubTypeChapter ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
     try {
@@ -354,7 +355,7 @@ class Player {
   }
 
   get isNovelType() {
-    
+
     if (this.novel.parserName != "epub")
       return this.novel.type !== "Unknown" && !this.novel.type.isManga();
     if (this.novel.type)

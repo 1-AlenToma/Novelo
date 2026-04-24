@@ -1,6 +1,7 @@
 import CStyle from "./components/CStyle";
 import { cssTranslator } from "react-native-short-style";
 import IDOMParser from "advanced-html-parser";
+import { Document, Node, Options, Element as _HtmlElement } from "advanced-html-parser/types"
 import * as Methods from "./Methods";
 import StateBuilder from "react-smart-state";
 import { IGlobalState, FileInfo } from "./Types";
@@ -78,6 +79,7 @@ declare global {
         cleanHtml(): string;
         cleanText(): string;
         htmlArray(normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean): string[];
+        normalizeHtml(): string;
         html(): Html;
         htmlImagesSources(): string[];
         normilzeStr(): string;
@@ -438,8 +440,43 @@ String.prototype.niceSentences = function (this: string) {
     return str;
 }
 
+String.prototype.normalizeHtml = function () {
+    let str = this.toString().replace(/<\/?(strong|i|b|span|a)\b[^<>]*>/gim, "");
+    const doc = IDOMParser.parse(`<div class="NormContainer">${str}</div>`, {
+        errorHandler: {
+            error: () => { },
+            warning: () => { },
+            fatalError: () => { }
+        }
+    });
+
+
+    const norm = function (node: Node) {
+        if (node.nodeValue && !node.nodeValue.empty() && (node.nodeType == 3 || (node.children.length <= 0 && node.nodeType == 1))) {
+            let before = node.nodeValue;
+            let nplDoc = nlp(before);
+            nplDoc.normalize({
+                whitespace: true,
+                contractions: true
+            });
+
+            node.nodeValue = (node as any).data = nplDoc.out("text").trim();
+        } else if (node.nodeValue && node.nodeValue.empty())
+            node.nodeValue = (node as any).data = "";
+        for (let cNode of node.children) {
+            if (cNode)
+                norm(cNode);
+        }
+    }
+
+    norm(doc.documentElement);
+    return doc.documentElement.innerHTML;
+
+}
+
 String.prototype.htmlArray = function (normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean) {
-    let str = this.toString().replace(/<\/?(strong|i|b|span)\b[^<>]*>/gim, "");
+
+    let str = normalize ? this.toString().normalizeHtml() : this.toString().replace(/<\/?(strong|i|b|span)\b[^<>]*>/gim, "");
     // console.log(str)
     const doc = IDOMParser.parse(`<div>${str}</div>`, {
         errorHandler: {
@@ -457,7 +494,7 @@ String.prototype.htmlArray = function (normalize?: boolean, useSmartSentences?: 
 
     let result: string[] = [];
     for (let txt of txtArray) {
-        let sentences = [txt.replace(/\b(mr|Mrs|Ms|Miss|dr|Mt)((\s+)?(\.)(\s+)?)/gi, "$1.")];
+        let sentences = [txt.replace(/(\d)\s*\.\s*(\d)/g, "$1.$2").replace(/\b(mr|Mrs|Ms|Miss|dr|Mt)((\s+)?(\.)(\s+)?)/gi, "$1.")];
         if (useSmartSentences !== false) {
             sentences = sentences[0].split(/(?<=[.!?])\s+/g) // smart sentence split
                 .map(x => x.trim())
@@ -483,18 +520,6 @@ String.prototype.htmlArray = function (normalize?: boolean, useSmartSentences?: 
 
             if (txt) result.push(txt);
         }
-    }
-
-    if (normalize) {
-        result = result.map(x => {
-            let nplDoc = nlp(x);
-            nplDoc.normalize({
-                whitespace: true,
-                contractions: true
-            });
-            const textAfter = nplDoc.out("text").trim();
-            return textAfter;
-        })
     }
 
     return result.map(x => `<p>${x}</p>`);
@@ -560,7 +585,7 @@ String.prototype.has = function (selector: string) {
 };
 
 String.prototype.empty = function () {
-    let str = this.toString();
+    let str = this.toString().trim();
     return str === null || str.match(/^ *$/) !== null;
 };
 
