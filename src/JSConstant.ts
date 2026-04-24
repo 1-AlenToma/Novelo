@@ -73,16 +73,52 @@ const protecttionList = [
     "Attention Required! | Cloudflare"
 ];
 
+export const scrollToChallange = () => {
+    return `
+    window.findAndScroll = function() {
+        const selectors = [
+            "iframe[src*='challenges.cloudflare']",
+            "iframe[src*='turnstile']",
+            "iframe[src*='captcha']",
+            "#cf-challenge-running",
+            ".cf-browser-verification",
+            "[name='cf-turnstile-response']"
+        ];
+
+        for (const sel of selectors) {
+            const el = document.querySelector(sel);
+            if (el) {
+                el.parentNode.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                return true;
+            }
+        }
+        // Retry for a few seconds (Cloudflare loads late)
+        setTimeout(() => {
+            window.findAndScroll();
+        }, 500);
+
+    }`
+}
+
 export const webViewCheckVerification = () => {
     const js = `
 ${dataPost("protection")}
+${scrollToChallange()}
 window.checkProtection = () => {
+ 
   const protection = ${JSON.stringify(protecttionList)};
 
   const text = document.documentElement.outerHTML.toLowerCase();
   const isProtected = protection.some(p => text.includes(p.toLowerCase()));
+  if (isProtected)
+     window.findAndScroll();
   window.postData("pCheck", isProtected)
 }
+
+${jsScript("window.findAndScroll()", "load", 0)}
 true;`;
     return js;
 }
@@ -196,7 +232,10 @@ export const htmlGetterJsCode = (x: WebViewFetchData) => {
         const pr = protection.find((x) => text.toLowerCase().indexOf(x.toLowerCase()) !== -1)
         if (pr) {
             var payload = {
-                data: "${x.url}",
+                data: {
+                    url: "${x.url}",
+                    text: pr
+                },
             };
 
             postData("protection", payload);

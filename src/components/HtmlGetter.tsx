@@ -184,8 +184,8 @@ export default () => {
               console.error("WebViewLoadError", x.url, e);
             }}
             onHttpError={(e) => {
-              x.func("")
-              console.error("onHttpError", x.url, e);
+             // x.func("")
+              console.error("onHttpError", x.url, e.nativeEvent.statusCode);
             }}
             onMessage={async ({ nativeEvent }) => {
               try {
@@ -197,11 +197,18 @@ export default () => {
                     htmlContext.html.data.find(x => x.id == data.id)?.func(data.data as any)
                     break;
                   case "protection":
-                    console.warn("Icloude found")
-                    if (!state.protection.find(x => methods.baseUrl(data.data) == x.baseUrl)) {
+                    console.warn("Icloude found", data.data.text)
+                    let xItem = htmlData.find(x=> x.id == data.id);
+                    if (xItem.tried>3)
+                    {
+                      xItem.func("");
+                      return; // failed to may times
+                    }
+                    if (!state.protection.find(x => methods.baseUrl(data.data.url) == x.baseUrl)) {
+                      xItem.tried++;
                       if (!protection)
-                        state.protection = [{ url: data.data, id: data.id, baseUrl: methods.baseUrl(data.data) }]
-                      else state.protection.push({ url: data.data, id: data.id, baseUrl: methods.baseUrl(data.data) });
+                        state.protection = [{ url: data.data.url, id: data.id, baseUrl: methods.baseUrl(data.data.url) }]
+                      else state.protection.push({ url: data.data.url, id: data.id, baseUrl: methods.baseUrl(data.data.url) });
                     }
                     break;
                   case "error":

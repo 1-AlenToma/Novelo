@@ -17,6 +17,7 @@ const contextData = StateBuilder({
                     props,
                     url: url,
                     id,
+                    tried: 0,
                     baseUrl: methods.baseUrl(url),
                     func: async (str: string) => {
                         await success({ text: () => str, ok: str && str.length > 5, status: 0 })

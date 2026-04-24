@@ -561,8 +561,8 @@ const getElements = (html) => {
                     setId(img);
                     const src = img.getAttribute("src") || "";
                     if (src.length > 0 && !src.startsWith("data:")) {
-                        img.src = addString(document.body.getAttribute("imageAddress"), "/", encodeURIComponent(src), "/", img.id);
-                        if (option.type== "Manga"){
+                        img.setAttribute("src", addString(document.body.getAttribute("imageAddress"), "/", encodeURIComponent(src), "/", img.id));
+                        if (option.type == "Manga"){
                             const imgContainer = document.createElement("div");
                             imgContainer.className = "lazy";
                             img.replaceWith(imgContainer);
