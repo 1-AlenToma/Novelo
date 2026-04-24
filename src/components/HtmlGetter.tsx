@@ -23,6 +23,7 @@ const webViewDefaultProps = {
 
 }
 
+const webViewProtectedJS = webViewCheckVerification();
 const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () => void }) => {
   const [isVisible, setIsVisible] = useState(url !== undefined);
   const webView = useRef<WebView>();
@@ -50,7 +51,7 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
       </Text>
       <WebView
         ref={webView}
-        injectedJavaScriptBeforeContentLoaded={webViewCheckVerification()}
+        injectedJavaScriptBeforeContentLoaded={webViewProtectedJS}
         androidLayerType="software"
         source={{
           uri: url as string
@@ -70,7 +71,7 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
                 lastCheck.current = true;
               } else if (lastCheck.current && !data.data)
                 setIsVisible(false)
-            }
+            }else console.warn(data)
           } catch (e) {
             console.error(e);
           }

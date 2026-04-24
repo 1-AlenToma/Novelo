@@ -73,9 +73,13 @@ const protecttionList = [
     "Attention Required! | Cloudflare"
 ];
 
+// scroll resset the icloude cookes so, it wont validate ever
 export const scrollToChallange = () => {
-    return `
-    window.findAndScroll = function() {
+    return /*js*/`
+    let scrollToChallangeDone = false;
+    const scrollToChallange = ()=> {
+        if (scrollToChallangeDone || document.body.scrollTop>0)
+            return;
         const selectors = [
             "iframe[src*='challenges.cloudflare']",
             "iframe[src*='turnstile']",
@@ -89,38 +93,30 @@ export const scrollToChallange = () => {
             const el = document.querySelector(sel);
             if (el) {
                 el.parentNode.scrollIntoView({
-                    behavior: 'smooth',
+                    behavior: 'instant',
                     block: 'center'
                 });
-                return true;
+                scrollToChallangeDone= true;
+                window.postData("log", "scrolled");
+                return;
             }
         }
-        // Retry for a few seconds (Cloudflare loads late)
-        setTimeout(() => {
-            window.findAndScroll();
-        }, 500);
 
-    }`
+        setTimeout(scrollToChallange,500);
+
+    };`
 }
 
 export const webViewCheckVerification = () => {
-    const js = `
+    return /*js*/`
 ${dataPost("protection")}
-${scrollToChallange()}
 window.checkProtection = () => {
- 
   const protection = ${JSON.stringify(protecttionList)};
-
   const text = document.documentElement.outerHTML.toLowerCase();
   const isProtected = protection.some(p => text.includes(p.toLowerCase()));
-  if (isProtected)
-     window.findAndScroll();
-  window.postData("pCheck", isProtected)
+  window.postData("pCheck", isProtected);
 }
-
-${jsScript("window.findAndScroll()", "load", 0)}
 true;`;
-    return js;
 }
 
 export const htmlGetterJsCode = (x: WebViewFetchData) => {
