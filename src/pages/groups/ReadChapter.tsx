@@ -78,7 +78,7 @@ const Modoles = () => {
         onHide={() => (context.player.menuOptions.comment = undefined)}
         css={"he-200"}
       >
-        <View css="flex mat:20 invert">
+        <View css="flex mat:20 invert wi-95%">
           <TextInput
             onChangeText={(x: string) =>
               (context.player.menuOptions.comment = x)
@@ -1012,7 +1012,7 @@ const InternalWeb = ({ state, ...props }: any) => {
         }}
         menuItems={{
           selector: "#novel",
-          minlength: 2,
+          minlength: 1,
           items: [
             {
               text: "Copy",

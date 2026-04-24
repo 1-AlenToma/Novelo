@@ -5,10 +5,37 @@ import ColorPicker, {
   Panel1,
   Preview,
   OpacitySlider,
+  PreviewText,
   HueSlider
 } from "reanimated-color-picker";
 import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
+const sliderStyle = {
+  borderRadius: 20,
 
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+
+  elevation: 5,
+}
+
+const panelStyle = {
+  borderRadius: 16,
+
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+
+  elevation: 5,
+}
 export default ({
   css,
   value,
@@ -30,7 +57,7 @@ export default ({
         <GestureHandlerRootView style={{ flex: 1 }}>
 
           <ScrollView>
-            <View css="flex ali:center mat:20 invert">
+            <View css="flex ali:center mat:20 invert bow-5 bac-gray bor-10 pa-5">
               <View
                 css="juc:center ali:center bor:5 wi:90% mab:10 pa:10 invert"
                 style={{
@@ -47,16 +74,25 @@ export default ({
               <ColorPicker
                 style={{ width: "90%", flex: 1 }}
                 value={value}
-                onComplete={onComplete}>
-                <Preview />
+                boundedThumb={true}
+                sliderThickness={25}
+                thumbSize={24}
+                thumbShape='circle'
+                onCompleteJS={(colors) => {
+                  onComplete?.(colors);
+                }}>
+                <PreviewText style={{
+                  color: invertColor(value),
+                  fontFamily: 'Quicksand',
+                }} colorFormat="hex" />
                 <View css="bac-transparent mab-10">
-                  <Panel1 />
+                  <Panel1 style={panelStyle} />
                 </View>
 
                 <View css="bac-transparent mab-10">
-                  <HueSlider />
+                  <HueSlider style={sliderStyle} />
                 </View>
-                <OpacitySlider />
+                <OpacitySlider style={sliderStyle} />
               </ColorPicker>
             </View>
           </ScrollView>

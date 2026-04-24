@@ -354,7 +354,7 @@ let options = {
                 icon: "format_bold"
             }
         ],
-        minlength: 2,
+        minlength: 1,
         click: function(item) {
             // alert(item.text);
         }
