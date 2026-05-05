@@ -31,7 +31,8 @@ export type WebViewFetchData = {
   func: (str: string) => void,
   id: string,
   baseUrl: string;
-  tried: 0
+  tried: number,
+  systemJs?: string;
 }
 
 export type NavigationObject = {

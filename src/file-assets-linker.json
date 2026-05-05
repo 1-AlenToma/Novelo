@@ -1,0 +1,54 @@
+[
+    {
+        "output": "./assets/WebAssets.ts",
+        "format": "esm",
+        "minify": true,
+        "indent": 0,
+        "compress": true,
+        "assets": [
+            {
+                "name": "systemJs",
+                "path": "../WebAssets/system.js"
+            },
+            {
+                "name": "bookJs",
+                "path": "../WebAssets/book.js"
+            },
+            {
+                "name": "bookCss",
+                "path": "../WebAssets/book.css"
+            },
+            {
+                "name": "webCss",
+                "path": "../WebAssets/web.css"
+            },
+            {
+                "name": "webHtml",
+                "path": "../WebAssets/web.html"
+            },
+            {
+                "name": "fontCss",
+                "path": "../WebAssets/font.css"
+            }
+        ],
+        "keys": [
+            "appSettings",
+            "novelType",
+            "address",
+            "backgroundColor",
+            "fontSize",
+            "highlight-co",
+            "highlight-bg",
+            "fontStyle",
+            "fontName",
+            "text-shadow",
+            "co",
+            "inverted",
+            "line-height",
+            "marginB",
+            "icons",
+            "font"
+        ],
+        "globalVar": "AssetsLinkEditor"
+    }
+]

@@ -18,18 +18,18 @@ export default class ImageCache extends FileHandler {
       if (!imgName.isImage())
         imgName = imgName.cleanFileName() + ".jpg";
       path = this.dir.join("db", path, imgName);
-      console.log("fileName", getFileInfo(path, this.dir));
+      //console.log("fileName", getFileInfo(path, this.dir), "imgurl", imgUrl);
       let imgContent = await context.parser.current.http.imageUrlToBase64(imgUrl);
-      if (imgContent && typeof imgContent == "string") {
+      if (imgContent && typeof imgContent == "string" && imgContent.length > 10) {
         let data = await this.write(path, imgContent);
         console.info("image written", data)
         return data ?? path
       }
 
-      return path;
+      return imgUrl;
     } catch (e) {
       console.error(e)
-      return "";
+      return imgUrl;
     }
 
   }

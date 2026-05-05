@@ -115,7 +115,7 @@ export default class MangaKakalot extends Parser {
         let html = (
             await this.http.web_view(url, this.url)
         ).html;
-        let imgs = html.findAll(".container-chapter-reader img").map(x => `<img id="${methods.newId()}" src='${x.url("src", { Referer: this.url + "/" })}'  />`).join("\n");
+        let imgs = html.findAll(".container-chapter-reader img").map(x => `<img id="${methods.newId()}" src='${x.url("src", { Referer: this.url + "/", webView: true })}'  />`).join("\n");
         return imgs;
     }
 

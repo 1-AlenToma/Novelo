@@ -1,7 +1,6 @@
 import * as httpService from 'react-native-nitro-http-server';
 import { NetworkInfo } from 'react-native-network-info';
-import { jsScript } from "JSConstant";
-import { CSSStyle, JS } from "../assets/readerJs";
+import { keyBuilder, get } from "../assets/WebAssets";
 import { Asset } from "expo-asset";
 import Fonts from "../assets/Fonts";
 import MapCacher from "./MapCacher";
@@ -82,7 +81,7 @@ class HttpServer {
                             "Access-Control-Allow-Origin": "*",
                             "Content-Type": "text/css; charset=utf-8"
                         },
-                        body: CSSStyle,
+                        body: get("bookCss"),
                     };
                 }
 
@@ -99,34 +98,6 @@ class HttpServer {
                             icons: fontUri,
                             font: asset.localUri
                         };
-                        let css = `
-                    @font-face {
-                      font-family: 'Material Symbols Outlined';
-                      font-style: normal;
-                      font-weight: 400;
-                      src: url("${fontItem.icons}") format('woff2');
-                      }
-                      
-                    @font-face {
-                      font-family: '${fontName}';
-                      src: url("${fontItem.font}") format('truetype');
-                      }
-                
-                .material-symbols-outlined {
-                  font-family: 'Material Symbols Outlined';
-                  font-weight: normal;
-                  font-style: normal;
-                  font-size: 24px;
-                  line-height: 1;
-                  letter-spacing: normal;
-                  text-transform: none;
-                  display: inline-block;
-                  white-space: nowrap;
-                  word-wrap: normal;
-                  direction: ltr;
-                  -webkit-font-feature-settings: 'liga';
-                  -webkit-font-smoothing: antialiased;
-                }`;
 
                         return {
                             statusCode: 200,
@@ -134,7 +105,10 @@ class HttpServer {
                             headers: {
                                 "Access-Control-Allow-Origin": "*", // allow WebView fetch
                             },
-                            body: css,
+                            body: keyBuilder("fontCss")
+                                .key(`font`, fontItem.font)
+                                .key(`icons`, fontItem.icons)
+                                .key("fontName", fontName).get(),
                         };
                     } catch (e) {
                         console.error(e);
@@ -165,7 +139,7 @@ class HttpServer {
                             tempImageData.set(imgKey, data);
                             // write data to a temporary file
                             let uint8 = Base64.toUint8Array(base64Data);
-                            
+
                             return {
                                 statusCode: 200,
                                 headers: {
@@ -184,12 +158,11 @@ class HttpServer {
                 }
 
                 if (path === this.getRoute("/novelScript") && method === "GET") {
-                    const jsScriptFn = jsScript(JS, "DOMContentLoaded");
                     return {
                         statusCode: 200,
                         contentType: "application/javascript",
                         headers: { "Access-Control-Allow-Origin": "*" },
-                        body: jsScriptFn,
+                        body: `window.__DEV__=${(__DEV__ ?? false).toString().toLowerCase()}\n${get("bookJs")}`,
                     };
                 }
             } catch (e) {

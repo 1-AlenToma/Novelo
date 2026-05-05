@@ -9,7 +9,8 @@ import {
 import { View, Text as TextView, ProgressBar } from "react-native-short-style";
 import BattariView from "./BattariView";
 import WebOptions from "../native/WebOptions";
-import httpServer from "native/HttpServer";
+import httpServer from "../native/HttpServer";
+import { get } from "../assets/WebAssets";
 
 
 
@@ -96,7 +97,7 @@ export default ({
     loader: {
       text: "Loading, Please wait",
       value: true,
-      onPress:()=> {
+      onPress: () => {
         click();
       }
     },
@@ -145,94 +146,19 @@ export default ({
     let inverted = invertColor(color);
     let shadow = inverted.has("white") ? "#4e4d4d" : "#919191";
     let shadowLength = (1).sureValue(context.appSettings.shadowLength, true);
+    let cssStyle = get("webCss",
+      ["fontSize", `${context.appSettings.fontSize}px`],
+      [`highlight-co`, `${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color}`],
+      [`highlight-bg`, context.appSettings.voiceWordSelectionsSettings?.color ?? inverted],
+      [`fontStyle`, (context.appSettings.fontStyle ?? "normal").toLowerCase()],
+      ["fontName", context.appSettings.fontName],
+      ["text-shadow", `${context.appSettings.use3D ? `1px ${shadowLength}px 1px ${shadow}` : "0"}`],
+      ["co", color],
+      ["inverted", inverted],
+      ["line-height", `${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5}px`],
+      ["marginB", `${context.appSettings.sentenceMargin ?? 5}px`]
+    )
 
-    let cssStyle = `
-         strong{
-           font-weight:bold !important;
-         }
-         .italic, i {
-           display:inline !important;
-           font-style: italic !important;
-           font-size: ${context.appSettings.fontSize - 4}px !important;
-         }
-         
-        .highlight {
-          border-radius: 0px;
-          display: inline-block;
-          color: ${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color} !important;
-          background-color: ${context.appSettings.voiceWordSelectionsSettings?.color ?? inverted} !important;
-        }
-        
-        *:not(.selection-menu):not(.selection-menu *):not(.italic):not(i):not(.ScollPreview) {
-          font-style:${(context.appSettings.fontStyle ?? "normal").toLowerCase()} !important;
-        }
-        
-        *:not(.selection-menu):not(.selection-menu *):not(.ScollPreview) {
-          font-family: "${context.appSettings.fontName}" !important;
-          font-size-adjust: 1;
-          ${context.appSettings.use3D ? ` text-shadow: 1px ${shadowLength}px 1px ${shadow};` : ""}
-        }
-
-        parameter {
-          display: none;
-        }
-
-        blur p {
-          color: ${color};
-          background-color: ${inverted};
-          padding: 5px;
-          border-radius: 10px;
-          overflow: hidden;
-        }
-
-        *:not(.selection-menu):not(.selection-menu *):not(.custom):not(blur):not(blur *):not(.highlight):not(.ScollPreview) {
-          background-color: transparent;
-          color: ${inverted} !important;
-        }
-
-        body {
-          background-color: ${color} !important;
-        }
-
-        .comments {
-          text-decoration: underline;
-          display: inline-block;
-          position: relative;
-        }
-
-        body img {
-          max-width: 100%;
-        }
-
-        .Manga img {
-          margin: 0 auto 0;
-          display: block;
-        }
-        
-        h1,h2,h3,h4,h5,h6{
-          line-height: ${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5}px !important;
-          font-size: ${context.appSettings.fontSize + 5}px;
-        }
-
-        br{
-          display:none;
-        }
-
-       .novel p{
-           display:block !important;
-           position:relative !important;
-           clear:both !important;
-           width:100%;
-        }
-
-        .novel p, .novel h1, .novel h2, .novel h3, .novel h3, .novel h4, .novel h5{
-           margin-bottom: ${context.appSettings.sentenceMargin ?? 5}px !important;
-        }
-      
-        * {
-          outline: none !important;
-         }
-      `;
     if (context.player.showPlayer) {
       cssStyle += `
       .sliderView p {
@@ -242,6 +168,7 @@ export default ({
       }
       `;
     }
+
     await postMessage("CSS", cssStyle, undefined, "dynamicCSS");
     //  await loadFonts();
     await postMessage("CSS", cleanInlineStyle(), undefined, "inlineStyle");
@@ -273,7 +200,7 @@ export default ({
         paddingLeft: !context.player.isNovelType ? 1 : (5).sureValue(context.appSettings.margin),
         paddingRight: !context.player.isNovelType ? 1 : (5).sureValue(context.appSettings.margin),
         paddingTop: "40px",
-        lineHeight: context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight),
+        lineHeight: context.player.isNovelType ? context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight) : undefined,
         fontSize: context.appSettings.fontSize,
         maxHeight: context.player.isNovelType ? "100%" : undefined,
         overflowY: context.player.isNovelType ? "auto" : "hidden"
@@ -287,7 +214,7 @@ export default ({
         ScrollSnap: "PaginationScroll",
       }
 
-      let scrollType = !context.player.isNovelType ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player": nav[context.appSettings.navigationType] ?? "Pagination";
+      let scrollType = !context.player.isNovelType ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player" : nav[context.appSettings.navigationType] ?? "Pagination";
       options.content = content.content;
       options.scrollDisabled = false;
       options.scrollValue = content.scroll;
@@ -398,14 +325,8 @@ export default ({
         console.warn("Page Save", "size", data.data.length);
         break;
       case "Image":
-        let images = await context.player.getImage(
-          ...data.data
-        )
-        postMessage(
-          "images",
-          images,
-          "window.renderImage"
-        );
+        let images = await context.player.getImage(...data.data)
+        postMessage("images", images, "window.renderImage");
 
 
         break;
@@ -440,6 +361,16 @@ export default ({
     "appSettings"
   );
 
+  let webHtml = React.useMemo(() => {
+    let html = get("webHtml",
+      ["backgroundColor", context.appSettings.backgroundColor],
+      ["address", httpServer.address],
+      ["novelType", context.player.novel.type],
+      ["fontName", context.appSettings.fontName])
+      return html;
+  }, [context.appSettings.backgroundColor, httpServer.address, context.appSettings.fontName, context.player.novel.type]);
+  
+
   return (
     <View css={"flex wi-100% he-100%"} style={{ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }}>
       <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center clb">
@@ -456,23 +387,7 @@ export default ({
       {loader.elem}
       {render(null, {
         source: {
-          html: `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes" />
-              <style class="custom">
-                body {
-                  background:${context.appSettings.backgroundColor};
-                }
-              </style>
-              <link type="text/css" rel="stylesheet" href="${httpServer.address}/novelCss" />
-              <link type="text/css" rel="stylesheet" href="${httpServer.address}/novelFonts/${context.appSettings.fontName}" />
-              <script src="${httpServer.address}/novelScript"></script>
-            </head>
-            <body class="${context.player.novel.type}" imageAddress="${httpServer.address}/images"></body>
-          </html>
-          `,
+          html: webHtml,
           basUrl: ""
         },
         style: {

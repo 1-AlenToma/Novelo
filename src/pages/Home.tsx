@@ -157,6 +157,7 @@ const CurrentItem = ({
           }}>
           <Image
             url={book.imageBase64}
+            parserName={book.parserName}
             css="resizeMode:cover bor:5 he:100% wi:110"
           />
           <View css="flex invert">

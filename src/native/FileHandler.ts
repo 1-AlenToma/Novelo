@@ -102,9 +102,10 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
         console.info("Decoding")
         this.DownloadedFiles.set(fileUri, await content.decodeAsync());
       }
-      console.log("Finished Wrting", fileUri)
-      this.trigger("Write", file, fileUri);
-      return getFileInfo(fileUri, this.dir).filePath ?? fileUri;
+      console.log("Finished Wrting", fileUri);
+      if (!fileUri.isImage())
+        this.trigger("Write", file, fileUri);
+      return getFileInfo(fileUri, this.dir)?.filePath ?? fileUri;
     });
   }
 

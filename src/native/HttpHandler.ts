@@ -213,7 +213,6 @@ class HttpHandler {
   ) {
     try {
       if (item) url = this.queryString(url, item);
-      console.info("get_html", url);
       const data = await getFetch(url, this.header(), this.ignoreAlert, this);
       return new HttpValue(data ? await data.text() : "", baseurl || url);
     } catch (e) {
@@ -334,7 +333,7 @@ class HttpHandler {
     if (await url.isBase64UrlAsync()) return url.toBase64UrlAsync();
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    let timeout = undefined
 
     try {
       header = header ?? {};
@@ -346,6 +345,8 @@ class HttpHandler {
           useWebView = true;
         for (let k in h) header[k] = h[k];
       }
+      if (!useWebView)
+        timeout = setTimeout(() => controller.abort(), timeoutMs);
       console.log("base64Img", url)
       if (useWebView) {
         let html = await this.web_view(url, url, {
@@ -362,7 +363,7 @@ class HttpHandler {
 
       }
 
-      const response = await fetch(url, { ...this.header(header), signal: controller.signal });
+      const response = await fetch(url, { ...this.header(header), signal: useWebView ? undefined : controller.signal });
       const blob = await response.blob();
 
       return await new Promise<string>((resolve, reject) => {

@@ -3,14 +3,11 @@ import WebView from "react-native-webview";
 import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
-import { htmlGetterJsCode, jsScript, tryUntilSuccess, webViewCheckVerification } from "../JSConstant";
+import { getSystemJS } from "../JSConstant";
 import Timer from "hooks/Timer";
 
 const debug = false;
 const maxCalls = 3;
-
-
-
 
 
 const webViewDefaultProps = {
@@ -23,12 +20,14 @@ const webViewDefaultProps = {
 
 }
 
-const webViewProtectedJS = webViewCheckVerification();
-const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () => void }) => {
-  const [isVisible, setIsVisible] = useState(url !== undefined);
+
+
+const webViewProtectedJS = getSystemJS("protection");
+const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData, onHide: () => void }) => {
+  const [isVisible, setIsVisible] = useState(item?.url !== undefined);
   const webView = useRef<WebView>();
   const lastCheck = useRef();
-  const checkTimer = Timer(2);
+  const { url, tried, baseUrl } = (item ?? {})
   useEffect(() => {
     if (!isVisible)
       onHide();
@@ -43,11 +42,13 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
   return (<Modal addCloser={true} css="wi-80% he-90%" isVisible={isVisible} onHide={() => setIsVisible(false)}>
     <View style={{ flex: 1, marginTop: 15 }}>
       <Text css="fos-15 fow-bold co-red">
-        This {methods.baseUrl(url ?? "")} containe ICloude protection, so you need to validate it from time to time.
+        This {baseUrl} containe ICloude protection, so you need to validate it from time to time.
         {"\n"}
         Found ICloude protection, please check in the box and close the modal.
         {"\n"}
-        Note: if you dont find the ICloude protection, then simple close it and continue.
+        Note: If you dont find the ICloude protection, then simple close it and continue.
+        {"\n"}
+        Tries left:{4 - (tried ?? 0)}
       </Text>
       <WebView
         ref={webView}
@@ -57,21 +58,28 @@ const ProtectionModal = React.memo(({ url, onHide }: { url?: string, onHide: () 
           uri: url as string
         }}
         onNavigationStateChange={() => {
-          webView.current?.injectJavaScript(
-            `${jsScript(tryUntilSuccess("window.checkProtection"), "DOMContentLoaded", 20)}
-           true;`
-          );
+          /*  webView.current?.injectJavaScript(
+              `${jsScript(tryUntilSuccess("window.checkProtection"), "DOMContentLoaded", 20)}
+             true;`
+            );*/
         }}
         onMessage={async ({ nativeEvent }) => {
           try {
             let data = JSON.parse(nativeEvent.data);
+            if (data.type == "loaded") {
+              console.info("webView loaded");
+              webView.current?.injectJavaScript(
+                `window.timerJs(()=> window.checkProtection(), 20, true);\ntrue;`
+              );
+              return;
+            }
             //  console.warn("webViw", data)
             if (data.type == "pCheck") {
               if (!lastCheck.current && data.data) {
                 lastCheck.current = true;
               } else if (lastCheck.current && !data.data)
                 setIsVisible(false)
-            }else console.warn(data)
+            } else console.warn(data)
           } catch (e) {
             console.error(e);
           }
@@ -102,7 +110,7 @@ export default () => {
   const state = buildState(() =>
   ({
     updateNr: 0,
-    protection: [] as { url: string, id: string, baseUrl: string }[],
+    protection: [] as WebViewFetchData[],
   })).build();
   const timeout = 1;
   const webViews = useRef<(WebView | null)[]>([]);
@@ -146,11 +154,19 @@ export default () => {
   }, [iProtected]);
 
 
-  const protection = state.protection.firstOrDefault() as { url: string, id: string, baseUrl: string } | undefined;
+  const protection = state.protection.firstOrDefault() as WebViewFetchData | undefined;
 
   const handleHide = React.useCallback(() => {
     state.protection = state.protection.filter(x => x.id !== protection?.id)
   }, [protection?.id]);
+
+  const exec = (data: WebViewFetchData, args?: any) => {
+    try {
+      data.func(args ?? "");
+    } catch {
+
+    }
+  }
 
   return (
     <View style={!debug ? {
@@ -161,83 +177,92 @@ export default () => {
       height: 0,
       overflow: "hidden"
     } : { flex: 1, height: 200 }}>
-      <ProtectionModal url={protection?.url} onHide={handleHide} />
+      <ProtectionModal item={protection} onHide={handleHide} />
       {
-        htmlData.map((x, i) => (
-          <WebView
-            ref={c => webViews[i] = c as any}
-            key={x.id}
-            injectedJavaScriptBeforeContentLoaded={htmlGetterJsCode(x)}
-            {...webViewDefaultProps}
-            source={{
-              uri: x.url
-            }}
-            onNavigationStateChange={() => {
-              if (x.url.isImage(true))
-                return;
-              timers[i](() => {
-                webViews[i]?.injectJavaScript(`${jsScript(tryUntilSuccess("window.getHtml"), "DOMContentLoaded", (x.props?.timer ?? -1))}
-                true;`)
-              });
-            }}
-            onError={(e) => {
-              x.func("")
-              console.error("WebViewLoadError", x.url, e);
-            }}
-            onHttpError={(e) => {
-             // x.func("")
-              console.error("onHttpError", x.url, e.nativeEvent.statusCode);
-            }}
-            onMessage={async ({ nativeEvent }) => {
-              try {
-                let data = JSON.parse(nativeEvent.data);
-                // console.log(data)
-                switch (data.type) {
-                  case "html":
-                  case "ajax":
-                    htmlContext.html.data.find(x => x.id == data.id)?.func(data.data as any)
-                    break;
-                  case "protection":
-                    console.warn("Icloude found", data.data.text)
-                    let xItem = htmlData.find(x=> x.id == data.id);
-                    if (xItem.tried>3)
-                    {
-                      xItem.func("");
-                      return; // failed to may times
-                    }
-                    if (!state.protection.find(x => methods.baseUrl(data.data.url) == x.baseUrl)) {
-                      xItem.tried++;
-                      if (!protection)
-                        state.protection = [{ url: data.data.url, id: data.id, baseUrl: methods.baseUrl(data.data.url) }]
-                      else state.protection.push({ url: data.data.url, id: data.id, baseUrl: methods.baseUrl(data.data.url) });
-                    }
-                    break;
-                  case "error":
-                    htmlContext.html.data.find(x => x.id == data.id)?.func("")
-                    console.error("WebViewError", data);
-                    break;
-                  default:
-                    console.warn(data)
-                    break;
+        htmlData.map((x, i) => {
+          x.systemJs = x.systemJs ?? `${getSystemJS(x)}\ntrue;`;
+          timers[i](() => exec(x), 10000)
+          // console.log(x.systemJs);
+          return (
+            <WebView
+              ref={c => webViews[i] = c as any}
+              key={x.id}
+              injectedJavaScriptBeforeContentLoaded={x.systemJs}
+              {...webViewDefaultProps}
+              source={{
+                uri: x.url
+              }}
+              onNavigationStateChange={() => {
 
+              }}
+              onError={(e) => {
+                x.func("")
+                console.error("WebViewLoadError", x.url, e);
+              }}
+              onHttpError={(e) => {
+                // x.func("")
+                console.error("onHttpError", x.url, e.nativeEvent.statusCode);
+              }}
+              onMessage={async ({ nativeEvent }) => {
+                try {
+                  let data = JSON.parse(nativeEvent.data);
+                  // console.log(data.type);
+                  switch (data.type) {
+                    case "html":
+                    case "ajax":
+                      timers[i].clear();
+                      htmlContext.html.data.find(x => x.id == data.id)?.func(data.data as any)
+                      break;
+                    case "protection":
+                      timers[i].clear();
+                      console.warn("Icloude found", data.data.text)
+                      let xItem = htmlData.find(x => x.id == data.id);
+                      if (xItem.tried > 3 || data.blockedText) {
+                        htmlContext.html.data.filter(x => x.baseUrl == xItem.baseUrl).forEach(x => {
+                          x.tried = 4
+                        });
+                        xItem.func("");
+                        return; // failed to may times
+                      }
+                      if (!state.protection.find(x => methods.baseUrl(data.data.url) == x.baseUrl)) {
+                        xItem.tried++;
+                        if (!protection)
+                          state.protection = [xItem]
+                        else state.protection.push(xItem);
+                      }
+                      break;
+                    case "error":
+                      timers[i].clear();
+                      htmlContext.html.data.find(x => x.id == data.id)?.func("")
+                      console.error("WebViewError", data);
+                      break;
+                    case "loaded":
+                      webViews[i]?.injectJavaScript(`window.getHtml();\ntrue;`);
+                      timers[i](() => exec(x), 10000);
+                      break;
+                    default:
+                      console.warn(data)
+                      break;
+
+                  }
+                } catch (e) {
+                  console.error(e);
                 }
-              } catch (e) {
-                console.error(e);
-              }
 
-            }}
-            contentMode="mobile"
-            originWhitelist={["*"]}
-            setSupportMultipleWindows={false}
-            style={
-              {
-                zIndex: -1,
+              }}
+              contentMode="mobile"
+              originWhitelist={["*"]}
+              setSupportMultipleWindows={false}
+              style={
+                {
+                  zIndex: -1,
+                }
               }
-            }
-            androidLayerType="software"
-            allowFileAccess={true}
-            allowFileAccessFromFileURLs={true}
-            allowUniversalAccessFromFileURLs={true}
-          />))}
+              androidLayerType="software"
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={true}
+            />)
+        })}
     </View>)
 }
