@@ -214,9 +214,13 @@ String.prototype.cleanFileName = function (this: string) {
 }
 
 String.prototype.fileName = function (name: string, parserName: string, ext?: string) {
-    let fileName = name.cleanFileName()
-        .toLowerCase().slice(0, 50)
-    return parserName.path(fileName + (ext ?? ".json")).replace(/\/+$/, "");
+    try {
+        let fileName = name.cleanFileName().toLowerCase().slice(0, 50)
+        return parserName.path(fileName + (ext ?? ".json")).replace(/\/+$/, "");
+    } catch (e) {
+        console.error("fileName Error", e, "data", name, parserName);
+        throw e
+    }
 };
 
 String.prototype.isBase64Url = function (this: string) {

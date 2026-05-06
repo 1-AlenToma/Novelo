@@ -1097,8 +1097,6 @@ export default (props: any) => {
             ? files.fileItems.find(x => x.url === url) as DetailInfo
             : await state.parser?.detail(url, true);
 
-
-
           if (!state.novel || !state.novel.name)
             return;
           if (context.player?._playing)

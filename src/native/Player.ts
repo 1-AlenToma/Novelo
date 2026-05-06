@@ -164,8 +164,9 @@ class Player {
 
   getImage = async (...href: IImage[]) => {
     try {
+      console.warn("here ")
       let imgs: (IImage & { cn: any, path?: string, })[] = [];
-      let path = this.novel.imagePath as string;
+      let path = this.novel?.imagePath as string;
       if (path) {
         for (let image of href) {
           if (image.src && (image.src?.has(" header") || ["http", "https", "www"].some(x => image.src?.startsWith(x)))) {

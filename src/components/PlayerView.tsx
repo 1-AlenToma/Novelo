@@ -59,7 +59,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
               .navigate("ReadChapter", {
                 name: context.player.novel.name,
                 url: context.player.novel.url,
-                parserName: context.player.novel.parserName,
+                parserName: context.player.novel.parserName ?? context.player.book.parserName,
                 epub: context.player.isEpup
               });
           }}
