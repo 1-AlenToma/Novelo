@@ -1,3 +1,4 @@
+AssetsLinkEditor.funcMaps("window.tryUntilSuccess", "window.getHtml", "window.timerJs")
 let appSettings = AssetsLinkEditor.keys.appSettings;
 if (appSettings && typeof appSettings !== "string") {
   Object.assign(window, appSettings);

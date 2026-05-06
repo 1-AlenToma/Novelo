@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
 import { getSystemJS } from "../JSConstant";
+import { funcMapper, IFuncMapper } from "../assets/WebAssets";
 import Timer from "hooks/Timer";
 
 const debug = false;
@@ -20,12 +21,12 @@ const webViewDefaultProps = {
 
 }
 
-
+const blackListed = {}
 
 const webViewProtectedJS = getSystemJS("protection");
 const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData, onHide: () => void }) => {
   const [isVisible, setIsVisible] = useState(item?.url !== undefined);
-  const webView = useRef<WebView>();
+  const webView = useRef<IFuncMapper<"systemJs">>();
   const lastCheck = useRef();
   const { url, tried, baseUrl } = (item ?? {})
   useEffect(() => {
@@ -51,7 +52,9 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
         Tries left:{4 - (tried ?? 0)}
       </Text>
       <WebView
-        ref={webView}
+        ref={(c) => {
+          webView.current = funcMapper(c);
+        }}
         injectedJavaScriptBeforeContentLoaded={webViewProtectedJS}
         androidLayerType="software"
         source={{
@@ -68,9 +71,7 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
             let data = JSON.parse(nativeEvent.data);
             if (data.type == "loaded") {
               console.info("webView loaded");
-              webView.current?.injectJavaScript(
-                `window.timerJs(()=> window.checkProtection(), 20, true);\ntrue;`
-              );
+              webView.current.exec("window.timerJs(()=> window.checkProtection(), 20, true);");
               return;
             }
             //  console.warn("webViw", data)
@@ -113,7 +114,7 @@ export default () => {
     protection: [] as WebViewFetchData[],
   })).build();
   const timeout = 1;
-  const webViews = useRef<(WebView | null)[]>([]);
+  const webViews = useRef<(IFuncMapper<"systemJs"> | null)[]>([]);
   const timers = [useTimer(timeout), useTimer(timeout), useTimer(timeout)]
 
   useEffect(() => {
@@ -185,7 +186,9 @@ export default () => {
           // console.log(x.systemJs);
           return (
             <WebView
-              ref={c => webViews[i] = c as any}
+              ref={c => {
+                webViews[i] = funcMapper(c);
+              }}
               key={x.id}
               injectedJavaScriptBeforeContentLoaded={x.systemJs}
               {...webViewDefaultProps}
@@ -217,7 +220,12 @@ export default () => {
                       timers[i].clear();
                       console.warn("Icloude found", data.data.text)
                       let xItem = htmlData.find(x => x.id == data.id);
-                      if (xItem.tried > 3 || data.blockedText) {
+                      if (blackListed[xItem.baseUrl] != undefined && blackListed[xItem.baseUrl] > 2) {
+                        xItem.func("");
+                        return;
+                      }
+                      if (xItem.tried > 1 || data.blockedText) {
+                        blackListed[xItem.baseUrl] = (blackListed[xItem.baseUrl] ?? 0) + 1;
                         htmlContext.html.data.filter(x => x.baseUrl == xItem.baseUrl).forEach(x => {
                           x.tried = 4
                         });
@@ -237,7 +245,7 @@ export default () => {
                       console.error("WebViewError", data);
                       break;
                     case "loaded":
-                      webViews[i]?.injectJavaScript(`window.getHtml();\ntrue;`);
+                      webViews[i].exec("window.getHtml");
                       timers[i](() => exec(x), 10000);
                       break;
                     default:

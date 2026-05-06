@@ -10,10 +10,10 @@ export const getSystemJS = (settings?: any, methods?: string, ...args: any[]) =>
             Object.assign(appSettings, settings);
         else if (settings)
             appSettings.id = settings;
-        let js = keyBuilder("systemJs").key(`appSettings`, JSON.stringify(appSettings)).get();
+        let js = keyBuilder("systemJs").key(`appSettings`, appSettings).get();
         if (methods) {
             js += `
-            const mData = ${JSON.stringify(args)};
+            let mData = ${JSON.stringify(args)};
             tryUntilSuccess("${methods}", ...mData);
         `
         }

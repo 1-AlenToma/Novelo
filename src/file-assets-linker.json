@@ -2,17 +2,23 @@
     {
         "output": "./assets/WebAssets.ts",
         "format": "esm",
-        "minify": true,
+        "minify": false,
         "indent": 0,
-        "compress": true,
+        "compress": false,
         "assets": [
+            {
+                "name": "nativecompressorJs",
+                "path": "./native/compressor.js",
+                "inbuild": false
+            },
             {
                 "name": "systemJs",
                 "path": "../WebAssets/system.js"
             },
             {
                 "name": "bookJs",
-                "path": "../WebAssets/book.js"
+                "path": "../WebAssets/book.js",
+                "cleanRegexp": "/\\bexport \\b/gi"
             },
             {
                 "name": "bookCss",
@@ -47,7 +53,8 @@
             "line-height",
             "marginB",
             "icons",
-            "font"
+            "font",
+            "__DEV__"
         ],
         "globalVar": "AssetsLinkEditor"
     }

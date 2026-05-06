@@ -10,7 +10,8 @@ import { View, Text as TextView, ProgressBar } from "react-native-short-style";
 import BattariView from "./BattariView";
 import WebOptions from "../native/WebOptions";
 import httpServer from "../native/HttpServer";
-import { get } from "../assets/WebAssets";
+import { get, funcMapper, IFuncMapper } from "../assets/WebAssets";
+import { Compressor } from "../native/compressor";
 
 
 
@@ -90,7 +91,7 @@ export default ({
   bottomReched,
   topReched
 }: any) => {
-
+  const webView = useRef<IFuncMapper<"bookJs">>(null)
   const [render, state, loader, timer] = useView({
     timer: 200,
     component: WebView,
@@ -103,7 +104,7 @@ export default ({
     },
     ref: r => {
       if (r) {
-        state.refItem.webView = r;
+        webView.current = funcMapper(r);
       }
     },
     nestedScrollEnabled: true,
@@ -119,7 +120,6 @@ export default ({
     bounces: false,
     refItem: {
       loading: false,
-      webView: undefined,
       assets: {},
       firstLoad: false
     }
@@ -133,12 +133,12 @@ export default ({
     method?: string,
     id?: string
   ) => {
-    while (state.refItem.webView === undefined) {
+    while (!webView.current) {
       console.warn("WebView not loaded")
       await sleep(100);
     }
     let item = { type, data, id };
-    state.refItem.webView.injectJavaScript(`${!method ? "window.loadData" : method}(${JSON.stringify(item)}); true;`);
+    webView.current.exec(!method ? "window.loadData" : method, item);
   };
 
   const loadCss = async () => {
@@ -147,30 +147,29 @@ export default ({
     let shadow = inverted.has("white") ? "#4e4d4d" : "#919191";
     let shadowLength = (1).sureValue(context.appSettings.shadowLength, true);
     let cssStyle = get("webCss",
-      ["fontSize", `${context.appSettings.fontSize}px`],
-      [`highlight-co`, `${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color}`],
+      ["fontSize", `${context.appSettings.fontSize} px`],
+      [`highlight-co`, `${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color} `],
       [`highlight-bg`, context.appSettings.voiceWordSelectionsSettings?.color ?? inverted],
       [`fontStyle`, (context.appSettings.fontStyle ?? "normal").toLowerCase()],
       ["fontName", context.appSettings.fontName],
-      ["text-shadow", `${context.appSettings.use3D ? `1px ${shadowLength}px 1px ${shadow}` : "0"}`],
+      ["text-shadow", `${context.appSettings.use3D ? `1px ${shadowLength}px 1px ${shadow}` : "0"} `],
       ["co", color],
       ["inverted", inverted],
-      ["line-height", `${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5}px`],
-      ["marginB", `${context.appSettings.sentenceMargin ?? 5}px`]
+      ["line-height", `${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5} px`],
+      ["marginB", `${context.appSettings.sentenceMargin ?? 5} px`]
     )
 
     if (context.player.showPlayer) {
       cssStyle += `
       .sliderView p {
-        display:block;
-        position:relative;
-        margin-top:40px;
-      }
-      `;
+      display: block;
+      position: relative;
+      margin - top: 40px;
+    }
+    `;
     }
 
     await postMessage("CSS", cssStyle, undefined, "dynamicCSS");
-    //  await loadFonts();
     await postMessage("CSS", cleanInlineStyle(), undefined, "inlineStyle");
   };
 
@@ -185,7 +184,7 @@ export default ({
       loader.show();
       let content = {
         inlineStyle: cleanInlineStyle(),
-        content: context.player.showPlayer ? `<p>${context.player.currentPlaying()?.cleanText() ?? ""}</p>` : context.player.html,
+        content: context.player.showPlayer ? `< p > ${context.player.currentPlaying()?.cleanText() ?? ""}</p > ` : context.player.html,
         scroll: context.player.currentChapterSettings.scrollProgress
       };
 
@@ -213,9 +212,11 @@ export default ({
         Scroll: "Scroll",
         ScrollSnap: "PaginationScroll",
       }
-
+      console.warn("compressing..")
+      let c = new Compressor(content.content).compress();
+    //  console.warn("compressed", c.length, c.isCompressed(c))
       let scrollType = !context.player.isNovelType ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player" : nav[context.appSettings.navigationType] ?? "Pagination";
-      options.content = content.content;
+      options.content = c;
       options.scrollDisabled = false;
       options.scrollValue = content.scroll;
       options.scrollType = scrollType as any;
@@ -225,21 +226,11 @@ export default ({
       options.nextText = "Next Chapter";
       options.type = context.player.novel.type as any;
       options.menu = options.func("click", menuItems, `(item)=> window.postmsg("menu", item)`);
-      options.addFunction("onEnd", `()=> {window.postmsg("Next", true);}`);
-      options.addFunction("onStart", `()=> {window.postmsg("Prev", true);}`);
-      options.addFunction("onscroll", `(value)=> {window.postmsg("scrollValue", value);}`);
-      options.addFunction("scrollPercentageValue", `(percent) => {window.postmsg("scrollpercent", percent);}`);
-      let json = JSON.stringify(options);
-      json = json.replace(`"HTMLCONTENT"`, "`" + JSON.stringify(content.content).slice(1, -1) + "`");
-
-      const sliderJs = (`
-      if(window.loadBody){
-        window.loadBody(${json})
-      }
-      true;
-    `);
-      // await postMessage("CSS", CSSStyle);// reader style
-      state.refItem.webView?.injectJavaScript(sliderJs);
+      options.addFunction("onEnd", `()=> { window.postmsg("Next", true); } `);
+      options.addFunction("onStart", `()=> { window.postmsg("Prev", true); } `);
+      options.addFunction("onscroll", `(value)=> { window.postmsg("scrollValue", value); } `);
+      options.addFunction("scrollPercentageValue", `(percent) => { window.postmsg("scrollpercent", percent); } `);
+      webView.current.exec("window.loadBody", options);
     } catch (e) {
       console.error(e)
     }
@@ -337,7 +328,7 @@ export default ({
     () => {
       if (!context.player.showPlayer || !context.player.highlightedText || !context.player.highlightedText.text)
         return;
-      let json = JSON.stringify({
+      let json = {
         block: "nearest",
         inline: "start",
         all: !(context.appSettings.voiceWordSelectionsSettings?.appendSelection ?? false),
@@ -346,16 +337,8 @@ export default ({
         text: context.player.highlightedText.text,
         index: context.player.highlightedText.index,
         length: context.player.highlightedText.length
-      });
-      state.refItem.webView?.injectJavaScript(`
-        try{
-          window.highlight(${json});
-        }catch(e){
-          if (window.__DEV__)
-            alert(e)
-        }
-          true;
-    `);
+      }
+      webView.current?.exec("window.highlight", json);
     },
     "player.highlightedText",
     "appSettings"
@@ -367,9 +350,9 @@ export default ({
       ["address", httpServer.address],
       ["novelType", context.player.novel.type],
       ["fontName", context.appSettings.fontName])
-      return html;
+    return html;
   }, [context.appSettings.backgroundColor, httpServer.address, context.appSettings.fontName, context.player.novel.type]);
-  
+
 
   return (
     <View css={"flex wi-100% he-100%"} style={{ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }}>

@@ -21,6 +21,7 @@ class HttpServer {
         let ip = await NetworkInfo.getIPAddress();
         this.ip = ip && /[1-9]/g.test(this.ip) && __DEV__ ? ip : "127.0.0.1";
         this.address = `http://${this.ip}:${this.port}/${context.version}`;
+        console.warn("running server at ", this.address);
     }
 
     getRoute(route: string) {
@@ -162,7 +163,7 @@ class HttpServer {
                         statusCode: 200,
                         contentType: "application/javascript",
                         headers: { "Access-Control-Allow-Origin": "*" },
-                        body: `window.__DEV__=${(__DEV__ ?? false).toString().toLowerCase()}\n${get("bookJs")}`,
+                        body: get("bookJs", ["__DEV__", __DEV__ ?? false]),
                     };
                 }
             } catch (e) {
