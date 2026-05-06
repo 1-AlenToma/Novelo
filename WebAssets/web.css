@@ -1,72 +1,66 @@
 strong {
-  font-weight: bold !important;
+    font-weight: bold !important;
 }
 
 .italic,
 i {
-  display: inline !important;
-  font-style: italic !important;
-  font-size: calc(var(--AssetsLinkEditor-keys-fontSize) -3px) !important;
+    display: inline !important;
+    font-style: italic !important;
+    font-size: calc(var(--AssetsLinkEditor-keys-fontSize) -3px) !important;
 }
 
 
 .highlight {
-  border-radius: 0px;
-  display: inline-block;
-  color: var(--AssetsLinkEditor-keys-highlight-co) !important;
-  background-color: var(--AssetsLinkEditor-keys-highlight-bg) !important;
+    border-radius: 0px;
+    display: inline-block;
+    color: var(--AssetsLinkEditor-keys-highlight-co) !important;
+    background-color: var(--AssetsLinkEditor-keys-highlight-bg) !important;
 }
 
-*:not(.selection-menu, .selection-menu *, .italic, i, .ScollPreview, .retry) {
-  font-style: var(--AssetsLinkEditor-keys-fontStyle) !important;
+*:not(.selection-menu):not(.selection-menu *):not(.italic):not(i):not(.ScollPreview):not(.retry) {
+    font-style: var(--AssetsLinkEditor-keys-fontStyle) !important;
 }
 
-*:not(.selection-menu, .selection-menu *, .ScollPreview, .retry, .menu-item) {
-  font-family: "var(--AssetsLinkEditor-keys-fontName)", sans-serif !important;
-  font-size-adjust: 1;
-  text-shadow: var(--AssetsLinkEditor-keys-text-shadow);
+*:not(.selection-menu):not(.selection-menu *):not(.ScollPreview):not(.menu-item) {
+    font-family: "var(--AssetsLinkEditor-keys-fontName)", sans-serif !important;
+    font-size-adjust: 1;
+    text-shadow: var(--AssetsLinkEditor-keys-text-shadow);
 }
 
 parameter {
-  display: none;
+    display: none;
 }
 
 blur p {
-  color: var(--AssetsLinkEditor-keys-co);
-  background-color: var(--AssetsLinkEditor-keys-inverted);
-  padding: 5px;
-  border-radius: 10px;
-  overflow: hidden;
+    color: var(--AssetsLinkEditor-keys-co);
+    background-color: var(--AssetsLinkEditor-keys-inverted);
+    padding: 5px;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-:not(.selection-menu,
-  .selection-menu *,
-  .custom,
-  .blur,
-  .blur *,
-  .highlight,
-  .ScollPreview) {
-  background-color: transparent;
-  color: var(--AssetsLinkEditor-keys-inverted) !important;
+:not(.selection-menu):not(.selection-menu *):not(.custom):not(.blur):not(.blur *):not(.highlight):not(.ScollPreview) {
+    background-color: transparent;
+    color: var(--AssetsLinkEditor-keys-inverted) !important;
 }
 
 body {
-  background-color: var(--AssetsLinkEditor-keys-co) !important;
+    background-color: var(--AssetsLinkEditor-keys-co) !important;
 }
 
 .comments {
-  text-decoration: underline;
-  display: inline-block;
-  position: relative;
+    text-decoration: underline;
+    display: inline-block;
+    position: relative;
 }
 
 body img {
-  max-width: 100%;
+    max-width: 100%;
 }
 
 .Manga img {
-  margin: 0 auto 0;
-  display: block;
+    margin: 0 auto 0;
+    display: block;
 }
 
 h1,
@@ -75,19 +69,19 @@ h3,
 h4,
 h5,
 h6 {
-  line-height: var(--AssetsLinkEditor-keys-line-height) !important;
-  font-size: calc(var(--AssetsLinkEditor-keys-fontSize) + 5px);
+    line-height: var(--AssetsLinkEditor-keys-line-height) !important;
+    font-size: calc(var(--AssetsLinkEditor-keys-fontSize) + 5px) !important;
 }
 
 br {
-  display: none;
+    display: none;
 }
 
 .novel p {
-  display: block !important;
-  position: relative !important;
-  clear: both !important;
-  width: 100%;
+    display: block !important;
+    position: relative !important;
+    clear: both !important;
+    width: 100%;
 }
 
 .novel p,
@@ -97,9 +91,9 @@ br {
 .novel h3,
 .novel h4,
 .novel h5 {
-  margin-bottom: var(--AssetsLinkEditor-keys-marginB) !important;
+    margin-bottom: var(--AssetsLinkEditor-keys-marginB) !important;
 }
 
 * {
-  outline: none !important;
+    outline: none !important;
 }

@@ -147,16 +147,16 @@ export default ({
     let shadow = inverted.has("white") ? "#4e4d4d" : "#919191";
     let shadowLength = (1).sureValue(context.appSettings.shadowLength, true);
     let cssStyle = get("webCss",
-      ["fontSize", `${context.appSettings.fontSize} px`],
-      [`highlight-co`, `${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color} `],
+      ["fontSize", `${context.appSettings.fontSize}px`],
+      [`highlight-co`, `${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color}`],
       [`highlight-bg`, context.appSettings.voiceWordSelectionsSettings?.color ?? inverted],
       [`fontStyle`, (context.appSettings.fontStyle ?? "normal").toLowerCase()],
       ["fontName", context.appSettings.fontName],
-      ["text-shadow", `${context.appSettings.use3D ? `1px ${shadowLength}px 1px ${shadow}` : "0"} `],
+      ["text-shadow", `${context.appSettings.use3D ? `1px ${shadowLength}px 1px ${shadow}` : "0"}`],
       ["co", color],
       ["inverted", inverted],
-      ["line-height", `${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5} px`],
-      ["marginB", `${context.appSettings.sentenceMargin ?? 5} px`]
+      ["line-height", `${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5}px`],
+      ["marginB", `${context.appSettings.sentenceMargin ?? 5}px`]
     )
 
     if (context.player.showPlayer) {
@@ -184,7 +184,7 @@ export default ({
       loader.show();
       let content = {
         inlineStyle: cleanInlineStyle(),
-        content: context.player.showPlayer ? `< p > ${context.player.currentPlaying()?.cleanText() ?? ""}</p > ` : context.player.html,
+        content: context.player.showPlayer ? `<p>${context.player.currentPlaying()?.cleanText() ?? ""}</p> ` : context.player.html,
         scroll: context.player.currentChapterSettings.scrollProgress
       };
 
@@ -212,9 +212,10 @@ export default ({
         Scroll: "Scroll",
         ScrollSnap: "PaginationScroll",
       }
-      console.warn("compressing..")
+      //console.warn("compressing..")
       let c = new Compressor(content.content).compress();
-    //  console.warn("compressed", c.length, c.isCompressed(c))
+      //console.warn("html:", content.content)
+      //  console.warn("compressed", c.length, c.isCompressed(c))
       let scrollType = !context.player.isNovelType ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player" : nav[context.appSettings.navigationType] ?? "Pagination";
       options.content = c;
       options.scrollDisabled = false;

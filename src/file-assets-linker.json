@@ -2,9 +2,9 @@
     {
         "output": "./assets/WebAssets.ts",
         "format": "esm",
-        "minify": false,
+        "minify": true,
         "indent": 0,
-        "compress": false,
+        "compress": true,
         "assets": [
             {
                 "name": "nativecompressorJs",

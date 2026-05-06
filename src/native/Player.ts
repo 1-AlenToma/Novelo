@@ -102,7 +102,7 @@ class Player {
       txt = txt.normalizeHtml();
 
 
-    txt = context.appSettings.useSentenceBuilder?.enabled && isEpubTypeChapter ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt.html().outerHtml;
+    txt = context.appSettings.useSentenceBuilder?.enabled && isEpubTypeChapter ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt;
     try {
       for (let t of this.book.textReplacements) {
         let rg = new RegExp(t.edit.escapeRegExp(), "gim");
@@ -119,7 +119,7 @@ class Player {
     } finally {
     }
 
-    this.chapterArray = txt.htmlArray(true, true, true);
+    this.chapterArray = txt.htmlArray(false, true, true);
     this.html = txt;
     return txt;
   }

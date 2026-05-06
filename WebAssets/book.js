@@ -335,8 +335,6 @@ const loadImages = (view, option) => {
 const pageSleeper = (ms) => new Promise(r => setTimeout(r, ms))
 let createTimer = undefined;
 const create = async (option) => {
-
-    option.content = nrContentToString(option.content);
     try {
         validateJson(option);
         rendering = false;
@@ -1208,6 +1206,7 @@ try {
             window.abortAllFetches();
             document.body.innerHTML = "";
             window.removeEventListener("resize", onResize);
+            readerOption.content = nrContentToString(readerOption.content);
             await window.create(readerOption);
             mangaPage.page = undefined;
             window.postmsg("loader", false); // hide loader
