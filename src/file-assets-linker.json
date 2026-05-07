@@ -9,6 +9,12 @@
             {
                 "name": "nativecompressorJs",
                 "path": "./native/compressor.js",
+                "cleanRegexp": "/\\bexport \\b/gi",
+                "inbuild": false
+            },
+            {
+                "name": "fileassetslinkerJson",
+                "path": "./file-assets-linker.json",
                 "inbuild": false
             },
             {
@@ -17,8 +23,7 @@
             },
             {
                 "name": "bookJs",
-                "path": "../WebAssets/book.js",
-                "cleanRegexp": "/\\bexport \\b/gi"
+                "path": "../WebAssets/book.js"
             },
             {
                 "name": "bookCss",
