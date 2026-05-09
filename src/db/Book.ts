@@ -45,7 +45,8 @@ class Book extends DBInit {
       .column("textReplacements").nullable.json
       .column("parserName")
       .column("selectedChapterIndex").number
-      .hasMany<Chapter>("chapterSettings", "Chapters", "parent_Id").objectPrototype(Book.prototype);
+      .hasMany<Chapter>("chapterSettings", "Chapters", "parent_Id")
+      .objectPrototype(Book.prototype);
   }
 }
 

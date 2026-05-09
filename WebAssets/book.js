@@ -2,7 +2,7 @@ AssetsLinkEditor.funcMaps("window.loadBody", "window.highlight", "window.renderI
 window.__DEV__ = AssetsLinkEditor.keys.__DEV__;
 AssetsLinkEditor.loadFiles("nativecompressorJs");
 window.fetchControllers = {};
-// Abort a specific fetch by URL
+// Abort a specific fetch by URL 
 window.abortFetch = (url) => {
     const controller = window.fetchControllers[url];
     if (controller) {
@@ -11,7 +11,7 @@ window.abortFetch = (url) => {
     }
 };
 
-const nrContentToString = (content) => {
+const nrContentToString = async (content) => {
     try {
         if (!content)
             return content;
@@ -84,20 +84,20 @@ let options = {
     content: 'document.getElementById("chapter").innerHTML',
     menu: {
         items: [{
-                text: "Copy",
-                icon: "content_copy"
-            },
-            {
-                text: "Paste",
-                icon: "content_paste"
-            },
-            {
-                text: "Bold",
-                icon: "format_bold"
-            }
+            text: "Copy",
+            icon: "content_copy"
+        },
+        {
+            text: "Paste",
+            icon: "content_paste"
+        },
+        {
+            text: "Bold",
+            icon: "format_bold"
+        }
         ],
         minlength: 1,
-        click: function(item) {
+        click: function (item) {
             // alert(item.text);
         }
     }
@@ -196,7 +196,7 @@ const validateJson = (jsonItem) => {
     return jsonItem;
 }
 
-const trySplit = function(htmlString) {
+const trySplit = function (htmlString) {
     if (["<div", "<table", "<img"].find(x => htmlString.indexOf(x) != -1))
         return undefined;
     const p = document.createElement("p");
@@ -372,9 +372,6 @@ const create = async (option) => {
 
             return view;
         }
-
-
-
 
         const createScrollPreview = () => {
             scrollPerview = document.createElement("div");
@@ -1001,12 +998,12 @@ const mangaZoom = (e) => {
         }
 
         mangaPage.page.style.transform = `scale(${mangaPage.scale}) translate(${mangaPage.offsetX}px, ${mangaPage.offsetY}px)`;
-    } catch {}
+    } catch { }
 }
 
 let timerClick = null;
 let lastTap = 0;
-window.addEventListener('click', function(event) {
+window.addEventListener('click', function (event) {
     try {
         if (event.target.classList.contains("retry") || event.target.classList.contains("lazy"))
             return;
@@ -1048,7 +1045,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-window.cleanStyle = function(selector) {
+window.cleanStyle = function (selector) {
     try {
         const elements = document.querySelectorAll(selector);
         elements.forEach(e => e.querySelectorAll("[style]").forEach(x => {
@@ -1069,7 +1066,7 @@ window.cleanStyle = function(selector) {
 };
 
 const regChar = "[\-=%+*<>|/\[\]{}()$#!&?,:;.'’‘ _]";
-window.highlight = function(options) {
+window.highlight = function (options) {
     var inputText = document.querySelector(options.selector);
     if (!options.text)
         options.text = inputText.innerText;
@@ -1206,7 +1203,7 @@ try {
             window.abortAllFetches();
             document.body.innerHTML = "";
             window.removeEventListener("resize", onResize);
-            readerOption.content = nrContentToString(readerOption.content);
+            readerOption.content = await nrContentToString(readerOption.content);
             await window.create(readerOption);
             mangaPage.page = undefined;
             window.postmsg("loader", false); // hide loader

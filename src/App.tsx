@@ -117,12 +117,13 @@ const App = () => {
         })();
         context.isFullScreen = false;
         return () => {
+            context.db.rollbackTransaction(); // if there is an open connection
+            itemToRemove?.forEach(x => x.remove());
             // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
             if (!((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
                 RNExitApp.exitApp?.();
 
-            itemToRemove?.forEach(x => x.remove());
-            context.db.rollbackTransaction(); // if there is an open connection
+
         };
 
 

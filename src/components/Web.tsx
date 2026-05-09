@@ -91,7 +91,8 @@ export default ({
   bottomReched,
   topReched
 }: any) => {
-  const webView = useRef<IFuncMapper<"bookJs">>(null)
+  const webView = useRef<IFuncMapper<"bookJs">>(null);
+  const isProduction = __DEV__ !== true;
   const [render, state, loader, timer] = useView({
     timer: 200,
     component: WebView,
@@ -108,11 +109,14 @@ export default ({
       }
     },
     nestedScrollEnabled: true,
-    cacheEnabled: false,
+    sharedCookiesEnabled: isProduction,
+    thirdPartyCookiesEnabled: isProduction,
+    javaScriptEnabled: true,
+    domStorageEnabled: isProduction,
+    cacheEnabled: isProduction,
     allowFileAccess: true,
     allowFileAccessFromFileURLs: true,
     allowUniversalAccessFromFileURLs: true,
-    javaScriptEnabled: true,
     contentMode: "mobile",
     scalesPageToFit: true,
     originWhitelist: ["*"],
@@ -266,8 +270,10 @@ export default ({
     let data = JSON.parse(nativeEvent.data);
     switch (data.type) {
       case "loader":
-        if (data.data) loader.show();
-        else loader.hide();
+        if (data.data)
+          loader.show();
+        else
+          loader.hide();
         break;
       case "scrollValue":
         onScroll?.(data.data);
@@ -277,13 +283,17 @@ export default ({
         break;
       case "bottomReched":
       case "Next":
+
         if (!loader.loading)
           bottomReched?.();
+        loader.show();
         break;
       case "topReched":
       case "Prev":
+
         if (!loader.loading)
           topReched?.();
+        loader.show();
         break;
       case "click":
         click?.(data.data);
@@ -319,8 +329,6 @@ export default ({
       case "Image":
         let images = await context.player.getImage(...data.data)
         postMessage("images", images, "window.renderImage");
-
-
         break;
     }
   };

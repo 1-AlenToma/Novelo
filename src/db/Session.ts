@@ -17,7 +17,8 @@ class Session extends DBInit {
       .column("data").encrypt("novelo.enc")
       .column("file").encrypt("novelo.enc")
       .column("date")
-      .dateTime.objectPrototype(Session.prototype);
+      .dateTime
+      .objectPrototype(Session.prototype);
   }
 }
 public_m(Session);

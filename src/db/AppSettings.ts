@@ -74,7 +74,8 @@ class AppSettings extends DBInit {
             .column("autoUpdateFavoritNovels").nullable.boolean
             .column("ttsModol").nullable
             .column("chunkWords").boolean.nullable
-            .column("selectedParser").objectPrototype(AppSettings.prototype);
+            .column("selectedParser")
+            .objectPrototype(AppSettings.prototype);
     }
 }
 public_m(AppSettings);

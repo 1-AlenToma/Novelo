@@ -7,7 +7,7 @@ import StateBuilder from "react-smart-state";
 import { IGlobalState, FileInfo } from "./Types";
 import * as React from "react";
 import TestRunner from "./tests/TestRunner";
-import Html from "native/Html";
+import Html from "./native/Html";
 import HtmlContext from "./HtmlContext";
 import nlp from 'compromise'
 
@@ -308,7 +308,7 @@ Number.prototype.sureValue = function (a?: number, isInt?: boolean) {
 };
 
 Array.prototype.skip = function (index: number, handler?: Function) {
-    if (!handler) return this.filter((x, i) => i > index);
+    if (!handler) return this.filter((_, i) => (index >= 0 && i > index) || (index < 0 && i < this.length + index));
     return this.filter((x, i) => !handler(x, i) || i > index);
 };
 
@@ -713,10 +713,10 @@ global.getFileInfo = (path: string, dir?: string) => {
     else item.filePath = item.name;
 
     if (item.name)
-        path = path.split("/").reverse().skip(0).reverse().join("/"); // execlude file
+        path = path.split("/").skip(-1).join("/"); // execlude file
 
     if (dir)
-        item.folder = path.replace(dir.split("/").reverse().skip(0).reverse().join("/"), "")
+        item.folder = path.replace(dir.split("/").skip(-1).join("/"), "")
     else item.folder = path;
 
 
@@ -735,6 +735,8 @@ global.getFileInfo = (path: string, dir?: string) => {
     return item;
 
 }
+
+
 global.getFileName = (file: string, dir?: string) => {
     // its full path 
     if (file && file.trim().length > 0 && !fileTypes.find(x => file.has(x))

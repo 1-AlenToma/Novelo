@@ -121,7 +121,7 @@ export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progres
 
             for (let file of this._files) {
                 index++;
-                let info = getFileInfo(file, file.has(root) ? root : file.split("/").reverse().skip(0).reverse().join("/"));
+                let info = getFileInfo(file, file.has(root) ? root : file.split("/").skip(-1).join("/"));
                 console.info("copy", file, "to", tPath.path(info.filePath ?? ""))
                 await handler.copy(file, tPath.path(info.filePath ?? ""));
                 this.trigger("CopyProgress", { progress: this._files.length.procent(index), color: "green", filePath: file });

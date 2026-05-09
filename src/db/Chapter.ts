@@ -30,7 +30,8 @@ class Chapter extends DBInit {
       .boolean.column("scrollProgress")
       .decimal.column("audioProgress")
       .decimal.column("readPercent").decimal.nullable
-      .column("audioPercent").decimal.nullable.objectPrototype(Chapter.prototype);
+      .column("audioPercent").decimal.nullable
+      .objectPrototype(Chapter.prototype);
   }
 }
 public_m(Chapter);

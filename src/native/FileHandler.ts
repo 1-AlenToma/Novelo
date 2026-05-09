@@ -194,16 +194,17 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
       if (fullPath)
         folders = fileInfo.folders;
       else folders.push(this.dir);
-      for (let folder of folders)
-        if (!await RNF.exists(folder)) {
+      for (let folder of folders) {
+        if (!RNF.exists(folder)) {
           console.info(
             folder,
             "directory doesn't exist, creating…",
             folder
           );
-          await RNF.mkdir(folder);
+          RNF.mkdir(folder);
           console.info("Dir created")
         }
+      }
 
     } catch (e) {
       console.error(e, [fileInfo].niceJson());

@@ -41,9 +41,6 @@ LogBox.ignoreLogs([
 ]);
 
 ConsoleInterceptor.enable();
-
-
-
 var globalDb = new dbContext();
 const globalHttp = new HttpHandler();
 
@@ -412,6 +409,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     hideSubscription,
                     showSubscription,
                     windowEvent,
+                    { remove: () => data.db.close() },
                     { remove: () => BGService.stop() },
                     { remove: () => context.tts.stop() },
                     {

@@ -13,11 +13,6 @@
                 "inbuild": false
             },
             {
-                "name": "fileassetslinkerJson",
-                "path": "./file-assets-linker.json",
-                "inbuild": false
-            },
-            {
                 "name": "systemJs",
                 "path": "../WebAssets/system.js"
             },

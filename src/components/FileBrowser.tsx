@@ -42,7 +42,7 @@ const FileBrowser = (
         }
         let fileHandler = new FileHandler(state.containerPath);
         let files = await fileHandler.RNF.readDir(state.containerPath, true);
-        state.containerDirItem = root == state.containerPath ? undefined : (await fileHandler.RNF.readDir(state.containerPath.split("/").reverse().skip(0).reverse().join("/"), true)).find(x => x.path == state.containerPath)
+        state.containerDirItem = root == state.containerPath ? undefined : (await fileHandler.RNF.readDir(state.containerPath.split("/").skip(-1).join("/"), true)).find(x => x.path == state.containerPath)
         files = files.filter(x => x.isDirectory || (x.isFile && (ext?.includes("*") || ext?.find(e => x.name.toLowerCase().endsWith("." + e)))));
         state.files = files;
         state.handler = fileHandler;

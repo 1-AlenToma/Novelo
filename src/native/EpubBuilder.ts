@@ -76,9 +76,7 @@ export const readEpub = async (uri: string, epubType: "" | "Unknown" | "Novel" |
       if (/\..*$/.test(n))
         n = n
           .split(".")
-          .reverse()
-          .skip(0)
-          .reverse()
+          .skip(-1)
           .join(".");
       return n;
     };

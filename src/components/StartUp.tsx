@@ -4,7 +4,7 @@ import {
     requestManagePermission,
 } from 'manage-external-storage';
 import RNFS from 'react-native-fs-turbo';
-import { TTSConfig } from "Types";
+import { TTSConfig } from "../Types";
 import { unzip, subscribe } from 'react-native-zip-archive';
 
 const downloadPath = RNFS.CachesDirectoryPath;
@@ -55,7 +55,7 @@ export const StartUp = ({ children }: { children: any }) => {
         });
         const name = config.name.replace(/\(|\)/g, "");
         console.log("tpPath", toPath)
-        toPath = toPath.split("/").filter(x => x.length > 0).reverse().skip(0).reverse().join("/");
+        toPath = toPath.split("/").filter(x => x.length > 0).skip(-1).join("/");
         const zipFile = downloadPath.path(name + ".zip");
         if (await RNFS.exists(zipFile))
             await RNFS.unlink(zipFile);

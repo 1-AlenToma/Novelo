@@ -6,13 +6,16 @@
     "target": "ES6",
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "emitDecoratorMetadata": true,
     "noImplicitAny": false,
+    "rootDir": ".",
     "paths": {
       "@global": [
-        "Global.ts"
+        "./Global.ts"
       ]
     }
-  }
+  },
+  "exclude": [
+    "./node_modules"
+  ]
 }

@@ -1,6 +1,7 @@
 import { Database, DatabaseDrive, encrypt, decrypt, oEncypt, oDecrypt } from "react-native-ts-sqlite-orm";
 import {
-  openDatabaseAsync
+  openDatabaseAsync,
+  SQLiteDatabase
 } from "expo-sqlite";
 import {
   Book,
@@ -17,6 +18,7 @@ import {
 } from "../Methods";
 import { DetailInfo, ZipBook } from "../native";
 import { AlertDialog } from "react-native-short-style";
+let db: SQLiteDatabase;
 export default class DbContext extends Database<TableNames> {
   databaseName: string = "Novelo";
   appLocalSettings: AppLocalSettings;
@@ -49,9 +51,13 @@ export default class DbContext extends Database<TableNames> {
 
     super(
       async () => {
-        let db = await openDatabaseAsync(this.databaseName);
+        db = db ?? await openDatabaseAsync(this.databaseName);
         let driver: DatabaseDrive = {
-          close: async () => await db.closeAsync(),
+          close: async () => {
+            console.warn("closing db");
+            await db.closeAsync();
+            db = undefined;
+          },
           executeSql: async (sql, args, operation) => {
             console.info("Sql Operation", operation);
             switch (operation) {
@@ -81,13 +87,14 @@ export default class DbContext extends Database<TableNames> {
       },
       async db => {
         try {
-
+          console.warn("init new Db")
           await db.executeRawSql([{
             sql: `
-              PRAGMA cache_size=8192;
+              PRAGMA journal_mode=WAL;
+              PRAGMA cache_size=20000;
               PRAGMA encoding="UTF-8";
               PRAGMA synchronous=NORMAL;
-              PRAGMA temp_store=FILE;
+              PRAGMA temp_store=MEMORY;
               `, args: []
           }]);
 
