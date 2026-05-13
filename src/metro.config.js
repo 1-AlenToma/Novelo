@@ -3,7 +3,7 @@ const path = require("path");
 const { startDevServer } = require("react-native-short-style-devtools");
 
 
-if (process.env.NODE_ENV !== "production") {
+/*if (process.env.NODE_ENV !== "production") {
   try {
     const root = path.resolve(
       __dirname,
@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== "production") {
   } catch (err) {
     console.error("Failed to start DevTools server:", err);
   }
-}
+}*/
 
 const config = getDefaultConfig(__dirname);
 module.exports = config;
