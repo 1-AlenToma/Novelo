@@ -3,7 +3,7 @@ import {
 } from "react";
 import * as React from "react";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "react-native-short-style";
+import { ViewMem, AnimatedViewMem, TextMem, TouchableOpacityMem, ScrollViewMem } from "react-native-short-style";
 import useTimer from "../hooks/Timer";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
@@ -25,7 +25,8 @@ export default function <T>({
   onRefresh,
   page,
   numColumns,
-  onload
+  onload,
+  style
 }: {
   onload?: () => void,
   items: T[];
@@ -44,6 +45,7 @@ export default function <T>({
   onRefresh?: { loading: boolean, onRefresh: () => void },
   page?: number,
   numColumns?: number;
+  style?: any
 }) {
   context.hook(
     "selectedThemeIndex",
@@ -61,7 +63,7 @@ export default function <T>({
     let CN =
       onPress || onLongPress
         ? SingleTouchableOpacity
-        : View;
+        : ViewMem;
     let cnCSS = typeof itemCss == "string" ? itemCss as string : itemCss?.(item);
     return (
       <CN
@@ -114,13 +116,13 @@ export default function <T>({
   }, [selectedIndex]);
 
   return (
-    <View
-      style={{
+    <ViewMem
+      style={React.useMemo(() => [{
         maxHeight: "100%",
         width: "100%",
         height: "100%",
         flex: 0
-      }}
+      }, style], [style])}
       css="flg:1 mah:100% bac-transparent po-relative">
 
       <FlashList
@@ -156,23 +158,20 @@ export default function <T>({
 
         extraData={extraData}
         onEndReached={() => {
-          if (
-            !onEndReachedCalledDuringMomentum.current
-          ) {
+          if (!onEndReachedCalledDuringMomentum.current) {
             onEndReached?.();
-            onEndReachedCalledDuringMomentum.current =
-              true;
+            onEndReachedCalledDuringMomentum.current = true;
           }
         }}
         renderItem={Render}
         keyExtractor={(item, index) => {
           let tm: any = item;
           let key = typeof item == "object" ? tm.name ?? tm.url ?? "" : "";
-          if (!key || !key.has())
-            key += index;
+          if (!key)
+            key += String(index);
           return key;
         }}
       />
-    </View>
+    </ViewMem>
   );
 };

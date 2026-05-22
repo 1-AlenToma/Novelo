@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { Image } from "react-native-short-style";
+import { ImageMem } from "react-native-short-style";
 let noImage = require("../assets/noimage.png");
 export default ({
   style,
@@ -88,7 +88,7 @@ export default ({
   ), [state.source])
 
   return (
-    <Image
+    <ImageMem
       {...props}
       onError={() => state.source = noImage}
       source={source}

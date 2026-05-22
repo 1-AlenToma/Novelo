@@ -24,6 +24,8 @@ import { ReturnState } from "react-smart-state";
 
 export type NavigationPage = "WatchAnime" | "AppMenu" | "GroupDetail" | "NovelItemDetail" | "Search" | "ReadChapter";
 
+export type CollabsData<T> = { active: boolean, title: string, data: T[], lazyLoading: boolean };
+
 export type WebViewFetchData = {
   url: string,
   created: Date,

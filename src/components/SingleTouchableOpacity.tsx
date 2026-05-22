@@ -1,4 +1,4 @@
-import { TouchableOpacity, useTimer, StyledProps } from "react-native-short-style";
+import { TouchableOpacityMem, useTimer, StyledProps } from "react-native-short-style";
 import { TouchableOpacityProps } from "react-native";
 import useLoader from "./Loader";
 
@@ -18,9 +18,9 @@ export const SingleTouchableOpacity = (props: TouchableOpacityProps & StyledProp
 
     return (
 
-        <TouchableOpacity {...props} disabled={loader.loading} onPress={click} >
+        <TouchableOpacityMem {...props} disabled={loader.loading} onPress={click} >
             {props.hideLoader != true ? loader.elem : null}
             {props.children}
-        </TouchableOpacity>
+        </TouchableOpacityMem>
     )
 }

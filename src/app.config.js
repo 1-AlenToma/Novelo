@@ -5,7 +5,7 @@
 export default {
   "name": "Novelo",
   "slug": "Novelo",
-  "version": "1.3.8",
+  "version": "1.4.7",
   "orientation": "default",
   "icon": "./assets/ic_launcher_round.png",
   "scheme": "novels",

@@ -43,7 +43,8 @@ let colors = NestedStyleSheet.create({
     Modal: "invert !important",
     "invert> *": "bac-transparent",
     "invert Text, invert > Icon": "invertco",
-    "_toast * TouchableOpacity Icon": "bac-transparent fos-15 co-red !important"
+    "_toast * TouchableOpacity Icon": "bac-transparent fos-15 co-red !important",
+    "collabseItem > TouchableOpacity":"invert"
 })
 
 const lightTheme = NestedStyleSheet.create({

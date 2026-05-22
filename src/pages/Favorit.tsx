@@ -5,16 +5,21 @@ import {
   FoldableItem,
   ChapterView,
 } from "../components";
-import { View, Text, Icon, AlertDialog, ActionSheet, ReadyView } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, ActionSheet, ReadyView, Collabse, ScrollView } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
 import { Book } from "../db";
 import { DetailInfo } from "../native";
+import { CollabsData } from "../Types";
+import { sleep } from "react-smart-state";
+import { RefreshControl } from "react-native";
 
 const ItemRender = React.memo(({
-  url
+  url,
+  hideParserDetail
 }: {
-  url: string
+  url: string;
+  hideParserDetail?: boolean
 }) => {
   const itemLoader = useLoader(false);
   const state = buildState({
@@ -228,7 +233,7 @@ const ItemRender = React.memo(({
             {context.novelFavoritInfo[item.url] ||
               "loading"}
           </Text>
-          <Text css="clearwidth desc fow-bold fos-12 co:red bottom bo:5 le:60">
+          <Text ifTrue={hideParserDetail !== true} css="clearwidth desc fow-bold fos-12 co:red bottom bo:5 le:60">
             ({item.parserName} | {context.parser.find(item.parserName)?.type})
           </Text>
         </View>
@@ -242,9 +247,10 @@ export default ({ ...props }: any) => {
   ({
     text: "",
     json: "",
-    infoNovel: {}
-  })).build();
-
+    infoNovel: {},
+    data: [] as CollabsData<Book>[],
+  })).ignore("data").build();
+  context.hook("size");
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
@@ -253,11 +259,7 @@ export default ({ ...props }: any) => {
       (items, op) => {
         if (books.length <= 0) return true;
         let favs = items.filter(x => x.favorit);
-        if (
-          favs.find(
-            x => !books.find(f => f.url == x.url)
-          )
-        )
+        if (favs.find(x => !books.find(f => f.url == x.url)))
           return true;
 
         if (
@@ -273,8 +275,25 @@ export default ({ ...props }: any) => {
         return false;
       }
     );
-
   const loader = useLoader(dataIsLoading);
+  useEffect(() => {
+    if (dataIsLoading)
+      return;
+
+    let data = books.reduce((c, v) => {
+      let title = `${v.parserName} | ${context.parser.find(v.parserName)?.type}`;
+      let dItem = state.data.find(x => x.title = title);
+      if (!c.some(x => x.title == title)) {
+        c.push({ active: dItem?.active ?? false, data: [v], title: title, lazyLoading: dItem?.lazyLoading ?? true });
+      } else c.find(x => x.title == title).data.push(v);
+      return c;
+    }, [] as CollabsData<Book>[]);
+    state.data = data;
+  }, [books])
+
+  let screenHeight = (context.size.window.height as number) / 2;
+
+
   return (
     <View css="flex ali-center mih:100 invert">
 
@@ -286,16 +305,46 @@ export default ({ ...props }: any) => {
         }}
       />
       <View css="itemListContainer">
-        <ItemList
-          items={books?.filter(x =>
-            !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)
-          )}
-          container={({ item }: any) => (
-            <ItemRender url={item.url} />
-          )}
-          itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
-          vMode={true}
-        />
+        {
+          !state.text.has() ? (
+            <ScrollView>
+              {state.data.map((x) => (
+                <Collabse css={"collabseItem"}
+                  style={{ maxHeight:50+ Math.max(Math.min(screenHeight, x.data.length * 60), 60), padding: 0, marginBottom: 10 }}
+                  icon={<Icon type="AntDesign" name='book' size={20} />} text={x.title}
+                  key={x.title}
+                  defaultActive={x.active}
+                  lazyLoading={true}
+                  onActiveStateChange={c => {
+                    x.active = c;
+                    x.lazyLoading = false;
+
+                  }}>
+                  {
+                    <ItemList
+                      nested={true}
+                      style={{ paddingTop: 5, paddingBottom: 5, height: "90%" }}
+                      items={x.data}
+                      container={({ item }: any) => (
+                        <ItemRender hideParserDetail={true} url={item.url} />
+                      )}
+                      itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5 he-60"
+                      vMode={true}
+                    />
+                  }
+                </Collabse>
+
+              ))}</ScrollView>) : (
+            <ItemList
+              items={books?.filter(x => !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text))}
+              container={({ item }: any) => (
+                <ItemRender url={item.url} />
+              )}
+              itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5 he-60"
+              vMode={true}
+            />
+          )
+        }
         {loader.elem}
       </View>
     </View>

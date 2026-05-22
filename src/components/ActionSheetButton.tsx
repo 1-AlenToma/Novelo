@@ -50,7 +50,7 @@ export default ({
   const Container = ready !== false ? ReadyView : React.Fragment;
   let containerProps: any = {};
   if (ready != false)
-    containerProps = { css: "bac-transparent", timeout: 10 };
+    containerProps = { css: "bac-transparent", timeout: 2 };
   return (
     <>
       <SingleTouchableOpacity hideLoader={true} {...tprops as any} style={{ backgroundColor: "transparent" }}>

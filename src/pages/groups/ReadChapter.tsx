@@ -475,7 +475,7 @@ const Controller = ({ state, ...props }: any) => {
           {
             text: () => (
               <ActionSheetButton
-                ready={false}
+                ready={true}
                 controller="ActionSheet"
                 addCloser={true}
                 size="80%"
@@ -858,57 +858,57 @@ const Controller = ({ state, ...props }: any) => {
                     </TabView>
                     <TabView
                       ifTrue={() => context.player.isNovelType}
-                      css="flex invert mih-300"
+                      css="flex invert pab-30"
                       icon={{
                         name: "settings-voice",
                         type: "MaterialIcons"
                       }}
                     >
-                      <FormItem css="mih-130" title="Voices Choose TTS Model">
-                        <View css="he-100% wi-100%">
-                          <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
-                          <ButtonGroup scrollable={true}
-                            buttons={context.tts.nameList()}
-                            selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
-                            onPress={x => {
-                              editSettings({ ttsModol: context.tts.nameList()[x[0]] })
-                            }} />
-                        </View>
-                      </FormItem>
-                      <FormItem title="Split Words into chunks">
-                        <Text css="note co-red fos-12 fow-bold wi-100% pal-10">Split sentences into chunks, This is optional if you have an old phone.</Text>
-                        <CheckBox
-                          css="pal:1 invert"
-                          checked={
-                            context.appSettings
-                              .chunkWords ?? false
-                          }
-                          onChange={() => {
-                            editSettings({
-                              chunkWords: !(context.appSettings.chunkWords ?? false)
-                            });
-                          }}
-                        />
-                      </FormItem>
-                      <FormItem title="Rate/Speed">
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          step={0.1}
-                          value={
-                            context.appSettings.rate
-                          }
-                          onSlidingComplete={(rate: any) => {
-                            editSettings({
-                              rate
-                            });
-                          }}
-                          minimumValue={0.5}
-                          maximumValue={2}
-                        />
-                      </FormItem>
+                        <FormItem css="mih-130" title="Voices Choose TTS Model">
+                          <View css="he-100% wi-100%">
+                            <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
+                            <ButtonGroup scrollable={true}
+                              buttons={context.tts.nameList()}
+                              selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
+                              onPress={x => {
+                                editSettings({ ttsModol: context.tts.nameList()[x[0]] })
+                              }} />
+                          </View>
+                        </FormItem>
+                        <FormItem title="Split Words into chunks">
+                          <Text css="note co-red fos-12 fow-bold wi-100% pal-10">Split sentences into chunks, This is optional if you have an old phone.</Text>
+                          <CheckBox
+                            css="pal:1 invert"
+                            checked={
+                              context.appSettings
+                                .chunkWords ?? false
+                            }
+                            onChange={() => {
+                              editSettings({
+                                chunkWords: !(context.appSettings.chunkWords ?? false)
+                              });
+                            }}
+                          />
+                        </FormItem>
+                        <FormItem title="Rate/Speed">
+                          <Slider
+                            css="flex"
+                            renderValue={true}
+                            invertColor={true}
+                            buttons={true}
+                            step={0.1}
+                            value={
+                              context.appSettings.rate
+                            }
+                            onSlidingComplete={(rate: any) => {
+                              editSettings({
+                                rate
+                              });
+                            }}
+                            minimumValue={0.5}
+                            maximumValue={2}
+                          />
+                        </FormItem>
                     </TabView>
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
