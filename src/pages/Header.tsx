@@ -8,7 +8,6 @@ import {
 } from "../components";
 import { View, Text, Icon, ScrollView, TouchableOpacity } from "react-native-short-style";
 import * as React from "react";
-import { proc } from "../Methods";
 import {
   useNavigation,
   useUpdate
@@ -177,7 +176,7 @@ export default ({
                 context.parser.all.length > 1
               }
               css="mal:10 bac-transparent"
-              size="50%"
+              size="60%"
               title="Choose Parser"
               refItem={sourceContainer}
               btn={

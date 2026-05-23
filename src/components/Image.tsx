@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { ImageMem } from "react-native-short-style";
+import { Image } from "react-native-short-style/mems";
 let noImage = require("../assets/noimage.png");
 export default ({
   style,
@@ -14,14 +14,14 @@ export default ({
   css?: string;
   parserName?: string;
 }) => {
-  const state = buildState({
+  const state = buildState(() => ({
     source: noImage,
     imageSize: parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined,
     header: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
       Referer: (parserName ? context.parser.find(parserName)?.url : undefined)
     }
-  }).ignore("header").build();
+  })).ignore("header").build();
 
   let loadImage = async () => {
     let _source = noImage;
@@ -88,7 +88,7 @@ export default ({
   ), [state.source])
 
   return (
-    <ImageMem
+    <Image
       {...props}
       onError={() => state.source = noImage}
       source={source}

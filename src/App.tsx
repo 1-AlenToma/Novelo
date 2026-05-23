@@ -13,13 +13,12 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 import { useFonts } from "./hooks";
 
-import { AlertDialog, NestedStyleSheet, ThemeContainer, useTimer } from "react-native-short-style";
+import { NestedStyleSheet, ThemeContainer } from "react-native-short-style";
 import GlobalFileBrowse from "./components/GlobalFileBrowse";
 import CStyle from "./components/CStyle";
 import { Platform, Text } from "react-native";
 import * as icons from '@expo/vector-icons';
 import { useKeepAwake } from "expo-keep-awake";
-
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
     lightbg: "bac-#ffffff",

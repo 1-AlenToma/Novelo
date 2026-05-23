@@ -1,6 +1,6 @@
 import useLoader from "./Loader";
 import * as React from "react";
-import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer, ReadyView } from "react-native-short-style";
+import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer, ReadyView } from "react-native-short-style/mems";
 import { Book, Chapter } from "../db";
 import { DetailInfo, ChapterInfo } from "../native";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";

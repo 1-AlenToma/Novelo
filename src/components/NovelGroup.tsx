@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native-short-style";
+import { View, Text, TouchableOpacity } from "react-native-short-style/mems";
 import ItemList from "./ItemList";
 import useLoader from "./Loader";
 import HomeNovelItem from "./HomeNovelItem";
@@ -23,33 +23,40 @@ export default memo(
     const loader = useLoader(true);
     const state = buildState({
       items: [] as LightInfo[],
-      mounted: false
-    }).ignore("items").timeout(2).build()
-
+      mounted: false,
+    }).ignore("items").build()
+    const loading = useRef(false);
     const page = useRef(0);
     const item = context.parser.current.settings.group[itemIndex];
     const imageSize = context.parser.current.settings.imagesSize;
     const parser = useParser();
 
     const getItems = async (refreshing?: boolean) => {
-      loader.set(refreshing).show();
-      try {
-        let p = refreshing ? 1 : page.current + 1;
-        let oldItems = [...state.items];
-        let gitems = await parser.group(item, p, true, refreshing ? "RenewMemo" : undefined);
-        oldItems.distinct("url", gitems as any);
-        if (oldItems.length > state.items.length) {
-          page.current = p;
 
-          state.items = (oldItems);
+      if (loading.current)
+        return;
+      loading.current = true;
+      loader.set(refreshing).show();
+      await state.batch(async () => {
+        try {
+          let p = refreshing ? 1 : page.current + 1;
+          let oldItems = [...state.items];
+          let gitems = await parser.group(item, p, true, refreshing ? "RenewMemo" : undefined);
+          oldItems.distinct("url", gitems as any);
+          if (oldItems.length > state.items.length) {
+            page.current = p;
+
+            state.items = oldItems;
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          loader.hide();
+          if (!state.mounted)
+            state.mounted = true;
+          loading.current = false;
         }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        loader.hide();
-        if (!state.mounted)
-          state.mounted = true;
-      }
+      });
     };
 
     context.cache.onDirDelete((parserName) => {
@@ -79,14 +86,10 @@ export default memo(
             ? `he-240 mab:10 clearwidth invert`
             : "flex mab:10 root"
         }>
-        {loader.elem}
-        <View
-          css={`pal:5 clearwidth par:5 row juc:space-between invert ${!vMode ? "pal:0 par:0" : ""
-            }
-          `}>
+
+        <View css={`pal:5 clearwidth par:5 row juc:space-between invert ${!vMode ? "pal:0 par:0" : ""}`}>
           {!vMode ? (
-            <Text
-              css="header he:20 invertco">
+            <Text css="header he:20 invertco">
               {item.text}
             </Text>
           ) : null}
@@ -94,10 +97,9 @@ export default memo(
             <SingleTouchableOpacity
               css="clb"
               onPress={() => {
-                context
-                  .nav.navigate("GroupDetail", {
-                    groupIndex: itemIndex
-                  })
+                context.nav.navigate("GroupDetail", {
+                  groupIndex: itemIndex
+                })
               }}>
               <Text
                 css="desc fos:14 invertco">
@@ -120,7 +122,7 @@ export default memo(
                 parserName: item.parserName
               });
             }}
-            
+
             vMode={vMode}
             onEndReached={() => {
               if (!loader.loading) {
@@ -137,6 +139,7 @@ export default memo(
             container={({ ...props }: any) => <HomeNovelItem {...props} numberOfLines={imageSize ? 1 : 2} />}
           />
         </View>
+        {loader.elem}
       </View>
     );
   }

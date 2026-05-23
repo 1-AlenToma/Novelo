@@ -17,9 +17,13 @@ import {
   View, Text, Icon, ButtonGroup,
   TabView,
   AlertDialog,
-  Button, Modal, CheckBox, TabBar, FormItem, TouchableOpacity,
+  Button, Modal,
+  CheckBox,
+  TabBar,
+  FormItem,
+  TouchableOpacity,
   CheckBoxList
-} from "react-native-short-style";
+} from "react-native-short-style/mems";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
 import * as React from "react";
@@ -327,9 +331,9 @@ const Controller = ({ state, ...props }: any) => {
     chunkWords,
     lockScreenType,
     ...rest
-  }: AppSettings | Record<string, any>) => {
+  }: AppSettings | Record<string, any>, timerSpeed?: number) => {
     Timer(() => {
-      context.batch(async () => {
+      context.batch(() => {
         if (fontSize != undefined) {
           context.appSettings.fontSize = fontSize;
           context.appSettings.lineHeight = fontSize * context.lineHeight;
@@ -340,7 +344,7 @@ const Controller = ({ state, ...props }: any) => {
           if (context.tts.loaded) {
             if (context.player.playing())
               context.player.playing(false);
-            await context.tts.deinitialize();
+            context.tts.deinitialize();
           }
         }
 
@@ -364,15 +368,14 @@ const Controller = ({ state, ...props }: any) => {
 
 
 
-        await context.appSettings.saveChanges();
+        context.appSettings.saveChanges();
 
         if (rest.useSentenceBuilder || rest.normalizeText != undefined) context.player.clean();
       });
-    });
+    }, timerSpeed ?? 0);
   };
 
   const selectedTTsModel = context.tts.nameList().indexOf(context.appSettings.ttsModol);
-
   return (
     <>
       <View
@@ -618,7 +621,7 @@ const Controller = ({ state, ...props }: any) => {
                           onSlidingComplete={(fontSize: any) => {
                             editSettings({
                               fontSize
-                            });
+                            },100);
                           }}
                           minimumValue={10}
                           maximumValue={40}
@@ -638,7 +641,7 @@ const Controller = ({ state, ...props }: any) => {
                           onSlidingComplete={(lineHeight: any) => {
                             editSettings({
                               lineHeight
-                            });
+                            },100);
                           }}
                           minimumValue={Math.max((context.appSettings.fontSize * context.lineHeight) - 20, 10)}
                           maximumValue={(context.appSettings.fontSize * context.lineHeight) + 20}
@@ -658,7 +661,7 @@ const Controller = ({ state, ...props }: any) => {
                           onSlidingComplete={(sentenceMargin: any) => {
                             editSettings({
                               sentenceMargin
-                            });
+                            },100);
                           }}
                           minimumValue={5}
                           maximumValue={15}
@@ -678,7 +681,7 @@ const Controller = ({ state, ...props }: any) => {
                           onSlidingComplete={(margin: any) => {
                             editSettings({
                               margin
-                            });
+                            },100);
                           }}
                           minimumValue={5}
                           maximumValue={40}
@@ -775,7 +778,7 @@ const Controller = ({ state, ...props }: any) => {
                                 minLength:
                                   length
                               }
-                            });
+                            },100);
                           }}
                           minimumValue={100}
                           maximumValue={400}
@@ -829,7 +832,7 @@ const Controller = ({ state, ...props }: any) => {
                           onSlidingComplete={(shadowLength: any) => {
                             editSettings({
                               shadowLength
-                            });
+                            },100);
                           }}
                           minimumValue={1}
                           maximumValue={3}
@@ -864,51 +867,51 @@ const Controller = ({ state, ...props }: any) => {
                         type: "MaterialIcons"
                       }}
                     >
-                        <FormItem css="mih-130" title="Voices Choose TTS Model">
-                          <View css="he-100% wi-100%">
-                            <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
-                            <ButtonGroup scrollable={true}
-                              buttons={context.tts.nameList()}
-                              selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
-                              onPress={x => {
-                                editSettings({ ttsModol: context.tts.nameList()[x[0]] })
-                              }} />
-                          </View>
-                        </FormItem>
-                        <FormItem title="Split Words into chunks">
-                          <Text css="note co-red fos-12 fow-bold wi-100% pal-10">Split sentences into chunks, This is optional if you have an old phone.</Text>
-                          <CheckBox
-                            css="pal:1 invert"
-                            checked={
-                              context.appSettings
-                                .chunkWords ?? false
-                            }
-                            onChange={() => {
-                              editSettings({
-                                chunkWords: !(context.appSettings.chunkWords ?? false)
-                              });
-                            }}
-                          />
-                        </FormItem>
-                        <FormItem title="Rate/Speed">
-                          <Slider
-                            css="flex"
-                            renderValue={true}
-                            invertColor={true}
-                            buttons={true}
-                            step={0.1}
-                            value={
-                              context.appSettings.rate
-                            }
-                            onSlidingComplete={(rate: any) => {
-                              editSettings({
-                                rate
-                              });
-                            }}
-                            minimumValue={0.5}
-                            maximumValue={2}
-                          />
-                        </FormItem>
+                      <FormItem css="mih-130" title="Voices Choose TTS Model">
+                        <View css="he-100% wi-100%">
+                          <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
+                          <ButtonGroup scrollable={true}
+                            buttons={context.tts.nameList()}
+                            selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
+                            onPress={x => {
+                              editSettings({ ttsModol: context.tts.nameList()[x[0]] })
+                            }} />
+                        </View>
+                      </FormItem>
+                      <FormItem title="Split Words into chunks">
+                        <Text css="note co-red fos-12 fow-bold wi-100% pal-10">Split sentences into chunks, This is optional if you have an old phone.</Text>
+                        <CheckBox
+                          css="pal:1 invert"
+                          checked={
+                            context.appSettings
+                              .chunkWords ?? false
+                          }
+                          onChange={() => {
+                            editSettings({
+                              chunkWords: !(context.appSettings.chunkWords ?? false)
+                            });
+                          }}
+                        />
+                      </FormItem>
+                      <FormItem title="Rate/Speed">
+                        <Slider
+                          css="flex"
+                          renderValue={true}
+                          invertColor={true}
+                          buttons={true}
+                          step={0.1}
+                          value={
+                            context.appSettings.rate
+                          }
+                          onSlidingComplete={(rate: any) => {
+                            editSettings({
+                              rate
+                            }, 100);
+                          }}
+                          minimumValue={0.5}
+                          maximumValue={2}
+                        />
+                      </FormItem>
                     </TabView>
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}

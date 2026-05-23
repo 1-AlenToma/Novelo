@@ -9,7 +9,7 @@ import * as React from "react";
 import TestRunner from "./tests/TestRunner";
 import Html from "./native/Html";
 import HtmlContext from "./HtmlContext";
-import nlp from 'compromise'
+import nlp from 'compromise';
 
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
@@ -352,7 +352,7 @@ Array.prototype.distinct = function (key: any, itemsB: any[]) {
     let items = this;
     if (itemsB)
         for (let value of itemsB) {
-            if (value && !items.find(x => x[key] === value[key]))
+            if (value && !items.some(x => x[key] === value[key]))
                 items.push(value);
         }
 

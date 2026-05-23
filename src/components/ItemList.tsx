@@ -1,12 +1,8 @@
-import {
-  memo
-} from "react";
 import * as React from "react";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
-import { ViewMem, AnimatedViewMem, TextMem, TouchableOpacityMem, ScrollViewMem } from "react-native-short-style";
+import { View } from "react-native-short-style/mems";
 import useTimer from "../hooks/Timer";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
-
 
 export default function <T>({
   items,
@@ -63,7 +59,7 @@ export default function <T>({
     let CN =
       onPress || onLongPress
         ? SingleTouchableOpacity
-        : ViewMem;
+        : View;
     let cnCSS = typeof itemCss == "string" ? itemCss as string : itemCss?.(item);
     return (
       <CN
@@ -116,7 +112,7 @@ export default function <T>({
   }, [selectedIndex]);
 
   return (
-    <ViewMem
+    <View
       style={React.useMemo(() => [{
         maxHeight: "100%",
         width: "100%",
@@ -166,12 +162,12 @@ export default function <T>({
         renderItem={Render}
         keyExtractor={(item, index) => {
           let tm: any = item;
-          let key = typeof item == "object" ? tm.name ?? tm.url ?? "" : "";
+          let key = tm && typeof tm == "object" ? tm.url ?? tm.name ?? "" : "";
           if (!key)
             key += String(index);
           return key;
         }}
       />
-    </ViewMem>
+    </View>
   );
 };

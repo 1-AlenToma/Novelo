@@ -1,4 +1,4 @@
-import { View, Text, Icon } from "react-native-short-style";
+import { View, Text, Icon } from "react-native-short-style/mems";
 import Image from "./Image";
 import { LightInfo } from "../native/ParserItems";
 import * as React from "react";

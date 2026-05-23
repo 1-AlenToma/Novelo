@@ -7,7 +7,7 @@ import {
 import {
   View, Text, Icon, TouchableOpacity,
   ProgressBar
-} from "react-native-short-style";
+} from "react-native-short-style/mems";
 import HomeNovelItem from "../../components/HomeNovelItem"
 import * as React from "react";
 import {

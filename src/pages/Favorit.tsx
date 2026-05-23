@@ -5,14 +5,12 @@ import {
   FoldableItem,
   ChapterView,
 } from "../components";
-import { View, Text, Icon, AlertDialog, ActionSheet, ReadyView, Collabse, ScrollView } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, ActionSheet, ReadyView, Collabse, ScrollView } from "react-native-short-style/mems";
 import * as React from "react";
 import Header from "./Header";
 import { Book } from "../db";
 import { DetailInfo } from "../native";
 import { CollabsData } from "../Types";
-import { sleep } from "react-smart-state";
-import { RefreshControl } from "react-native";
 
 const ItemRender = React.memo(({
   url,

@@ -1,17 +1,35 @@
-export default (ms: number) => {
-  const timer = useRef<any>();
 
-  let create = function (func: Function, mss?: number) {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => func(), mss || ms);
-  };
-  (create as any).clear = () => clearTimeout(timer.current);
+
+import { useCallback } from "react";
+
+type DebouncedFn = {
+  (fn: () => void, delay?: number): void;
+  clear: () => void;
+};
+
+export default function useDebounce(ms: number): DebouncedFn {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clear = useCallback(() => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+  }, []);
+
+  const debounce = useCallback(((fn: () => void, delay?: number) => {
+    clear();
+    if (delay == 0)
+      fn();
+    else
+      timer.current = setTimeout(fn, delay ?? ms);
+  }) as DebouncedFn, [ms, clear]);
+
+  debounce.clear = clear;
 
   useEffect(() => {
-    return () => clearTimeout(timer.current);
-  }, [])
-  const func = create as any as (((func: Function, mss?: number) => void) & { clear: () => void });
+    return clear;
+  }, [clear]);
 
-
-  return func;
-};
+  return debounce;
+}

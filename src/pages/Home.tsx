@@ -2,7 +2,8 @@ import {
   Image,
   SingleTouchableOpacity,
 } from "../components";
-import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, TouchableOpacity } from "react-native-short-style";
+import { View, Text, Icon, AnimatedView, useTimer, ActionSheet } from "react-native-short-style";
+
 import NovelGroup from "../components/NovelGroup"
 import * as React from "react";
 import Header from "./Header";

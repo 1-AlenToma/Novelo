@@ -7,7 +7,7 @@ import {
   ExpandableDescription,
   SingleTouchableOpacity
 } from "../../components/";
-import { View, Text, Icon, AlertDialog, Modal, TabBar, TabView, TouchableOpacity, ActionSheet } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, Modal, TabBar, TabView, TouchableOpacity, ActionSheet } from "react-native-short-style/mems";
 import HomeNovelItem from "../../components/HomeNovelItem";
 import WebView from "react-native-webview";
 import * as React from "react";

@@ -1,4 +1,4 @@
-import { View, AnimatedView, Text, TouchableOpacity, Icon, ScrollView, ActionSheet } from "react-native-short-style";
+import { View, AnimatedView, Text, Icon, ScrollView, ActionSheet } from "react-native-short-style/mems";
 import * as React from "react";
 import { useAnimate, useView } from "../hooks";
 import { ISize } from "../Types";
