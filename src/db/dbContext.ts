@@ -86,25 +86,15 @@ export default class DbContext extends Database<TableNames> {
         return driver;
       },
       async db => {
-        try {
-          console.warn("init new Db")
-          await db.executeRawSql([{
-            sql: `
-              PRAGMA journal_mode=WAL;
-              PRAGMA cache_size=20000;
-              PRAGMA encoding="UTF-8";
-              PRAGMA synchronous=NORMAL;
-              PRAGMA temp_store=MEMORY;
-              `, args: []
-          }]);
-
-        } catch (e) {
-          console.error(e);
-        } finally {
-          db.startRefresher(3600000);
-        }
+        db.startRefresher(3600000);
       },
-      !__DEV__
+      {
+        disableLog: false,
+        journal_mode: "WAL",
+        cache_size: -8000,
+        synchronous: "NORMAL",
+        temp_store: "MEMORY"
+      }
     );
 
     this.appLocalSettings = appLocalSettings;

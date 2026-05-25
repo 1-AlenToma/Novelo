@@ -2,14 +2,15 @@ import {
   Image,
   SingleTouchableOpacity,
 } from "../components";
-import { View, Text, Icon, AnimatedView, useTimer, ActionSheet } from "react-native-short-style";
+import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, Button } from "react-native-short-style";
 
 import NovelGroup from "../components/NovelGroup"
 import * as React from "react";
 import Header from "./Header";
 import {
   useNavigation,
-  useDbHook
+  useDbHook,
+  useParser
 } from "../hooks";
 import { Book } from "../db";
 import {
@@ -185,12 +186,11 @@ const CurrentItem = ({
   );
 };
 export default ({ ...props }: any) => {
-  const [_, options, navop] =
-    useNavigation(props);
+  const [_, options, navop] = useNavigation(props);
   context.hook("size", "parser.current");
   context.nav.option = options;
-  let groups =
-    context.parser.current.settings.group;
+
+  let groups = context.parser.current.settings.group;
   let scrollAnimation = useRef(
     new Animated.Value(0)
   ).current;
@@ -229,7 +229,13 @@ export default ({ ...props }: any) => {
             inputEnabled={true}
           />
         </CurrentItem>
-
+        {
+          groups.length <= 0 ? (
+            <View css="bac-transparent fl-1 ali-center juc-center">
+              <Button text="Reload" css="wi-200" onPress={() => context.parser.set(context.parser.current)} />
+            </View>
+          ) : null
+        }
         {groups.map((x, i) => (
           <View
             css="ali:center bor:5 overflow ma:5 pa:5 pab:0 invert"
