@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Text, TouchableOpacity, ReadyView, ActionSheet, Modal } from "react-native-short-style";
+import { Text, TouchableOpacity, ReadyView, ActionSheet, Modal } from "react-native-short-style/mems";
 import { ifSelector } from "../Methods";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 export default ({
@@ -21,39 +21,44 @@ export default ({
   speed?: number;
   controller?: "Modal" | "ActionSheet"
 } & any) => {
-  if (ifSelector(ifTrue) === false) return null;
-  const [visible, setVisible] = useState(false);
+
+  const state = buildState({
+    visible: false
+  }).build();
+  const {mem}  = useFunc();
 
   let tprops = {
-    onPress: () => setVisible(true),
+    onPress: () => state.visible=(true),
     onLongPress: undefined as Function | undefined
   };
 
   if (refItem) {
     if (!refItem.current)
       refItem.current = {};
-    refItem.current.close = () => setVisible(false);
-    refItem.current.show = () => setVisible(true);
+    refItem.current.close = () => state.visible=(false);
+    refItem.current.show = () => state.visible =(true);
   }
 
   useEffect(() => {
     if (refItem)
-      refItem.current?.onChange?.(visible)
-  }, [visible])
+      refItem.current?.onChange?.(state.visible)
+  }, [state.visible])
 
   if (onPress) {
     tprops.onPress = onPress;
-    tprops.onLongPress = () => setVisible(true);
+    tprops.onLongPress = () => state.visible= (true);
   }
-  let extra = controller == "Modal" ?{css:`he-${props.size} wi-95%`}:{}
+  let extra = controller == "Modal" ? { css: `he-${props.size} wi-95%` } : {}
   const CN = controller == "Modal" ? Modal : ActionSheet;
   const Container = ready !== false ? ReadyView : React.Fragment;
   let containerProps: any = {};
   if (ready != false)
     containerProps = { css: "bac-transparent", timeout: 2 };
+
+  if (ifSelector(ifTrue) === false) return null;
   return (
     <>
-      <SingleTouchableOpacity hideLoader={true} {...tprops as any} style={{ backgroundColor: "transparent" }}>
+      <SingleTouchableOpacity hideLoader={true} {...tprops as any} style={mem({ backgroundColor: "transparent" })}>
         {typeof btn === "string" ? (
           <Text css={css}>{btn}</Text>
         ) : (
@@ -64,8 +69,8 @@ export default ({
         {...props}
         {...extra}
         speed={speed ?? 300}
-        isVisible={visible}
-        onHide={() => setVisible(false)}
+        isVisible={state.visible}
+        onHide={mem(() => state.visible=(false))}
       >
         <Container {...containerProps}>
           {props.children}

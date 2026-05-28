@@ -219,8 +219,7 @@ export default class ParserWrapper extends Parser {
     daysToSave: () => daysToSave(20),
     isDebug: debugg,
     folder: (target: Parser) => target.name,
-    keyModifier: (target, key) =>
-      `${key}${target.name}`,
+    keyModifier: (target, key) => `${key}${target.name}`,
     validator: (data: any) =>
       data &&
       (data.status?.has() ||
@@ -229,6 +228,7 @@ export default class ParserWrapper extends Parser {
   })
   async load(renewMemo?: "RenewMemo" | undefined) {
     try {
+      console.info("loading parser settings")
       return await this.parser.load();
     } catch (e) {
       console.error("error", e);

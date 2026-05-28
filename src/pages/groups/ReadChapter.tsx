@@ -22,7 +22,8 @@ import {
   TabBar,
   FormItem,
   TouchableOpacity,
-  CheckBoxList
+  CheckBoxList,
+  useLocalMemo
 } from "react-native-short-style/mems";
 import WebView from "react-native-webview";
 import Fonts from "../../assets/Fonts";
@@ -49,6 +50,7 @@ for (let l in LANGUAGE_TABLE) {
 
 const Modoles = () => {
   const loader = useLoader();
+  const { mem, memKey } = useFunc();
   context.hook(
     "player.menuOptions",
     "player.menuOptions.textToTranslate",
@@ -79,14 +81,14 @@ const Modoles = () => {
       <Modal
         addCloser={true}
         isVisible={context.player.menuOptions.comment != undefined}
-        onHide={() => (context.player.menuOptions.comment = undefined)}
+        onHide={mem(() => (context.player.menuOptions.comment = undefined))}
         css={"he-200"}
       >
         <View css="flex mat:20 invert wi-95%">
           <TextInput
-            onChangeText={(x: string) =>
+            onChangeText={memKey("commentOnChange", (x: string) =>
               (context.player.menuOptions.comment = x)
-            }
+            )}
             readOnly={true}
             css="pa:5 bor:2 flg:1 clearboth"
             multiline={true}
@@ -96,7 +98,7 @@ const Modoles = () => {
       </Modal>
       <Modal
         isVisible={context.player.menuOptions.textEdit != undefined}
-        onHide={() => (context.player.menuOptions.textEdit = undefined)}
+        onHide={mem(() => (context.player.menuOptions.textEdit = undefined))}
         addCloser={true}
         css="he-80%"
       >
@@ -104,7 +106,7 @@ const Modoles = () => {
           <View css="flex mat:20 invert">
             <TextInput
               label="TextToEdit"
-              onChangeText={x => (context.player.menuOptions.textEdit.edit = x)}
+              onChangeText={memKey("textToEditOnChange", x => (context.player.menuOptions.textEdit.edit = x))}
               css="pa:5 bor:2 flg:1"
               multiline={true}
               defaultValue={
@@ -112,10 +114,9 @@ const Modoles = () => {
               }
             />
             <TextInput
-              onChangeText={x =>
-              (context.player.menuOptions.textEdit.editWith =
-                x)
-              }
+              onChangeText={memKey("textToEditWithOnChange", x =>
+                context.player.menuOptions.textEdit.editWith = x
+              )}
               label="EditWith"
               css="pa:5 bor:2 flg:1"
               multiline={true}
@@ -127,10 +128,9 @@ const Modoles = () => {
 
             <TextInput
               label="Comment"
-              onChangeText={x =>
-              (context.player.menuOptions.textEdit.comments =
-                x)
-              }
+              onChangeText={memKey("commentsOnChange", x =>
+                context.player.menuOptions.textEdit.comments = x
+              )}
               css="pa:5 bor:2 flg:1"
               multiline={true}
               defaultValue={
@@ -144,22 +144,21 @@ const Modoles = () => {
                   context.player.menuOptions.textEdit
                     ?.bgColor ?? "#ffffff"
                 }
-                onComplete={({ hex }: any) =>
+                onComplete={memKey("colorComment", ({ hex }: any) =>
                 (context.player.menuOptions.textEdit = {
                   ...context.player.menuOptions.textEdit,
                   bgColor: hex
-                })
-                }
+                }))}
               />
             </FormItem>
-            <Button text="Save" css={"ali-center juc-center"} onPress={async () => {
+            <Button text="Save" css={"ali-center juc-center"} onPress={memKey("commentSave", async () => {
               context.player.book.textReplacements.push(
                 context.player.menuOptions.textEdit
               );
               await context.player.book.saveChanges();
               await context.player.clean();
               context.player.menuOptions.textEdit = undefined;
-            }} />
+            })} />
           </View>
         </ScrollView>
       </Modal>
@@ -168,18 +167,15 @@ const Modoles = () => {
         isVisible={
           context.player.menuOptions.textToTranslate != undefined
         }
-        onHide={() =>
-          (context.player.menuOptions.textToTranslate = undefined)
-        }
-        css="he-80%"
-      >
+        onHide={mem(() => context.player.menuOptions.textToTranslate = undefined)}
+        css="he-80%">
         <View css="flex mat:20 invert">
           <FormItem title="TranslateTo:" labelPosition="Left">
             <DropDownLocalList
               size={"80%"}
               css={"invert"}
-              items={Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } })}
-              render={item => {
+              items={memKey("textranslateDropDown", Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } }))}
+              render={memKey("RdnerTextTranslateDropDown", item => {
                 return (
                   <View css="fl-1 bac-transparent juc-center pal-10">
                     <Text css="desc fos:13 invertco">
@@ -187,12 +183,12 @@ const Modoles = () => {
                     </Text>
                   </View>
                 );
-              }}
-              onSelect={language => {
+              })}
+              onSelect={memKey("translateDropDownSelect", language => {
                 context.appSettings.lang = language.value;
                 context.appSettings.saveChanges();
                 return false;
-              }}
+              })}
               selectedValue={
                 context.appSettings.lang ?? "English"
               }
@@ -207,14 +203,14 @@ const Modoles = () => {
               `}
               nestedScrollEnabled={true}
               cacheEnabled={true}
-              source={{
+              source={memKey("translateWebViewSource", {
                 uri: `https://translate.google.com/m?hl=en&sl=en&tl=${LANGUAGE_TABLE[
                   context.appSettings.lang ?? "English"
                 ].google
                   }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
                     context.player.menuOptions.textToTranslate ?? ""
                   )}`
-              }}
+              }, context.appSettings.lang, context.player.menuOptions?.textToTranslate)}
               contentMode="mobile"
               scalesPageToFit={true}
               originWhitelist={["*"]}
@@ -222,11 +218,11 @@ const Modoles = () => {
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
               style={
-                {
+                memKey("translateWebViewStyle", {
                   flexGrow: 1,
                   zIndex: 70,
                   flex: 1
-                }
+                })
               }
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
@@ -240,7 +236,7 @@ const Modoles = () => {
       <Modal
         addCloser={true}
         isVisible={context.player.menuOptions.define != undefined}
-        onHide={() => (context.player.menuOptions.define = undefined)}
+        onHide={mem(() => context.player.menuOptions.define = undefined)}
         css="he-80%"
       >
         <View css="flex mat:20">
@@ -248,21 +244,21 @@ const Modoles = () => {
             <WebView
               nestedScrollEnabled={true}
               cacheEnabled={true}
-              source={{
+              source={memKey("defineSource", {
                 uri: context.player.menuOptions.define
-              }}
+              }, context.player.menuOptions.define)}
               contentMode="mobile"
               scalesPageToFit={true}
-              originWhitelist={["*"]}
+              originWhitelist={memKey("defineOrgin", ["*"])}
               scrollEnabled={true}
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
               style={
-                {
+                memKey("defineStyle", {
                   flexGrow: 1,
                   zIndex: 70,
                   flex: 1
-                }
+                })
               }
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
@@ -277,6 +273,7 @@ const Modoles = () => {
 };
 
 const Controller = ({ state, ...props }: any) => {
+  const { mem, memKey } = useLocalMemo();
   useDbHook(
     "Chapters",
     item => item.parent_Id === state.book.id,
@@ -294,7 +291,7 @@ const Controller = ({ state, ...props }: any) => {
     "player.currentChapterSettings"
   );
 
-  const oSettings = useRef({
+  const oSettings = mem({
     fonts: Object.keys(Fonts).map(x => { return { label: x, value: x } }),
     fontStyles: [
       "Normal",
@@ -307,7 +304,7 @@ const Controller = ({ state, ...props }: any) => {
       "align-justify",
       "align-right"
     ]
-  }).current
+  });
 
   const Timer = useTimer(100);
 
@@ -325,7 +322,7 @@ const Controller = ({ state, ...props }: any) => {
     };
   }, []);
 
-  const editSettings = ({
+  const editSettings = mem(({
     fontSize,
     ttsModol,
     chunkWords,
@@ -373,7 +370,7 @@ const Controller = ({ state, ...props }: any) => {
         if (rest.useSentenceBuilder || rest.normalizeText != undefined) context.player.clean();
       });
     }, timerSpeed ?? 0);
-  };
+  });
 
   const selectedTTsModel = context.tts.nameList().indexOf(context.appSettings.ttsModol);
   return (
@@ -384,34 +381,36 @@ const Controller = ({ state, ...props }: any) => {
           context.appSettings.backgroundColor
         )}`}>
 
-        <ContextContainer stateItem={{ chapterSliderValue: undefined }} globalStateKeys={["player.currentChapterIndex", "player.showController"]} render={(state) => {
-          return (<>
-            <Text css="desc fos:13">
-              {context.player.procent(state.chapterSliderValue)}
-            </Text>
-            <View css="wi-100% juc:center fld-row position-relative left-1 ali:center">
-              <Slider
-                renderAboveThumbComponent={undefined}
-                css="invert"
-                disableTimer={true}
-                buttons={true}
-                value={state.chapterSliderValue == undefined ? context.player.currentChapterIndex : state.chapterSliderValue}
-                onValueChange={(v: number) => {
-                  Timer.clear();
-                  state.chapterSliderValue = parseInt(v.toString()) as any
-                }}
-                animationType="spring"
-                onSlidingComplete={(index: number) => {
-                  Timer(async () => {
-                    await context.player.jumpTo(parseInt(index.toString()));
-                    state.chapterSliderValue = undefined;
-                  });
-                }}
-                minimumValue={0}
-                maximumValue={context.player.novel.chapters.length - 1}
-              />
-            </View></>)
-        }} />
+        <ContextContainer stateItem={{ chapterSliderValue: undefined }}
+          globalStateKeys={["player.currentChapterIndex", "player.showController"]}
+          render={memKey("ChapterSlider", (state: any) => {
+            return (<>
+              <Text css="desc fos:13">
+                {context.player.procent(state.chapterSliderValue)}
+              </Text>
+              <View css="wi-100% juc:center fld-row position-relative left-1 ali:center">
+                <Slider
+                  renderAboveThumbComponent={undefined}
+                  css="invert"
+                  disableTimer={true}
+                  buttons={true}
+                  value={state.chapterSliderValue == undefined ? context.player.currentChapterIndex : state.chapterSliderValue}
+                  onValueChange={memKey("chapterSliderValueChange", (v: number) => {
+                    Timer.clear();
+                    state.chapterSliderValue = parseInt(v.toString()) as any
+                  })}
+                  animationType="spring"
+                  onSlidingComplete={memKey("chapterSliderComplete", (index: number) => {
+                    Timer(async () => {
+                      await context.player.jumpTo(parseInt(index.toString()));
+                      state.chapterSliderValue = undefined;
+                    });
+                  })}
+                  minimumValue={0}
+                  maximumValue={context.player.novel.chapters.length - 1}
+                />
+              </View></>)
+          })} />
 
         <View css="clearwidth maw-95% overflow-hidden ali:center juc:center ">
           <Text
@@ -432,17 +431,17 @@ const Controller = ({ state, ...props }: any) => {
         buttons={[
           {
             ifTrue: !(context.player.novel.type?.isManga() ?? false),
-            text: (
+            text: mem(
               <Icon
                 name="featured-play-list"
                 type="MaterialIcons"
                 css="fos-35"
               />
             ),
-            press: () => {
+            press: mem(() => {
               context.player.playing(false);
               context.player.showPlayer = !context.player.showPlayer;
-            }
+            })
           },
           {
             text: (
@@ -450,26 +449,26 @@ const Controller = ({ state, ...props }: any) => {
                 ready={false}
                 title="Chapters"
                 size="80%"
-                btn={
+                btn={mem(
                   <Icon
                     type="MaterialCommunityIcons"
                     name="menu"
                     css="fos-35"
-                  />
+                  />)
                 }
               >
                 <ContextContainer
                   globalStateKeys={["player.currentChapter"]}
-                  render={() => (
+                  render={mem(() => (
                     <ChapterView
                       book={state.book}
                       novel={state.novel}
-                      onPress={async item => {
+                      onPress={memKey("ChapterView", async item => {
                         await context.player.jumpTo(item.url);
-                      }}
+                      })}
                       current={context.player.currentChapter.url}
                     />
-                  )}
+                  ))}
                 />
 
               </ActionSheetButton>
@@ -482,28 +481,29 @@ const Controller = ({ state, ...props }: any) => {
                 controller="ActionSheet"
                 addCloser={true}
                 size="80%"
-                btn={
+                btn={mem(
                   <Icon
                     type="Ionicons"
                     name="settings"
                     css="fos-35"
                   />
-                }
+                )}
               >
                 <View css="flex">
                   <Tabbs lazyLoading={true} css="mat-5" position="Top">
                     <TabView
-                      icon={{
+                      icon={mem({
                         name: "format-font",
                         type: "MaterialCommunityIcons"
-                      }}
+                      })}
                       css="invert"
                     >
                       <FormItem title="LockScreen:" labelPosition="Top">
-                        <CheckBoxList selectionType="Radio" labelPostion="Left" checkBoxType="RadioButton" onChange={(chks) => {
-                          if (chks[0].checked) editSettings({ lockScreenType: "Horizontal" });
-                          else if (chks[1].checked) editSettings({ lockScreenType: "Vertical" });
-                        }}>
+                        <CheckBoxList selectionType="Radio" labelPostion="Left" checkBoxType="RadioButton"
+                          onChange={mem((chks) => {
+                            if (chks[0].checked) editSettings({ lockScreenType: "Horizontal" });
+                            else if (chks[1].checked) editSettings({ lockScreenType: "Vertical" });
+                          })}>
                           <CheckBox
                             css="pal:1 invert"
                             label="Horizental"
@@ -525,32 +525,32 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                       <FormItem title="NavigationMethod">
                         <ButtonGroup
-                          buttons={["Scroll", "Snap", "ScrollSnap"].filter(x => state.novel.type?.isManga() ? x !== "Snap" : true)}
-                          onPress={(_, items) => {
+                          buttons={mem(["Scroll", "Snap", "ScrollSnap"].filter(x => state.novel.type?.isManga() ? x !== "Snap" : true), state.novel.type)}
+                          onPress={mem((_, items) => {
                             editSettings({
                               navigationType: items[0]
                             });
-                          }}
+                          })}
                           selectedIndex={[context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (state.novel.type?.isManga() ? 1 : 2) : 1)]}
                         />
                       </FormItem>
                       <FormItem title="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
                         <ButtonGroup
                           buttons={oSettings.fontStyles}
-                          onPress={(_, items) => {
+                          onPress={mem((_, items) => {
                             editSettings({
                               fontStyle: items[0].toLowerCase()
                             });
-                          }}
-                          selectedIndex={(
+                          })}
+                          selectedIndex={mem(
                             [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle?.toLowerCase())].filter(x => x >= 0)
-                          )}
+                            , context.appSettings.fontStyle)}
                         />
                       </FormItem>
                       <FormItem title="TextAlign" ifTrue={() => !(state.novel.type?.isManga())}>
                         <ButtonGroup
                           buttons={oSettings.textAlign}
-                          onPress={(_, items) => {
+                          onPress={mem((_, items) => {
                             editSettings({
                               textAlign:
                                 items[0].safeSplit(
@@ -558,8 +558,8 @@ const Controller = ({ state, ...props }: any) => {
                                   1
                                 )
                             });
-                          }}
-                          render={(x, i) => (
+                          })}
+                          render={mem((x, i) => (
                             <Icon
                               type="Feather"
                               name={x}
@@ -576,8 +576,8 @@ const Controller = ({ state, ...props }: any) => {
                                   : { color: "gray" })
                               }}
                             />)
-                          }
-                          selectedIndex={[oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0)}
+                          )}
+                          selectedIndex={mem([oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0), context.appSettings.textAlign)}
                         />
                       </FormItem>
 
@@ -587,7 +587,7 @@ const Controller = ({ state, ...props }: any) => {
                           size={"80%"}
                           css={"invert"}
                           items={oSettings.fonts}
-                          render={item => {
+                          render={mem(item => {
                             return (
                               <View
                                 css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between he-30`}>
@@ -596,13 +596,13 @@ const Controller = ({ state, ...props }: any) => {
                                 </Text>
                               </View>
                             );
-                          }}
-                          onSelect={fontName => {
+                          })}
+                          onSelect={mem(fontName => {
                             editSettings({
                               fontName: fontName.value
                             });
                             return false;
-                          }}
+                          })}
                           selectedValue={
                             context.appSettings.fontName || "SourceSans3-Black"
                           }
@@ -618,11 +618,11 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .fontSize
                           }
-                          onSlidingComplete={(fontSize: any) => {
+                          onSlidingComplete={mem((fontSize: any) => {
                             editSettings({
                               fontSize
-                            },100);
-                          }}
+                            }, 100);
+                          })}
                           minimumValue={10}
                           maximumValue={40}
                         />
@@ -638,11 +638,11 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .lineHeight
                           }
-                          onSlidingComplete={(lineHeight: any) => {
+                          onSlidingComplete={mem((lineHeight: any) => {
                             editSettings({
                               lineHeight
-                            },100);
-                          }}
+                            }, 100);
+                          })}
                           minimumValue={Math.max((context.appSettings.fontSize * context.lineHeight) - 20, 10)}
                           maximumValue={(context.appSettings.fontSize * context.lineHeight) + 20}
                         />
@@ -658,11 +658,11 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .sentenceMargin ?? 5
                           }
-                          onSlidingComplete={(sentenceMargin: any) => {
+                          onSlidingComplete={mem((sentenceMargin: any) => {
                             editSettings({
                               sentenceMargin
-                            },100);
-                          }}
+                            }, 100);
+                          })}
                           minimumValue={5}
                           maximumValue={15}
                         />
@@ -678,32 +678,32 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .margin
                           }
-                          onSlidingComplete={(margin: any) => {
+                          onSlidingComplete={mem((margin: any) => {
                             editSettings({
                               margin
-                            },100);
-                          }}
+                            }, 100);
+                          })}
                           minimumValue={5}
                           maximumValue={40}
                         />
                       </FormItem>
                       <View css="flg-1 fl-0 wi-100% mat-10 invert">
                         <Text css="fow-bold">BackgroundColor</Text>
-                        <ColorSelection selectedValue={context.appSettings.backgroundColor} onChange={(hex) => {
-                          editSettings({
-                            backgroundColor: hex
-                          })
-                        }} />
-
+                        <ColorSelection selectedValue={context.appSettings.backgroundColor}
+                          onChange={mem((hex) => {
+                            editSettings({
+                              backgroundColor: hex
+                            })
+                          })} />
                       </View>
                     </TabView>
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
                       css="flex invert"
-                      icon={{
+                      icon={mem({
                         name: "text-fields",
                         type: "MaterialIcons"
-                      }}
+                      })}
                     >
 
                       <Text
@@ -728,7 +728,7 @@ const Controller = ({ state, ...props }: any) => {
                               .useSentenceBuilder
                               ?.enabled ?? false
                           }
-                          onChange={() => {
+                          onChange={mem(() => {
                             editSettings({
                               useSentenceBuilder: {
                                 ...(context
@@ -744,7 +744,7 @@ const Controller = ({ state, ...props }: any) => {
                                 )
                               }
                             });
-                          }}
+                          })}
                         />
                       </FormItem>
                       <FormItem
@@ -767,7 +767,7 @@ const Controller = ({ state, ...props }: any) => {
                               ?.minLength ??
                             100
                           }
-                          onSlidingComplete={(length: any) => {
+                          onSlidingComplete={mem((length: any) => {
                             editSettings({
                               useSentenceBuilder:
                               {
@@ -778,8 +778,8 @@ const Controller = ({ state, ...props }: any) => {
                                 minLength:
                                   length
                               }
-                            },100);
-                          }}
+                            }, 100);
+                          })}
                           minimumValue={100}
                           maximumValue={400}
                         />
@@ -791,11 +791,11 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .normalizeText ?? false
                           }
-                          onChange={(isChecked) => {
+                          onChange={mem((isChecked) => {
                             editSettings({
                               normalizeText: isChecked
                             });
-                          }}
+                          })}
                         />
                       </FormItem>
                       <FormItem title="Add Shadow:" labelPosition="Left">
@@ -804,12 +804,12 @@ const Controller = ({ state, ...props }: any) => {
                           checked={
                             context.appSettings.use3D ?? false
                           }
-                          onChange={() => {
+                          onChange={mem(() => {
                             editSettings({
                               use3D: !context
                                 .appSettings.use3D
                             });
-                          }}
+                          })}
                         />
                       </FormItem>
                       <FormItem
@@ -829,11 +829,11 @@ const Controller = ({ state, ...props }: any) => {
                               .shadowLength,
                             true
                           )}
-                          onSlidingComplete={(shadowLength: any) => {
+                          onSlidingComplete={mem((shadowLength: any) => {
                             editSettings({
                               shadowLength
-                            },100);
-                          }}
+                            }, 100);
+                          })}
                           minimumValue={1}
                           maximumValue={3}
                         />
@@ -851,11 +851,11 @@ const Controller = ({ state, ...props }: any) => {
                             context.player.book
                               .inlineStyle
                           }
-                          onChangeText={t => {
+                          onChangeText={mem(t => {
                             context.player.book.inlineStyle =
                               t;
                             context.player.book.saveChanges();
-                          }}
+                          })}
                         />
                       </FormItem>
                     </TabView>
@@ -873,9 +873,9 @@ const Controller = ({ state, ...props }: any) => {
                           <ButtonGroup scrollable={true}
                             buttons={context.tts.nameList()}
                             selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
-                            onPress={x => {
+                            onPress={mem(x => {
                               editSettings({ ttsModol: context.tts.nameList()[x[0]] })
-                            }} />
+                            })} />
                         </View>
                       </FormItem>
                       <FormItem title="Split Words into chunks">
@@ -886,11 +886,11 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .chunkWords ?? false
                           }
-                          onChange={() => {
+                          onChange={mem(() => {
                             editSettings({
                               chunkWords: !(context.appSettings.chunkWords ?? false)
                             });
-                          }}
+                          })}
                         />
                       </FormItem>
                       <FormItem title="Rate/Speed">
@@ -903,11 +903,11 @@ const Controller = ({ state, ...props }: any) => {
                           value={
                             context.appSettings.rate
                           }
-                          onSlidingComplete={(rate: any) => {
+                          onSlidingComplete={mem((rate: any) => {
                             editSettings({
                               rate
                             }, 100);
-                          }}
+                          })}
                           minimumValue={0.5}
                           maximumValue={2}
                         />
@@ -916,10 +916,10 @@ const Controller = ({ state, ...props }: any) => {
                     <TabView
                       ifTrue={() => !(state.novel.type?.isManga())}
                       css="flex invert"
-                      icon={{
+                      icon={mem({
                         name: "format-color-highlight",
                         type: "MaterialCommunityIcons"
-                      }}
+                      })}
                     >
                       <View css="flex clearboth juc:flex-start mih:100 invert">
                         <Text css="header fos:18">
@@ -927,7 +927,7 @@ const Controller = ({ state, ...props }: any) => {
                         </Text>
                         <ItemList
                           items={context.player.book.textReplacements}
-                          container={({ item }: any) => (
+                          container={memKey("txtRepleacmentItemList", ({ item }: any) => (
                             <View
                               style={{
                                 backgroundColor:
@@ -956,7 +956,7 @@ const Controller = ({ state, ...props }: any) => {
                                 context.player.hide();
                               }}></Button>
                             </View>
-                          )}
+                          ))}
                           itemCss="pa:5 clearwidth bobw:1 boc:gray"
                           vMode={true}
                         />
@@ -975,17 +975,18 @@ const Controller = ({ state, ...props }: any) => {
 };
 const InternalWeb = ({ state, ...props }: any) => {
   const loader = context.player.usePlayerLoader();
+  const { mem } = useFunc();
   return (
     <>
       {loader.elem}
       <Web
-        click={() => {
+        click={mem(() => {
           context.player.showController = !context.player.showController;
-        }}
-        onComments={(index: number) => {
+        })}
+        onComments={mem((index: number) => {
           context.player.menuOptions.comment = context.player.book.textReplacements[index].comments;
-        }}
-        onMenu={async (item: any) => {
+        })}
+        onMenu={mem(async (item: any) => {
           // handle later
           if (item.text == "Translate")
             context.player.menuOptions.textToTranslate = item.selection;
@@ -1012,8 +1013,8 @@ const InternalWeb = ({ state, ...props }: any) => {
             await context.player.book.saveChanges();
             await context.player.clean();
           }
-        }}
-        menuItems={{
+        })}
+        menuItems={mem({
           selector: "#novel",
           minlength: 1,
           items: [
@@ -1038,23 +1039,22 @@ const InternalWeb = ({ state, ...props }: any) => {
               icon: "edit_note"
             }
           ]
-        }}
-        bottomReched={() => {
+        })}
+        bottomReched={mem(() => {
           if (!context.player.isloading)
             context.player.next(true)
-        }}
-        topReched={() => {
+        })}
+        topReched={mem(() => {
           if (!context.player.isloading)
             context.player.prev()
-        }
-        }
-        onScroll={(y: number) => {
+        })}
+        onScroll={mem((y: number) => {
           if (context.player.isloading)
             return;
           context.player.currentChapterSettings.readPercent = context.player.scrollProcent;
           context.player.currentChapterSettings.scrollProgress = y;
           context.player.currentChapterSettings.saveChanges();
-        }}
+        })}
       />
     </>
   );
@@ -1064,6 +1064,7 @@ export default (props: any) => {
   const [{ name, url, parserName, epub, chapter }, nav] = useNavigation(props);
   const loader = useLoader(true);
   useKeepAwake();
+  const { mem } = useFunc();
   const files = context.files.useFile<DetailInfo>(
     "json",
     x => {
@@ -1196,11 +1197,10 @@ export default (props: any) => {
 
       <View
         css="flex"
-        style={{
+        style={mem({
           zIndex: 100,
           backgroundColor: loading ? context.appSettings.backgroundColor : "transparent"
-        }}
-      >
+        })}>
         {!loading && context.player?.currentChapterSettings ? (
           <>
             <Modoles />

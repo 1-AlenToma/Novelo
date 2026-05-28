@@ -55,7 +55,7 @@ export default class DbContext extends Database<TableNames> {
         let driver: DatabaseDrive = {
           close: async () => {
             console.warn("closing db");
-            await db.closeAsync();
+            db.closeSync()
             db = undefined;
           },
           executeSql: async (sql, args, operation) => {

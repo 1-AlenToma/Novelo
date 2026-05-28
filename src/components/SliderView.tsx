@@ -1,6 +1,7 @@
 import * as React from "react";
 import { View, Text, Button, Icon, SliderView } from "react-native-short-style";
 import useTimer from "../hooks/Timer";
+import { PrimitiveObject } from "react-smart-state";
 
 
 export default ({
@@ -14,30 +15,32 @@ export default ({
   ...props
 }: any) => {
   const timer = useTimer(1000);
-  const pressedTimer = useTimer(1000)
-  const state = buildState({
-    value: props.value ?? 0
-  }).build();
+  const { mem } = useFunc();
+  const pressedTimer = useTimer(1000);
+  const valueChange = useTimer(1000);
+  const state = PrimitiveObject(props.value ?? 0);
 
 
   useEffect(() => {
     if (props.value !== state.value)
-      state.value = props.value;
+      valueChange(() => {
+        state.value = props.value;
+      });
   }, [props.value]);
 
-  const change = (v: any) => {
+  const change = mem((v: any) => {
     if (Array.isArray(v))
       v = v[0]
-    state.value = (v);
+    state.value = v;
     if (disableTimer) {
       props.onValueChange?.(v);
       return;
     }
 
     timer(() => props.onValueChange?.(v));
-  };
+  }, props.onValueChange, disableTimer)
 
-  const increase = (isPress?: boolean) => {
+  const increase = mem((isPress?: boolean) => {
     let step = props.step ?? 1;
     if (state.value + step <= props.maximumValue) {
       let v = state.value + step;
@@ -49,9 +52,9 @@ export default ({
       }, isPress ? 0 : undefined);
     }
 
-  }
+  }, props.step, props.onValueChange, props.onSlidingComplete, props.maximumValue)
 
-  const decrease = (isPress?: boolean) => {
+  const decrease = mem((isPress?: boolean) => {
     let step = props.step ?? 1;
     if (state.value - step >= props.minimumValue) {
       let v = state.value - step;
@@ -63,19 +66,19 @@ export default ({
       }, isPress ? 0 : undefined);
 
     }
-  }
+  }, props.step, props.onValueChange, props.onSlidingComplete, props.minimumValue);
   return (
     <View
       css={`clearwidth mah:40 row ali:center juc:space-between invert ${css}`} ifTrue={ifTrue}>
       <Button
         ifTrue={buttons === true}
         css="flex miw-40 maw:40 mal:10 invert he-40 sh-none"
-        icon={<Icon
+        icon={mem(<Icon
           name="minus-square"
           type="FontAwesome"
           css="fos-35 invert"
-        />}
-        onPress={() => decrease(true)}
+        />)}
+        onPress={mem(() => decrease(true), decrease)}
         whilePressed={decrease}>
       </Button>
 
@@ -87,19 +90,19 @@ export default ({
           {state.value}
         </Text>
       </View>
-      <View css={`flex invert`} style={{ maxWidth: buttons ? "75%" : "90%" }}>
+      <View css={`flex invert`} style={mem({ maxWidth: buttons ? "75%" : "90%" })}>
         <SliderView
-          onStartShouldSetResponder={() =>
+          onStartShouldSetResponder={mem(() =>
             false
-          }
+          )}
           minimumTrackTintColor="#f17c7c"
           maximumTrackTintColor="#000000"
           step={1}
           enableButtons={false}
           {...props}
-          containerStyle={{ maxWidth: "99%" }}
+          containerStyle={mem({ maxWidth: "99%" })}
           value={state.value}
-          onSlidingComplete={(v) => props.onSlidingComplete?.(v[0])}
+          onSlidingComplete={mem((v) => props.onSlidingComplete?.(v[0]), props.onSlidingComplete)}
           onValueChange={change}
           style={style}
           css={css}
@@ -109,12 +112,12 @@ export default ({
       <Button
         ifTrue={buttons === true}
         css="flex miw-40 maw:40 he-40 invert sh-none"
-        icon={<Icon
+        icon={mem(<Icon
           name="plus-square"
           type="FontAwesome"
           css="fos-35 invert"
-        />}
-        onPress={() => increase(true)}
+        />)}
+        onPress={mem(() => increase(true), increase)}
         whilePressed={increase}>
 
       </Button>

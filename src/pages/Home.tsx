@@ -2,7 +2,7 @@ import {
   Image,
   SingleTouchableOpacity,
 } from "../components";
-import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, Button } from "react-native-short-style";
+import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, Button } from "react-native-short-style/mems";
 
 import NovelGroup from "../components/NovelGroup"
 import * as React from "react";
@@ -24,13 +24,16 @@ const CurrentItem = ({
   children,
   ...props
 }: any) => {
-  const [visible, setVisible] = useState(false);
-  const [books, setBooks] = useState<Book[]>([]);
-  const timer = useTimer(100)
-  context.hook("appSettings.currentNovel")
+  const state = buildState({
+    books: [] as Book[],
+    visible: false
+  }).build();
+  const timer = useTimer(100);
+  context.hook("appSettings.currentNovel");
+  const {mem} = useFunc();
 
 
-  const reloadData = () => timer(async () => setBooks(await context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg").toList()));
+  const reloadData = () => timer(async () => state.books =(await context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg").toList()));
   useDbHook(
     "AppSettings",
     item => true,
@@ -43,13 +46,13 @@ const CurrentItem = ({
 
 
 
-  let book: Book = books?.firstOrDefault() ?? {} as any;
-  if (!books?.firstOrDefault() || (context.appSettings.currentNovel == undefined || context.appSettings.currentNovel.parserName == undefined)) return children;
+  let book: Book = state.books?.firstOrDefault() ?? {} as any;
+  if (!state.books?.firstOrDefault() || (context.appSettings.currentNovel == undefined || context.appSettings.currentNovel.parserName == undefined)) return children;
   return (
     <>
       <ActionSheet
-        onHide={() => setVisible(false)}
-        isVisible={visible}
+        onHide={mem(() => state.visible =(false))}
+        isVisible={state.visible}
         size={300}>
         <View css="invert">
           <Text css="header">Actions</Text>
@@ -59,14 +62,14 @@ const CurrentItem = ({
               book.isOnline?.() &&
               book.parserName != "epub"
             }
-            onPress={() => {
+            onPress={mem(() => {
               context
                 .nav.navigate("NovelItemDetail", {
                   url: book.url,
                   parserName: book.parserName
                 });
-              setVisible(false);
-            }}>
+              state.visible = false;
+            }, book.url)}>
             <Icon
               name="info-circle"
               type="FontAwesome5"
@@ -76,7 +79,7 @@ const CurrentItem = ({
           </SingleTouchableOpacity>
           <SingleTouchableOpacity
             css="invert listButton"
-            onPress={() => {
+            onPress={mem(() => {
               context
                 .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                   name: book.name,
@@ -84,8 +87,8 @@ const CurrentItem = ({
                   parserName: book.parserName,
                   epub: book.parserName == "epub" || context.appSettings.currentNovel?.isEpub
                 });
-              setVisible(false);
-            }}>
+              state.visible = false;
+            }, book.url)}>
             <Icon
               name="book-reader"
               type="FontAwesome5"
@@ -104,15 +107,15 @@ const CurrentItem = ({
             ifTrue={() => (context.appSettings.currentNovel?.isEpub && book.parserName != "epub" && book.isOnline?.()) as any
             }
             css="invert listButton"
-            onPress={() => {
+            onPress={mem(() => {
               context
                 .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                   name: book.name,
                   url: book.url,
                   parserName: book.parserName
                 });
-              setVisible(false);
-            }}>
+              state.visible = false;
+            }, book.url)}>
             <Icon
               name="book-reader"
               type="FontAwesome5"
@@ -124,11 +127,11 @@ const CurrentItem = ({
           </SingleTouchableOpacity>
           <SingleTouchableOpacity
             css="invert listButton"
-            onPress={() => {
+            onPress={mem(() => {
               context.appSettings.currentNovel = {} as any;
               context.appSettings.saveChanges();
-              setVisible(false);
-            }}>
+              state.visible = false;
+            }, book.url)}>
             <Icon
               name="notification-clear-all"
               type="MaterialCommunityIcons"
@@ -144,8 +147,8 @@ const CurrentItem = ({
         {children}
         <SingleTouchableOpacity
           css="flex pa:5 row"
-          onLongPress={() => setVisible(true)}
-          onPress={() => {
+          onLongPress={mem(() => state.visible = true)}
+          onPress={mem(() => {
             context
               .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                 name: book.name,
@@ -156,7 +159,7 @@ const CurrentItem = ({
                   context.appSettings.currentNovel
                     ?.isEpub
               });
-          }}>
+          }, book.url)}>
           <Image
             url={book.imageBase64}
             parserName={book.parserName}

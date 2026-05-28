@@ -1,5 +1,5 @@
 import CStyle from "./components/CStyle";
-import { cssTranslator } from "react-native-short-style";
+import { cssTranslator , useLocalMemo} from "react-native-short-style";
 import IDOMParser from "advanced-html-parser";
 import { Document, Node, Options, Element as _HtmlElement } from "advanced-html-parser/types"
 import * as Methods from "./Methods";
@@ -10,6 +10,7 @@ import TestRunner from "./tests/TestRunner";
 import Html from "./native/Html";
 import HtmlContext from "./HtmlContext";
 import nlp from 'compromise';
+
 
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
@@ -29,6 +30,7 @@ declare global {
     var getFileInfoFromUrl: (url: string) => string;
     var test: (name: string) => TestRunner;
     var folderValidName: (name: string) => string;
+    var useFunc: typeof useLocalMemo;
     interface Date {
         getMinDiff: (date?: Date) => number;
         getSecoundDiff: () => number;
@@ -750,6 +752,7 @@ global.getFileName = (file: string, dir?: string) => {
     return file;
 }
 
+global.useFunc = useLocalMemo;
 const GlobalContext = require("./GlobalContext").default;
 global.context = GlobalContext;
 global.htmlContext = HtmlContext;

@@ -37,6 +37,7 @@ export default ({
   ifTrue?: any;
 }) => {
   const updater = useUpdate();
+  const { mem, memKey } = useFunc();
   context.hook(
     "KeyboardState",
     "isFullScreen",
@@ -86,7 +87,7 @@ export default ({
     <>
       <View
         ifTrue={ifTrue}
-        css={x => x.joinLeft("clearwidth zi:101 he:40 row juc:center ali:center di:flex invert").joinRight(css)}>
+        css={mem(x => x.joinLeft("clearwidth zi:101 he:40 row juc:center ali:center di:flex invert").joinRight(css), css)}>
         {context.nav.option.canGoBack() ? (
           <SingleTouchableOpacity
             css="absolute le:5"
@@ -118,7 +119,7 @@ export default ({
               enterKeyHint="search"
               inputMode="search"
               onSubmitEditing={() => {
-                  onInputChange(state.text)
+                onInputChange(state.text)
               }}
               placeholder="Search Novels"
               style={{ width: "100%", height: "70%" }}
@@ -188,9 +189,7 @@ export default ({
               }>
               {parserLoader.elem}
               <ScrollView>
-                {context.parser
-                  .all
-                  .map((x, i) => (
+                {context.parser.all.map((x, i) => (
                     <SingleTouchableOpacity
                       key={i}
                       onPress={async () => {
@@ -221,7 +220,7 @@ export default ({
         context.KeyboardState ? (
         <TouchableOpacity
           ifTrue={ifTrue}
-          onPress={() => input.current.blur()}
+          onPress={mem(() => input.current.blur(), input.current)}
           css="absolute to:0 le:0 flex clearboth zi:100 blur"
         />
       ) : null}

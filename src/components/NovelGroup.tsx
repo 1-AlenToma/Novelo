@@ -30,8 +30,9 @@ export default memo(
     const item = context.parser.current.settings.group[itemIndex];
     const imageSize = context.parser.current.settings.imagesSize;
     const parser = useParser();
+    const { mem } = useFunc();
 
-    const getItems = async (refreshing?: boolean) => {
+    const getItems = mem(async (refreshing?: boolean) => {
 
       if (loading.current)
         return;
@@ -57,8 +58,7 @@ export default memo(
           loading.current = false;
         }
       });
-    };
-
+    });
     context.cache.onDirDelete((parserName) => {
       if (!parserName || parserName == context.parser.current.name)
         getItems(true);
@@ -96,11 +96,11 @@ export default memo(
           {!vMode ? (
             <SingleTouchableOpacity
               css="clb"
-              onPress={() => {
+              onPress={mem(() => {
                 context.nav.navigate("GroupDetail", {
                   groupIndex: itemIndex
                 })
-              }}>
+              }, itemIndex)}>
               <Text
                 css="desc fos:14 invertco">
                 Browse
@@ -116,27 +116,27 @@ export default memo(
         <View css="fl-1 bac-transparent">
           <ItemList
             onRefresh={{ loading: loader.loading && loader.get(), onRefresh: () => getItems(true) }}
-            onPress={item => {
+            onPress={mem(item => {
               context.nav.navigate("NovelItemDetail", {
                 url: item.url,
                 parserName: item.parserName
               });
-            }}
+            })}
 
             vMode={vMode}
-            onEndReached={() => {
+            onEndReached={mem(() => {
               if (!loader.loading) {
                 loader.show();
                 getItems();
               }
-            }}
+            }, loader.loading)}
             itemCss={
               !vMode
                 ? `boc:#ccc bow:1 he-220 wi:170 mal:5 bor:5 overflow clb`
                 : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
             }
             items={state.items}
-            container={({ ...props }: any) => <HomeNovelItem {...props} numberOfLines={imageSize ? 1 : 2} />}
+            container={mem(({ ...props }: any) => <HomeNovelItem {...props} numberOfLines={imageSize ? 1 : 2} />)}
           />
         </View>
         {loader.elem}

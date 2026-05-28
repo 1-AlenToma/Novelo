@@ -22,6 +22,7 @@ export default class WTRLabCom extends Parser {
         this.settings.searchEnabled = true;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
+        this.protected = true;
 
         this.baseUrl = "https://wtr-lab.com";
     }
@@ -33,11 +34,11 @@ export default class WTRLabCom extends Parser {
 
         this.settings.Genre(
             html
-                .$(".genre-item")
-                .map(x =>
+                .$(".genre-filter > span")
+                .map((x, index) =>
                     Value.n()
                         .Text(x.text)
-                        .Value(x.attr("href"))
+                        .Value(this.url.join(index > 0 ? `novel-list?genre=${index}` : "novel-list"))
                 )
         );
 
@@ -55,27 +56,18 @@ export default class WTRLabCom extends Parser {
     }
 
     toList(html) {
+        // console.warn(html.$(".series-list > div").length)
         return html
-            .$(".series-list > .card")
-            .map(x => {
-                return x.map(f => {
-                    if (f.find(".image-section img").attr("src").has())
-                        return LightInfo.n()
-                            .Name(f.find(".title").remove(".rawtitle").text)
-                            .Url(
-                                f.find(".title").url("href")
-                            )
-                            .Image(
-                                f
-                                    .find(".image-section img")
-                                    .url("src", { Referer: this.baseUrl + "/", webView: true })
-                            )
-                            .Info(f.find(".detail-buttons > div").eq(1).text)
-                            .Decription(f.find(".detail-buttons > div").eq(0).text)
-                            .ParserName(this.name);
-                });
-            })
-            .flatMap(x => x);
+            .$(".series-list div[data-slot='card']").map(f => {
+                if (f.find(".image-wrap img").attr("src").has())
+                    return LightInfo.n()
+                        .Name(f.find("a h3").remove(".rawtitle").text)
+                        .Url(f.find("a h3").parent.url("href"))
+                        .Image(f.find(".image-wrap img").url("src", { Referer: this.baseUrl + "/", webView: true }))
+                        .Info(f.find(".items-center > span:contains('Chapters')").parent.text)
+                        .Decription(f.find(".description").text)
+                        .ParserName(this.name);
+            }).filter(x => x != undefined);
     }
 
     async search(options) {
@@ -139,45 +131,32 @@ export default class WTRLabCom extends Parser {
 
             let item = DetailInfo.n();
             item
-                .Name(body.find(".title-wrap h1").text)
+                .Name(body.find("h1").text)
                 .Url(url)
                 .Image(
                     body
-                        .find(".image-section img")
+                        .find(".image-wrap img")
                         .url("src", { Referer: this.baseUrl + "/", webView: true })
                 )
                 .Decription(body.find(".description").text)
                 .AlternativeNames(
                     body
                         .find(
-                            '.title-list:last-child'
-                        ).text
+                            'h1'
+                        ).parent.find("p").text
                 )
                 .Author(
-                    body.first('.sig-author a')
-                        .text
+                    body.first('span:contains("Author")').parent.find("div a").map(x => x.text).join(",")
                 )
-                .AuthorUrl(body.first('.sig-author a:first-child').url("href"))
-                .Genre(
-                    body
-                        .find('.genres .genre')
-                        .map(x => x.text)
-                )
-                .Tags(body
-                    .find('.tag-category-tags a:not(.genre)')
-                    .map(x => x.text))
-                .Status(
-                    body
-                        .find(
-                            '.sig-row:contains("Status") .sig-value'
-                        )
-                        .text
-                )
+                .AuthorUrl(body.first('span:contains("Author")').parent.first("div a").url("href"))
+                .Genre(body.find('a[href*="genre"]').map(x => x.text))
+                .Tags(body.find('a[href*="novel-finder?ti"]').map(x => x.text))
+                .Status(body.find('span:contains("Status")').parent.find("span:last-child").text)
                 .Rating(
-                    body.first(".sig-rank-val").text
+                    body.first("span:contains('Rating')").parent.first("div").text
                 )
                 .LastUpdated(
-                    body.find('.sig-row:contains("Date Added") .sig-value').text?.trim()
+                    body.find('span:contains("Date Added")').parent.first("div").text?.trim()
                 )
                 .ParserName(this.name);
             const id = url.split("/novel/")[1].split("/")[0];

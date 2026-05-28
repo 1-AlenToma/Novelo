@@ -5,7 +5,7 @@ import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
 import { getSystemJS } from "../JSConstant";
 import { funcMapper, IFuncMapper } from "../assets/WebAssets";
-import Timer from "hooks/Timer";
+import { PrimitiveObject } from "react-smart-state";
 
 const debug = false;
 const maxCalls = 3;
@@ -25,23 +25,24 @@ const blackListed = {}
 
 const webViewProtectedJS = getSystemJS("protection");
 const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData, onHide: () => void }) => {
-  const [isVisible, setIsVisible] = useState(item?.url !== undefined);
+  const { mem, memKey } = useFunc();
+  const isVisible = PrimitiveObject(item?.url !== undefined);
   const webView = useRef<IFuncMapper<"systemJs">>();
   const lastCheck = useRef();
   const { url, tried, baseUrl } = (item ?? {})
   useEffect(() => {
-    if (!isVisible)
+    if (!isVisible.value)
       onHide();
-  }, [isVisible])
+  }, [isVisible.value])
 
   useEffect(() => {
-    if (isVisible && (!url || !url.has()))
-      setIsVisible(false);
-    else if (!isVisible && url?.has())
-      setIsVisible(true)
+    if (isVisible.value && (!url || !url.has()))
+      isVisible.value = false;
+    else if (!isVisible.value && url?.has())
+      isVisible.value = true;
   }, [url])
-  return (<Modal addCloser={true} css="wi-80% he-90%" isVisible={isVisible} onHide={() => setIsVisible(false)}>
-    <View style={{ flex: 1, marginTop: 15 }}>
+  return (<Modal addCloser={true} css="wi-80% he-90%" isVisible={isVisible.value} onHide={mem(() => isVisible.value = false)}>
+    <View style={memKey("vStyle", { flex: 1, marginTop: 15 })}>
       <Text css="fos-15 fow-bold co-red">
         This {baseUrl} containe ICloude protection, so you need to validate it from time to time.
         {"\n"}
@@ -52,21 +53,21 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
         Tries left:{4 - (tried ?? 0)}
       </Text>
       <WebView
-        ref={(c) => {
+        ref={memKey("ref", (c) => {
           webView.current = funcMapper(c);
-        }}
+        }, url)}
         injectedJavaScriptBeforeContentLoaded={webViewProtectedJS}
         androidLayerType="software"
-        source={{
+        source={memKey("uurl", {
           uri: url as string
-        }}
-        onNavigationStateChange={() => {
+        }, url)}
+        onNavigationStateChange={memKey("onNavigationStateChange", () => {
           /*  webView.current?.injectJavaScript(
               `${jsScript(tryUntilSuccess("window.checkProtection"), "DOMContentLoaded", 20)}
              true;`
             );*/
-        }}
-        onMessage={async ({ nativeEvent }) => {
+        })}
+        onMessage={memKey("onMessage", async ({ nativeEvent }) => {
           try {
             let data = JSON.parse(nativeEvent.data);
             if (data.type == "loaded") {
@@ -79,23 +80,22 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
               if (!lastCheck.current && data.data) {
                 lastCheck.current = true;
               } else if (lastCheck.current && !data.data)
-                setIsVisible(false)
+                isVisible.value = false;
             } else console.warn(data)
           } catch (e) {
             console.error(e);
           }
 
-        }}
+        }, url, webView.current)}
 
         {...webViewDefaultProps}
         contentMode="mobile"
-        originWhitelist={["*"]}
+        originWhitelist={memKey("orgin", ["*"])}
         setSupportMultipleWindows={false}
         style={
-          {
+          memKey("wvStyle", {
             flex: 1
-          }
-        }
+          })}
         allowFileAccess={true}
         allowFileAccessFromFileURLs={true}
         allowUniversalAccessFromFileURLs={true}
@@ -115,7 +115,8 @@ export default () => {
   })).build();
   const timeout = 1;
   const webViews = useRef<(IFuncMapper<"systemJs"> | null)[]>([]);
-  const timers = [useTimer(timeout), useTimer(timeout), useTimer(timeout)]
+  const timers = [useTimer(timeout), useTimer(timeout), useTimer(timeout)];
+  const { mem, memKey } = useFunc();
 
   useEffect(() => {
     return () => {
@@ -143,7 +144,6 @@ export default () => {
     [htmlContext.html.updatedNr, state.protection]);
 
   const htmlData = useMemo(() => {
-
     let unique = iProtected.filter((item, index, self) =>
       index === self.findIndex(o => o.baseUrl === item.baseUrl)
     );
@@ -170,43 +170,40 @@ export default () => {
   }
 
   return (
-    <View style={!debug ? {
+    <View style={mem(!debug ? {
       position: "absolute",
       top: 0,
       left: 0,
       width: 0,
       height: 0,
       overflow: "hidden"
-    } : { flex: 1, height: 200 }}>
+    } : { flex: 1, height: 200 }, debug)}>
       <ProtectionModal item={protection} onHide={handleHide} />
       {
         htmlData.map((x, i) => {
           x.systemJs = x.systemJs ?? `${getSystemJS(x)}\ntrue;`;
-          timers[i](() => exec(x), 10000)
-          // console.log(x.systemJs);
+          timers[i](() => exec(x), 10000);
+          const identifiers =[x,  webViews[i]];
           return (
             <WebView
-              ref={c => {
+              ref={memKey("ref" + i, c => {
                 webViews[i] = funcMapper(c);
-              }}
+              }, x)}
               key={x.id}
               injectedJavaScriptBeforeContentLoaded={x.systemJs}
               {...webViewDefaultProps}
-              source={{
+              source={memKey("source" + i, {
                 uri: x.url
-              }}
-              onNavigationStateChange={() => {
-
-              }}
-              onError={(e) => {
+              }, ...identifiers)}
+              onError={memKey("onError" + i, (e) => {
                 x.func("")
                 console.error("WebViewLoadError", x.url, e);
-              }}
-              onHttpError={(e) => {
+              }, ...identifiers)}
+              onHttpError={memKey("onHttpError" + i, (e) => {
                 // x.func("")
-                console.error("onHttpError", x.url, e.nativeEvent.statusCode);
-              }}
-              onMessage={async ({ nativeEvent }) => {
+                console.error("onHttpError", i, e.nativeEvent.statusCode);
+              }, ...identifiers)}
+              onMessage={memKey("onMessage" + i, async ({ nativeEvent }) => {
                 try {
                   let data = JSON.parse(nativeEvent.data);
                   // console.log(data.type);
@@ -234,7 +231,7 @@ export default () => {
                       }
                       if (!state.protection.find(x => methods.baseUrl(data.data.url) == x.baseUrl)) {
                         xItem.tried++;
-                        if (!protection)
+                        if (!state.protection.firstOrDefault())
                           state.protection = [xItem]
                         else state.protection.push(xItem);
                       }
@@ -246,7 +243,7 @@ export default () => {
                       break;
                     case "loaded":
                       webViews[i].exec("window.getHtml");
-                      timers[i](() => exec(x), 10000);
+                      timers[i](() => x.func(""), 10000);
                       break;
                     default:
                       console.warn(data)
@@ -257,15 +254,15 @@ export default () => {
                   console.error(e);
                 }
 
-              }}
+              }, ...identifiers)}
               contentMode="mobile"
-              originWhitelist={["*"]}
+              originWhitelist={memKey("orgin", ["*"])}
               setSupportMultipleWindows={false}
               style={
-                {
+                memKey("wVStyl2", {
                   zIndex: -1,
                 }
-              }
+                )}
               androidLayerType="software"
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}

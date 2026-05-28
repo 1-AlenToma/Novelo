@@ -9,26 +9,31 @@ export default (
   size?: number | "small" | "large",
   onPress?: () => void
 ) => {
-  const [state, setState] = useState({
+  const state = buildState({
     loading: initValue ?? false,
     progressValue: undefined as number | undefined
-  });
+  }).build();
 
   const extraData = useRef(undefined);
 
 
   useEffect(() => {
-    setState(pre => ({ ...pre, loading: initValue ?? false }))
+    state.loading = initValue ?? false;
   }, [initValue]);
 
   const show = (progress?: number) => {
-    setState(pre => ({ progressValue: progress, loading: true }))
-
+    state.batch(() => {
+      state.progressValue = progress;
+      state.loading = true;
+    })
   };
 
   const hide = () => {
     extraData.current = undefined;
-    setState(pre => ({ progressValue: undefined, loading: false }));
+    state.batch(() => {
+      state.progressValue = undefined;
+      state.loading = false;
+    })
   };
 
   const get = () => {

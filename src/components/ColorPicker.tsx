@@ -9,6 +9,7 @@ import ColorPicker, {
   HueSlider
 } from "reanimated-color-picker";
 import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { PrimitiveObject } from "react-smart-state";
 const sliderStyle = {
   borderRadius: 20,
 
@@ -41,50 +42,50 @@ export default ({
   value,
   onComplete
 }: any) => {
-  const [visible, setVisible] = useState(false);
+  const {mem} = useFunc();
+  const visible = PrimitiveObject(false);
   return (
     <TouchableOpacity
-      onPress={() => setVisible(true)}
+      onPress={mem(() => visible.value = true)}
       css={`juc:center ali:center bor:5 flex invert ${css}`}
-      style={{
+      style={mem({
         backgroundColor: value
-      }}>
+      })}>
       <Modal
         css="he-80%"
-        isVisible={visible}
+        isVisible={visible.value}
         addCloser={true}
-        onHide={() => setVisible(false)}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-
+        onHide={mem(() => visible.value = false)}>
+        <GestureHandlerRootView style={mem({ flex: 1 })}>
           <ScrollView>
             <View css="flex ali:center mat:20 invert bow-5 bac-gray bor-10 pa-5">
               <View
                 css="juc:center ali:center bor:5 wi:90% mab:10 pa:10 invert"
-                style={{
+                style={mem({
                   backgroundColor: value ?? "gray"
-                }}>
+                }, value)}>
                 <Text
-                  style={{
+                  style={mem({
                     color: invertColor(value)
-                  }}
+                  }, value)}
                   css="bold fos:18">
                   Preview Text
                 </Text>
               </View>
               <ColorPicker
-                style={{ width: "90%", flex: 1 }}
+                style={mem({ width: "90%", flex: 1 })}
                 value={value}
                 boundedThumb={true}
                 sliderThickness={25}
                 thumbSize={24}
                 thumbShape='circle'
-                onCompleteJS={(colors) => {
+                onCompleteJS={mem((colors) => {
                   onComplete?.(colors);
-                }}>
-                <PreviewText style={{
+                }, onComplete)}>
+                <PreviewText style={mem({
                   color: invertColor(value),
                   fontFamily: 'Quicksand',
-                }} colorFormat="hex" />
+                }, value)} colorFormat="hex" />
                 <View css="bac-transparent mab-10">
                   <Panel1 style={panelStyle} />
                 </View>
@@ -99,7 +100,7 @@ export default ({
         </GestureHandlerRootView>
       </Modal>
       <Text
-        style={{ color: invertColor(value) }}
+        style={mem({ color: invertColor(value) }, value)}
         css="bold pal-5 par-5">
         Pick a Color
       </Text>

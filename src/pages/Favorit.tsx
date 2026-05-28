@@ -20,6 +20,7 @@ const ItemRender = React.memo(({
   hideParserDetail?: boolean
 }) => {
   const itemLoader = useLoader(false);
+  const { mem, memKey } = useFunc();
   const state = buildState({
     novel: undefined as DetailInfo | undefined,
     showChapter: false
@@ -32,14 +33,14 @@ const ItemRender = React.memo(({
       return (items.find(x => x.url == url && x.favorit) != undefined);
     }
   );
-  const item = (books.find(x => x.url === url) ?? { url }) as Book;
+  const item = mem((books.find(x => x.url === url) ?? { url }) as Book, books);
 
   context.cache.onDirDelete((parserName) => {
     if (!parserName || parserName == item.parserName)
       loadNovelDetail();
   });
 
-  const loadNovelDetail = async (refresh?: boolean) => {
+  const loadNovelDetail = mem(async (refresh?: boolean) => {
     itemLoader.show();
     for (let b of books) {
       if (b.parserName !== "epub") {
@@ -55,9 +56,9 @@ const ItemRender = React.memo(({
       }
     }
     itemLoader.hide();
-  }
+  }, books)
 
-  const loadNovel = async () => {
+  const loadNovel = mem(async () => {
     try {
       itemLoader.show();
       let parser = context.parser.find(item.parserName);
@@ -72,7 +73,7 @@ const ItemRender = React.memo(({
 
     return true;
 
-  }
+  }, item)
 
   useEffect(() => {
     loadNovelDetail();
@@ -84,12 +85,12 @@ const ItemRender = React.memo(({
   return (
     <>
 
-      <ActionSheet size={"80%"} speed={100} css="invert" isVisible={state.showChapter} onHide={() => state.showChapter = false}>
+      <ActionSheet size={"80%"} speed={100} css="invert" isVisible={state.showChapter} onHide={mem(() => state.showChapter = false)}>
         <ChapterView
           ignoreChapterValidation={true}
           book={item}
           novel={state.novel}
-          onPress={item => {
+          onPress={memKey("ChapterViewVisibile", item => {
             if (state.novel) {
               context
                 .nav.navigate(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
@@ -100,7 +101,7 @@ const ItemRender = React.memo(({
                 });
             }
             state.showChapter = false;
-          }}
+          })}
           current={
             state.novel?.chapters?.at(
               item?.selectedChapterIndex ?? 0
@@ -113,21 +114,20 @@ const ItemRender = React.memo(({
       <FoldableItem
         single={true}
         css="wi:98% overflow"
-        buttons={[
+        buttons={mem([
           {
             text: "Delete",
-            icon: (
+            icon:
               <Icon
                 name="delete"
                 type="MaterialIcons"
                 css="invertco"
-              />
-            ),
+              />,
             onPress: () => {
               AlertDialog
                 .confirm(
                   {
-                    message: `You will be deleting this novel.\nAre you sure?`,
+                    message: `You will be deleting ${item.name}.\nAre you sure?`,
                     title: "Please Confirm"
                   }
                 )
@@ -149,13 +149,13 @@ const ItemRender = React.memo(({
             }
           },
           {
-            icon: (
-              <Icon
+            icon:
+              (<Icon
                 name="refresh"
                 type="FontAwesome"
                 css="invertco"
               />
-            ),
+              ),
             ifTrue: item.isOnline?.(),
             text: "Refresh",
             onPress: () => {
@@ -169,11 +169,11 @@ const ItemRender = React.memo(({
               itemLoader.show();
               return await loadNovel()
             },
-            icon: (<Icon
+            icon: <Icon
               type="AntDesign"
               name="menu"
               css="invertco"
-            />),
+            />,
             text: "Chapters"
           },
           {
@@ -215,7 +215,7 @@ const ItemRender = React.memo(({
             ifTrue: item.isOnline?.(),
             text: "Info"
           }
-        ]}>
+        ], item)}>
         <View
           css="clearwidth bor:5 pal:5 par:5 he:60 row di:flex juc:flex-start invert">
           <Image
@@ -235,12 +235,13 @@ const ItemRender = React.memo(({
             ({item.parserName} | {context.parser.find(item.parserName)?.type})
           </Text>
         </View>
-      </FoldableItem>
+      </FoldableItem >
     </>
   );
 });
 
 export default ({ ...props }: any) => {
+  const { mem, memKey } = useFunc();
   const state = buildState(() =>
   ({
     text: "",
@@ -298,46 +299,45 @@ export default ({ ...props }: any) => {
       <Header
         value={state.text}
         inputEnabled={true}
-        onInputChange={txt => {
+        onInputChange={mem(txt => {
           state.text = txt ?? "";
-        }}
+        })}
       />
       <View css="itemListContainer">
         {
           !state.text.has() ? (
             <ScrollView>
-              {state.data.map((x) => (
+              {mem(state.data.map((x, indx) => (
                 <Collabse css={"collabseItem"}
-                  style={{ maxHeight:50+ Math.max(Math.min(screenHeight, x.data.length * 60), 60), padding: 0, marginBottom: 10 }}
-                  icon={<Icon type="AntDesign" name='book' size={20} />} text={x.title}
-                  key={x.title}
+                  style={memKey("CollabseStyle" + indx, { maxHeight: 50 + Math.max(Math.min(screenHeight, x.data.length * 60), 60), padding: 0, marginBottom: 10 }, screenHeight, x.data.length)}
+                  icon={memKey("CollabseIcon", <Icon type="AntDesign" name='book' size={20} />)} text={x.title}
+                  key={x.title + indx}
                   defaultActive={x.active}
                   lazyLoading={true}
-                  onActiveStateChange={c => {
+                  onActiveStateChange={memKey("CollabseActiveChange" + indx, c => {
                     x.active = c;
                     x.lazyLoading = false;
-
-                  }}>
+                  }, x)}>
                   {
                     <ItemList
                       nested={true}
-                      style={{ paddingTop: 5, paddingBottom: 5, height: "90%" }}
+                      style={memKey("CollabseItemListStyle", { paddingTop: 5, paddingBottom: 5, height: "90%" })}
                       items={x.data}
-                      container={({ item }: any) => (
+                      container={memKey("CollabseContainer", ({ item }: any) => (
                         <ItemRender hideParserDetail={true} url={item.url} />
-                      )}
+                      ))}
                       itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5 he-60"
                       vMode={true}
                     />
                   }
                 </Collabse>
 
-              ))}</ScrollView>) : (
+              )), state.data)}</ScrollView>) : (
             <ItemList
-              items={books?.filter(x => !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text))}
-              container={({ item }: any) => (
+              items={mem(books?.filter(x => !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)), state.text)}
+              container={mem(({ item }: any) => (
                 <ItemRender url={item.url} />
-              )}
+              ))}
               itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5 he-60"
               vMode={true}
             />

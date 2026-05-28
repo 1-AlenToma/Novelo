@@ -251,8 +251,8 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                 if (!parser)
                     parser = all.find(x => x.name == name);
                 let ps = data.parser.find(parser.name);
-                if (ps && ps.settings){
-                    parser.settings = {...ps.settings};
+                if (ps && ps.settings) {
+                    parser.settings = { ...ps.settings };
                 }
                 return parser as ParserWrapper;
 
@@ -260,13 +260,15 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             current: currentParser,
             find: (name: string) => data.parser.all.find(x => x.name == name) as ParserWrapper,
             set: async (p) => {
-                p = data.parser.find(p.name);
-                p.settings = await p.load("RenewMemo");
-                data.parser.current = p;
-                if (data.appSettings.selectedParser != p.name) {
-                    data.appSettings.selectedParser = p.name;
-                    await data.appSettings.saveChanges();
-                }
+                await context.batch(async () => {
+                    p = data.parser.find(p.name);
+                    p.settings = await p.load("RenewMemo");
+                    data.parser.current = p;
+                    if (data.appSettings.selectedParser != p.name) {
+                        data.appSettings.selectedParser = p.name;
+                        await data.appSettings.saveChanges();
+                    }
+                })
 
                 // data.updater = newId();
                 //alert(p.name)

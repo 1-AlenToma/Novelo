@@ -8,6 +8,7 @@ import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
 export default ({ isMenu }: { isMenu?: boolean }) => {
   const loader = useLoader();
+  const { mem } = useFunc();
   context.hook(
     "player.showController",
     "appSettings",
@@ -41,20 +42,20 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
     <View
       ifTrue={context.player.showPlayer}
       style={
-        {
+        mem({
           zIndex: 100,
           top: context.player.hooked && context.player.showController && !isMenu ? 48 : (isMenu ? 0 : 1),
           position: isMenu ? "relative" : "absolute",
           borderBottomWidth: isMenu ? 0 : 0,
           borderRadius: isMenu ? 0 : 0,
           borderColor: methods.invertColor(context.appSettings.backgroundColor)
-        }
+        }, isMenu, context.appSettings.backgroundColor, context.player.hooked, context.player.showController)
       }
       css={`band zi:100 bac:black overflow he:40 juc:center ali:center pal:10 par:10 invert`}>
       {loader.elem}
       <View css="row juc:center ali:center di:flex invert">
         <SingleTouchableOpacity
-          onPress={() => {
+          onPress={mem(() => {
             context.nav
               .navigate("ReadChapter", {
                 name: context.player.novel.name,
@@ -62,7 +63,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
                 parserName: context.player.novel.parserName ?? context.player.book.parserName,
                 epub: context.player.isEpup
               });
-          }}
+          })}
           css="wi:30"
           ifTrue={isMenu == true}>
           <Icon
@@ -80,22 +81,22 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           css="clearheight flex invert">
           <Slider
             value={context.player.currentChapterSettings.audioProgress}
-            onValueChange={(value: number) => {
+            onValueChange={mem((value: number) => {
               audioProgressTimer(async () => {
                 if (context.player.playing())
                   await context.player.playing(false)
                 context.player.currentChapterSettings.audioProgress = value;
                 await context.player.currentChapterSettings.saveChanges();
               });
-            }}
+            })}
             minimumValue={0}
             maximumValue={context.player.chapterArray.length - 1}
           />
         </View>
         <SingleTouchableOpacity
-          onPress={() =>
+          onPress={mem(() =>
             context.player.playing(!context.player.playing())
-          }>
+          )}>
           <Icon
             name={context.player._playing
               ? "pause-circle"
@@ -106,12 +107,12 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </SingleTouchableOpacity>
         <TouchableOpacity
-          onPress={async () => {
+          onPress={mem(async () => {
             if (context.player.playing())
               await context.player.playing(false)
             context.player.playPrev();
           }
-          }>
+          )}>
           <Icon
             name="play-back-circle"
             css="fos-35"
@@ -119,12 +120,12 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={async () => {
+          onPress={mem(async () => {
             if (context.player.playing())
               await context.player.playing(false)
             context.player.playNext();
           }
-          }>
+          )}>
           <Icon
             name="play-forward-circle"
             css="fos-35"

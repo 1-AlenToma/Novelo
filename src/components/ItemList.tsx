@@ -52,7 +52,9 @@ export default function <T>({
   const onEndReachedCalledDuringMomentum = useRef(true);
   const ref = useRef<FlashListRef<T>>();
   const selected = useRef();
-  const Render = React.useCallback(({ item, index }: { item: T, index: number }) => {
+  const { mem, memKey } = useFunc();
+
+  const Render = mem(({ item, index }: { item: T, index: number }) => {
     let d = { item, vMode: horizental, index };
     if (props) d = { ...d, ...props };
     let VR = container;
@@ -61,6 +63,7 @@ export default function <T>({
         ? SingleTouchableOpacity
         : View;
     let cnCSS = typeof itemCss == "string" ? itemCss as string : itemCss?.(item);
+    let itemAny = item as any;
     return (
       <CN
         css={cnCSS}
@@ -72,9 +75,9 @@ export default function <T>({
         <VR {...d} />
       </CN>
     );
-  }, [vMode, itemCss, onPress, onLongPress, container, props]);
+  }, [vMode, itemCss, onPress, onLongPress, container]);
 
-  const scrollTo = () => {
+  const scrollTo = mem(() => {
     if (
       selectedIndex !== undefined &&
       ref.current &&
@@ -85,7 +88,7 @@ export default function <T>({
         animated: false
       });
     }
-  };
+  }, selectedIndex)
 
   const extraData = React.useMemo(() => {
     return [
@@ -113,33 +116,31 @@ export default function <T>({
 
   return (
     <View
-      style={React.useMemo(() => [{
+      style={mem([{
         maxHeight: "100%",
         width: "100%",
         height: "100%",
         flex: 0
-      }, style], [style])}
+      }, style], style)}
       css="flg:1 mah:100% bac-transparent po-relative">
 
       <FlashList
         ref={c => {
           ref.current = c;
         }}
-
         onLoad={onload}
-
-        onContentSizeChange={() => {
+        onContentSizeChange={mem(() => {
           time(() => scrollTo());
-        }}
+        }, scrollTo)}
 
-        contentContainerStyle={{
+        contentContainerStyle={mem({
           padding: 1
-        }}
+        })}
         numColumns={numColumns == 0 ? undefined : numColumns}
 
-        onScrollBeginDrag={() => {
+        onScrollBeginDrag={mem(() => {
           selected.current = true;
-        }}
+        })}
         nestedScrollEnabled={nested}
         initialScrollIndex={scrollIndex}
         horizontal={horizental !== true}
@@ -147,26 +148,26 @@ export default function <T>({
         refreshing={onRefresh?.loading}
         onRefresh={onRefresh?.onRefresh}
         onEndReachedThreshold={0.5}
-        onMomentumScrollBegin={() => {
+        onMomentumScrollBegin={mem(() => {
           onEndReachedCalledDuringMomentum.current =
             false;
-        }}
+        }, onEndReachedCalledDuringMomentum.current)}
 
         extraData={extraData}
-        onEndReached={() => {
+        onEndReached={mem(() => {
           if (!onEndReachedCalledDuringMomentum.current) {
             onEndReached?.();
             onEndReachedCalledDuringMomentum.current = true;
           }
-        }}
+        }, onEndReached)}
         renderItem={Render}
-        keyExtractor={(item, index) => {
+        keyExtractor={mem((item, index) => {
           let tm: any = item;
           let key = tm && typeof tm == "object" ? tm.url ?? tm.name ?? "" : "";
           if (!key)
             key += String(index);
           return key;
-        }}
+        })}
       />
     </View>
   );

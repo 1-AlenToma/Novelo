@@ -33,6 +33,7 @@ export default ({
   position?: "Left" | "Top"
 }) => {
   const pos = position ?? "Top";
+  const { mem, memKey } = useFunc();
 
   const { animateX, animateY, animate } = useAnimate({
     easing: Easing.bounce
@@ -46,29 +47,34 @@ export default ({
       childSize: undefined as ISize | undefined
     }
   });
-  let interpolate = [0, 1];
-  if (pos == "Left") {
-    if (
-      state.buttonsSize &&
-      state.size.width > 0 &&
-      !isNaN(state.buttonsSize.width as number)
-    ) {
-      interpolate = [
-        0,
-        -Math.max((state.buttonsSize.width as number) + 10, 10)
-      ];
+  let interpolate = React.useMemo(() => {
+    let inter = [0, 1];
+    if (pos == "Left") {
+      if (
+        state.buttonsSize &&
+        state.size.width > 0 &&
+        !isNaN(state.buttonsSize.width as number)
+      ) {
+        inter = [
+          0,
+          -Math.max((state.buttonsSize.width as number) + 10, 10)
+        ];
+      }
+    } else {
+      if (
+        state.buttonsSize &&
+        (state.childSize?.height as number ?? 0) > 0 &&
+        !isNaN(state.size.height as number)
+      ) {
+        inter = [0, -Math.max((state.childSize?.height as number) - 1, 10)];
+      }
     }
-  } else {
-    if (
-      state.buttonsSize &&
-      (state.childSize?.height as number ?? 0) > 0 &&
-      !isNaN(state.size.height as number)
-    ) {
-      interpolate = [0, -Math.max((state.childSize?.height as number) - 1, 10)];
-    }
-  }
 
-  const animateView = (show: boolean) => {
+    return inter;
+  }, [state.size, state.buttonsSize, state.childSize])
+
+
+  const animateView = mem((show: boolean) => {
     (pos == "Left" ? animateX : animateY)(interpolate[show ? 0 : 1], () => {
       state.visible = show;
       if (single && show) {
@@ -81,7 +87,7 @@ export default ({
         context.selectedFoldItem = "";
       }
     });
-  }
+  }, interpolate, single)
 
   if (single) {
     context.useEffect(() => {
@@ -91,31 +97,34 @@ export default ({
     }, "selectedFoldItem");
   }
 
-  let scrollButoons = Array.isArray(buttons) ? buttons : [buttons];
+  let scrollButoons = React.useMemo(() => {
+    let items = Array.isArray(buttons) ? buttons : [buttons];
 
-  scrollButoons = [{
-    onPress: () => {
-      animateView(false);
-    },
-    icon: (<Icon type="FontAwesome" name="close" css="co-red" />),
-    text: "Close"
-  }, ...scrollButoons]
+    items = [{
+      onPress: () => {
+        animateView(false);
+      },
+      icon: (<Icon type="FontAwesome" name="close" css="co-red" />),
+      text: "Close"
+    }, ...items]
+    return items;
+  }, [buttons, animateView]);
 
   return render(
     <>
       <View
-        style={{
+        style={mem({
           height: ((state.childSize?.height ?? 0) as number) - 10,
           width: "100%"
-        }}
+        })}
         css="wi:98% ri:5 to:5 overflow:visible bor:5 absolute zi:1 ali:flex-end juc:flex-end">
         {!disableLongPress ? (
-          <ActionSheet size={"50%"} isVisible={state.longPressVisible} onHide={() => state.longPressVisible = false}>
+          <ActionSheet size={"50%"} isVisible={state.longPressVisible} onHide={mem(() => state.longPressVisible = false)}>
             <ScrollView
-              style={{ maxWidth: "100%" }}
+              style={memKey("aSheetStyle", { maxWidth: "100%" })}
               showsVerticalScrollIndicator={true}
               css="zi:1 clearheight">
-              {Array.isArray(buttons)
+              {memKey("btnsList", Array.isArray(buttons)
                 ? [...buttons].reverse().map((x, i) => (
                   <SingleTouchableOpacity
                     css={`invert settingButton`}
@@ -135,22 +144,19 @@ export default ({
                     </Text>
                   </SingleTouchableOpacity>
                 ))
-                : buttons}
+                : buttons, buttons)}
             </ScrollView>
           </ActionSheet>
         ) : null}
         <ScrollView horizontal={true}
-          onContentSizeChange={(width, height) => {
+          onContentSizeChange={mem((width, height) => {
             state.buttonsSize = { width, height } as any
-          }}
-          style={{ maxWidth: "100%" }}
+          })}
+          style={mem({ maxWidth: "100%" })}
           showsHorizontalScrollIndicator={true}
-          onLayout={event => {
-            // state.buttonsSize = event.nativeEvent.layout;
-          }}
-          contentContainerStyle={{ paddingLeft: 5, paddingRight: 5 }}
+          contentContainerStyle={mem({ paddingLeft: 5, paddingRight: 5 })}
           css="zi:1 clearheight">
-          {scrollButoons.map((x, i) => (
+          {mem(scrollButoons.map((x, i) => (
             <SingleTouchableOpacity
               css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value ? "selectedRow" : ""}`}
               ifTrue={x.ifTrue}
@@ -168,12 +174,12 @@ export default ({
                 {x.text}
               </Text>
             </SingleTouchableOpacity>
-          ))}
+          )), scrollButoons)}
         </ScrollView>
       </View>
       <AnimatedView
         css="clearboth zi:2 "
-        style={{
+        style={mem({
           transform: [
             pos == "Left" ? (
               {
@@ -197,22 +203,21 @@ export default ({
               })
             })
           ]
-        }}>
+        } as any, pos, interpolate, animate.y, animate.x)}>
         <SingleTouchableOpacity
-          onLayout={event => {
+          onLayout={mem(event => {
             state.childSize = event.nativeEvent.layout;
-          }}
+          })}
           activeOpacity={0.9}
-          onLongPress={(e) => {
+          onLongPress={mem((e) => {
             e.stopPropagation();
             e.preventDefault();
             state.longPressVisible = true;
-
-          }}
-          onPress={() => {
+          })}
+          onPress={mem(() => {
             if (enabled !== false)
               animateView(!state.visible)
-          }}>
+          }, animateView)}>
           {children}
         </SingleTouchableOpacity>
       </AnimatedView>

@@ -5,7 +5,7 @@ import { Book, Chapter } from "../db";
 import { DetailInfo, ChapterInfo } from "../native";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 import ItemList from "./ItemList";
-export const ChapterView = ({
+export const ChapterView = React.memo(({
   book,
   current,
   novel,
@@ -27,11 +27,12 @@ export const ChapterView = ({
   const loader = useLoader(true, "Loading Chapter");
   const initLoading = useLoader(novel?.chapters.length > 0, "Loading Chapter");
   const initTimer = useTimer(100);
-  const getChapterItems = (chunkIndex: number) => {
+  const { mem } = useFunc();
+  const getChapterItems = mem((chunkIndex: number) => {
     const chapters = novel?.chapters ?? [];
     const start = chunkIndex * size;
     return chapters.slice(start, start + size);
-  };
+  }, novel?.chapters.length)
 
 
   const chArray = React.useMemo(() => {
@@ -53,7 +54,7 @@ export const ChapterView = ({
     return map;
   }, [book?.chapterSettings]);
 
-  const hasReadContent = (index: number) => {
+  const hasReadContent = mem((index: number) => {
     let arr = chArray[index];
     if (arr.hasReadContent == undefined) {
       if (!arr.items)
@@ -62,7 +63,7 @@ export const ChapterView = ({
     }
 
     return arr.hasReadContent;
-  }
+  }, chArray, getChapterItems);
 
 
   useEffect(() => {
@@ -98,10 +99,10 @@ export const ChapterView = ({
             updater={[state.currentPage]}
             selectedIndex={state.currentPage}
             items={chArray}
-            onPress={item => {
+            onPress={mem(item => {
               state.currentPage = item.index;
-            }}
-            container={({ item, index }) => {
+            })}
+            container={mem(({ item, index }) => {
               return (
                 <View
                   css={`row di:flex ali:center bor:5 listButton invert ${state.currentPage === item.index ? " selectedRow pal:5 par:5" : ""}`}>
@@ -125,26 +126,27 @@ export const ChapterView = ({
                   />
                 </View>
               )
-            }}
+            })}
             itemCss="pa-5 bobw-1 boc-gray invert wi-115 he-50"
           />
         </View>
         <View css="clearwidth mih:50 flex invert mat-5 po-relative">
           <ItemList
-            onload={() => initTimer(() => initLoading.hide())}
+            onload={mem(() => initTimer(() => initLoading.hide()))}
             vMode={true}
             updater={[current]}
             selectedIndex={state.index.page == state.currentPage ? state.index.index : 0}
             items={chArray[state.currentPage]?.items}
-            container={({ item, index }: { item: ChapterInfo, index: number }) => {
+            onPress={mem(async (item: ChapterInfo) => {
+              if (current != item.url || ignoreChapterValidation) {
+                loader.show();
+                await onPress(item);
+              }
+            }, ignoreChapterValidation, onPress)}
+            container={mem(({ item, index }: { item: ChapterInfo, index: number }) => {
               const cssEmpty = item.empty ? "op-0.5" : "";
               return (
-                <SingleTouchableOpacity css="fl-1" onPress={async () => {
-                  if (current != item.url || ignoreChapterValidation) {
-                    loader.show();
-                    await onPress(item);
-                  }
-                }}>
+                <View css="fl-1 bac-transparent">
                   <View
                     css={`pa-5 flex mih:50 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
                     <Text
@@ -173,9 +175,9 @@ export const ChapterView = ({
                       />
                     </View>
                   </View>
-                </SingleTouchableOpacity>
+                </View>
               )
-            }}
+            }, current)}
             itemCss="fl-1 wi-100% he-50 bobw-1 boc-gray invert"
           />
         </View>
@@ -183,4 +185,4 @@ export const ChapterView = ({
       {loader.elem ?? initLoading.elem}
     </View>
   );
-};
+});

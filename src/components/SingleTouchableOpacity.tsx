@@ -1,14 +1,16 @@
 import { TouchableOpacity, useTimer, StyledProps } from "react-native-short-style/mems";
 import { TouchableOpacityProps } from "react-native";
 import useLoader from "./Loader";
+import React from "react";
 
-export const SingleTouchableOpacity = (props: TouchableOpacityProps & StyledProps & { hideLoader?: boolean }) => {
+export const SingleTouchableOpacity = React.memo((props: TouchableOpacityProps & StyledProps & { hideLoader?: boolean }) => {
 
     const timer = useTimer(500);
     const loader = useLoader(false, undefined, "small");
     const cliked = useRef(false)
+    const { mem } = useFunc();
 
-    const click = async (event: any) => {
+    const click = mem(async (event: any) => {
         if (cliked.current || loader.loading)
             return;
         cliked.current = true;
@@ -19,7 +21,7 @@ export const SingleTouchableOpacity = (props: TouchableOpacityProps & StyledProp
             loader.hide()
             cliked.current = false;
         });
-    }
+    }, props?.onPress, loader.loading);
 
     return (
 
@@ -28,4 +30,4 @@ export const SingleTouchableOpacity = (props: TouchableOpacityProps & StyledProp
             {props.children}
         </TouchableOpacity>
     )
-}
+})

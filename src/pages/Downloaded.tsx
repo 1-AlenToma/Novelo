@@ -14,7 +14,7 @@ import {
   useTimer,
   Modal,
   ButtonGroup
-} from "react-native-short-style";
+} from "react-native-short-style/mems";
 import Header from "./Header";
 import * as React from "react";
 import {
@@ -28,11 +28,12 @@ import {
   readEpub
 } from "../native";
 import FileHandler from "../native/FileHandler"
-import { IReadDirItem } from "Types";
+import { IReadDirItem } from "../Types";
 
 const EpubHandler = ({
   parentState
 }: any) => {
+  const { mem, memKey } = useFunc();
   const [render, state, loader] = useView({
     component: false,
     stateTimeOut: 2,
@@ -78,7 +79,7 @@ const EpubHandler = ({
           </ProgressBar>
         </View>
       </View>
-      <Modal addCloser={true} css="wi-90% he-200" isVisible={state.loadedEpubPath != undefined} disableBlurClick={true} onHide={() => { state.loadedEpubPath = undefined }}>
+      <Modal addCloser={true} css="wi-90% he-200" isVisible={state.loadedEpubPath != undefined} disableBlurClick={true} onHide={mem(() => { state.loadedEpubPath = undefined })}>
         <Text css="desc co-red fow-bold">Please how should the epub be treated as</Text>
         <ButtonGroup css="mat-15" selectedIndex={[types.findIndex(x => x == state.loadedEpubType)]} buttons={types} onPress={(x) => {
           state.loadedEpubType = types[x[0]];
@@ -88,28 +89,28 @@ const EpubHandler = ({
       </Modal>
 
       <Header
-        buttons={[
+        buttons={mem([
           {
-            text: () => (
+            text: memKey("dirIeco", () => (
               <Icon
                 size={35}
                 name="file-directory"
                 type="Octicons"
               />
-            ),
-            press: async () => {
+            )),
+            press: memKey("dirIconPress", async () => {
               let uri = await context.browser.pickFile(["epub"], "Select Epub file");
               if (uri)
                 state.loadedEpubPath = uri;
               //  loadEpub(uri)
-            }
+            })
           }
-        ]}
+        ])}
         value={parentState.text}
         inputEnabled={true}
-        onInputChange={txt => {
+        onInputChange={mem(txt => {
           parentState.text = txt ?? "";
-        }}
+        })}
       />
     </>
   );
@@ -146,6 +147,7 @@ const ItemRender = React.memo(({
   url: string;
 }) => {
   if (!name || !parserName || !url) return null;
+  const { mem, memKey } = useFunc();
   let item: Book = { name, parserName, url } as any;
   context.hook("parser.all")
   const [books, dataIsLoading] = context.db.Books.useQuery(
@@ -182,7 +184,7 @@ const ItemRender = React.memo(({
     getInfo(books.find(x => x.url === item.url) ?? item);
   }, [books, fileItems]);
 
-  let getInfo = async (b: any) => {
+  let getInfo = mem(async (b: any) => {
     loader.show();
     let novel = fileItems.find(
       x => x.url == b.url
@@ -191,11 +193,11 @@ const ItemRender = React.memo(({
       itemState.info = `(${b.selectedChapterIndex + 1}/${novel.chapters.filter(x => x.content && x.content.has()).length})`;
     }
     loader.hide();
-  };
+  }, books, fileItems)
 
-  item = books.find(x => x.url === item.url) ?? item;
+  item = mem(books.find(x => x.url === item.url) ?? item, books);
 
-  const downloadEpub = async () => {
+  const downloadEpub = mem(async () => {
     let file = fileItems.find(
       x => x.url === item.url
     );
@@ -217,7 +219,7 @@ const ItemRender = React.memo(({
 
 
     }
-  };
+  }, books, fileItems)
 
 
   const novelInfo = fileItems.find(x => item.url === x.url);
@@ -225,9 +227,9 @@ const ItemRender = React.memo(({
   return (
     <FoldableItem
       single={true}
-      enabled={chapterLength > 0 && downloadProgress <= 0}
+      enabled={chapterLength > 0 && downloadProgress.value <= 0}
       css="wi:98% overflow"
-      buttons={[
+      buttons={mem([
         {
           icon: (
             <Icon
@@ -237,7 +239,7 @@ const ItemRender = React.memo(({
             />
           ),
           text: "Download",
-          ifTrue: () => downloadProgress <= 0,
+          ifTrue: () => downloadProgress.value <= 0,
           onPress: () => {
             downloadEpub();
             return true;
@@ -245,7 +247,7 @@ const ItemRender = React.memo(({
         },
         {
           ifTrue: () =>
-            item.parserName !== "epub" && item.isOnline?.() && !context.downloadManager().items.has(item.url ?? "") && downloadProgress <= 0,
+            item.parserName !== "epub" && item.isOnline?.() && !context.downloadManager().items.has(item.url ?? "") && downloadProgress.value <= 0,
           icon: (
             <Icon
               name="update"
@@ -267,17 +269,17 @@ const ItemRender = React.memo(({
           }
         },
         {
-          text: downloadProgress > 0 ? "Stop" : "Delete",
+          text: downloadProgress.value > 0 ? "Stop" : "Delete",
           icon: (
             <Icon
-              name={downloadProgress > 0 ? "controller-stop" : "delete"}
-              type={downloadProgress > 0 ? "Entypo" : "MaterialIcons"}
+              name={downloadProgress.value > 0 ? "controller-stop" : "delete"}
+              type={downloadProgress.value > 0 ? "Entypo" : "MaterialIcons"}
               css="invertco"
             />
           ),
           onPress: async () => {
             // stop it if its downloading
-            if (downloadProgress > 0) {
+            if (downloadProgress.value > 0) {
               loader.show();
               context.downloadManager().stop(item.url)
               await methods.sleep(3000);
@@ -287,7 +289,7 @@ const ItemRender = React.memo(({
             AlertDialog
               .confirm(
                 {
-                  message: `You will be deleting this novel.\nAre you sure?`,
+                  message: `You will be deleting ${item.name}.\n\nAre you sure?`,
                   title: "Please Confirm"
                 }
               )
@@ -359,7 +361,7 @@ const ItemRender = React.memo(({
           text: "Info",
           ifTrue: () => item.parserName != "epub" && item.isOnline?.()
         }
-      ]}>
+      ], downloadEpub, item, downloadProgress)}>
       <View
         css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start invert">
         {loader.elem ?? elem}
@@ -387,22 +389,22 @@ const ItemRender = React.memo(({
           {!item.isOnline?.() ? " Missing parser" : ""}
         </Text>
         <View
-          ifTrue={downloadProgress > 0 ? true : false}
+          ifTrue={downloadProgress.value > 0 ? true : false}
           css="clearboth wi-102% absolute row juc:flex-end ali:center">
 
-          <ProgressBar css="_abc he-100%" value={downloadProgress / 100}>
-            <Text ifTrue={downloadProgress == 0.1} css="fos-12 bold co-red">Loading Please wait...</Text>
-            <Text ifTrue={downloadProgress != 0.1} css="fos-12 bold co-#FFFFFF">{downloadProgress.readAble()}%</Text>
+          <ProgressBar css="_abc he-100%" value={downloadProgress.value / 100}>
+            <Text ifTrue={downloadProgress.value == 0.1} css="fos-12 bold co-red">Loading Please wait...</Text>
+            <Text ifTrue={downloadProgress.value != 0.1} css="fos-12 bold co-#FFFFFF">{downloadProgress.value.readAble()}%</Text>
           </ProgressBar>
 
           <TouchableOpacity
             css="button zi:6 miw:30 clb"
-            onPress={async () => {
+            onPress={mem(async () => {
               loader.show();
               context.downloadManager().stop(item.url);
               await methods.sleep(3000);
               loader.hide();
-            }
+            }, loader.loading, item)
             }>
             <Icon
               name="controller-stop"
@@ -423,6 +425,7 @@ export default ({ ...props }: any) => {
     selectedItem: undefined,
     skipImages: false
   })).build();
+  const { mem, memKey } = useFunc();
 
   const { fileItems, elem } = context.files.useFile<DetailInfo>("json", undefined, "NewDelete");
   const prepLoading = context.downloadManager().prepLoading();
@@ -445,17 +448,20 @@ export default ({ ...props }: any) => {
     reload();
   }, [fileItems]);
 
-  const renderItems: any[] = books?.filter(x => {
-    const file = fileItems.find(x => x.url == x.url)
+  const renderItems = React.useMemo(() => {
+    let data: any[] = books?.filter(x => {
+      const file = fileItems.find(x => x.url == x.url);
+      return (
+        !state.text.has() ||
+        x.name.has(state.text) || x.parserName.has(state.text) ||
+        (context.parser.find(x.parserName)?.type ?? "").has(state.text) ||
+        file?.type?.has(state.text)
+      )
+    });
+    data.push(...prepLoading.filter(x => !data.find(f => f.url == x)));
+    return data;
+  }, [books, prepLoading, state.text, fileItems]);
 
-    return (
-      !state.text.has() ||
-      x.name.has(state.text) || x.parserName.has(state.text) ||
-      (context.parser.find(x.parserName)?.type ?? "").has(state.text) ||
-      file?.type?.has(state.text)
-    )
-  })
-  renderItems.push(...prepLoading.filter(x => !renderItems.find(f => f.url == x)));
   return (
     <View css="flex mih:100 invert ali-center">
       <EpubHandler parentState={state} />
@@ -466,13 +472,15 @@ export default ({ ...props }: any) => {
         </Text>
         <ItemList
           items={renderItems}
-          container={({ item }: { item: Book | string }) => {
+          container={mem(({ item }: { item: Book | string }) => {
+            if (!item || (typeof item == "object" && !item.url))
+              return null;
             if (typeof item == "object" && prepLoading.includes(item.url))
               item = item.url;
             if (typeof item == "object") {
               return (<ItemRender name={item.name} parserName={item.parserName} url={item.url} />)
             } else return (<PrepItem item={item} />)
-          }}
+          })}
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
           vMode={true}
         />

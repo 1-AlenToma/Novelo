@@ -7,7 +7,7 @@ class Html {
   constructor(htext: any, uurl?: string) {
     this.uurl = uurl ?? "";
     if (typeof htext === "string") {
-      this.io = IDOMParser.parse(`<div>${htext}</div>`, {
+      this.io = IDOMParser.parse(`<div class="tbhjhasd">${htext}</div>`, {
         errorHandler: {
           error: (e: string) => { },
           warning: (e: string) => { },

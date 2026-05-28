@@ -1,3 +1,4 @@
+import { PrimitiveObject } from "react-smart-state";
 import { newId, sleep } from "../Methods";
 import { NovelFile } from "../Types";
 import { Book } from "../db";
@@ -49,7 +50,7 @@ export default class DownloadManager extends EventTrigger<any, "Prep" | "Progres
   }
 
   useDownload(parentUrl: string) {
-    let [infos, setInfos] = useState<number>(-1);
+    const state = PrimitiveObject(-1);
     useEffect(() => {
       const getData = (op, url: string, progress?: any) => {
         try {
@@ -68,22 +69,22 @@ export default class DownloadManager extends EventTrigger<any, "Prep" | "Progres
 
           //  console.log("UUR", url, op, item, "orgProgress", progress)
           if (item == undefined)
-            setInfos(() => 0)
+            state.value = 0;
           else
-            setInfos(() => item);
+            state.value = item;
         } catch (e) {
           console.error(e);
         }
 
       }
-      let off = this.use(getData, "Progress")
+      let off = this.use(getData, "Progress");
 
-      if (infos == -1)
+      if (state.value == -1)
         getData("", parentUrl);
       return off;
     }, []);
 
-    return infos;
+    return state;
   }
 
   private async downloadImages(html: string, parser: ParserWrapper) {

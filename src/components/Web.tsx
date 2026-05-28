@@ -129,9 +129,11 @@ export default ({
     }
   });
 
+  const { mem } = useFunc();
+
   context.hook("appSettings.backgroundColor", "appSettings.fontName");
 
-  const postMessage = async (
+  const postMessage = mem(async (
     type: string,
     data: any,
     method?: string,
@@ -143,9 +145,9 @@ export default ({
     }
     let item = { type, data, id };
     webView.current.exec(!method ? "window.loadData" : method, item);
-  };
+  });
 
-  const loadCss = async () => {
+  const loadCss = mem(async () => {
     let color = context.appSettings.backgroundColor;
     let inverted = invertColor(color);
     let shadow = inverted.has("white") ? "#4e4d4d" : "#919191";
@@ -175,14 +177,14 @@ export default ({
 
     await postMessage("CSS", cssStyle, undefined, "dynamicCSS");
     await postMessage("CSS", cleanInlineStyle(), undefined, "inlineStyle");
-  };
+  });
 
-  const cleanInlineStyle = () => {
+  const cleanInlineStyle = mem(() => {
     let inlineStyle = context.player.book.inlineStyle;
     return inlineStyle.replace(/(background-color|font-family|color|font-size|line-height|text-align|font-weight)\:.*\;/gmi, "");
-  }
+  })
 
-  const loadHtmlContent = async () => {
+  const loadHtmlContent = mem(async () => {
     try {
       if (context.player.isloading) return;
       loader.show();
@@ -239,7 +241,7 @@ export default ({
     } catch (e) {
       console.error(e)
     }
-  };
+  });
 
   context.useEffect(
     () => {
@@ -266,7 +268,7 @@ export default ({
     "player.isloading"
   );
 
-  const onMessage = async ({ nativeEvent }) => {
+  const onMessage = mem(async ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
     switch (data.type) {
       case "loader":
@@ -331,7 +333,7 @@ export default ({
         postMessage("images", images, "window.renderImage");
         break;
     }
-  };
+  }, onComments, click, onScroll, bottomReched, onMenu, topReched, loader.loading)
 
   context.useEffect(
     () => {
@@ -364,7 +366,7 @@ export default ({
 
 
   return (
-    <View css={"flex wi-100% he-100%"} style={{ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }}>
+    <View css={"flex wi-100% he-100%"} style={mem({ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }, loader.loading, context.appSettings.backgroundColor)}>
       <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center clb">
         <Scroller />
       </View>
@@ -378,14 +380,14 @@ export default ({
       </View>
       {loader.elem}
       {render(null, {
-        source: {
+        source: mem({
           html: webHtml,
           basUrl: ""
-        },
-        style: {
+        }),
+        style: mem({
           backgroundColor: context.appSettings.backgroundColor
-        },
-        containerStyle: [
+        }, context.appSettings.backgroundColor),
+        containerStyle: mem([
           {
             backgroundColor: context.appSettings.backgroundColor,
             zIndex: 70,
@@ -393,7 +395,7 @@ export default ({
             flexGrow: 1
           },
           style
-        ],
+        ], style, context.appSettings.backgroundColor),
         onMessage: onMessage
       })}
     </View>

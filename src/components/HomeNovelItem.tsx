@@ -15,7 +15,6 @@ export default React.memo(({
   showParserName?: boolean,
   numberOfLines?: number
 }) => {
-
   if (!vMode) {
     return (
       <View css="clearboth bor:5 overflow invert">
