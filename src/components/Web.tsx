@@ -15,7 +15,7 @@ import { Compressor } from "../native/compressor";
 
 
 
-const Clock = ({ secondEnabled }: any) => {
+const Clock = React.memo(({ secondEnabled, color }: any) => {
   const Timer = useTimer(1000);
   const [time, setTime] = useState("");
   function startTime() {
@@ -47,21 +47,18 @@ const Clock = ({ secondEnabled }: any) => {
     <View css="clb">
       <TextView
         style={{
-          color: invertColor(
-            context.appSettings.backgroundColor
-          )
+          color: invertColor(color)
         }}
         css="bold fos:10">
         {time}
       </TextView>
     </View>
   );
-};
+})
 
-const Scroller = ({ ...props }: any) => {
+const Scroller = React.memo(() => {
   context.hook(
     "player.scrollProcent",
-    "appSettings",
     "player.showPlayer"
   );
 
@@ -71,17 +68,15 @@ const Scroller = ({ ...props }: any) => {
 
   return (
     <ProgressBar
-      ifTrue={() =>
-        context.player.showPlayer != true
-      }
+      ifTrue={context.player.showPlayer != true}
       speed={200}
       color="#3b5998"
       value={svgProgress / 100}
     />
   );
-};
+})
 
-export default ({
+export default React.memo(({
   click,
   onScroll,
   onMenu,
@@ -278,7 +273,8 @@ export default ({
           loader.hide();
         break;
       case "scrollValue":
-        onScroll?.(data.data);
+        if (!loader.loading)
+          onScroll?.(data.data);
         break;
       case "scrollpercent":
         context.player.scrollProcent = data.data;
@@ -352,7 +348,8 @@ export default ({
       webView.current?.exec("window.highlight", json);
     },
     "player.highlightedText",
-    "appSettings"
+    "appSettings.voiceWordSelectionsSettings",
+    "appSettings.voiceWordSelectionsSettings.appendSelection"
   );
 
   let webHtml = React.useMemo(() => {
@@ -371,7 +368,9 @@ export default ({
         <Scroller />
       </View>
       <View css="row absolute bo:1 ri:10 zi:99 juc:center ali:center clb">
-        <Clock />
+        <Clock color={
+          context.appSettings.backgroundColor
+        } />
         <BattariView
           color={
             context.appSettings.backgroundColor
@@ -400,4 +399,4 @@ export default ({
       })}
     </View>
   );
-};
+});

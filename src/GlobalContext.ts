@@ -353,6 +353,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     appSettingWatcher.onSave = async (items: any) => {
                         let item: AppSettings = items?.firstOrDefault();
                         if (item) {
+                            data.appSettings = item;
                             let updateParser = _parsers.length != (item.parsers ?? []).length || _parsers.some((x, index) => {
                                 let p1 = (item.parsers ?? [])[index];
                                 let p2 = x;
@@ -361,9 +362,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                                 return false;
                             });
                             _parsers = [...(item.parsers ?? [])];
-                            if (updateParser)
-                                console.warn("updateParser")
-                            data.appSettings = item;
+
                             if (updateParser)
                                 loadParsers();
                         }

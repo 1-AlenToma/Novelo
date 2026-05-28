@@ -13,7 +13,7 @@ class Session extends DBInit {
   }
 
   config() {
-    return this.TableBuilder<Session, TableNames>("Sessions")
+    return this.TableBuilder<Session>("Sessions")
       .column("data").encrypt("novelo.enc")
       .column("file").encrypt("novelo.enc")
       .column("date")

@@ -27,12 +27,8 @@ const ItemRender = React.memo(({
   }).ignore("novel").build();
 
   context.hook("novelFavoritInfo");
-  const [books, dataIsLoading] = context.db.Books.useQuery(
-    context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(url),
-    (items, op) => {
-      return (items.find(x => x.url == url && x.favorit) != undefined);
-    }
-  );
+  const [books, dataIsLoading] = context.db.Books.useQuery(()=> context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(url).toList(),
+  (items, op) => (items.find(x => x.url == url && x.favorit) != undefined));
   const item = mem((books.find(x => x.url === url) ?? { url }) as Book, books);
 
   context.cache.onDirDelete((parserName) => {
@@ -42,6 +38,7 @@ const ItemRender = React.memo(({
 
   const loadNovelDetail = mem(async (refresh?: boolean) => {
     itemLoader.show();
+    console.info("loading NovelDetail(Favorit)");
     for (let b of books) {
       if (b.parserName !== "epub") {
         let parser = context.parser.find(b.parserName);
@@ -253,7 +250,7 @@ export default ({ ...props }: any) => {
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
-      context.db.Books.query.load("chapterSettings").where.column(x => x.favorit).equalTo(true).orderByAsc(x => [x.parserName, x.name]),
+      context.db.Books.query.where.column(x => x.favorit).equalTo(true).orderByAsc(x => [x.parserName, x.name]),
       undefined,
       (items, op) => {
         if (books.length <= 0) return true;

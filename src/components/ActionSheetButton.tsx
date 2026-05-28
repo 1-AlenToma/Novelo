@@ -25,7 +25,7 @@ export default ({
   const state = buildState({
     visible: false
   }).build();
-  const {mem}  = useFunc();
+  const {mem, memo}  = useFunc();
 
   let tprops = {
     onPress: () => state.visible=(true),

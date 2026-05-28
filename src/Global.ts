@@ -208,7 +208,7 @@ String.prototype.onEmpty = function (defaultValue: string) {
 String.prototype.isManga = function () {
     let mng = ["manhwa", "manga", "manhua"];
     let str = this.toString();
-    return mng.find(x => str.toLowerCase() == x) != undefined;
+    return mng.some(x => str.toLowerCase() == x);
 }
 
 String.prototype.cleanFileName = function (this: string) {

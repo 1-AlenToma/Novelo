@@ -36,7 +36,7 @@ class Book extends DBInit {
   }
 
   config() {
-    return this.TableBuilder<Book, TableNames>("Books")
+    return this.TableBuilder<Book>("Books")
       .column("name")
       .column("url").encrypt("novelo.enc")
       .column("imageBase64")

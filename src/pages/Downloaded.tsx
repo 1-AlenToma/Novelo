@@ -29,6 +29,7 @@ import {
 } from "../native";
 import FileHandler from "../native/FileHandler"
 import { IReadDirItem } from "../Types";
+import { useKeepAwake } from "expo-keep-awake";
 
 const EpubHandler = ({
   parentState
@@ -419,6 +420,7 @@ const ItemRender = React.memo(({
 });
 
 export default ({ ...props }: any) => {
+  useKeepAwake();
   const state = buildState(() =>
   ({
     text: "",
@@ -432,10 +434,7 @@ export default ({ ...props }: any) => {
   const [books, dataIsLoading, reload] = context
     .db.useQuery(
       "Books",
-      context
-        .db.Books.query.load("chapterSettings")
-        .where.column(x => x.url)
-        .in(fileItems.map(x => x.url)),
+      () => context.db.Books.query.where.column(x => x.url).in(fileItems.map(x => x.url)).toList(),
       undefined,
       (_items) => {
         if (books.length <= 0) return true;
@@ -480,7 +479,7 @@ export default ({ ...props }: any) => {
             if (typeof item == "object") {
               return (<ItemRender name={item.name} parserName={item.parserName} url={item.url} />)
             } else return (<PrepItem item={item} />)
-          })}
+          }, prepLoading)}
           itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
           vMode={true}
         />

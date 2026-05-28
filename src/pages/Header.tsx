@@ -36,7 +36,6 @@ export default ({
   buttons?: Button[];
   ifTrue?: any;
 }) => {
-  const updater = useUpdate();
   const { mem, memKey } = useFunc();
   context.hook(
     "KeyboardState",
@@ -62,15 +61,6 @@ export default ({
       input.current?.clear();
     }
   }, [value]);
-
-  if (buttons && buttons.length > 0)
-    useEffect(() => {
-      updater();
-    }, [...buttons]);
-
-  context.useEffect(() => {
-    updater();
-  }, "appSettings");
 
   context.useEffect(() => {
     if (
@@ -190,27 +180,27 @@ export default ({
               {parserLoader.elem}
               <ScrollView>
                 {context.parser.all.map((x, i) => (
-                    <SingleTouchableOpacity
-                      key={i}
-                      onPress={async () => {
-                        parserLoader.show();
-                        await context.parser.set(x);
-                        parserLoader.hide();
-                        sourceContainer.current.close();
+                  <SingleTouchableOpacity
+                    key={i}
+                    onPress={async () => {
+                      parserLoader.show();
+                      await context.parser.set(x);
+                      parserLoader.hide();
+                      sourceContainer.current.close();
 
-                      }
-                      }
-                      css={`listButton pal:5 fld-row invert ${x.name ===
-                        context.parser.current.name
-                        ? "selectedRow bor:5"
-                        : ""
-                        }`}>
-                      <Image url={`http://www.google.com/s2/favicons?domain=${x.url}`} css="resizeMode:contain he:20 wi:20" />
-                      <Text css="pal-5 invertco header">{x.name} <Text css={"co-primary"}>
-                        ({x.type})
-                      </Text></Text>
-                    </SingleTouchableOpacity>
-                  ))}
+                    }
+                    }
+                    css={`listButton pal:5 fld-row invert ${x.name ===
+                      context.parser.current.name
+                      ? "selectedRow bor:5"
+                      : ""
+                      }`}>
+                    <Image url={`http://www.google.com/s2/favicons?domain=${x.url}`} css="resizeMode:contain he:20 wi:20" />
+                    <Text css="pal-5 invertco header">{x.name} <Text css={"co-primary"}>
+                      ({x.type})
+                    </Text></Text>
+                  </SingleTouchableOpacity>
+                ))}
               </ScrollView>
             </ActionSheetButton>
           </>

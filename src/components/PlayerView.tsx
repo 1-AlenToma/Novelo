@@ -11,7 +11,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
   const { mem } = useFunc();
   context.hook(
     "player.showController",
-    "appSettings",
+    "appSettings.backgroundColor",
     "player.showPlayer",
     "player.chapterArray",
     "player._playing",

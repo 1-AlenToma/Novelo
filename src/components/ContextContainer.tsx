@@ -9,7 +9,7 @@ type ContextContainerProps<T extends object> = {
     globalStateKeys?: NestedKeyOf<GlobalType>[]
 }
 
-export function ContextContainer<T extends object>(props: ContextContainerProps<T>) {
+function _ContextContainer<T extends object>(props: ContextContainerProps<T>) {
     const state = buildState(() => (props.stateItem ?? ({ nothing: true }))).build();
 
     const values = Object.keys(props.stateItem ?? {}).map(x => (state as any)[x]).filter(x => x !== null);
@@ -24,3 +24,5 @@ export function ContextContainer<T extends object>(props: ContextContainerProps<
 
     return elem;
 }
+
+export const ContextContainer = React.memo(_ContextContainer);

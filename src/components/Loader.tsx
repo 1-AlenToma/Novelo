@@ -9,44 +9,35 @@ export default (
   size?: number | "small" | "large",
   onPress?: () => void
 ) => {
-  const state = buildState({
-    loading: initValue ?? false,
-    progressValue: undefined as number | undefined
-  }).build();
-
-  const extraData = useRef(undefined);
-
-
-  useEffect(() => {
-    state.loading = initValue ?? false;
-  }, [initValue]);
-
-  const show = (progress?: number) => {
-    state.batch(() => {
-      state.progressValue = progress;
-      state.loading = true;
-    })
-  };
-
-  const hide = () => {
-    extraData.current = undefined;
-    state.batch(() => {
-      state.progressValue = undefined;
-      state.loading = false;
-    })
-  };
-
-  const get = () => {
-    return extraData.current;
-  }
-
-  const set = (value: any) => {
-    extraData.current = value;
-    return { show, hide, loading: state.loading, get, set };
-  }
   const Container = onPress ? TouchableOpacity : View;
-
-  let elem = !state.loading ? null : (
+  const extraData = useRef(undefined);
+  const { memo } = useFunc();
+  const state = buildState(() => ({
+    loading: initValue ?? false,
+    progressValue: undefined as number | undefined,
+    hide: () => {
+      extraData.current = undefined;
+      state.batch(() => {
+        state.progressValue = undefined;
+        state.loading = false;
+      })
+    },
+    show: (progress?: number) => {
+      state.batch(() => {
+        state.progressValue = progress;
+        state.loading = true;
+      })
+    },
+    get: () => {
+      return extraData.current;
+    },
+    set: (value: any) => {
+      extraData.current = value;
+      return state;
+    },
+    elem: null as any
+  })).ignore("elem").build();
+  const elem = memo(() => !state.loading ? null : (
     <Container activeOpacity={1} onPress={onPress} css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center clb">
       <View css="clearboth blur absolute zi:1" />
       <ActivityIndicator
@@ -57,8 +48,7 @@ export default (
       />
       <ProgressBar
         ifTrue={(state.progressValue ?? 0) > 0}
-        value={state.progressValue / 100}
-      >
+        value={state.progressValue / 100}>
         <Text css="fos-12 bold co-#FFFFFF">{(state.progressValue ?? 0).readAble()}%</Text>
       </ProgressBar>
       <Text
@@ -67,6 +57,20 @@ export default (
         {text}
       </Text>
     </Container>
-  );
-  return { show, hide, elem, loading: state.loading, get, set };
+  ), state.loading, state.progressValue, text, size);
+  memo(() => {
+    delete state.elem;
+    Object.defineProperty(state, "elem",
+      {
+        get: () => elem,
+        configurable: true
+      });
+  }, elem)
+  
+
+  useEffect(() => {
+    state.loading = initValue ?? false;
+  }, [initValue]);
+
+  return state
 };

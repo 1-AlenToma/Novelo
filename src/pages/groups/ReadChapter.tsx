@@ -48,16 +48,32 @@ for (let l in LANGUAGE_TABLE) {
   }
 }
 
+
+const oSettings = ({
+  fonts: Object.keys(Fonts).map(x => { return { label: x, value: x } }),
+  fontStyles: [
+    "Normal",
+    "Italic",
+    "Oblique"
+  ],
+  textAlign: [
+    "align-left",
+    "align-center",
+    "align-justify",
+    "align-right"
+  ]
+})
+
 const Modoles = () => {
   const loader = useLoader();
-  const { mem, memKey } = useFunc();
+  const { mem, memKey, memoKey } = useFunc();
   context.hook(
     "player.menuOptions",
     "player.menuOptions.textToTranslate",
     "player.menuOptions.textEdit",
     "player.menuOptions.comment",
     "player.menuOptions.define",
-    "appSettings",
+    "appSettings.lang",
     "player.book.textReplacements"
   );
 
@@ -174,7 +190,7 @@ const Modoles = () => {
             <DropDownLocalList
               size={"80%"}
               css={"invert"}
-              items={memKey("textranslateDropDown", Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } }))}
+              items={memoKey("textranslateDropDown", () => Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } }))}
               render={memKey("RdnerTextTranslateDropDown", item => {
                 return (
                   <View css="fl-1 bac-transparent juc-center pal-10">
@@ -273,7 +289,7 @@ const Modoles = () => {
 };
 
 const Controller = ({ state, ...props }: any) => {
-  const { mem, memKey } = useLocalMemo();
+  const { mem, memKey, memo, memoKey } = useLocalMemo();
   useDbHook(
     "Chapters",
     item => item.parent_Id === state.book.id,
@@ -286,25 +302,11 @@ const Controller = ({ state, ...props }: any) => {
     "player.showPlayer",
     "player._playing",
     "size",
-    "appSettings",
     "player.book.textReplacements",
-    "player.currentChapterSettings"
+    "player.currentChapterSettings",
+    ...memo(() => Object.keys(context.appSettings).map(x => `appSettings.${x}` as any))
   );
 
-  const oSettings = mem({
-    fonts: Object.keys(Fonts).map(x => { return { label: x, value: x } }),
-    fontStyles: [
-      "Normal",
-      "Italic",
-      "Oblique"
-    ],
-    textAlign: [
-      "align-left",
-      "align-center",
-      "align-justify",
-      "align-right"
-    ]
-  });
 
   const Timer = useTimer(100);
 
@@ -330,7 +332,7 @@ const Controller = ({ state, ...props }: any) => {
     ...rest
   }: AppSettings | Record<string, any>, timerSpeed?: number) => {
     Timer(() => {
-      context.batch(() => {
+      context.batch(async () => {
         if (fontSize != undefined) {
           context.appSettings.fontSize = fontSize;
           context.appSettings.lineHeight = fontSize * context.lineHeight;
@@ -372,17 +374,17 @@ const Controller = ({ state, ...props }: any) => {
     }, timerSpeed ?? 0);
   });
 
-  const selectedTTsModel = context.tts.nameList().indexOf(context.appSettings.ttsModol);
+  const isManga = memo(() => state.novel.type?.isManga() === true, state.novel.type);
+
+  const selectedTTsModel = memo(() => context.tts.nameList().indexOf(context.appSettings.ttsModol), context.appSettings.ttsModol);
   return (
     <>
       <View
         ifTrue={context.player.showController}
-        css={`band he:110 bottom maw-100% juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(
-          context.appSettings.backgroundColor
-        )}`}>
+        css={`band he:110 bottom maw-100% juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(context.appSettings.backgroundColor)}`}>
 
-        <ContextContainer stateItem={{ chapterSliderValue: undefined }}
-          globalStateKeys={["player.currentChapterIndex", "player.showController"]}
+        <ContextContainer stateItem={mem({ chapterSliderValue: undefined })}
+          globalStateKeys={mem(["player.currentChapterIndex", "player.showController"])}
           render={memKey("ChapterSlider", (state: any) => {
             return (<>
               <Text css="desc fos:13">
@@ -425,13 +427,11 @@ const Controller = ({ state, ...props }: any) => {
       </View>
       <Header
         ifTrue={context.player.showController}
-        css={`absolute to:0 bobw:1 he-45 boc:${invertColor(
-          context.appSettings.backgroundColor
-        )}`}
+        css={`absolute to:0 bobw:1 he-45 boc:${invertColor(context.appSettings.backgroundColor)}`}
         buttons={[
           {
-            ifTrue: !(context.player.novel.type?.isManga() ?? false),
-            text: mem(
+            ifTrue: !isManga,
+            text: memo(() =>
               <Icon
                 name="featured-play-list"
                 type="MaterialIcons"
@@ -449,7 +449,7 @@ const Controller = ({ state, ...props }: any) => {
                 ready={false}
                 title="Chapters"
                 size="80%"
-                btn={mem(
+                btn={memo(() =>
                   <Icon
                     type="MaterialCommunityIcons"
                     name="menu"
@@ -458,7 +458,7 @@ const Controller = ({ state, ...props }: any) => {
                 }
               >
                 <ContextContainer
-                  globalStateKeys={["player.currentChapter"]}
+                  globalStateKeys={mem(["player.currentChapter"])}
                   render={mem(() => (
                     <ChapterView
                       book={state.book}
@@ -481,7 +481,7 @@ const Controller = ({ state, ...props }: any) => {
                 controller="ActionSheet"
                 addCloser={true}
                 size="80%"
-                btn={mem(
+                btn={memo(() =>
                   <Icon
                     type="Ionicons"
                     name="settings"
@@ -525,16 +525,16 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                       <FormItem title="NavigationMethod">
                         <ButtonGroup
-                          buttons={mem(["Scroll", "Snap", "ScrollSnap"].filter(x => state.novel.type?.isManga() ? x !== "Snap" : true), state.novel.type)}
+                          buttons={memo(() => ["Scroll", "Snap", "ScrollSnap"].filter(x => isManga ? x !== "Snap" : true), state.novel.type)}
                           onPress={mem((_, items) => {
                             editSettings({
                               navigationType: items[0]
                             });
                           })}
-                          selectedIndex={[context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (state.novel.type?.isManga() ? 1 : 2) : 1)]}
+                          selectedIndex={mem([context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (isManga ? 1 : 2) : 1)], state.novel.type, context.appSettings.navigationType)}
                         />
                       </FormItem>
-                      <FormItem title="FontStyle" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="FontStyle" ifTrue={!isManga}>
                         <ButtonGroup
                           buttons={oSettings.fontStyles}
                           onPress={mem((_, items) => {
@@ -542,12 +542,12 @@ const Controller = ({ state, ...props }: any) => {
                               fontStyle: items[0].toLowerCase()
                             });
                           })}
-                          selectedIndex={mem(
-                            [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle?.toLowerCase())].filter(x => x >= 0)
+                          selectedIndex={memo(
+                            () => [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle?.toLowerCase())].filter(x => x >= 0)
                             , context.appSettings.fontStyle)}
                         />
                       </FormItem>
-                      <FormItem title="TextAlign" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="TextAlign" ifTrue={!isManga}>
                         <ButtonGroup
                           buttons={oSettings.textAlign}
                           onPress={mem((_, items) => {
@@ -577,12 +577,12 @@ const Controller = ({ state, ...props }: any) => {
                               }}
                             />)
                           )}
-                          selectedIndex={mem([oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0), context.appSettings.textAlign)}
+                          selectedIndex={memo(() => [oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0), context.appSettings.textAlign)}
                         />
                       </FormItem>
 
 
-                      <FormItem title="Font" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="Font" ifTrue={!isManga}>
                         <DropDownLocalList
                           size={"80%"}
                           css={"invert"}
@@ -608,7 +608,7 @@ const Controller = ({ state, ...props }: any) => {
                           }
                         />
                       </FormItem>
-                      <FormItem title="FontSize" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="FontSize" ifTrue={!isManga}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -628,7 +628,7 @@ const Controller = ({ state, ...props }: any) => {
                         />
                       </FormItem>
 
-                      <FormItem title="LineHeight" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="LineHeight" ifTrue={!isManga}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -648,7 +648,7 @@ const Controller = ({ state, ...props }: any) => {
                         />
                       </FormItem>
 
-                      <FormItem title="Sentence Margin" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="Sentence Margin" ifTrue={!isManga}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -668,7 +668,7 @@ const Controller = ({ state, ...props }: any) => {
                         />
                       </FormItem>
 
-                      <FormItem title="Padding" ifTrue={() => !(state.novel.type?.isManga())}>
+                      <FormItem title="Padding" ifTrue={!isManga}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -698,7 +698,7 @@ const Controller = ({ state, ...props }: any) => {
                       </View>
                     </TabView>
                     <TabView
-                      ifTrue={() => !(state.novel.type?.isManga())}
+                      ifTrue={!isManga}
                       css="flex invert"
                       icon={mem({
                         name: "text-fields",
@@ -707,7 +707,7 @@ const Controller = ({ state, ...props }: any) => {
                     >
 
                       <Text
-                        ifTrue={() => context.player.isNovelType}
+                        ifTrue={context.player.isNovelType}
                         css="desc fos:12"
                       >
                         Enabling This Option Will Make
@@ -720,7 +720,7 @@ const Controller = ({ state, ...props }: any) => {
                         Depending on How The Auther
                         wrote it.
                       </Text>
-                      <FormItem ifTrue={() => context.player.isNovelType} title="UseSentenceBuilder:" labelPosition="Left">
+                      <FormItem ifTrue={context.player.isNovelType} title="UseSentenceBuilder:" labelPosition="Left">
                         <CheckBox
                           css="pal:1 invert"
                           checked={
@@ -749,12 +749,7 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                       <FormItem
                         title="MinLength"
-                        ifTrue={() =>
-                          context.appSettings
-                            .useSentenceBuilder
-                            ?.enabled == true
-                        }
-                      >
+                        ifTrue={context.appSettings.useSentenceBuilder?.enabled == true}>
                         <Slider
                           step={10}
                           css="flex"
@@ -784,7 +779,7 @@ const Controller = ({ state, ...props }: any) => {
                           maximumValue={400}
                         />
                       </FormItem>
-                      <FormItem ifTrue={() => context.player.isNovelType} title="NormalizeText:" labelPosition="Left">
+                      <FormItem ifTrue={context.player.isNovelType} title="NormalizeText:" labelPosition="Left">
                         <CheckBox
                           css="pal:1 invert"
                           checked={
@@ -814,11 +809,7 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                       <FormItem
                         title="Shadow Length"
-                        ifTrue={() =>
-                          context.appSettings
-                            .use3D == true
-                        }
-                      >
+                        ifTrue={context.appSettings.use3D == true}>
                         <Slider
                           css="flex"
                           renderValue={true}
@@ -860,7 +851,7 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                     </TabView>
                     <TabView
-                      ifTrue={() => context.player.isNovelType}
+                      ifTrue={context.player.isNovelType}
                       css="flex invert pab-30"
                       icon={{
                         name: "settings-voice",
@@ -871,8 +862,8 @@ const Controller = ({ state, ...props }: any) => {
                         <View css="he-100% wi-100%">
                           <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
                           <ButtonGroup scrollable={true}
-                            buttons={context.tts.nameList()}
-                            selectedIndex={[selectedTTsModel == -1 ? 1 : selectedTTsModel]}
+                            buttons={memo(() => context.tts.nameList())}
+                            selectedIndex={mem([selectedTTsModel == -1 ? 1 : selectedTTsModel], selectedTTsModel)}
                             onPress={mem(x => {
                               editSettings({ ttsModol: context.tts.nameList()[x[0]] })
                             })} />
@@ -914,7 +905,7 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                     </TabView>
                     <TabView
-                      ifTrue={() => !(state.novel.type?.isManga())}
+                      ifTrue={!isManga}
                       css="flex invert"
                       icon={mem({
                         name: "format-color-highlight",
@@ -975,7 +966,7 @@ const Controller = ({ state, ...props }: any) => {
 };
 const InternalWeb = ({ state, ...props }: any) => {
   const loader = context.player.usePlayerLoader();
-  const { mem } = useFunc();
+  const { mem, memo } = useFunc();
   return (
     <>
       {loader.elem}
@@ -988,6 +979,7 @@ const InternalWeb = ({ state, ...props }: any) => {
         })}
         onMenu={mem(async (item: any) => {
           // handle later
+          console.info("go menu from web")
           if (item.text == "Translate")
             context.player.menuOptions.textToTranslate = item.selection;
           else if (item.text === "Copy") {
@@ -1014,7 +1006,7 @@ const InternalWeb = ({ state, ...props }: any) => {
             await context.player.clean();
           }
         })}
-        menuItems={mem({
+        menuItems={memo(() => ({
           selector: "#novel",
           minlength: 1,
           items: [
@@ -1039,18 +1031,21 @@ const InternalWeb = ({ state, ...props }: any) => {
               icon: "edit_note"
             }
           ]
-        })}
+        }))}
         bottomReched={mem(() => {
+          console.info("BottomReached")
           if (!context.player.isloading)
             context.player.next(true)
         })}
         topReched={mem(() => {
+          console.info("topReched")
           if (!context.player.isloading)
             context.player.prev()
         })}
         onScroll={mem((y: number) => {
-          if (context.player.isloading)
+          if (context.player.isloading || context.player.currentChapterSettings.readPercent == context.player.scrollProcent)
             return;
+          console.info("updating scrollProgress")
           context.player.currentChapterSettings.readPercent = context.player.scrollProcent;
           context.player.currentChapterSettings.scrollProgress = y;
           context.player.currentChapterSettings.saveChanges();
@@ -1064,7 +1059,7 @@ export default (props: any) => {
   const [{ name, url, parserName, epub, chapter }, nav] = useNavigation(props);
   const loader = useLoader(true);
   useKeepAwake();
-  const { mem } = useFunc();
+  const { mem, memo } = useFunc();
   const files = context.files.useFile<DetailInfo>(
     "json",
     x => {
@@ -1192,24 +1187,21 @@ export default (props: any) => {
   const loading = (!state.ready || (loader.loading && (!state.novel.name || !context.player?.currentChapterSettings)));
 
   return (
-    <>
+    <View
+      css="flex"
+      style={mem({
+        zIndex: 100,
+        backgroundColor: loading ? context.appSettings.backgroundColor : "transparent"
+      }, context.appSettings.backgroundColor, loading)}>
       {loader.elem}
-
-      <View
-        css="flex"
-        style={mem({
-          zIndex: 100,
-          backgroundColor: loading ? context.appSettings.backgroundColor : "transparent"
-        })}>
-        {!loading && context.player?.currentChapterSettings ? (
-          <>
-            <Modoles />
-            <Controller state={state} {...props} />
-            <InternalWeb state={state} {...props} />
-            <PlayerView />
-          </>
-        ) : null}
-      </View>
-    </>
+      {!loading && context.player?.currentChapterSettings ? (
+        <>
+          <Modoles />
+          <Controller state={state} {...props} />
+          <InternalWeb state={state} {...props} />
+          <PlayerView />
+        </>
+      ) : null}
+    </View>
   );
 };

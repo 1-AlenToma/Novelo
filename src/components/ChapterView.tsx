@@ -96,7 +96,7 @@ export const ChapterView = React.memo(({
           ifTrue={chArray.length > 1}
           css="clearwidth he:50 mat:10">
           <ItemList
-            updater={[state.currentPage]}
+            updater={mem([state.currentPage], state.currentPage)}
             selectedIndex={state.currentPage}
             items={chArray}
             onPress={mem(item => {
@@ -134,7 +134,7 @@ export const ChapterView = React.memo(({
           <ItemList
             onload={mem(() => initTimer(() => initLoading.hide()))}
             vMode={true}
-            updater={[current]}
+            updater={mem([current], current)}
             selectedIndex={state.index.page == state.currentPage ? state.index.index : 0}
             items={chArray[state.currentPage]?.items}
             onPress={mem(async (item: ChapterInfo) => {

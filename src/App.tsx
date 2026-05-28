@@ -43,7 +43,7 @@ let colors = NestedStyleSheet.create({
     "invert> *": "bac-transparent",
     "invert Text, invert > Icon": "invertco",
     "_toast * TouchableOpacity Icon": "bac-transparent fos-15 co-red !important",
-    "collabseItem > TouchableOpacity":"invert"
+    "collabseItem > TouchableOpacity": "invert"
 })
 
 const lightTheme = NestedStyleSheet.create({
@@ -79,7 +79,6 @@ const testning = false;
 
 const App = () => {
     const fontLoader = useFonts();
-    useKeepAwake();
     context.hook("selectedThemeIndex", "isFullScreen", "updater");
 
     context.useEffect(
@@ -117,13 +116,21 @@ const App = () => {
         })();
         context.isFullScreen = false;
         return () => {
-            context.db.rollbackTransaction(); // if there is an open connection
-            itemToRemove?.forEach(x => x.remove());
-            // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
-            if (!((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
-                RNExitApp.exitApp?.();
+            (async () => {
 
+                try {
+                    await context.db.rollbackTransaction(); // if there is an open connection
+                } catch { }
 
+                try {
+                    await context.db.close();
+                } catch { }
+
+                itemToRemove?.forEach(x => x.remove());
+                // Platform.constants?.Model a fix for windows android subsystem as it causing an issue 
+                if (!((Platform?.constants as any)?.Model?.has("Subsystem for Android") ?? false))
+                    RNExitApp.exitApp?.();
+            })();
         };
 
 
