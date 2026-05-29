@@ -148,9 +148,9 @@ const ItemRender = React.memo(({
   url: string;
 }) => {
   if (!name || !parserName || !url) return null;
-  const { mem, memKey } = useFunc();
+  const { mem, memo } = useFunc();
   let item: Book = { name, parserName, url } as any;
-  context.hook("parser.all")
+  context.hook("parser.all", "appState.inBackground");
   const [books, dataIsLoading] = context.db.Books.useQuery(
     context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
     (items, op) => {
@@ -230,7 +230,7 @@ const ItemRender = React.memo(({
       single={true}
       enabled={chapterLength > 0 && downloadProgress.value <= 0}
       css="wi:98% overflow"
-      buttons={mem([
+      buttons={memo(() => [
         {
           icon: (
             <Icon
@@ -362,7 +362,7 @@ const ItemRender = React.memo(({
           text: "Info",
           ifTrue: () => item.parserName != "epub" && item.isOnline?.()
         }
-      ], downloadEpub, item, downloadProgress)}>
+      ], downloadEpub, item, downloadProgress.value)}>
       <View
         css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start invert">
         {loader.elem ?? elem}

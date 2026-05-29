@@ -12,15 +12,17 @@ export default class DownloadManager extends EventTrigger<any, "Prep" | "Progres
   items: Map<string, number> = new Map();
   prepItems: Map<string, { url: string, parserName: string, protected?: boolean, startFromIndex: number }> = new Map();
   change(url: string, name: string) {
-    if (context.appState.inBackground)
-      return;
+
     let progress = this.items.get(url);
     context.bgService.updateProgressBar(name, progress);
-
     if (this.prepItems.has(url)) {
       this.prepItems.delete(url);
+      // if (context.appState.inBackground)
       this.trigger("Prep", url)
     }
+
+    if (context.appState.inBackground)
+      return;
 
     this.trigger("Progress", url, progress)
 
@@ -51,6 +53,10 @@ export default class DownloadManager extends EventTrigger<any, "Prep" | "Progres
 
   useDownload(parentUrl: string) {
     const state = PrimitiveObject(-1);
+    context.useEffect(() => {
+      if (!this.items.has(parentUrl) && !this.prepItems.has(parentUrl) && state.value != -1)
+        state.value = -1;
+    }, "appState.inBackground")
     useEffect(() => {
       const getData = (op, url: string, progress?: any) => {
         try {
