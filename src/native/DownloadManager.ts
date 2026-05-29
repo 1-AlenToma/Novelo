@@ -12,7 +12,6 @@ export default class DownloadManager extends EventTrigger<any, "Prep" | "Progres
   items: Map<string, number> = new Map();
   prepItems: Map<string, { url: string, parserName: string, protected?: boolean, startFromIndex: number }> = new Map();
   change(url: string, name: string) {
-
     let progress = this.items.get(url);
     context.bgService.updateProgressBar(name, progress);
     if (this.prepItems.has(url)) {
