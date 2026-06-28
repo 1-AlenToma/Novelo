@@ -133,7 +133,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: false,
+    isDebug: debugg,
     argsOverride: (args: any[]) => {
       return [args.firstOrDefault("url")];
     },

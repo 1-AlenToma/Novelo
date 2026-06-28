@@ -79,7 +79,8 @@ const options = {
   progressBar: undefined,
   parameters: {
     delay: 3000
-  }
+  },
+  foregroundServiceType: ["dataSync"] as any
 };
 
 export class BgService {
