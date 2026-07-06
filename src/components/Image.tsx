@@ -18,7 +18,7 @@ export default ({
     source: noImage,
     imageSize: parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined,
     header: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
       Referer: (parserName ? context.parser.find(parserName)?.url : undefined)
     }
   })).ignore("header").build();
@@ -90,7 +90,11 @@ export default ({
   return (
     <Image
       {...props}
-      onError={() => state.source = noImage}
+      onError={(e) => {
+        if (__DEV__)
+          console.warn("Failed to load image", source);
+        state.source = noImage
+      }}
       source={source}
       css={css}
       style={st}

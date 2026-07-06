@@ -115,6 +115,7 @@ abstract class Parser {
   minVersion?: number;
   protected: boolean = false;
   baseUrl?: string;
+  enabled?: boolean;
   constructor(
     url: string,
     name: string,

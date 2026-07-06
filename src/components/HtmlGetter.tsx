@@ -89,6 +89,7 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
         }, url, webView.current)}
 
         {...webViewDefaultProps}
+        userAgent={item?.props?.userAgent}
         contentMode="mobile"
         originWhitelist={memKey("orgin", ["*"])}
         setSupportMultipleWindows={false}
@@ -190,6 +191,7 @@ export default () => {
                 webViews[i] = funcMapper(c);
               }, x)}
               key={x.id}
+              userAgent={x.props?.userAgent}
               injectedJavaScriptBeforeContentLoaded={x.systemJs}
               {...webViewDefaultProps}
               source={memKey("source" + i, {

@@ -80,12 +80,12 @@ export default class MangaFire extends Parser {
                         .Info(f.findAll(".link").eq(2).text)
                         .ParserName(this.name);
             }).filter(x => x != undefined)
-        // console.warn(JSON.stringify(data, undefined, 4))
+       //  console.warn(JSON.stringify(data, undefined, 4))
         return data;
     }
 
     async group(value, page) {
-        return await this.search(
+        return await this.search( 
             SearchDetail.n().Group([value]).Page(page)
         );
     }

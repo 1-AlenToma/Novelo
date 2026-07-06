@@ -182,7 +182,8 @@ export type WebViewProps = {
   selector?: string;
   ajax?: Ajax;
   protectionIdentifier?: string[];
-  timer?: number
+  timer?: number;
+  userAgent?: string;
   imageSelector?: {
     selector: string,
     attr: string,

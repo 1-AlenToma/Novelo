@@ -20,6 +20,7 @@ export default class NovelBin extends Parser {
     );
     this.settings.searchEnabled = true;
     this.settings.genreMultiSelection = false;
+    this.enabled = false;
     this.settings.searchCombination = ["Genre", "Status"];
   }
 

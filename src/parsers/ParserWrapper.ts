@@ -14,7 +14,6 @@ import NovelBin from "./Novelbin";
 import NovelBinCom from "./NovelBinCom";
 import GogoAnime from "./GogoAnime";
 import MangaKakalot from "./MangaKakalot";
-import NovLoveCom from "./NovLoveCom";
 import KunManga from "./KunManga";
 import RizzFables from "./RizzFables";
 import ManHwaClan from "./ManHwaClan";
@@ -40,6 +39,7 @@ export default class ParserWrapper extends Parser {
   animePlanetInfo: AnimePlanet;
   infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   infoEnabled: boolean = true;
+  enabled?: boolean;
   constructor(parser: Parser) {
     super(parser.url, parser.name, parser.icon, parser.type);
     this.parser = parser;
@@ -51,6 +51,7 @@ export default class ParserWrapper extends Parser {
     this.infoGeneratorName = parser.infoGeneratorName;
     this.minVersion = parser.minVersion;
     this.protected = parser.protected ?? false;
+    this.enabled = parser.enabled;
   }
 
   dispose() {
@@ -81,7 +82,6 @@ export default class ParserWrapper extends Parser {
     let prs = [ReadNovelFull,
       NovelFullCom,
       NovelFull,
-      NovLoveCom,
       NovelBinCom,
       NovelBin,
       RizzFables,

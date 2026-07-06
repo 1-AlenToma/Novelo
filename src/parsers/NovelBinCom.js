@@ -21,7 +21,8 @@ export default class NovelBinCom extends Parser {
     this.settings.searchEnabled = true;
     this.settings.genreMultiSelection = false;
     this.settings.searchCombination = ["Genre", "Status"];
-     this.protected = true;
+    this.protected = true;
+    this.enabled = false;
   }
 
   async load() {

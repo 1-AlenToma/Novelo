@@ -1,9 +1,9 @@
-import { Ajax, WebViewProps } from "Types";
+import { Ajax, WebViewProps } from "../Types";
 import Html from "./Html";
 import MapCacher from "./MapCacher";
 import { newId } from "react-native-short-style";
 
-const tempData = new MapCacher<HttpTemp>(1);
+const tempData = new MapCacher<HttpTemp>(100);
 
 const createKey = (...args) => {
   return JSON.stringify(args).replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "");
@@ -13,7 +13,7 @@ class FetchTimer {
   controller: AbortController = new AbortController();
   timeout: any;
   id: string = newId();
-  constructor(timeoutms: number = 5000) {
+  constructor(timeoutms: number = 20000) {
     this.timeout = setTimeout(() => this.clear(true), timeoutms);
   }
 
@@ -171,6 +171,7 @@ class HttpHandler {
   httpError?: HttpError;
   operations: Map<string, FetchTimer> = new Map<string, FetchTimer>();
   subressErrors: boolean = false;
+  baseHeader?: undefined;
   clearOperations(operationId?: string, abort?: boolean) {
     if (operationId) {
       this.operations.get(operationId)?.clear(abort);
@@ -191,8 +192,9 @@ class HttpHandler {
       headers: {
         cache: 'no-store',
         "User-Agent":
-          "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36",
-        ...options
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+        ...options,
+        ...(this.baseHeader ?? {})
       }
     };
   }
@@ -212,6 +214,7 @@ class HttpHandler {
     item?: any
   ) {
     try {
+      console.info("gethtml", url);
       if (item) url = this.queryString(url, item);
       const data = await getFetch(url, this.header(), this.ignoreAlert, this);
       return new HttpValue(data ? await data.text() : "", baseurl || url);
