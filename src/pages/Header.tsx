@@ -179,7 +179,7 @@ export default ({
               }>
               {parserLoader.elem}
               <ScrollView>
-                {mem(context.parser.all.filter(x => x.enabled !== false).map((x, i) => (
+                {context.parser.all.filter(x => x.enabled !== false).map((x, i) => (
                   <SingleTouchableOpacity
                     key={i}
                     onPress={async () => {
@@ -200,7 +200,7 @@ export default ({
                       ({x.type})
                     </Text></Text>
                   </SingleTouchableOpacity>
-                )), context.parser.all)}
+                ))}
               </ScrollView>
             </ActionSheetButton>
           </>

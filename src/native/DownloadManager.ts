@@ -142,7 +142,7 @@ export default class DownloadManager extends EventTrigger<any, "Prep" | "Progres
 
       let parser = context.parser.clone(parserName);
       parser.http = new HttpHandler(true); // to ignore alert
-      let novel = await parser.detail(url);
+      let novel = await parser.detail(url, undefined, "RenewMemo");
       let book = await context.db.Books.query
         .where.column(x => x.url)
         .equalTo(url)
