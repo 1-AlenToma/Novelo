@@ -460,10 +460,10 @@ String.prototype.normalizeHtml = function () {
     const norm = function (node: Node) {
         if (node.nodeValue && !node.nodeValue.empty() && (node.nodeType == 3 || (node.children.length <= 0 && node.nodeType == 1))) {
             let before = node.nodeValue;
-            let nplDoc = nlp(before);
+            let nplDoc = nlp(before); 
             nplDoc.normalize({
                 whitespace: true,
-                contractions: true
+                contractions: false
             });
 
             node.nodeValue = (node as any).data = nplDoc.out("text").trim();
