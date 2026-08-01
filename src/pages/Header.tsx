@@ -149,7 +149,7 @@ export default ({
           css="row juc:center ali:center absolute ri:5 bac-transparent"
           ifTrue={() => (buttons?.has() ?? ((inputEnabled && onInputChange == undefined)) as any)}>
           <>
-            {buttons?.map((x, i) => (
+            {buttons?.filter(x => x !== null && x !== undefined).map((x, i) => (
               <SingleTouchableOpacity
                 ifTrue={x.ifTrue}
                 onPress={x.press}
@@ -178,7 +178,7 @@ export default ({
                 />
               }>
               {parserLoader.elem}
-              <ScrollView>
+              {() => (<ScrollView>
                 {context.parser.all.filter(x => x.enabled !== false).map((x, i) => (
                   <SingleTouchableOpacity
                     key={i}
@@ -201,7 +201,7 @@ export default ({
                     </Text></Text>
                   </SingleTouchableOpacity>
                 ))}
-              </ScrollView>
+              </ScrollView>)}
             </ActionSheetButton>
           </>
         </View>

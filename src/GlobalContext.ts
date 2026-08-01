@@ -69,7 +69,7 @@ const generateTTsConfig = (name: TTSNames, fileName: string, sampleRate: number 
 
 
 const data: IGlobalState = StateBuilder<GlobalType>(
-    {
+    () => ({
         appState: {
             state: AppState.currentState,
             inBackground: false
@@ -233,7 +233,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                 }
                 if (code && code.length > 0) {
                     let className = (code.match(/(.*)\.(prototype.detail)/gim)?.firstOrDefault() ?? "") as string;
-                    className = className.safeSplit(".", 0).trim()
+                    className = className.safeSplit(".", 0).trim();
                     let runnalbe: any = eval(`(function(require){ ${code} \n return ${className}})`);
                     data.parser.parserCodes.set(code, runnalbe?.(() => parserItem))
                     return data.parser.parserCodes.get(code);
@@ -423,7 +423,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
 
             return [];
         }
-    }).ignore(
+    })).ignore(
         "appState.state",
         "tts.female",
         "tts.male",

@@ -1,5 +1,5 @@
 import CStyle from "./components/CStyle";
-import { cssTranslator , useLocalMemo} from "react-native-short-style";
+import { cssTranslator, useLocalMemo } from "react-native-short-style";
 import IDOMParser from "advanced-html-parser";
 import { Document, Node, Options, Element as _HtmlElement } from "advanced-html-parser/types"
 import * as Methods from "./Methods";
@@ -598,7 +598,7 @@ String.prototype.empty = function () {
 String.prototype.trimEnd = function (...items) {
     let str = this.toString().trim();
     items.forEach(x => {
-        if (str.endsWith(x)) str = str.substring(0, str.length - 1);
+        while (str.endsWith(x)) str = str.substring(0, str.length - 1);
     });
 
     return str;
@@ -607,7 +607,8 @@ String.prototype.trimEnd = function (...items) {
 String.prototype.trimStr = function (...items) {
     let str = this.toString().trim();
     items.forEach(x => {
-        if (str.startsWith(x)) str = str.substring(x.length);
+        while (str.startsWith(x))
+            str = str.substring(x.length);
     });
 
     return str;
@@ -647,7 +648,7 @@ String.prototype.path = function (...relative: string[]) {
     if (!url.endsWith("/")) url += "/";
     if (fileTypes.find(x => url.trimEnd("/").endsWith(x)))
         return url.trimEnd("/")
-    return url;
+    return url.replace(/\/\/+/g, "/");
 };
 
 String.prototype.join = function (this: string, ...relative: String[]) {
@@ -663,8 +664,8 @@ String.prototype.join = function (this: string, ...relative: String[]) {
                     x.startsWith("www")
                 )
             ) {
-                if (x.startsWith("/")) x = x.substring(1);
-                if (url.endsWith("/")) url = url.substring(0, url.length - 1);
+                if (x.startsWith("/")) x = x.trimStr("/");
+                if (url.endsWith("/")) url = url.trimEnd("/")
 
                 url = `${url}/${x}`;
             } else url = x as string;
@@ -745,11 +746,12 @@ global.getFileName = (file: string, dir?: string) => {
     ) {
         file += ".json";
     }
-    if (file.startsWith("/") || file.startsWith("file")) return file;
+    if (file.startsWith("/") || file.startsWith("file")) return file.replace(/\/\/+/g, "/");;
 
     if (dir && !file.trimStr("/").startsWith(dir.trimStr("/")))
-        file = dir.join(file)
-    return file;
+        file = dir.path(file)
+
+    return file.replace(/\/\/+/g, "/");
 }
 
 global.useFunc = useLocalMemo;

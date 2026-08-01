@@ -55,28 +55,28 @@ const ActionItem = ({
             Search by {keyName}
           </Text>
         }>
-
-        <ItemList items={items.items}
-          itemCss={(item) => {
-            return `he-30 wi-${settings.width - 10} juc-center ali-center pa-5 bac-blue mar-5 mat-10`
-          }}
-          onPress={x => {
-            let item: any = {};
-            item[keyName] = x;
-            selection(item);
-          }}
-          vMode={true}
-          numColumns={settings.numColumns}
-          container={({ item }: any) => {
-            return (
-              <Text
-                css={`desc bold fos:15 co-white ${selected[item.text]
-                  }`}>
-                {item.text}
-              </Text>
-            )
-          }}
-        />
+        {() => (
+          <ItemList items={items.items}
+            itemCss={(item) => {
+              return `he-30 wi-${settings.width - 10} juc-center ali-center pa-5 bac-blue mar-5 mat-10`
+            }}
+            onPress={x => {
+              let item: any = {};
+              item[keyName] = x;
+              selection(item);
+            }}
+            vMode={true}
+            numColumns={settings.numColumns}
+            container={({ item }: any) => {
+              return (
+                <Text
+                  css={`desc bold fos:15 co-white ${selected[item.text]
+                    }`}>
+                  {item.text}
+                </Text>
+              )
+            }}
+          />)}
       </ActionSheetButton>
     </View>
   );

@@ -147,7 +147,7 @@ const WatchAnime = (props: any) => {
                                         />
                                     }
                                 >
-                                    <ChapterView
+                                    {() => (<ChapterView
                                         book={state.book}
                                         novel={state.anime}
                                         onPress={item => {
@@ -155,7 +155,7 @@ const WatchAnime = (props: any) => {
                                             loadChapter(item.url);
                                         }}
                                         current={state.selectedChapter.url}
-                                    />
+                                    />)}
                                 </ActionSheetButton>
                             )
                         }

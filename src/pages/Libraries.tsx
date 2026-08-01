@@ -29,7 +29,10 @@ const ListItem = ({ item, zip }: any) => {
       if (state.parserCode) {
         let classfn = context.parser.parseCode(state.parserCode);
         if (classfn)
-          state.parser = new classfn();
+        {
+          console.log("classfn", classfn)
+            state.parser = new classfn();
+        }
       }
     } catch (e) {
       console.error(e)

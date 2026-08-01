@@ -1,14 +1,14 @@
 import 'react-native-get-random-values'
 import RNExitApp from "react-native-exit-app";
 import "./Global";
-import { StatusBar, setStatusBarHidden } from "expo-status-bar";
+import { StatusBar, StatusBarStyle } from "expo-status-bar";
 import * as React from "react";
 import {
     useLoader,
     HtmlGetter,
     StartUp,
 } from "./components";
-import * as NavigationBar from "expo-navigation-bar";
+import * as NavigationBar from 'expo-navigation-bar';
 import { NavigationContainer } from "@react-navigation/native";
 import { AppStack } from "./pages";
 import { useFonts } from "./hooks";
@@ -83,23 +83,28 @@ const App = () => {
 
     context.useEffect(
         () => {
-            NavigationBar.setVisibilityAsync(
+            const toggleSystemBars = async () => {
+              
+                // Toggle the Android System Navigation Bar visibility using the new API
+                const shouldHide = context.isFullScreen && !context.KeyboardState;
+                NavigationBar.NavigationBar.setHidden(shouldHide);
 
-                context.isFullScreen && !context.KeyboardState
-                    ? "hidden"
-                    : "visible"
-            );
-            setStatusBarHidden(context.isFullScreen);
-            if (!context.isFullScreen) {
-                NavigationBar.setBehaviorAsync("overlay-swipe");
-            }
+                // Handle the Status Bar matching the fullscreen flag
+                //setStatusBarHidden(context.isFullScreen);
+
+                // Maintain overlay swipe behavior when the layout is restored
+                // if (!context.isFullScreen) {
+                //   await NavigationBar.setBehaviorAsync("overlay-swipe");
+                // }
+            };
+
+            toggleSystemBars();
 
         },
         "isFullScreen",
         "KeyboardState"
     );
 
-    NavigationBar.useVisibility();
     const loader = useLoader(true);
     useEffect(() => {
         let itemToRemove: any[] = [];

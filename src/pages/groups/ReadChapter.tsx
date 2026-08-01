@@ -98,9 +98,8 @@ const Modoles = () => {
         addCloser={true}
         isVisible={context.player.menuOptions.comment != undefined}
         onHide={mem(() => (context.player.menuOptions.comment = undefined))}
-        css={"he-200"}
-      >
-        <View css="flex mat:20 invert wi-95%">
+        css={"he-200"}>
+        {context.player.menuOptions.comment != undefined ? (<View css="flex mat:20 invert wi-95%">
           <TextInput
             onChangeText={memKey("commentOnChange", (x: string) =>
               (context.player.menuOptions.comment = x)
@@ -111,14 +110,14 @@ const Modoles = () => {
             defaultValue={context.player.menuOptions.comment}
           />
         </View>
+        ) : null}
       </Modal>
       <Modal
         isVisible={context.player.menuOptions.textEdit != undefined}
         onHide={mem(() => (context.player.menuOptions.textEdit = undefined))}
         addCloser={true}
-        css="he-80%"
-      >
-        <ScrollView>
+        css="he-80%">
+        {context.player.menuOptions.textEdit != undefined ? <ScrollView>
           <View css="flex mat:20 invert">
             <TextInput
               label="TextToEdit"
@@ -176,7 +175,7 @@ const Modoles = () => {
               context.player.menuOptions.textEdit = undefined;
             })} />
           </View>
-        </ScrollView>
+        </ScrollView> : null}
       </Modal>
       <Modal
         addCloser={true}
@@ -185,7 +184,7 @@ const Modoles = () => {
         }
         onHide={mem(() => context.player.menuOptions.textToTranslate = undefined)}
         css="he-80%">
-        <View css="flex mat:20 invert">
+        {context.player.menuOptions.textToTranslate != undefined ? <View css="flex mat:20 invert">
           <FormItem title="TranslateTo:" labelPosition="Left">
             <DropDownLocalList
               size={"80%"}
@@ -246,7 +245,7 @@ const Modoles = () => {
               javaScriptEnabled={true}
             />
           </View>
-        </View>
+        </View> : null}
       </Modal>
 
       <Modal
@@ -255,7 +254,7 @@ const Modoles = () => {
         onHide={mem(() => context.player.menuOptions.define = undefined)}
         css="he-80%"
       >
-        <View css="flex mat:20">
+        {context.player.menuOptions.define != undefined ? <View css="flex mat:20">
           <View css="form flex">
             <WebView
               nestedScrollEnabled={true}
@@ -282,7 +281,7 @@ const Modoles = () => {
               javaScriptEnabled={true}
             />
           </View>
-        </View>
+        </View> : null}
       </Modal>
     </>
   );
@@ -379,8 +378,7 @@ const Controller = ({ state, ...props }: any) => {
   const selectedTTsModel = memo(() => context.tts.nameList().indexOf(context.appSettings.ttsModol), context.appSettings.ttsModol);
   return (
     <>
-      <View
-        ifTrue={context.player.showController}
+      {context.player.showController ? <View
         css={`band he:110 bottom maw-100% juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(context.appSettings.backgroundColor)}`}>
 
         <ContextContainer stateItem={mem({ chapterSliderValue: undefined })}
@@ -424,12 +422,12 @@ const Controller = ({ state, ...props }: any) => {
             {context.player.currentChapterSettings?.name}
           </Text>
         </View>
-      </View>
+      </View> : null}
       <Header
         ifTrue={context.player.showController}
         css={`absolute to:0 bobw:1 he-45 boc:${invertColor(context.appSettings.backgroundColor)}`}
         buttons={[
-          {
+          isManga ? {
             ifTrue: !isManga,
             text: memo(() =>
               <Icon
@@ -442,7 +440,7 @@ const Controller = ({ state, ...props }: any) => {
               context.player.playing(false);
               context.player.showPlayer = !context.player.showPlayer;
             })
-          },
+          } : null,
           {
             text: (
               <ActionSheetButton
@@ -457,7 +455,7 @@ const Controller = ({ state, ...props }: any) => {
                   />)
                 }
               >
-                <ContextContainer
+                {() => (<ContextContainer
                   globalStateKeys={mem(["player.currentChapter"])}
                   render={mem(() => (
                     <ChapterView
@@ -469,7 +467,7 @@ const Controller = ({ state, ...props }: any) => {
                       current={context.player.currentChapter.url}
                     />
                   ))}
-                />
+                />)}
 
               </ActionSheetButton>
             )
@@ -489,7 +487,7 @@ const Controller = ({ state, ...props }: any) => {
                   />
                 )}
               >
-                <View css="flex">
+                {() => (<View css="flex">
                   <Tabbs lazyLoading={true} css="mat-5" position="Top">
                     <TabView
                       icon={mem({
@@ -954,7 +952,7 @@ const Controller = ({ state, ...props }: any) => {
                       </View>
                     </TabView>
                   </Tabbs>
-                </View >
+                </View >)}
               </ActionSheetButton >
             )
           }

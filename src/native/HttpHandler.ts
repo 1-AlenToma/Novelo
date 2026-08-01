@@ -13,7 +13,7 @@ class FetchTimer {
   controller: AbortController = new AbortController();
   timeout: any;
   id: string = newId();
-  constructor(timeoutms: number = 20000) {
+  constructor(timeoutms: number = 28000) {
     this.timeout = setTimeout(() => this.clear(true), timeoutms);
   }
 

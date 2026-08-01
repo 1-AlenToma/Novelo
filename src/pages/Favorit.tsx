@@ -27,8 +27,8 @@ const ItemRender = React.memo(({
   }).ignore("novel").build();
 
   context.hook("novelFavoritInfo");
-  const [books, dataIsLoading] = context.db.Books.useQuery(()=> context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(url).toList(),
-  (items, op) => (items.find(x => x.url == url && x.favorit) != undefined));
+  const [books, dataIsLoading] = context.db.Books.useQuery(() => context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(url).toList(),
+    (items, op) => (items.find(x => x.url == url && x.favorit) != undefined));
   const item = mem((books.find(x => x.url === url) ?? { url }) as Book, books);
 
   context.cache.onDirDelete((parserName) => {
@@ -83,7 +83,7 @@ const ItemRender = React.memo(({
     <>
 
       <ActionSheet size={"80%"} speed={100} css="invert" isVisible={state.showChapter} onHide={mem(() => state.showChapter = false)}>
-        <ChapterView
+        {state.showChapter ? <ChapterView
           ignoreChapterValidation={true}
           book={item}
           novel={state.novel}
@@ -104,7 +104,7 @@ const ItemRender = React.memo(({
               item?.selectedChapterIndex ?? 0
             )?.url
           }
-        />
+        /> : null}
       </ActionSheet>
 
       {itemLoader.elem}

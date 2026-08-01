@@ -3,6 +3,8 @@ import { Functions } from "react-native-ts-sqlite-orm";
 export * from "./localModules/NativeEpubZipper";
 export * from "./native/SentencesSplitter";
 
+export const ifElem = (render: boolean, item: <T>() => T) => render ? item() : null;
+
 export const baseUrl = (url: string) => {
   if (!url)
     return "";

@@ -5,9 +5,7 @@ import {
   AppServer,
 } from "../components/";
 import { View, Text, Icon, AlertDialog, Modal, TouchableOpacity, CheckBox, FormItem, ScrollView } from "react-native-short-style/mems";
-import * as React from "react";
 import { useLocationSelection, AppUpdate } from "../hooks";
-import { Book } from "../db";
 
 
 export default (props: any) => {

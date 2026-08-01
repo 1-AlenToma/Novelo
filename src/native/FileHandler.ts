@@ -56,7 +56,6 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
 
 
   getName(file: string) {
-    // its full path
     return getFileName(file, this.dir);
   }
 
@@ -225,9 +224,13 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
     validator?: (x: any) => boolean,
     updateState?: "New" | "NewDelete"
   ) {
-    const localCach = useRef(new Map<string, { changed: boolean, item: any }>()).current;
+    const localCach = useRef(new Map<string, { changed: boolean, item: string }>()).current;
     const files = useRef([] as string[]);
-    const [fileItems, setItems] = useState<(T & { deleteFile: () => Promise<void> })[]>([]);
+    const state = buildState({
+      fileItems: [] as (T & { deleteFile: () => Promise<void> })[]
+    }).ignore("fileItems").build()
+
+    //const [fileItems, setItems] = useState<(T & { deleteFile: () => Promise<void> })[]>([]);
     const loader = useLoader(true);
     const timer = useTimer(10);
 
@@ -241,7 +244,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
         fromDisabled?: string
       ) => {
         timer(async () => {
-          console.warn("op", op, fileName)
+          console.warn("op", op, fileName, "fullName", fullName)
           if (this.disabled) {
             return;
           }
@@ -273,6 +276,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
           this.allFilesReaded = true;
           if (fromDisabled)
             console.info("reloading useFiles")
+
           await loadItems();
         });
       }
@@ -287,7 +291,6 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
     const loadItems = async () => {
       await loader.show();
       let ims: any[] = [];
-      //await setItems([]);
       for (let file of files.current) {
         let breakit = false;
         try {
@@ -295,6 +298,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
             if (validator(file)) breakit = true;
             else continue;
           }
+          console.log("reloading", file)
           let item = await loadContent(
             file,
             globalType
@@ -306,7 +310,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
         }
         if (breakit) break;
       }
-      let changed = ims.length != fileItems.length;
+      let changed = ims.length != state.fileItems.length;
       for (let [key, item] of localCach.entries()) {
         if (item.changed) {
           changed = true;
@@ -314,7 +318,7 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
         }
       }
       if (changed)
-        setItems(prev => ims);
+        state.fileItems = ims;
       else console.info("no changed made, skip update")
       await loader.hide();
     };
@@ -324,13 +328,10 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
       type?: EncodingType
     ) => {
       let k = file + (type && type != "json" ? type : "utf8")
-      let item = await this.read(
-        file,
-        type && type != "json" ? type : "utf8"
-      );
+      let item = await this.read(file, type && type != "json" ? type : "utf8");
 
       if (!item) return item;
-      localCach.set(file, { item, changed: item === localCach.get(file)?.item })
+      localCach.set(file, { item, changed: !localCach.has(file) || item !== localCach.get(file)?.item });
       if (type === "json") {
         try {
           let tm = JSON.parse(item);
@@ -349,14 +350,13 @@ export default class FileHandler extends EventTrigger<any, "Write" | "Delete" | 
     };
 
     return {
-      fileItems,
+      fileItems: state.fileItems,
       loading: loader.loading,
       files: files.current,
       loadContent,
       elem: loader.elem
     };
   }
-
 }
 
 

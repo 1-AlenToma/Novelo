@@ -173,7 +173,10 @@ class HttpServer {
 
             // fallback
             return { statusCode: 404, body: "Not found" };
-        }, this.ip);
+        }, {
+            host: this.ip,
+            autoRestart: true
+        });
 
         // await this.server.start();
     }

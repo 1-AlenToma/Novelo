@@ -30,10 +30,10 @@ const CurrentItem = ({
   }).build();
   const timer = useTimer(100);
   context.hook("appSettings.currentNovel");
-  const {mem} = useFunc();
+  const { mem } = useFunc();
 
 
-  const reloadData = () => timer(async () => state.books =(await context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg").toList()));
+  const reloadData = () => timer(async () => state.books = (await context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg").toList()));
   useDbHook(
     "AppSettings",
     item => true,
@@ -51,10 +51,10 @@ const CurrentItem = ({
   return (
     <>
       <ActionSheet
-        onHide={mem(() => state.visible =(false))}
+        onHide={mem(() => state.visible = (false))}
         isVisible={state.visible}
         size={300}>
-        <View css="invert">
+        {state.visible ? (<View css="invert">
           <Text css="header">Actions</Text>
           <SingleTouchableOpacity
             css="invert listButton"
@@ -139,7 +139,7 @@ const CurrentItem = ({
             />
             <Text>Clear</Text>
           </SingleTouchableOpacity>
-        </View>
+        </View>) : null}
       </ActionSheet>
       <AnimatedView
         style={style}

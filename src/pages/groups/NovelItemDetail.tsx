@@ -336,7 +336,7 @@ export default ({ ...props }: any) => {
                       )}
                       title="Chapters"
                       size="80%">
-                      <ChapterView
+                      {() => (<ChapterView
                         ignoreChapterValidation={true}
                         book={state.book as Book}
                         novel={state.novel}
@@ -356,7 +356,7 @@ export default ({ ...props }: any) => {
                               ?.selectedChapterIndex ?? 0
                           )?.url
                         }
-                      />
+                      />)}
                     </ActionSheetButton>
                   </View>
                 </View>
@@ -446,7 +446,7 @@ export default ({ ...props }: any) => {
                 />
                 <ActionSheet size={"80%"} isVisible={state.downloadSheetView} onHide={mem(() => state.downloadSheetView = false)}>
                   <Text css="header invert fow-bold">Start Downloading from (Chapter)</Text>
-                  <ChapterView
+                  {state.downloadSheetView ? <ChapterView
                     ignoreChapterValidation={true}
                     book={state.book as Book}
                     novel={state.novel}
@@ -473,7 +473,7 @@ export default ({ ...props }: any) => {
                     current={
                       undefined
                     }
-                  />
+                  /> : null}
                 </ActionSheet>
               </SingleTouchableOpacity>
               <SingleTouchableOpacity
