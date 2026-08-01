@@ -228,17 +228,40 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             parseCode: (code: string) => {
                 if (data.parser.parserCodes.has(code))
                     return data.parser.parserCodes.get(code);
+
                 const parserItem = {
                     Value, ChapterInfo, LightInfo, DetailInfo, ParserDetail, SearchDetail, Parser, Html, HttpHandler
-                }
+                };
+
                 if (code && code.length > 0) {
-                    let className = (code.match(/(.*)\.(prototype.detail)/gim)?.firstOrDefault() ?? "") as string;
-                    className = className.safeSplit(".", 0).trim();
-                    let runnalbe: any = eval(`(function(require){ ${code} \n return ${className}})`);
-                    data.parser.parserCodes.set(code, runnalbe?.(() => parserItem))
-                    return data.parser.parserCodes.get(code);
+                    // ✅ NEW FIXED REGEX: Safely finds the name directly after the word "class"
+                    let match = code.match(/class\s+(\w+)/i);
+                    let className = match ? match[1].trim() : "";
+
+                    // Fallback to your old method just in case a legacy ES5 file format is passed
+                    if (!className) {
+                        let legacyName = (code.match(/(.*)\.(prototype.detail)/gim)?.firstOrDefault() ?? "") as string;
+                        className = legacyName.safeSplit(".", 0).trim();
+                    }
+
+                    if (className) {
+                        try {
+                            // This builds the executable factory closure matching your framework layout
+                            let runnalbe: any = eval(`(function(require){ ${code} \n return ${className}})`);
+                            let compiledClass = runnalbe?.(() => parserItem);
+
+                            if (compiledClass) {
+                                data.parser.parserCodes.set(code, compiledClass);
+                                return compiledClass;
+                            }
+                        } catch (evalError) {
+                            console.error("Error evaluating ES6 module class template block:", evalError);
+                        }
+                    } else {
+                        console.error("Could not determine class name from code string!");
+                    }
                 }
-                return undefined as any
+                return undefined as any;
             },
             clone: (name: string) => {
                 let all = ParserWrapper.getAllParsers() as ParserWrapper[];

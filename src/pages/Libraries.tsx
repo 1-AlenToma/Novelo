@@ -132,7 +132,7 @@ const ListItem = ({ item, zip }: any) => {
 }
 
 const Libraries = ({ ...props }) => {
-  const libUrl = "https://raw.githubusercontent.com/1-AlenToma/Novelo/refs/heads/main/parsers.zip";
+  const libUrl = "https://raw.githubusercontent.com/1-AlenToma/Novelo/refs/heads/main/parsers2.zip";
   const [render, state, loader] = useView({
     component: ItemList,
     loader: {
