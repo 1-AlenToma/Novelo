@@ -86,13 +86,13 @@ const options = {
 export class BgService {
   async start() {
     try {
-
+      await HTTPServer.start();
       await BackgroundService.start(
         veryIntensiveTask,
         options
       );
 
-      await HTTPServer.start();
+
     } catch (e) { console.error(e) }
   }
 

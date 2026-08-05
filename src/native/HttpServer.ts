@@ -14,7 +14,7 @@ class HttpServer {
     port: number = 61735;
     lastPageCache: string = "Ok";
     private ip: string = "";
-    private started: boolean = false;
+    started: boolean = false;
     private server?: httpService.HttpServer;
 
     async setIp() {

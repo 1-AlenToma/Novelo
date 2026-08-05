@@ -80,14 +80,12 @@ const CurrentItem = ({
           <SingleTouchableOpacity
             css="invert listButton"
             onPress={mem(() => {
-              context
-                .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                  name: book.name,
-                  url: book.url,
-                  parserName: book.parserName,
-                  epub: book.parserName == "epub" || context.appSettings.currentNovel?.isEpub
-                });
-              state.visible = false;
+              state.visible = !context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                name: book.name,
+                url: book.url,
+                parserName: book.parserName,
+                epub: book.parserName == "epub" || context.appSettings.currentNovel?.isEpub
+              });
             }, book.url)}>
             <Icon
               name="book-reader"
@@ -108,13 +106,11 @@ const CurrentItem = ({
             }
             css="invert listButton"
             onPress={mem(() => {
-              context
-                .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                  name: book.name,
-                  url: book.url,
-                  parserName: book.parserName
-                });
-              state.visible = false;
+              state.visible = !context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                name: book.name,
+                url: book.url,
+                parserName: book.parserName
+              });
             }, book.url)}>
             <Icon
               name="book-reader"
@@ -149,16 +145,15 @@ const CurrentItem = ({
           css="flex pa:5 row"
           onLongPress={mem(() => state.visible = true)}
           onPress={mem(() => {
-            context
-              .nav.navigate(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                name: book.name,
-                url: book.url,
-                parserName: book.parserName,
-                epub:
-                  book.parserName == "epub" ||
-                  context.appSettings.currentNovel
-                    ?.isEpub
-              });
+            context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+              name: book.name,
+              url: book.url,
+              parserName: book.parserName,
+              epub:
+                book.parserName == "epub" ||
+                context.appSettings.currentNovel
+                  ?.isEpub
+            });
           }, book.url)}>
           <Image
             url={book.imageBase64}

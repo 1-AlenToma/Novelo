@@ -161,11 +161,7 @@ export default ({
               </SingleTouchableOpacity>
             ))}
             <ActionSheetButton
-              ifTrue={() =>
-                inputEnabled &&
-                !onInputChange &&
-                context.parser.all.length > 1
-              }
+              ifTrue={(inputEnabled && !onInputChange && context.parser.all.length > 1) == true}
               css="mal:10 bac-transparent"
               size="60%"
               title="Choose Parser"

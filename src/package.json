@@ -74,7 +74,7 @@
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
-    "react-native-short-style": "^1.4.0",
+    "react-native-short-style": "^1.4.1-beta",
     "react-native-svg": "15.15.4",
     "react-native-translator": "^2.0.0",
     "react-native-ts-sqlite-orm": "^0.2.0",
@@ -96,7 +96,6 @@
     "bestzip": "^2.2.3",
     "cross-env": "^10.1.0",
     "expo-dev-client": "~57.0.10",
-    "madge": "^8.0.0",
     "react-native-codegen": "^0.70.7",
     "typescript": "~6.0.3"
   },

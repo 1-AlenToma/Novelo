@@ -56,8 +56,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
       <View css="row juc:center ali:center di:flex invert">
         <SingleTouchableOpacity
           onPress={mem(() => {
-            context.nav
-              .navigate("ReadChapter", {
+            context.navigate.read("ReadChapter", {
                 name: context.player.novel.name,
                 url: context.player.novel.url,
                 parserName: context.player.novel.parserName ?? context.player.book.parserName,

@@ -29,6 +29,8 @@ import { ConsoleInterceptor } from "./native/ConsoleInterceptor";
 import RNFS from 'react-native-fs-turbo';
 import TTSManager from 'react_native_sherpa_onnx_offline_tts';
 import { AppState, AppStateStatus } from "react-native"
+import httpServer from "./native/HttpServer";
+import { AlertDialog } from "react-native-short-style";
 
 
 LogBox.ignoreLogs([
@@ -68,8 +70,18 @@ const generateTTsConfig = (name: TTSNames, fileName: string, sampleRate: number 
 }
 
 
-const data: IGlobalState = StateBuilder<GlobalType>(
+const data: IGlobalState = StateBuilder<GlobalType>( 
     () => ({
+        navigate: {
+            read:(page, item: any)=> {
+                if (!httpServer.started){
+                    AlertDialog.alert("Ops: Background Service did not start, please wait..");
+                   return false;
+                }
+                data.nav.navigate(page, item);
+                return true
+            }
+        },
         appState: {
             state: AppState.currentState,
             inBackground: false

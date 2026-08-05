@@ -333,13 +333,12 @@ const ItemRender = React.memo(({
           text: "Read",
           ifTrue: () => chapterLength > 0,
           onPress: () => {
-            context.nav.navigate(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+            return context.navigate.read(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
               name: item.name,
               url: item.url,
               parserName: item.parserName,
               epub: true
             });
-            return true;
           }
         },
         {

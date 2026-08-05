@@ -167,7 +167,7 @@ export default ({ ...props }: any) => {
             content: context.selectedThemeIndex == 1 ? "bac-#000" : "bac-#CCCCCC"
           }
         }, context.selectedThemeIndex)}
-        ifTrue={() => !state.novel.name?.empty()}
+        ifTrue={() => (state.novel.name?.has() ?? false)}
         position="Top">
         <TabView
           css="flex mah:99% juc:flex-end"
@@ -278,14 +278,12 @@ export default ({ ...props }: any) => {
                     </ScrollView>
                   </View>
                   <View
-                    ifTrue={() => state.novel.tags?.has()}
+                    ifTrue={(state.novel.tags?.has() ?? false)}
                     css="he:29 mat:6 clearwidth fld:row ali-center">
                     <Text css="fos-15 fow-bold par-5">Tags:</Text>
                     <ScrollView
                       horizontal={true}
-                      contentContainerStyle={mem({
-                        height: 28
-                      })}>
+                      contentContainerStyle={{ height: 28 }}>
                       <View css="row wi:100% invert">
                         {mem(state.novel.tags?.map(
                           (x, i) => (
@@ -342,8 +340,7 @@ export default ({ ...props }: any) => {
                         novel={state.novel}
                         onPress={memKey("ChapterViewPress", item => {
                           chapterRef.current?.close();
-                          context
-                            .nav.navigate(state.novel.type == "Anime" || parser?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                          context.navigate.read(state.novel.type == "Anime" || parser?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                               name: state.novel.name,
                               chapter: item.url,
                               url: state.novel.url,
@@ -479,8 +476,7 @@ export default ({ ...props }: any) => {
               <SingleTouchableOpacity
                 css="mar:5 button pa:5 wi:65% clearheight invert"
                 onPress={mem(() => {
-                  context
-                    .nav.navigate(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                  context.navigate.read(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                       name: state.novel.name,
                       url: state.novel.url,
                       parserName: state.novel.parserName

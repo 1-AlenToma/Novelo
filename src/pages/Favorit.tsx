@@ -89,8 +89,7 @@ const ItemRender = React.memo(({
           novel={state.novel}
           onPress={memKey("ChapterViewVisibile", item => {
             if (state.novel) {
-              context
-                .nav.navigate(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+              context.navigate.read(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                   name: state.novel.name,
                   chapter: item.url,
                   url: state.novel.url,

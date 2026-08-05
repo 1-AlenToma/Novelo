@@ -228,9 +228,19 @@ export type TTS = {
 }
 
 export type IReadDirItem = ReadDirItem<boolean, number>;
+export type ReadProps = {
+  name?: string;
+  url?: string;
+  parserName?: string;
+  epub?: boolean;
+  chapter?: number | string;
+}
 
 export type GlobalType =
   {
+    navigate:{
+      read:(page: "WatchAnime" | "ReadChapter", item: ReadProps) => boolean;
+    }
     appState: {
       state: string;
       inBackground: boolean
