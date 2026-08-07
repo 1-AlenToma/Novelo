@@ -45,7 +45,7 @@
     "@shopify/flash-list": "2.0.2",
     "advanced-html-parser": "^1.1.0",
     "compromise": "^14.15.0",
-    "expo": "^57.0.9",
+    "expo": "^57.0.11",
     "expo-asset": "~57.0.8",
     "expo-device": "~57.0.1",
     "expo-font": "~57.0.1",
