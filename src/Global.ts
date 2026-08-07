@@ -680,11 +680,13 @@ String.prototype.join = function (this: string, ...relative: String[]) {
 global.fileTypes = fileTypesExt;
 global.methods = Methods;
 global.tests = [];
+
 global.test = (desc: string) => {
     let item = new TestRunner(desc);
     global.tests.push(item);
     return item;
 }
+
 global.buildState = StateBuilder;
 global.useEffect = React.useEffect;
 global.useState = React.useState;
@@ -736,7 +738,6 @@ global.getFileInfo = (path: string, dir?: string) => {
         item.folders = item.folders.filter(x => (dir.length < x.length))
 
     return item;
-
 }
 
 
@@ -746,7 +747,7 @@ global.getFileName = (file: string, dir?: string) => {
     ) {
         file += ".json";
     }
-    if (file.startsWith("/") || file.startsWith("file")) return file.replace(/\/\/+/g, "/");;
+    if (file.startsWith("/") || file.startsWith("file")) return file.replace(/\/\/+/g, "/");
 
     if (dir && !file.trimStr("/").startsWith(dir.trimStr("/")))
         file = dir.path(file)

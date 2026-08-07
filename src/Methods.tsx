@@ -111,19 +111,38 @@ export async function parallelRun<T, R>(
 }
 
 
-const locks = new Map<string, Promise<any>>();
+const locks = new Map<string, Promise<unknown>>();
 
-export const withLock = async function <T>(fileUri: string, fn: () => Promise<any>) {
+export const withLock = async function <T>(fileUri: string, fn: () => Promise<T>): Promise<T> {
+  // 1. Get the previous promise chain or start a fresh resolved one
   const prev = locks.get(fileUri) ?? Promise.resolve();
-  const next = prev.then(fn).catch(e => {
-    console.error('withLock previous promise failed', e);
-    return fn(); // still run fn even if prev fails
-  }).finally(() => {
-    if (locks.get(fileUri) === next) locks.delete(fileUri);
-  });
+
+  // 2. Create the wrapper that strictly executes the user's function
+  const runNext = async (): Promise<T> => {
+    try {
+      // Always await the previous task, ignoring its failure status
+      await prev;
+    } catch {
+      // Intentional no-op: we still want to run fn() if prev fails
+    }
+    return fn();
+  };
+
+  // 3. Kick off execution
+  const next = runNext();
+
+  // 4. Update the queue map immediately
   locks.set(fileUri, next);
-  return next as Promise<T>;
-}
+
+  // 5. Clean up the map ONLY if this specific promise is still the tail of the queue
+  next.finally(() => {
+    if (locks.get(fileUri) === next) {
+      locks.delete(fileUri);
+    }
+  });
+
+  return next;
+};
 
 
 

@@ -275,6 +275,7 @@ export default class DbContext extends Database<TableNames> {
   };
 
   async deleteBook(id: number) {
+    console.info("Deleting book with id", id);
     let book = await this.Books.byId(id);
     await this.Books.query
       .where

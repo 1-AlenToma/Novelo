@@ -19,6 +19,7 @@ import CStyle from "./components/CStyle";
 import { Platform, Text } from "react-native";
 import * as icons from '@expo/vector-icons';
 import { useKeepAwake } from "expo-keep-awake";
+import httpServer from './native/HttpServer';
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
     lightbg: "bac-#ffffff",
@@ -79,16 +80,17 @@ const testning = false;
 
 const App = () => {
     const fontLoader = useFonts();
+    httpServer.useServer();
     context.hook("selectedThemeIndex", "isFullScreen", "updater");
 
     context.useEffect(
         () => {
             const toggleSystemBars = async () => {
-              
+
                 // Toggle the Android System Navigation Bar visibility using the new API
                 const shouldHide = context.isFullScreen && !context.KeyboardState;
                 NavigationBar.NavigationBar.setHidden(shouldHide);
-
+                StatusBar.setHidden(context.isFullScreen, "fade");
                 // Handle the Status Bar matching the fullscreen flag
                 //setStatusBarHidden(context.isFullScreen);
 

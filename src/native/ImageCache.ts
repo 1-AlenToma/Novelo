@@ -8,22 +8,22 @@ export default class ImageCache extends FileHandler {
     super(path ?? RNF.DocumentDirectoryPath?.path("Images") ?? "", "File", false);
   }
 
-  async downloadImage(imgUrl: string, path: string | ParserWrapper) {
+  async downloadImage(imgUrl: string, file: string | ParserWrapper) {
     try {
-      if (typeof path == "object")
-        path = path.name;
+      if (typeof file == "object")
+        file = file.name;
       if (!imgUrl)
         return "";
       let imgName = imgUrl.split("header")[0].trim().safeSplit("/", -1);
       if (!imgName.isImage())
         imgName = imgName.cleanFileName() + ".jpg";
-      path = this.dir.join("db", path, imgName);
+      file = this.dir.path("db", file, imgName);
       //console.log("fileName", getFileInfo(path, this.dir), "imgurl", imgUrl);
       let imgContent = await context.parser.current.http.imageUrlToBase64(imgUrl);
       if (imgContent && typeof imgContent == "string" && imgContent.length > 10) {
-        let data = await this.write(path, imgContent);
+        let data = await this.write(file, imgContent);
         console.info("image written", data)
-        return data ?? path
+        return data ?? file;
       }
 
       return imgUrl;

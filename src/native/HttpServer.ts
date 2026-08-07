@@ -174,16 +174,43 @@ class HttpServer {
             // fallback
             return { statusCode: 404, body: "Not found" };
         }, {
-            host: this.ip,
+            host: "0.0.0.0",
             autoRestart: true
         });
 
         // await this.server.start();
     }
 
-    stop() {
+    useServer() {
+        context.useEffect(() => {
+            if (context.appState.inBackground) return;
+            this.checkStatus();
+        }, "appState.inBackground");
+
+        useEffect(() => {
+            // if (context.appState.inBackground)
+            this.checkStatus();
+
+            return () => {
+                this.stop();
+            }
+        }, []);
+    }
+
+    async checkStatus() {
+        if (!this.started || !this.server || !await this.server.isRunning()) {
+            console.warn("Server is not running, restarting...");
+            await this.stop();
+            this.started = false;
+            await this.start();
+        } else {
+            console.warn("Server is running");
+        }
+    }
+
+    async stop() {
         if (!this.started || !this.server) return;
-        this.server.stop();
+        await this.server.stop();
         this.started = false;
         console.warn("Server stopped");
     }

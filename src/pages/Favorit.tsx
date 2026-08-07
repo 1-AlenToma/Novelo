@@ -20,7 +20,7 @@ const ItemRender = React.memo(({
   hideParserDetail?: boolean
 }) => {
   const itemLoader = useLoader(false);
-  const { mem, memKey } = useFunc();
+  const { mem, memo, memKey } = useFunc();
   const state = buildState({
     novel: undefined as DetailInfo | undefined,
     showChapter: false
@@ -29,7 +29,7 @@ const ItemRender = React.memo(({
   context.hook("novelFavoritInfo");
   const [books, dataIsLoading] = context.db.Books.useQuery(() => context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(url).toList(),
     (items, op) => (items.find(x => x.url == url && x.favorit) != undefined));
-  const item = mem((books.find(x => x.url === url) ?? { url }) as Book, books);
+  const item = books?.[0] ?? { url } as Book;
 
   context.cache.onDirDelete((parserName) => {
     if (!parserName || parserName == item.parserName)
@@ -90,11 +90,11 @@ const ItemRender = React.memo(({
           onPress={memKey("ChapterViewVisibile", item => {
             if (state.novel) {
               context.navigate.read(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                  name: state.novel.name,
-                  chapter: item.url,
-                  url: state.novel.url,
-                  parserName: state.novel.parserName
-                });
+                name: state.novel.name,
+                chapter: item.url,
+                url: state.novel.url,
+                parserName: state.novel.parserName
+              });
             }
             state.showChapter = false;
           })}
@@ -110,7 +110,7 @@ const ItemRender = React.memo(({
       <FoldableItem
         single={true}
         css="wi:98% overflow"
-        buttons={mem([
+        buttons={memo(() => [
           {
             text: "Delete",
             icon:
@@ -128,19 +128,22 @@ const ItemRender = React.memo(({
                   }
                 )
                 .then(async answer => {
-                  itemLoader.show();
-                  if (answer) {
-                    try {
+                  try {
+                    itemLoader.show();
+                    if (answer) {
                       let file = await context.files.exists("".fileName(item.name, item.parserName));
+                      console.info("Deleting book", "".fileName(item.name, item.parserName), file ? "with file" : "without file");
                       if (file) {
                         item.favorit = false;
                         await item.saveChanges();
                       } else await context.db.deleteBook(item.id);
-                    } catch (e) {
-                      console.error(e);
+
                     }
+                  } catch (e) {
+                    console.error(e);
+                  } finally {
+                    itemLoader.hide();
                   }
-                  itemLoader.hide();
                 });
             }
           },

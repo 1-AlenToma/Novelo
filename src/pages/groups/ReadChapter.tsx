@@ -37,6 +37,7 @@ import Header from "../../pages/Header";
 import { AppSettings, Book } from "../../db";
 import { invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
+import httpServer from "../../native/HttpServer";
 
 const lang: any = {};
 
@@ -1080,7 +1081,6 @@ export default (props: any) => {
       "novel"
     ).build();
 
-  // context.hook("appSettings.backgroundColor");
 
   const loadData = async () => {
     await context.dbBatch(async () => {
@@ -1096,6 +1096,7 @@ export default (props: any) => {
 
           if (!state.novel || !state.novel.name)
             return;
+          await httpServer.checkStatus();
           if (context.player?._playing)
             context.player.playing(false);
           if (

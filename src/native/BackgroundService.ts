@@ -86,7 +86,6 @@ const options = {
 export class BgService {
   async start() {
     try {
-      await HTTPServer.start();
       await BackgroundService.start(
         veryIntensiveTask,
         options
@@ -126,7 +125,7 @@ export class BgService {
   async stop() {
     try {
       await BackgroundService.stop();
-      HTTPServer.stop();
+      
     } catch (e) { }
   }
 }

@@ -155,8 +155,7 @@ const ItemRender = React.memo(({
     context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
     (items, op) => {
       return (
-        items.find(x => x.url == item.url) !=
-        undefined
+        items.find(x => x.url == item.url) != undefined
       )
     }
   );
@@ -398,7 +397,7 @@ const ItemRender = React.memo(({
           </ProgressBar>
 
           <TouchableOpacity
-            css="button zi:6 miw:30 clb"
+            css="button zi:6 miw:30 clb mar-10"
             onPress={mem(async () => {
               loader.show();
               context.downloadManager().stop(item.url);
