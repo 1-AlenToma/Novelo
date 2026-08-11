@@ -67,7 +67,7 @@ const oSettings = ({
 
 const Modoles = () => {
   const loader = useLoader();
-  const { mem, memKey, memoKey } = useFunc();
+  const { locMem, locMemo } = useFunc();
   context.hook(
     "player.menuOptions",
     "player.menuOptions.textToTranslate",
@@ -98,11 +98,11 @@ const Modoles = () => {
       <Modal
         addCloser={true}
         isVisible={context.player.menuOptions.comment != undefined}
-        onHide={mem(() => (context.player.menuOptions.comment = undefined))}
+        onHide={locMem(() => (context.player.menuOptions.comment = undefined))}
         css={"he-200"}>
         {context.player.menuOptions.comment != undefined ? (<View css="flex mat:20 invert wi-95%">
           <TextInput
-            onChangeText={memKey("commentOnChange", (x: string) =>
+            onChangeText={locMem((x: string) =>
               (context.player.menuOptions.comment = x)
             )}
             readOnly={true}
@@ -115,14 +115,14 @@ const Modoles = () => {
       </Modal>
       <Modal
         isVisible={context.player.menuOptions.textEdit != undefined}
-        onHide={mem(() => (context.player.menuOptions.textEdit = undefined))}
+        onHide={locMem(() => (context.player.menuOptions.textEdit = undefined))}
         addCloser={true}
         css="he-80%">
         {context.player.menuOptions.textEdit != undefined ? <ScrollView>
           <View css="flex mat:20 invert">
             <TextInput
               label="TextToEdit"
-              onChangeText={memKey("textToEditOnChange", x => (context.player.menuOptions.textEdit.edit = x))}
+              onChangeText={locMem((x: string) => (context.player.menuOptions.textEdit.edit = x))}
               css="pa:5 bor:2 flg:1"
               multiline={true}
               defaultValue={
@@ -130,7 +130,7 @@ const Modoles = () => {
               }
             />
             <TextInput
-              onChangeText={memKey("textToEditWithOnChange", x =>
+              onChangeText={locMem((x: string) =>
                 context.player.menuOptions.textEdit.editWith = x
               )}
               label="EditWith"
@@ -144,7 +144,7 @@ const Modoles = () => {
 
             <TextInput
               label="Comment"
-              onChangeText={memKey("commentsOnChange", x =>
+              onChangeText={locMem((x: string) =>
                 context.player.menuOptions.textEdit.comments = x
               )}
               css="pa:5 bor:2 flg:1"
@@ -160,14 +160,14 @@ const Modoles = () => {
                   context.player.menuOptions.textEdit
                     ?.bgColor ?? "#ffffff"
                 }
-                onComplete={memKey("colorComment", ({ hex }: any) =>
+                onComplete={locMem((({ hex }: any) =>
                 (context.player.menuOptions.textEdit = {
                   ...context.player.menuOptions.textEdit,
                   bgColor: hex
-                }))}
+                })))}
               />
             </FormItem>
-            <Button text="Save" css={"ali-center juc-center"} onPress={memKey("commentSave", async () => {
+            <Button text="Save" css={"ali-center juc-center"} onPress={locMem(async () => {
               context.player.book.textReplacements.push(
                 context.player.menuOptions.textEdit
               );
@@ -183,15 +183,15 @@ const Modoles = () => {
         isVisible={
           context.player.menuOptions.textToTranslate != undefined
         }
-        onHide={mem(() => context.player.menuOptions.textToTranslate = undefined)}
+        onHide={locMem(() => context.player.menuOptions.textToTranslate = undefined)}
         css="he-80%">
         {context.player.menuOptions.textToTranslate != undefined ? <View css="flex mat:20 invert">
           <FormItem title="TranslateTo:" labelPosition="Left">
             <DropDownLocalList
               size={"80%"}
               css={"invert"}
-              items={memoKey("textranslateDropDown", () => Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } }))}
-              render={memKey("RdnerTextTranslateDropDown", item => {
+              items={locMemo(() => Object.keys(LANGUAGE_TABLE).map(x => { return { label: x, value: x } }))}
+              render={locMem(item => {
                 return (
                   <View css="fl-1 bac-transparent juc-center pal-10">
                     <Text css="desc fos:13 invertco">
@@ -200,7 +200,7 @@ const Modoles = () => {
                   </View>
                 );
               })}
-              onSelect={memKey("translateDropDownSelect", language => {
+              onSelect={locMem(language => {
                 context.appSettings.lang = language.value;
                 context.appSettings.saveChanges();
                 return false;
@@ -219,14 +219,14 @@ const Modoles = () => {
               `}
               nestedScrollEnabled={true}
               cacheEnabled={true}
-              source={memKey("translateWebViewSource", {
+              source={locMemo(()=> ({
                 uri: `https://translate.google.com/m?hl=en&sl=en&tl=${LANGUAGE_TABLE[
                   context.appSettings.lang ?? "English"
                 ].google
                   }&ie=UTF-8&prev=_m&q=${encodeURIComponent(
                     context.player.menuOptions.textToTranslate ?? ""
                   )}`
-              }, context.appSettings.lang, context.player.menuOptions?.textToTranslate)}
+              }), context.appSettings.lang, context.player.menuOptions?.textToTranslate)}
               contentMode="mobile"
               scalesPageToFit={true}
               originWhitelist={["*"]}
@@ -234,7 +234,7 @@ const Modoles = () => {
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
               style={
-                memKey("translateWebViewStyle", {
+                locMem({
                   flexGrow: 1,
                   zIndex: 70,
                   flex: 1
@@ -252,7 +252,7 @@ const Modoles = () => {
       <Modal
         addCloser={true}
         isVisible={context.player.menuOptions.define != undefined}
-        onHide={mem(() => context.player.menuOptions.define = undefined)}
+        onHide={locMem(() => context.player.menuOptions.define = undefined)}
         css="he-80%"
       >
         {context.player.menuOptions.define != undefined ? <View css="flex mat:20">
@@ -260,17 +260,17 @@ const Modoles = () => {
             <WebView
               nestedScrollEnabled={true}
               cacheEnabled={true}
-              source={memKey("defineSource", {
+              source={locMemo(() => ({
                 uri: context.player.menuOptions.define
-              }, context.player.menuOptions.define)}
+              }), context.player.menuOptions.define)}
               contentMode="mobile"
               scalesPageToFit={true}
-              originWhitelist={memKey("defineOrgin", ["*"])}
+              originWhitelist={locMem(["*"])}
               scrollEnabled={true}
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
               style={
-                memKey("defineStyle", {
+                locMem({
                   flexGrow: 1,
                   zIndex: 70,
                   flex: 1
@@ -289,7 +289,7 @@ const Modoles = () => {
 };
 
 const Controller = ({ state, ...props }: any) => {
-  const { mem, memKey, memo, memoKey } = useLocalMemo();
+  const { locMem, locMemo } = useLocalMemo();
   useDbHook(
     "Chapters",
     item => item.parent_Id === state.book.id,
@@ -304,7 +304,7 @@ const Controller = ({ state, ...props }: any) => {
     "size",
     "player.book.textReplacements",
     "player.currentChapterSettings",
-    ...memo(() => Object.keys(context.appSettings).map(x => `appSettings.${x}` as any))
+    ...locMemo(() => Object.keys(context.appSettings).map(x => `appSettings.${x}` as any))
   );
 
 
@@ -324,7 +324,7 @@ const Controller = ({ state, ...props }: any) => {
     };
   }, []);
 
-  const editSettings = mem(({
+  const editSettings = locMem(({
     fontSize,
     ttsModol,
     chunkWords,
@@ -374,17 +374,17 @@ const Controller = ({ state, ...props }: any) => {
     }, timerSpeed ?? 0);
   });
 
-  const isManga = memo(() => state.novel.type?.isManga() === true, state.novel.type);
+  const isManga = locMemo(() => state.novel.type?.isManga() === true, state.novel.type);
 
-  const selectedTTsModel = memo(() => context.tts.nameList().indexOf(context.appSettings.ttsModol), context.appSettings.ttsModol);
+  const selectedTTsModel = locMemo(() => context.tts.nameList().indexOf(context.appSettings.ttsModol), context.appSettings.ttsModol);
   return (
     <>
       {context.player.showController ? <View
         css={`band he:110 bottom maw-100% juc:center ali:center pal:10 par:10 botw:1 invert boc:${invertColor(context.appSettings.backgroundColor)}`}>
 
-        <ContextContainer stateItem={mem({ chapterSliderValue: undefined })}
-          globalStateKeys={mem(["player.currentChapterIndex", "player.showController"])}
-          render={memKey("ChapterSlider", (state: any) => {
+        <ContextContainer stateItem={locMem({ chapterSliderValue: undefined })}
+          globalStateKeys={locMem(["player.currentChapterIndex", "player.showController"])}
+          render={locMem((state: any) => {
             return (<>
               <Text css="desc fos:13">
                 {context.player.procent(state.chapterSliderValue)}
@@ -396,12 +396,12 @@ const Controller = ({ state, ...props }: any) => {
                   disableTimer={true}
                   buttons={true}
                   value={state.chapterSliderValue == undefined ? context.player.currentChapterIndex : state.chapterSliderValue}
-                  onValueChange={memKey("chapterSliderValueChange", (v: number) => {
+                  onValueChange={locMem((v: number) => {
                     Timer.clear();
                     state.chapterSliderValue = parseInt(v.toString()) as any
                   })}
                   animationType="spring"
-                  onSlidingComplete={memKey("chapterSliderComplete", (index: number) => {
+                  onSlidingComplete={locMem((index: number) => {
                     Timer(async () => {
                       await context.player.jumpTo(parseInt(index.toString()));
                       state.chapterSliderValue = undefined;
@@ -430,14 +430,14 @@ const Controller = ({ state, ...props }: any) => {
         buttons={[
           isManga ? {
             ifTrue: !isManga,
-            text: memo(() =>
+            text: locMemo(() =>
               <Icon
                 name="featured-play-list"
                 type="MaterialIcons"
                 css="fos-35"
               />
             ),
-            press: mem(() => {
+            press: locMem(() => {
               context.player.playing(false);
               context.player.showPlayer = !context.player.showPlayer;
             })
@@ -448,7 +448,7 @@ const Controller = ({ state, ...props }: any) => {
                 ready={false}
                 title="Chapters"
                 size="80%"
-                btn={memo(() =>
+                btn={locMemo(() =>
                   <Icon
                     type="MaterialCommunityIcons"
                     name="menu"
@@ -457,12 +457,12 @@ const Controller = ({ state, ...props }: any) => {
                 }
               >
                 {() => (<ContextContainer
-                  globalStateKeys={mem(["player.currentChapter"])}
-                  render={mem(() => (
+                  globalStateKeys={locMem(["player.currentChapter"])}
+                  render={locMem(() => (
                     <ChapterView
                       book={state.book}
                       novel={state.novel}
-                      onPress={memKey("ChapterView", async item => {
+                      onPress={locMem(async item => {
                         await context.player.jumpTo(item.url);
                       })}
                       current={context.player.currentChapter.url}
@@ -480,7 +480,7 @@ const Controller = ({ state, ...props }: any) => {
                 controller="ActionSheet"
                 addCloser={true}
                 size="80%"
-                btn={memo(() =>
+                btn={locMemo(() =>
                   <Icon
                     type="Ionicons"
                     name="settings"
@@ -491,7 +491,7 @@ const Controller = ({ state, ...props }: any) => {
                 {() => (<View css="flex">
                   <Tabbs lazyLoading={true} css="mat-5" position="Top">
                     <TabView
-                      icon={mem({
+                      icon={locMem({
                         name: "format-font",
                         type: "MaterialCommunityIcons"
                       })}
@@ -499,7 +499,7 @@ const Controller = ({ state, ...props }: any) => {
                     >
                       <FormItem title="LockScreen:" labelPosition="Top">
                         <CheckBoxList selectionType="Radio" labelPostion="Left" checkBoxType="RadioButton"
-                          onChange={mem((chks) => {
+                          onChange={locMem((chks) => {
                             if (chks[0].checked) editSettings({ lockScreenType: "Horizontal" });
                             else if (chks[1].checked) editSettings({ lockScreenType: "Vertical" });
                           })}>
@@ -524,24 +524,24 @@ const Controller = ({ state, ...props }: any) => {
                       </FormItem>
                       <FormItem title="NavigationMethod">
                         <ButtonGroup
-                          buttons={memo(() => ["Scroll", "Snap", "ScrollSnap"].filter(x => isManga ? x !== "Snap" : true), state.novel.type)}
-                          onPress={mem((_, items) => {
+                          buttons={locMemo(() => ["Scroll", "Snap", "ScrollSnap"].filter(x => isManga ? x !== "Snap" : true), state.novel.type)}
+                          onPress={locMem((_, items) => {
                             editSettings({
                               navigationType: items[0]
                             });
                           })}
-                          selectedIndex={mem([context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (isManga ? 1 : 2) : 1)], state.novel.type, context.appSettings.navigationType)}
+                          selectedIndex={locMemo(()=> [context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (isManga ? 1 : 2) : 1)], state.novel.type, context.appSettings.navigationType)}
                         />
                       </FormItem>
                       <FormItem title="FontStyle" ifTrue={!isManga}>
                         <ButtonGroup
                           buttons={oSettings.fontStyles}
-                          onPress={mem((_, items) => {
+                          onPress={locMem((_, items) => {
                             editSettings({
                               fontStyle: items[0].toLowerCase()
                             });
                           })}
-                          selectedIndex={memo(
+                          selectedIndex={locMemo(
                             () => [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle?.toLowerCase())].filter(x => x >= 0)
                             , context.appSettings.fontStyle)}
                         />
@@ -549,7 +549,7 @@ const Controller = ({ state, ...props }: any) => {
                       <FormItem title="TextAlign" ifTrue={!isManga}>
                         <ButtonGroup
                           buttons={oSettings.textAlign}
-                          onPress={mem((_, items) => {
+                          onPress={locMem((_, items) => {
                             editSettings({
                               textAlign:
                                 items[0].safeSplit(
@@ -558,7 +558,7 @@ const Controller = ({ state, ...props }: any) => {
                                 )
                             });
                           })}
-                          render={mem((x, i) => (
+                          render={locMem((x, i) => (
                             <Icon
                               type="Feather"
                               name={x}
@@ -576,7 +576,7 @@ const Controller = ({ state, ...props }: any) => {
                               }}
                             />)
                           )}
-                          selectedIndex={memo(() => [oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0), context.appSettings.textAlign)}
+                          selectedIndex={locMemo(() => [oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0), context.appSettings.textAlign)}
                         />
                       </FormItem>
 
@@ -586,7 +586,7 @@ const Controller = ({ state, ...props }: any) => {
                           size={"80%"}
                           css={"invert"}
                           items={oSettings.fonts}
-                          render={mem(item => {
+                          render={locMem(item => {
                             return (
                               <View
                                 css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between he-30`}>
@@ -596,7 +596,7 @@ const Controller = ({ state, ...props }: any) => {
                               </View>
                             );
                           })}
-                          onSelect={mem(fontName => {
+                          onSelect={locMem(fontName => {
                             editSettings({
                               fontName: fontName.value
                             });
@@ -617,7 +617,7 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .fontSize
                           }
-                          onSlidingComplete={mem((fontSize: any) => {
+                          onSlidingComplete={locMem((fontSize: any) => {
                             editSettings({
                               fontSize
                             }, 100);
@@ -637,7 +637,7 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .lineHeight
                           }
-                          onSlidingComplete={mem((lineHeight: any) => {
+                          onSlidingComplete={locMem((lineHeight: any) => {
                             editSettings({
                               lineHeight
                             }, 100);
@@ -657,7 +657,7 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .sentenceMargin ?? 5
                           }
-                          onSlidingComplete={mem((sentenceMargin: any) => {
+                          onSlidingComplete={locMem((sentenceMargin: any) => {
                             editSettings({
                               sentenceMargin
                             }, 100);
@@ -677,7 +677,7 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .margin
                           }
-                          onSlidingComplete={mem((margin: any) => {
+                          onSlidingComplete={locMem((margin: any) => {
                             editSettings({
                               margin
                             }, 100);
@@ -689,7 +689,7 @@ const Controller = ({ state, ...props }: any) => {
                       <View css="flg-1 fl-0 wi-100% mat-10 invert">
                         <Text css="fow-bold">BackgroundColor</Text>
                         <ColorSelection selectedValue={context.appSettings.backgroundColor}
-                          onChange={mem((hex) => {
+                          onChange={locMem((hex) => {
                             editSettings({
                               backgroundColor: hex
                             })
@@ -699,7 +699,7 @@ const Controller = ({ state, ...props }: any) => {
                     <TabView
                       ifTrue={!isManga}
                       css="flex invert"
-                      icon={mem({
+                      icon={locMem({
                         name: "text-fields",
                         type: "MaterialIcons"
                       })}
@@ -727,7 +727,7 @@ const Controller = ({ state, ...props }: any) => {
                               .useSentenceBuilder
                               ?.enabled ?? false
                           }
-                          onChange={mem(() => {
+                          onChange={locMem(() => {
                             editSettings({
                               useSentenceBuilder: {
                                 ...(context
@@ -761,7 +761,7 @@ const Controller = ({ state, ...props }: any) => {
                               ?.minLength ??
                             100
                           }
-                          onSlidingComplete={mem((length: any) => {
+                          onSlidingComplete={locMem((length: any) => {
                             editSettings({
                               useSentenceBuilder:
                               {
@@ -785,7 +785,7 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .normalizeText ?? false
                           }
-                          onChange={mem((isChecked) => {
+                          onChange={locMem((isChecked) => {
                             editSettings({
                               normalizeText: isChecked
                             });
@@ -798,7 +798,7 @@ const Controller = ({ state, ...props }: any) => {
                           checked={
                             context.appSettings.use3D ?? false
                           }
-                          onChange={mem(() => {
+                          onChange={locMem(() => {
                             editSettings({
                               use3D: !context
                                 .appSettings.use3D
@@ -819,7 +819,7 @@ const Controller = ({ state, ...props }: any) => {
                               .shadowLength,
                             true
                           )}
-                          onSlidingComplete={mem((shadowLength: any) => {
+                          onSlidingComplete={locMem((shadowLength: any) => {
                             editSettings({
                               shadowLength
                             }, 100);
@@ -841,7 +841,7 @@ const Controller = ({ state, ...props }: any) => {
                             context.player.book
                               .inlineStyle
                           }
-                          onChangeText={mem(t => {
+                          onChangeText={locMem(t => {
                             context.player.book.inlineStyle =
                               t;
                             context.player.book.saveChanges();
@@ -861,9 +861,9 @@ const Controller = ({ state, ...props }: any) => {
                         <View css="he-100% wi-100%">
                           <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
                           <ButtonGroup scrollable={true}
-                            buttons={memo(() => context.tts.nameList())}
-                            selectedIndex={mem([selectedTTsModel == -1 ? 1 : selectedTTsModel], selectedTTsModel)}
-                            onPress={mem(x => {
+                            buttons={locMemo(() => context.tts.nameList())}
+                            selectedIndex={locMem([selectedTTsModel == -1 ? 1 : selectedTTsModel], selectedTTsModel)}
+                            onPress={locMem(x => {
                               editSettings({ ttsModol: context.tts.nameList()[x[0]] })
                             })} />
                         </View>
@@ -876,7 +876,7 @@ const Controller = ({ state, ...props }: any) => {
                             context.appSettings
                               .chunkWords ?? false
                           }
-                          onChange={mem(() => {
+                          onChange={locMem(() => {
                             editSettings({
                               chunkWords: !(context.appSettings.chunkWords ?? false)
                             });
@@ -893,7 +893,7 @@ const Controller = ({ state, ...props }: any) => {
                           value={
                             context.appSettings.rate
                           }
-                          onSlidingComplete={mem((rate: any) => {
+                          onSlidingComplete={locMem((rate: any) => {
                             editSettings({
                               rate
                             }, 100);
@@ -906,7 +906,7 @@ const Controller = ({ state, ...props }: any) => {
                     <TabView
                       ifTrue={!isManga}
                       css="flex invert"
-                      icon={mem({
+                      icon={locMem({
                         name: "format-color-highlight",
                         type: "MaterialCommunityIcons"
                       })}
@@ -917,7 +917,7 @@ const Controller = ({ state, ...props }: any) => {
                         </Text>
                         <ItemList
                           items={context.player.book.textReplacements}
-                          container={memKey("txtRepleacmentItemList", ({ item }: any) => (
+                          container={locMem(({ item }: any) => (
                             <View
                               style={{
                                 backgroundColor:
@@ -965,18 +965,18 @@ const Controller = ({ state, ...props }: any) => {
 };
 const InternalWeb = ({ state, ...props }: any) => {
   const loader = context.player.usePlayerLoader();
-  const { mem, memo } = useFunc();
+  const { locMem, locMemo } = useFunc();
   return (
     <>
       {loader.elem}
       <Web
-        click={mem(() => {
+        click={locMem(() => {
           context.player.showController = !context.player.showController;
         })}
-        onComments={mem((index: number) => {
+        onComments={locMem((index: number) => {
           context.player.menuOptions.comment = context.player.book.textReplacements[index].comments;
         })}
-        onMenu={mem(async (item: any) => {
+        onMenu={locMem(async (item: any) => {
           // handle later
           console.info("go menu from web")
           if (item.text == "Translate")
@@ -1005,7 +1005,7 @@ const InternalWeb = ({ state, ...props }: any) => {
             await context.player.clean();
           }
         })}
-        menuItems={memo(() => ({
+        menuItems={locMemo(() => ({
           selector: "#novel",
           minlength: 1,
           items: [
@@ -1031,17 +1031,17 @@ const InternalWeb = ({ state, ...props }: any) => {
             }
           ]
         }))}
-        bottomReched={mem(() => {
+        bottomReched={locMem(() => {
           console.info("BottomReached")
           if (!context.player.isloading)
             context.player.next(true)
         })}
-        topReched={mem(() => {
+        topReched={locMem(() => {
           console.info("topReched")
           if (!context.player.isloading)
             context.player.prev()
         })}
-        onScroll={mem((y: number) => {
+        onScroll={locMem((y: number) => {
           if (context.player.isloading || context.player.currentChapterSettings.readPercent == context.player.scrollProcent)
             return;
           console.info("updating scrollProgress")

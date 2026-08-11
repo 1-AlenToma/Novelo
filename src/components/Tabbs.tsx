@@ -8,21 +8,21 @@ import { NavigationContainer } from "@react-navigation/native";
 const Tab = createMaterialTopTabNavigator();
 
 export const Tabbs = ({ children, position, lazyLoading, css }: { children: React.ReactElement<TabItemProps>[], position: "Top" | "Bottom", lazyLoading: boolean, css?: any }) => {
-  const { mem } = useFunc();
+  const { locMem } = useFunc();
   const themeBackground = context.selectedThemeIndex == 1 ? "#000" : "#ffffff";
   const activeColor = context.selectedThemeIndex !== 1 ? "#000" : "#ffffff";
-  const getColor = mem((focus: boolean) => (focus ? "#007AFF" : activeColor) as ColorValue);
+  const getColor = locMem((focus: boolean) => (focus ? "#007AFF" : activeColor) as ColorValue);
 
-  const visibleChildren = mem(children.filter(child => ifSelector(child.props.ifTrue) !== false), children);
+  const visibleChildren = locMem(children.filter(child => child && ifSelector(child.props.ifTrue) !== false), children);
 
   return (
     <NavigationContainer>
-      <View style={mem({ flex: 1 })} css={"root" + css}>
+      <View style={locMem({ flex: 1 })} css={"root" + css}>
         <Tab.Navigator
           id="main-tabs"
           initialRouteName="0"
           tabBarPosition={position === "Top" ? "top" : "bottom"}          // place tab bar at top or bottom
-          screenOptions={mem(({ route }) => ({
+          screenOptions={locMem(({ route }) => ({
             swipeEnabled: true,           // enable swipe gestures
             tabBarIndicatorStyle: position !== "Bottom" ? undefined : {
               backgroundColor: "#007AFF", // indicator color
@@ -76,7 +76,7 @@ export const Tabbs = ({ children, position, lazyLoading, css }: { children: Reac
           {
             visibleChildren.map((child, index) => (
               <Tab.Screen key={index} name={index.toString()}>
-                {() => (<ScrollView css={child.props.css} style={mem({ flex: 1 })} contentContainerStyle={mem({ backgroundColor: "transparent" })}>{child}</ScrollView>)}
+                {() => (<ScrollView css={child.props.css} style={locMem({ flex: 1 })} contentContainerStyle={locMem({ backgroundColor: "transparent" })}>{child}</ScrollView>)}
               </Tab.Screen>
             ))
           }
