@@ -8,12 +8,12 @@ import { NavigationContainer } from "@react-navigation/native";
 const Tab = createMaterialTopTabNavigator();
 
 export const Tabbs = ({ children, position, lazyLoading, css }: { children: React.ReactElement<TabItemProps>[], position: "Top" | "Bottom", lazyLoading: boolean, css?: any }) => {
-  const { locMem } = useFunc();
+  const { locMem, locMemo } = useFunc();
   const themeBackground = context.selectedThemeIndex == 1 ? "#000" : "#ffffff";
   const activeColor = context.selectedThemeIndex !== 1 ? "#000" : "#ffffff";
   const getColor = locMem((focus: boolean) => (focus ? "#007AFF" : activeColor) as ColorValue);
 
-  const visibleChildren = locMem(children.filter(child => child && ifSelector(child.props.ifTrue) !== false), children);
+  const visibleChildren = locMemo(()=> children.filter(child => child && child.props && ifSelector(child.props?.ifTrue) !== false), children);
 
   return (
     <NavigationContainer>
@@ -56,7 +56,7 @@ export const Tabbs = ({ children, position, lazyLoading, css }: { children: Reac
               let iconType: any = "Entypo";
               let size = 17;
               let item: any = visibleChildren[parseInt(route.name)];
-              if (!item) return null;
+              if (!item || !item.props || !item.props.icon) return null;
               iconName = item.props.icon.name;
               iconType = item.props.icon.type || "Entypo";
 
@@ -76,7 +76,7 @@ export const Tabbs = ({ children, position, lazyLoading, css }: { children: Reac
           {
             visibleChildren.map((child, index) => (
               <Tab.Screen key={index} name={index.toString()}>
-                {() => (<ScrollView css={child.props.css} style={locMem({ flex: 1 })} contentContainerStyle={locMem({ backgroundColor: "transparent" })}>{child}</ScrollView>)}
+                {() => (<ScrollView css={child.props?.css} style={locMem({ flex: 1 })} contentContainerStyle={locMem({ backgroundColor: "transparent" })}>{child}</ScrollView>)}
               </Tab.Screen>
             ))
           }

@@ -21,8 +21,7 @@ import { Book } from "../../db";
 import { DetailInfo } from "../../native"
 
 export default ({ ...props }: any) => {
-  const [{ url, parserName }] =
-    useNavigation(props);
+  const [{ url, parserName }] = useNavigation(props);
   const parser = useParser(parserName)
   const loader = useLoader(true);
   const chapterRef = useRef();
@@ -44,8 +43,8 @@ export default ({ ...props }: any) => {
       "authorNovels"
     ).build();
 
-  const { mem, memKey } = useFunc();
-  let fetchAuthorNovels = mem(async () => {
+  const { locMem } = useFunc();
+  let fetchAuthorNovels = locMem(async () => {
     //alert(state.novel.authorUrl);
     if (
       !state.authorNovels?.has() &&
@@ -57,7 +56,7 @@ export default ({ ...props }: any) => {
     }
   })
 
-  let fetchData = mem(async (refresh?: boolean) => {
+  let fetchData = locMem(async (refresh?: boolean) => {
     loader.set(refresh).show();
     await state.batch(async () => {
       try {
@@ -85,7 +84,7 @@ export default ({ ...props }: any) => {
     });
   }, url);
 
-  let loadInfo = mem(async (novel: any) => {
+  let loadInfo = locMem(async (novel: any) => {
     try {
       //return;
       if (parser.infoEnabled) {
@@ -113,7 +112,7 @@ export default ({ ...props }: any) => {
   return (
     <View
       css="flex">
-      <Modal addCloser={true} css="he-90% wi-95%" isVisible={state.showNovelUpdateWebView} onHide={mem(() => state.showNovelUpdateWebView = false)}>
+      <Modal addCloser={true} css="he-90% wi-95%" isVisible={state.showNovelUpdateWebView} onHide={locMem(() => state.showNovelUpdateWebView = false)}>
         <View css="flex mat-30 mab-10">
           <WebView
             injectedJavaScript={methods.injectCSS(`.pgAdWrapper, #div-gpt-ad-noid_blank {
@@ -121,7 +120,7 @@ export default ({ ...props }: any) => {
               }`)}
             nestedScrollEnabled={true}
             cacheEnabled={true}
-            source={memKey("webViewSource", {
+            source={locMem({
               uri: state.novel.novelUpdateUrl
             }, state.novel.novelUpdateUrl)}
             contentMode="mobile"
@@ -130,7 +129,7 @@ export default ({ ...props }: any) => {
             scrollEnabled={true}
             userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
             setSupportMultipleWindows={false}
-            style={memKey("webViewStyle",
+            style={locMem(
               {
                 flexGrow: 1,
                 zIndex: 70,
@@ -147,7 +146,7 @@ export default ({ ...props }: any) => {
       <Header
         {...props}
         titleCss="fos:12"
-        buttons={mem([
+        buttons={locMem([
           {
             ifTrue: state.novel.novelUpdateUrl?.has() ?? false,
             text: (
@@ -160,7 +159,7 @@ export default ({ ...props }: any) => {
       />
       {loader.elem}
       <TabBar
-        header={mem({
+        header={locMem({
           style: "invert",
           textStyle: "invert",
           overlayStyle: {
@@ -172,7 +171,7 @@ export default ({ ...props }: any) => {
         <TabView
           css="flex mah:99% juc:flex-end"
           disableScrolling={true}
-          icon={mem({
+          icon={locMem({
             name: "info-circle",
             type: "FontAwesome",
             css: "invert"
@@ -251,11 +250,11 @@ export default ({ ...props }: any) => {
                     <Text css="fos-15 fow-bold par-5">Genre:</Text>
                     <ScrollView
                       horizontal={true}
-                      contentContainerStyle={mem({
+                      contentContainerStyle={locMem({
                         height: 28
                       })}>
                       <View css="row wi:100% invert">
-                        {mem(state.novel.genre?.map(
+                        {locMem(state.novel.genre?.map(
                           (x, i) => (
                             <TouchableOpacity
                               onPress={() => {
@@ -285,7 +284,7 @@ export default ({ ...props }: any) => {
                       horizontal={true}
                       contentContainerStyle={{ height: 28 }}>
                       <View css="row wi:100% invert">
-                        {mem(state.novel.tags?.map(
+                        {locMem(state.novel.tags?.map(
                           (x, i) => (
                             <TouchableOpacity
                               onPress={() => {
@@ -324,7 +323,7 @@ export default ({ ...props }: any) => {
                     <ActionSheetButton
                       ready={false}
                       refItem={chapterRef}
-                      btn={mem(
+                      btn={locMem(
                         <Icon
                           type="AntDesign"
                           name="caret-right"
@@ -338,7 +337,7 @@ export default ({ ...props }: any) => {
                         ignoreChapterValidation={true}
                         book={state.book as Book}
                         novel={state.novel}
-                        onPress={memKey("ChapterViewPress", item => {
+                        onPress={locMem(item => {
                           chapterRef.current?.close();
                           context.navigate.read(state.novel.type == "Anime" || parser?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                               name: state.novel.name,
@@ -365,7 +364,7 @@ export default ({ ...props }: any) => {
                     Authors Others Novels
                   </Text>
                   <ItemList
-                    onPress={mem(item => {
+                    onPress={locMem(item => {
                       context.nav.navigate("NovelItemDetail", {
                         url: item.url,
                         parserName: item.parserName
@@ -390,7 +389,7 @@ export default ({ ...props }: any) => {
                   </Text>
                   {
                     !loader.loading && !state.infoLoading ? (<ItemList
-                      onPress={memKey("navigateToSearch", item => {
+                      onPress={locMem(item => {
                         if (!item.parserName) {
                           context
                             .nav.navigate("Search", {
@@ -406,7 +405,7 @@ export default ({ ...props }: any) => {
                         }
                       })}
                       itemCss={!(state.recuValidation) ? "wi-95% he-40 shadow-lg invert juc-center bac-transparent bobw-0.4 boc-gray" : "boc:#ccc bow:1 he:220 wi:170 mal:5 bor:5 overflow"}
-                      container={memKey("RecContainer", ({ item, index }: any) => {
+                      container={locMem(({ item, index }: any) => {
                         if (!state.recuValidation)
                           item.image = undefined;
                         if (item.image?.has())
@@ -432,7 +431,7 @@ export default ({ ...props }: any) => {
               <SingleTouchableOpacity
                 ifTrue={["Novel", "Manga"].includes(parser?.type)}
                 css="button mar:5 clearheight juc:center invert"
-                onPress={mem(async () => {
+                onPress={locMem(async () => {
                   state.downloadSheetView = true;
                 })}>
                 <View css="blur" />
@@ -441,13 +440,13 @@ export default ({ ...props }: any) => {
                   name="download"
                   css="mar:0 invert"
                 />
-                <ActionSheet size={"80%"} isVisible={state.downloadSheetView} onHide={mem(() => state.downloadSheetView = false)}>
+                <ActionSheet size={"80%"} isVisible={state.downloadSheetView} onHide={locMem(() => state.downloadSheetView = false)}>
                   <Text css="header invert fow-bold">Start Downloading from (Chapter)</Text>
                   {state.downloadSheetView ? <ChapterView
                     ignoreChapterValidation={true}
                     book={state.book as Book}
                     novel={state.novel}
-                    onPress={memKey("DownloadNovel", item => {
+                    onPress={locMem(item => {
                       console.warn("download started")
                       state.downloadSheetView = false;
                       let startIndex = state.novel.chapters.findIndex(x => x.url == item.url);
@@ -475,7 +474,7 @@ export default ({ ...props }: any) => {
               </SingleTouchableOpacity>
               <SingleTouchableOpacity
                 css="mar:5 button pa:5 wi:65% clearheight invert"
-                onPress={mem(() => {
+                onPress={locMem(() => {
                   context.navigate.read(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                       name: state.novel.name,
                       url: state.novel.url,
@@ -489,7 +488,7 @@ export default ({ ...props }: any) => {
               </SingleTouchableOpacity>
               <SingleTouchableOpacity
                 css="button clearheight juc:center mar:0 invert"
-                onPress={mem(async () => {
+                onPress={locMem(async () => {
                   loader.show();
                   let book =
                     state.book ||
@@ -541,7 +540,7 @@ export default ({ ...props }: any) => {
           ifTrue={() =>
             state.novel.commentScript?.script?.has()
           }
-          icon={mem({
+          icon={locMem({
             name: "comments",
             type: "FontAwesome",
             css: "invert"
@@ -564,16 +563,16 @@ export default ({ ...props }: any) => {
               thirdPartyCookiesEnabled={true}
               mixedContentMode='always'
               sharedCookiesEnabled={true}
-              source={mem({
+              source={locMem({
                 uri: state.novel.commentScript?.url
-              })}
+              }, state.novel.commentScript?.url)}
               contentMode="mobile"
               scalesPageToFit={true}
               originWhitelist={["*"]}
               scrollEnabled={true}
               userAgent="Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
               setSupportMultipleWindows={false}
-              style={mem(
+              style={locMem(
                 {
                   flexGrow: 1,
                   zIndex: 70,
