@@ -1,6 +1,6 @@
 {
   "name": "novelo",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "link": "npm link file:../../react-native-short-style/styled file:../../react-native-short-style/react-native-short-style-devtools --legacy-peer-deps",
@@ -11,10 +11,11 @@
     "clean": "cd android && gradlew clean",
     "gradlew": "npm run zip && cd android && gradlew app:assembleRelease -PreactNativeArchitectures=arm64-v8a",
     "gradLewAll": "npm run zip && cd android && gradlew app:assembleRelease",
+    "debugbuild": "cross-env NODE_ENV=development npm run zip && cd android && gradlew app:assembleDebug",
     "compile": "tsc ./parsers/ReadNovelFull.ts",
     "start": "expo start",
     "startC": "expo start -c",
-    "clearDemo": "cd android && gradlew.bat --stop",
+    "clearDemo": "cd android && gradlew.bat --stop && gradlew clean",
     "android": "npx expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
@@ -35,6 +36,21 @@
       "javaPackageName": "com.alentoma.Novelo"
     }
   },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-background-actions",
+          "react-native-network-info",
+          "react-native-fs",
+          "react-native-exit-app",
+          "manage-external-storage",
+          "react_native_sherpa_onnx_offline_tts",
+          "rn-update-apk"
+        ]
+      }
+    }
+  },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
     "@react-native-clipboard/clipboard": "^1.16.3",
@@ -45,23 +61,23 @@
     "@shopify/flash-list": "2.0.2",
     "advanced-html-parser": "^1.1.0",
     "compromise": "^14.15.0",
-    "expo": "^57.0.11",
-    "expo-asset": "~57.0.8",
-    "expo-device": "~57.0.1",
-    "expo-font": "~57.0.1",
-    "expo-keep-awake": "~57.0.1",
+    "expo": "^57.0.25",
+    "expo-asset": "~57.0.18",
+    "expo-device": "~57.0.2",
+    "expo-font": "~57.0.4",
+    "expo-keep-awake": "~57.0.2",
     "expo-navigation-bar": "~57.0.2",
-    "expo-notifications": "~57.0.8",
-    "expo-screen-orientation": "~57.0.1",
-    "expo-splash-screen": "~57.0.5",
-    "expo-sqlite": "~57.0.1",
+    "expo-notifications": "~57.0.21",
+    "expo-screen-orientation": "~57.0.2",
+    "expo-splash-screen": "~57.0.9",
+    "expo-sqlite": "~57.0.3",
     "expo-status-bar": "~57.0.1",
     "js-base64": "^3.7.8",
     "jszip": "^3.10.1",
     "manage-external-storage": "^0.1.3",
     "react": "19.2.3",
     "react_native_sherpa_onnx_offline_tts": "git+https://github.com/1-AlenToma/react-native-sherpa-onnx-offline-tts.git",
-    "react-native": "0.86.2",
+    "react-native": "0.86.3",
     "react-native-background-actions": "^4.0.1",
     "react-native-config": "^1.6.1",
     "react-native-device-info": "^15.0.1",
@@ -96,7 +112,7 @@
     "baseline-browser-mapping": "^2.9.5",
     "bestzip": "^2.2.3",
     "cross-env": "^10.1.0",
-    "expo-dev-client": "~57.0.10",
+    "expo-dev-client": "~57.0.19",
     "react-native-codegen": "^0.70.7",
     "typescript": "~6.0.3"
   },

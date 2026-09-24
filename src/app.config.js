@@ -51,6 +51,7 @@ export default {
     "favicon": "./assets/ic_launcher.png"
   },
   "plugins": [
+    "expo-splash-screen",
     [
       "expo-screen-orientation",
       {
