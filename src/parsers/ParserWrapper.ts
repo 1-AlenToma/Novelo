@@ -1,0 +1,268 @@
+import {
+  Parser,
+  SearchDetail,
+  Value,
+  DetailInfo,
+  InfoGeneratorName
+} from "../native/ParserItems";
+
+import ReadNovelFull from "./ReadNovelFull";
+import NovelFull from "./NovelFull";
+import NovelFullCom from "./NovelFullCom";
+import MangaBerri from "./MangaBerri";
+import NovelBin from "./Novelbin";
+import NovelBinCom from "./NovelBinCom";
+import GogoAnime from "./GogoAnime";
+import MangaKakalot from "./MangaKakalot";
+import KunManga from "./KunManga";
+import RizzFables from "./RizzFables";
+import ManHwaClan from "./ManHwaClan";
+import WTRLabCom from "./WtrLabCom";
+
+import NovelUpdate from "./infos/NovelUpdates";
+import MyAnimeList from "./infos/MyAnimeList";
+import WebNovel from "./infos/WebNovel";
+import AnimePlanet from "./infos/AnimePlanet";
+import Memo from "../attr/Memo";
+import { AlertDialog } from "react-native-short-style";
+const daysToSave = (nr: number = 5) => {
+  if (!context.appSettings.autoUpdateFavoritNovels)
+    return undefined;
+  return nr;
+}
+const debugg = false;
+export default class ParserWrapper extends Parser {
+  parser: Parser;
+  novelUpdate: NovelUpdate;
+  webNovel: WebNovel;
+  animeInfo: MyAnimeList;
+  animePlanetInfo: AnimePlanet;
+  infoGeneratorName: InfoGeneratorName = "NovelUpdate";
+  infoEnabled: boolean = true;
+  enabled?: boolean;
+  constructor(parser: Parser) {
+    super(parser.url, parser.name, parser.icon, parser.type);
+    this.parser = parser;
+    this.settings = parser.settings;
+    this.novelUpdate = new NovelUpdate();
+    this.animeInfo = new MyAnimeList();
+    this.webNovel = new WebNovel();
+    this.animePlanetInfo = new AnimePlanet();
+    this.infoGeneratorName = parser.infoGeneratorName;
+    this.minVersion = parser.minVersion;
+    this.protected = parser.protected ?? false;
+    this.enabled = parser.enabled;
+  }
+
+  dispose() {
+    this.http.subressErrors = this.parser.http.subressErrors = true;
+    this.http.clearOperations(undefined, true);
+    this.parser.http.clearOperations(undefined, true);
+  }
+
+  getContext() {
+    return context;
+  }
+
+  getError() {
+    return this.parser.http.httpError;
+  }
+
+  clearError() {
+    this.parser.http.httpError = undefined;
+    return this;
+  }
+
+  showError() {
+    if (this.getError())
+      AlertDialog.toast({ title: "OFFLINE", message: this.getError()?.toString(), type: "Error" });
+  }
+
+  static getAllParsers(parserName?: string) {
+    let prs = [ReadNovelFull,
+      NovelFullCom,
+      NovelFull,
+      NovelBinCom,
+      NovelBin,
+      RizzFables,
+      KunManga,
+      MangaKakalot,
+      MangaBerri,
+      GogoAnime,
+      ManHwaClan,
+      WTRLabCom
+    ].map(
+      x => new ParserWrapper(new (x as any)())
+    );
+    if (parserName)
+      return prs.find(x => x.name === parserName);
+    return prs;
+  }
+
+  @Memo({
+    daysToSave: daysToSave,
+    folder: (target: Parser) => target.name,
+    isDebug: debugg,
+    argsOverride: (args: any[]) => {
+      return args[0];
+    },
+    keyModifier: (target, key) =>
+      `${key}${target.name}`,
+    validator: (data: any) =>
+      data &&
+      !data.name.empty() &&
+      !data.url.empty() &&
+      data.chapters &&
+      data.chapters.length > 0
+  })
+  async detail(url: string, alertOnError?: boolean, renewMemo?: "RenewMemo" | undefined) {
+    let item = await this.parser.detail(url);
+    if (alertOnError) this.showError();
+    return item;
+  }
+
+  async search(
+    options: SearchDetail,
+    alertOnError?: boolean
+  ) {
+    let item = await this.parser.search(options);
+    if (alertOnError) this.showError();
+    return item;
+  }
+
+  @Memo({
+    daysToSave: daysToSave,
+    folder: (target: Parser) => target.name,
+    isDebug: debugg,
+    argsOverride: (args: any[]) => {
+      return [args.firstOrDefault("url")];
+    },
+    updateIfTrue: (args: any) => {
+      let url = args?.novelUpdateUrl;
+      return !url || (url || "").empty();
+    },
+    keyModifier: (target, key) =>
+      `${key}${target.name}`,
+    validator: (data: any) =>
+      data &&
+      !data.name.empty() &&
+      !data.url.empty() &&
+      data.chapters &&
+      data.chapters.length > 0
+      && data.novelUpdateUrl && data.novelUpdateUrl.length > 0
+  })
+  async novelInfo(
+    item: DetailInfo,
+    alertOnError?: boolean
+  ) {
+    let novel = item;
+    switch (this.infoGeneratorName) {
+      case "NovelUpdate":
+        novel = await this.novelUpdate.search(item);
+        if (!novel.novelUpdateUrl || novel.novelUpdateRating.empty())
+          novel = await this.webNovel.search(item);
+        break;
+      case "MyAnimeList":
+        novel = await this.animeInfo.search(item);
+        break;
+      case "AnimePlanet":
+        novel = await this.animePlanetInfo.search(item, (item.type ?? "manga").toLowerCase() as any);
+        break;
+      default:
+        novel = null;
+        break;
+    }
+
+    if (alertOnError) this.showError();
+    return novel;
+  }
+
+  @Memo({
+    daysToSave: () => daysToSave(20),
+    isDebug: debugg,
+    folder: (target: Parser) => target.name,
+    keyModifier: (target, key) =>
+      `${key}${target.name}`,
+    validator: (data: any) =>
+      data &&
+      data.has() &&
+      !data[0].name.empty() &&
+      !data[0].url.empty()
+  })
+  async getByAuthor(url: string) {
+    return await this.parser.getByAuthor(url)
+  }
+
+  async fetchSelectorImage(selector: string) {
+    try {
+      let baseUrl = selector
+        .safeSplit("]", 0)
+        .replace(/\[|\]/g, "");
+      let url = selector
+        .safeSplit("]", 1)
+        .replace(/\[|\]/g, "");
+      let path = selector
+        .safeSplit("]", 2)
+        .replace(/\[|\]/g, "");
+      let attr = selector
+        .safeSplit("]", 3)
+        .replace(/\[|\]/g, "");
+      let html = (
+        await this.http.get_html(url, baseUrl)
+      ).html;
+      return html.$(path).url(attr);
+    } catch (e) { }
+    return "";
+  }
+
+  @Memo({
+    daysToSave: () => daysToSave(20),
+    isDebug: debugg,
+    folder: (target: Parser) => target.name,
+    keyModifier: (target, key) => `${key}${target.name}`,
+    validator: (data: any) =>
+      data &&
+      (data.status?.has() ||
+        data.genre?.has() ||
+        data.group?.has())
+  })
+  async load(renewMemo?: "RenewMemo" | undefined) {
+    try {
+      console.info("loading parser settings")
+      return await this.parser.load();
+    } catch (e) {
+      console.error("error", e);
+    }
+  }
+
+  @Memo({
+    daysToSave: 2,
+    isDebug: debugg,
+    folder: (target: Parser) => target.name,
+    keyModifier: (target, key) => `group_${key}${target.name}`,
+    argsOverride: (args) => [args[0], args[1]],
+    validator: (data: any) => data && data.has() && !data[0].name.empty() && !data[0].url.empty()
+  })
+  async group(
+    value: Value,
+    page: number,
+    alertOnError?: boolean,
+    renewMemo?: "RenewMemo" | undefined
+  ) {
+    try {
+      let item = await this.parser.group(value, page);
+      if (alertOnError) this.showError();
+      return item;
+    } catch (e) {
+      console.error("group", value, e);
+      if (alertOnError) this.showError();
+      return [];
+    }
+  }
+
+  async chapter(url: any, alertOnError?: boolean) {
+    let item = await this.parser.chapter(url);
+    if (alertOnError) this.showError();
+    return item;
+  }
+}

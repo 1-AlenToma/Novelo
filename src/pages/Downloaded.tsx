@@ -1,0 +1,494 @@
+import {
+  useLoader,
+  Image,
+  ItemList,
+  FoldableItem
+} from "../components";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Icon,
+  ProgressBar,
+  AlertDialog,
+  useTimer,
+  Modal,
+  ButtonGroup
+} from "react-native-short-style/mems";
+import Header from "./Header";
+import * as React from "react";
+import {
+  useView
+} from "../hooks";
+import { Book } from "../db";
+import {
+  DetailInfo,
+  ZipBook,
+  createEpub,
+  readEpub
+} from "../native";
+import FileHandler from "../native/FileHandler"
+import { IReadDirItem } from "../Types";
+import { useKeepAwake } from "expo-keep-awake";
+
+const EpubHandler = ({
+  parentState
+}: any) => {
+  const { mem, memKey } = useFunc();
+  const [render, state, loader] = useView({
+    component: false,
+    stateTimeOut: 2,
+    ignore: ["progress"],
+    state: {
+      skipImages: false,
+      loadedEpubPath: undefined as IReadDirItem,
+      loadedEpubType: "Unknown",
+      progress: {
+        percent: 0,
+        currentFile: ""
+      }
+    }
+  });
+  const timer = useTimer(10)
+  const loadEpub = (item: IReadDirItem) => {
+    loader.show();
+    timer(async () => {
+      try {
+        await readEpub(item.path, state.loadedEpubType as any, (info) => {
+          state.progress = { ...info, percent: info.percent / 100 } as any
+        });
+      } catch (e) {
+        AlertDialog.alert(e?.toString() ?? "");
+        console.error(e);
+      } finally {
+        loader.hide();
+      }
+    })
+  };
+  const types = ["Unknown", "Novel", "Manga"];
+  return render(
+    <>
+      <View
+        ifTrue={() =>
+          loader.elem ? true : false
+        }
+        css="absolute clearboth zi:500 clb">
+        <View css="clearboth he:80 zi:500 juc:center ali:center absolute le:0 to:40% clb">
+          {loader.elem}
+          <ProgressBar css="_abc he-100% bac-red" ifTrue={state.progress.percent > 0 && state.progress.percent < 1 && loader.loading} value={state.progress.percent}>
+            <Text css="fos-12 bold co-#FFFFFF">{state.progress.currentFile}</Text>
+          </ProgressBar>
+        </View>
+      </View>
+      <Modal addCloser={true} css="wi-90% he-200" isVisible={state.loadedEpubPath != undefined} disableBlurClick={true} onHide={mem(() => { state.loadedEpubPath = undefined })}>
+        <Text css="desc co-red fow-bold">Please how should the epub be treated as</Text>
+        <ButtonGroup css="mat-15" selectedIndex={[types.findIndex(x => x == state.loadedEpubType)]} buttons={types} onPress={(x) => {
+          state.loadedEpubType = types[x[0]];
+          loadEpub({ ...state.loadedEpubPath })
+          state.loadedEpubPath = undefined;
+        }} />
+      </Modal>
+
+      <Header
+        buttons={mem([
+          {
+            text: memKey("dirIeco", () => (
+              <Icon
+                size={35}
+                name="file-directory"
+                type="Octicons"
+              />
+            )),
+            press: memKey("dirIconPress", async () => {
+              let uri = await context.browser.pickFile(["epub"], "Select Epub file");
+              if (uri)
+                state.loadedEpubPath = uri;
+              //  loadEpub(uri)
+            })
+          }
+        ])}
+        value={parentState.text}
+        inputEnabled={true}
+        onInputChange={mem(txt => {
+          parentState.text = txt ?? "";
+        })}
+      />
+    </>
+  );
+};
+
+const PrepItem = React.memo(({ item }: { item: string }) => {
+  const timer = useTimer(1000);
+  const [progress, setProgress] = useState(0.1);
+  const duration = 30;
+  if (progress < 1)
+    timer(() => {
+      setProgress((prev) => {
+        const next = prev + 1 / duration;
+        return next >= 1 ? 1 : next;
+      });
+    })
+  return (
+    <View
+      css="clearwidth bor:5 pa-0 he:60 ali-center juc-center invert">
+      <ProgressBar css="_abc he-100% bac-red" value={progress}>
+        <Text css="fos-12 bold co-#FFFFFF">Loading Please wait...</Text>
+      </ProgressBar>
+    </View>
+  )
+});
+
+const ItemRender = React.memo(({
+  name,
+  parserName,
+  url
+}: {
+  name: string;
+  parserName: string;
+  url: string;
+}) => {
+  if (!name || !parserName || !url) return null;
+  const { mem, memo } = useFunc();
+  let item: Book = { name, parserName, url } as any;
+  context.hook("parser.all", "appState.inBackground");
+  const [books, dataIsLoading] = context.db.Books.useQuery(
+    context.db.Books.query.load("chapterSettings").where.column(x => x.url).equalTo(item.url),
+    (items, op) => {
+      return (
+        items.find(x => x.url == item.url) != undefined
+      )
+    }
+  );
+  const { fileItems, elem } = context.files.useFile<DetailInfo>("json", x => {
+    return x.has(
+      "".fileName(
+        item.name,
+        item.parserName
+      )
+    );
+  });
+  const loader = useLoader(true);
+  const epubDownloadTimer = useTimer(500);
+  const downloadProgress = context.downloadManager().useDownload(item.url);
+
+  const itemState = buildState(() =>
+  ({
+    info: undefined as string | undefined,
+    downloadFileInfo: {
+      percent: 0,
+      currentFile: ""
+    }
+  })).ignore("downloadFileInfo").build();
+
+  useEffect(() => {
+    getInfo(books.find(x => x.url === item.url) ?? item);
+  }, [books, fileItems]);
+
+  let getInfo = mem(async (b: any) => {
+    loader.show();
+    let novel = fileItems.find(
+      x => x.url == b.url
+    );
+    if (novel) {
+      itemState.info = `(${b.selectedChapterIndex + 1}/${novel.chapters.filter(x => x.content && x.content.has()).length})`;
+    }
+    loader.hide();
+  }, books, fileItems)
+
+  item = mem(books.find(x => x.url === item.url) ?? item, books);
+
+  const downloadEpub = mem(async () => {
+    let file = fileItems.find(
+      x => x.url === item.url
+    );
+    if (file) {
+      const path = await context.browser.pickFolder("Choose where to save the file", ["epub"]);
+      if (path) {
+        loader.show();
+        epubDownloadTimer(async () => {
+          try {
+            await createEpub(file, item, path.path, (info) => {
+              if (info)
+                itemState.downloadFileInfo = { ...info, percent: info.percent / 100 } as any;
+            });
+          } finally {
+            loader.hide();
+          }
+        });
+      }
+
+
+    }
+  }, books, fileItems)
+
+
+  const novelInfo = fileItems.find(x => item.url === x.url);
+  const chapterLength = (novelInfo?.chapters.length ?? 0)
+  return (
+    <FoldableItem
+      single={true}
+      enabled={chapterLength > 0 && downloadProgress.value <= 0}
+      css="wi:98% overflow"
+      buttons={memo(() => [
+        {
+          icon: (
+            <Icon
+              name="file-download"
+              type="MaterialIcons"
+              css="invertco"
+            />
+          ),
+          text: "Download",
+          ifTrue: () => downloadProgress.value <= 0,
+          onPress: () => {
+            downloadEpub();
+            return true;
+          }
+        },
+        {
+          ifTrue: () =>
+            item.parserName !== "epub" && item.isOnline?.() && !context.downloadManager().items.has(item.url ?? "") && downloadProgress.value <= 0,
+          icon: (
+            <Icon
+              name="update"
+              type="MaterialIcons"
+              css="invertco"
+            />
+          ),
+          text: "Update",
+          onPress: () => {
+            context
+              .downloadManager()
+              .prepDownload(
+                item.url,
+                item.parserName,
+                context.parser.find(item.parserName)?.protected,
+                novelInfo.startFromIndex ?? 0
+              );
+            return true;
+          }
+        },
+        {
+          text: downloadProgress.value > 0 ? "Stop" : "Delete",
+          icon: (
+            <Icon
+              name={downloadProgress.value > 0 ? "controller-stop" : "delete"}
+              type={downloadProgress.value > 0 ? "Entypo" : "MaterialIcons"}
+              css="invertco"
+            />
+          ),
+          onPress: async () => {
+            // stop it if its downloading
+            if (downloadProgress.value > 0) {
+              loader.show();
+              context.downloadManager().stop(item.url)
+              await methods.sleep(3000);
+              loader.hide();
+              return;
+            }
+            AlertDialog
+              .confirm(
+                {
+                  message: `You will be deleting ${item.name}.\n\nAre you sure?`,
+                  title: "Please Confirm"
+                }
+              )
+              .then(async answer => {
+                loader.show();
+                if (answer) {
+                  try {
+
+                    let file = fileItems.find(x => x.url == item.url);
+
+                    if (file) {
+                      if (item.parserName == "epub" || !item.favorit) {
+                        await context.db.deleteBook(item.id);
+                      }
+                      await file.deleteFile();
+
+                      if (context.appSettings.currentNovel && context.appSettings.currentNovel.url == item.url) {
+                        context.appSettings.currentNovel = {} as any;
+                        await context.appSettings.saveChanges();
+                      }
+
+
+                    }
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+                loader.hide();
+              });
+          }
+        },
+        {
+          icon: (
+            <Icon
+              css="invertco"
+              name="book-reader"
+              type="FontAwesome5"
+            />
+          ),
+          text: "Read",
+          ifTrue: () => chapterLength > 0,
+          onPress: () => {
+            return context.navigate.read(context.parser.find(item.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+              name: item.name,
+              url: item.url,
+              parserName: item.parserName,
+              epub: true
+            });
+          }
+        },
+        {
+          onPress: () => {
+            context
+              .nav.navigate("NovelItemDetail", {
+                url: item.url,
+                parserName: item.parserName
+              });
+            return true;
+          },
+
+          icon: (
+            <Icon
+              css="invertco"
+              name="info-circle"
+              type="FontAwesome5"
+            />
+          ),
+          text: "Info",
+          ifTrue: () => item.parserName != "epub" && item.isOnline?.()
+        }
+      ], downloadEpub, item, downloadProgress.value)}>
+      <View
+        css="clearwidth bor:5 pal:5 he:60 row di:flex juc:flex-start invert">
+        {loader.elem ?? elem}
+
+        <ProgressBar css="_abc he-100% bac-red" ifTrue={itemState.downloadFileInfo.percent > 0 && itemState.downloadFileInfo.percent < 1 && loader.loading} value={itemState.downloadFileInfo.percent}>
+          <Text css="fos-12 bold co-#FFFFFF">{itemState.downloadFileInfo.currentFile}
+
+          </Text>
+        </ProgressBar>
+        <Image
+          url={item.imageBase64}
+          css="resizeMode:cover mat:2.5 clearwidth wi:50 he:90% bor:2"
+        />
+        <Text
+          numberOfLines={1}
+          css="header pa:5 maw:80% overflow">
+          {item.name}
+        </Text>
+        <Text css="desc co:red fow-bold fos-12 absolute bo:5 right:10 zi:6">
+          {itemState.info || "loading"}
+        </Text>
+        <Text css="clearwidth desc fow-bold fos-12 co:red bottom bo:5 le:60">
+          Source:{item.parserName != "epub" ? ` ${item.parserName}` : " Epub"}
+          {novelInfo?.type ? ` | ${novelInfo?.type}` : ""}
+          {!item.isOnline?.() ? " Missing parser" : ""}
+        </Text>
+        <View
+          ifTrue={downloadProgress.value > 0 ? true : false}
+          css="clearboth wi-102% absolute row juc:flex-end ali:center">
+
+          <ProgressBar css="_abc he-100%" value={downloadProgress.value / 100}>
+            <Text ifTrue={downloadProgress.value == 0.1} css="fos-12 bold co-red">Loading Please wait...</Text>
+            <Text ifTrue={downloadProgress.value != 0.1} css="fos-12 bold co-#FFFFFF">{downloadProgress.value.readAble()}%</Text>
+          </ProgressBar>
+
+          <TouchableOpacity
+            css="button zi:6 miw:30 clb mar-10"
+            onPress={mem(async () => {
+              loader.show();
+              context.downloadManager().stop(item.url);
+              await methods.sleep(3000);
+              loader.hide();
+            }, loader.loading, item)
+            }>
+            <Icon
+              name="controller-stop"
+              type="Entypo"
+              css="zi:7"
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </FoldableItem>
+  );
+});
+
+export default ({ ...props }: any) => {
+  useKeepAwake();
+  const state = buildState(() =>
+  ({
+    text: "",
+    selectedItem: undefined,
+    skipImages: false
+  })).build();
+  const { mem, memKey } = useFunc();
+
+  const { fileItems, elem } = context.files.useFile<DetailInfo>("json", undefined, "NewDelete");
+  const prepLoading = context.downloadManager().prepLoading();
+  const [books, dataIsLoading, reload] = context
+    .db.useQuery(
+      "Books",
+      () => context.db.Books.query.where.column(x => x.url).in(fileItems.map(x => x.url)).toList(),
+      undefined,
+      (_items) => {
+        if (books.length <= 0) return true;
+        return false;
+      }
+    );
+  const loader = useLoader(dataIsLoading);
+
+  useEffect(() => {
+    reload();
+  }, [fileItems]);
+
+  const renderItems = React.useMemo(() => {
+    let data: any[] = books?.filter(x => {
+      const file = fileItems.find(x => x.url == x.url);
+      return (
+        !state.text.has() ||
+        x.name.has(state.text) || x.parserName.has(state.text) ||
+        (context.parser.find(x.parserName)?.type ?? "").has(state.text) ||
+        file?.type?.has(state.text)
+      )
+    });
+    data.push(...prepLoading.filter(x => !data.find(f => f.url == x)));
+    return data;
+  }, [books, prepLoading, state.text, fileItems]);
+
+  return (
+    <View css="flex mih:100 invert ali-center">
+      <EpubHandler parentState={state} />
+      <View css="itemListContainer">
+        <Text
+          css="desc fos-12 co-red fow-bold tea-left wi-100% pal-10">
+          Downloaded and Added Epubs
+        </Text>
+        <ItemList
+          items={renderItems}
+          container={mem(({ item }: { item: Book | string }) => {
+            if (!item || (typeof item == "object" && !item.url))
+              return null;
+            if (typeof item == "object" && prepLoading.includes(item.url))
+              item = item.url;
+            if (typeof item == "object") {
+              return (<ItemRender name={item.name} parserName={item.parserName} url={item.url} />)
+            } else return (<PrepItem item={item} />)
+          }, prepLoading)}
+          itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5"
+          vMode={true}
+        />
+        <View
+          ifTrue={() =>
+            loader.elem ?? elem ? true : false
+          }
+          css="wi-105% he:80 zi:500 juc:center ali:center absolute le:0 to:40%">
+          {loader.elem ?? elem}
+        </View>
+      </View>
+    </View>
+  );
+};

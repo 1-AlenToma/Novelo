@@ -1,0 +1,253 @@
+import {
+  Image,
+  SingleTouchableOpacity,
+} from "../components";
+import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, Button } from "react-native-short-style/mems";
+
+import NovelGroup from "../components/NovelGroup"
+import * as React from "react";
+import Header from "./Header";
+import {
+  useNavigation,
+  useDbHook,
+  useParser
+} from "../hooks";
+import { Book } from "../db";
+import {
+  ScrollView,
+  Animated
+} from "react-native";
+const HEADER_EXPANDED_HEIGHT = 190;
+const HEADER_COLLAPSED_HEIGHT = 60;
+const CurrentItem = ({
+  style,
+  children,
+  ...props
+}: any) => {
+  const state = buildState({
+    books: [] as Book[],
+    visible: false
+  }).build();
+  const timer = useTimer(100);
+  context.hook("appSettings.currentNovel");
+  const { mem } = useFunc();
+
+
+  const reloadData = () => timer(async () => state.books = (await context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg").toList()));
+  useDbHook(
+    "AppSettings",
+    item => true,
+    () => context.appSettings,
+    "currentNovel"
+  )(() => {
+
+    reloadData();
+  });
+
+
+
+  let book: Book = state.books?.firstOrDefault() ?? {} as any;
+  if (!state.books?.firstOrDefault() || (context.appSettings.currentNovel == undefined || context.appSettings.currentNovel.parserName == undefined)) return children;
+  return (
+    <>
+      <ActionSheet
+        onHide={mem(() => state.visible = (false))}
+        isVisible={state.visible}
+        size={300}>
+        {state.visible ? (<View css="invert">
+          <Text css="header">Actions</Text>
+          <SingleTouchableOpacity
+            css="invert listButton"
+            ifTrue={() =>
+              book.isOnline?.() &&
+              book.parserName != "epub"
+            }
+            onPress={mem(() => {
+              context
+                .nav.navigate("NovelItemDetail", {
+                  url: book.url,
+                  parserName: book.parserName
+                });
+              state.visible = false;
+            }, book.url)}>
+            <Icon
+              name="info-circle"
+              type="FontAwesome5"
+              css="invertco"
+            />
+            <Text>Info</Text>
+          </SingleTouchableOpacity>
+          <SingleTouchableOpacity
+            css="invert listButton"
+            onPress={mem(() => {
+              state.visible = !context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                name: book.name,
+                url: book.url,
+                parserName: book.parserName,
+                epub: book.parserName == "epub" || context.appSettings.currentNovel?.isEpub
+              });
+            }, book.url)}>
+            <Icon
+              name="book-reader"
+              type="FontAwesome5"
+              css="invertco"
+            />
+            <Text>
+              {context.parser.find(book.parserName)?.type == "Anime" ? "Watch" : "Read"}
+              {context.appSettings.currentNovel
+                ?.isEpub &&
+                book.parserName != "epub"
+                ? ` (Epub)`
+                : ""}
+            </Text>
+          </SingleTouchableOpacity>
+          <SingleTouchableOpacity
+            ifTrue={() => (context.appSettings.currentNovel?.isEpub && book.parserName != "epub" && book.isOnline?.()) as any
+            }
+            css="invert listButton"
+            onPress={mem(() => {
+              state.visible = !context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+                name: book.name,
+                url: book.url,
+                parserName: book.parserName
+              });
+            }, book.url)}>
+            <Icon
+              name="book-reader"
+              type="FontAwesome5"
+              css="invertco"
+            />
+            <Text>
+              Read (Online)
+            </Text>
+          </SingleTouchableOpacity>
+          <SingleTouchableOpacity
+            css="invert listButton"
+            onPress={mem(() => {
+              context.appSettings.currentNovel = {} as any;
+              context.appSettings.saveChanges();
+              state.visible = false;
+            }, book.url)}>
+            <Icon
+              name="notification-clear-all"
+              type="MaterialCommunityIcons"
+              css="invertco"
+            />
+            <Text>Clear</Text>
+          </SingleTouchableOpacity>
+        </View>) : null}
+      </ActionSheet>
+      <AnimatedView
+        style={style}
+        css="bor:5 overflow ma:5 invert">
+        {children}
+        <SingleTouchableOpacity
+          css="flex pa:5 row"
+          onLongPress={mem(() => state.visible = true)}
+          onPress={mem(() => {
+            context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
+              name: book.name,
+              url: book.url,
+              parserName: book.parserName,
+              epub:
+                book.parserName == "epub" ||
+                context.appSettings.currentNovel
+                  ?.isEpub
+            });
+          }, book.url)}>
+          <Image
+            url={book.imageBase64}
+            parserName={book.parserName}
+            css="resizeMode:cover bor:5 he:100% wi:110"
+          />
+          <View css="flex invert">
+            <Text
+              css="header pa:4">
+              {book.name}
+            </Text>
+            <Text css="desc co:red pal:4">
+              {book.parserName.displayName()}
+            </Text>
+            <Text
+              css="desc co:red bottom le:35%">
+              {context.parser.find(book.parserName)?.type == "Anime" ? "Watching" : "READING"} NOW
+              {context.appSettings.currentNovel
+                ?.isEpub &&
+                book.parserName != "epub"
+                ? ` (Epub)`
+                : ""}
+            </Text>
+          </View>
+        </SingleTouchableOpacity>
+      </AnimatedView>
+    </>
+  );
+};
+export default ({ ...props }: any) => {
+  const [_, options, navop] = useNavigation(props);
+  context.hook("size", "parser.current");
+  context.nav.option = options;
+
+  let groups = context.parser.current.settings.group;
+  let scrollAnimation = useRef(
+    new Animated.Value(0)
+  ).current;
+  const height = scrollAnimation.interpolate({
+    inputRange: [
+      0,
+      HEADER_EXPANDED_HEIGHT -
+      HEADER_COLLAPSED_HEIGHT
+    ],
+    outputRange: [
+      HEADER_EXPANDED_HEIGHT,
+      HEADER_COLLAPSED_HEIGHT
+    ],
+    extrapolate: "clamp"
+  });
+  return (
+    <View css="flex ali:flex-start juc:flex-start">
+      <ScrollView
+        onScroll={Animated.event(
+          [
+            {
+              nativeEvent: {
+                contentOffset: {
+                  y: scrollAnimation
+                }
+              }
+            }
+          ],
+          { useNativeDriver: false }
+        )} style={{ minWidth: context.size.window.width }}>
+        <CurrentItem
+          style={{ height }}
+          {...props}>
+          <Header
+            {...props}
+            inputEnabled={true}
+          />
+        </CurrentItem>
+        {
+          groups.length <= 0 ? (
+            <View css="bac-transparent fl-1 ali-center juc-center">
+              <Button text="Reload" css="wi-200" onPress={() => context.parser.set(context.parser.current)} />
+            </View>
+          ) : null
+        }
+        {groups.map((x, i) => (
+          <View
+            css="ali:center bor:5 overflow ma:5 pa:5 pab:0 invert"
+            key={
+              i + context.parser.current.name
+            }>
+            <NovelGroup
+              {...props}
+              itemIndex={i}
+              vMode={false}
+            />
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+};

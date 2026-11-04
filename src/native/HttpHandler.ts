@@ -1,0 +1,390 @@
+import { Ajax, WebViewProps } from "../Types";
+import Html from "./Html";
+import MapCacher from "./MapCacher";
+import { newId } from "react-native-short-style";
+
+const tempData = new MapCacher<HttpTemp>(100);
+
+const createKey = (...args) => {
+  return JSON.stringify(args).replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "");
+};
+
+class FetchTimer {
+  controller: AbortController = new AbortController();
+  timeout: any;
+  id: string = newId();
+  constructor(timeoutms: number = 28000) {
+    this.timeout = setTimeout(() => this.clear(true), timeoutms);
+  }
+
+  clear(abort?: boolean) {
+    if (abort)
+      this.controller.abort();
+    clearTimeout(this.timeout);
+    return this;
+  }
+
+
+
+  get option() {
+    return {
+      signal: this.controller.signal,
+    };
+  }
+}
+
+
+
+const getFetch = async (
+  url: string,
+  options: any,
+  ignoreAlert: boolean,
+  httpHandler: HttpHandler,
+  fromWebView?: boolean,
+  props?: WebViewProps
+) => {
+  let key = createKey({ url, options, props });
+  if (tempData.has(key))
+    return tempData.get(key);
+  const timer = new FetchTimer();
+  try {
+    httpHandler.operations.set(timer.id, timer);
+    let data = fromWebView ? await htmlContext.html.get_html(url, props) : await fetch(url, {
+      ...options,
+      ...timer.option
+    });
+    httpHandler.clearOperations(timer.id);
+    if (data.ok) {
+      let text = await data.text();
+      let item = new HttpTemp(text, key);
+      if (text !== "")
+        tempData.set(key, item);
+      return item;
+    } else {
+      if (data.status === 404)
+        throw new Error("404, Not found");
+      if (data.status === 500)
+        throw new Error(
+          "500, internal server error"
+        );
+      if (
+        data.status === 408 ||
+        data.status == 429
+      )
+        throw new Error(
+          `${data.status} Request Timeout`
+        );
+      // For any other server error
+      throw new Error(data.status.toString());
+    }
+  } catch (e) {
+    httpHandler.clearOperations(timer.id);
+    tempData.delete(key);
+    if (httpHandler.subressErrors) {
+      console.warn("aborted")
+      return new HttpTemp("", key);;
+    }
+
+    throw e;
+  }
+};
+
+class HttpTemp {
+  value: string;
+  key: string;
+  date: Date;
+  constructor(value: string, key: string) {
+    this.key = key;
+    this.value = value;
+    this.date = new Date();
+  }
+  async text() {
+    return this.value;
+  }
+}
+class HttpValue {
+  value: string;
+  baseUrl?: string;
+  httpError?: HttpError;
+  constructor(
+    value: string,
+    baseUrl?: string,
+    httpError?: HttpError
+  ) {
+    this.value = value;
+    this.baseUrl = baseUrl || "";
+    this.httpError = httpError;
+  }
+
+  cleanUnfinishedAttributes(html) {
+    return html.replace(/<(\w+)([^>]*)>/g, (match, tag, attrs) => {
+      // Match only properly formatted attributes with non-empty values
+      const validAttrs = (attrs.match(/\b[a-zA-Z0-9-]+="[^"]+"/g) || [])
+        .filter(attr => !/=[\s*]""/.test(attr)); // Remove empty attributes
+
+      return `<${tag}${validAttrs.length ? " " + validAttrs.join(" ") : ""}>`;
+    }).replace(/\s+>/g, ">"); // Remove unnecessary spaces before '>'
+  }
+
+  get html() {
+    return new Html(this.cleanUnfinishedAttributes(this.value.replace(/(?<!^)(\w| )(\/p\>)|([a-z]+="\s*")/gmi, "")), this.baseUrl);
+  }
+
+  get text() {
+    return this.value;
+  }
+
+  get json() {
+    let text = this.value;
+    try {
+      if (
+        text.indexOf("{") !== -1 ||
+        text.indexOf("[") != 1
+      )
+        return JSON.parse(text);
+    } catch (e) { }
+    return text;
+  }
+}
+
+class HttpError {
+  message: string;
+  constructor(e: any) {
+    this.message = e.message;
+  }
+
+  isNetwork() {
+    return (
+      this.message &&
+      (this.message.has("network") ||
+        this.message.has("Request Timeout"))
+    );
+  }
+
+  toString() {
+    return this.message;
+  }
+}
+
+class HttpHandler {
+  ignoreAlert: boolean = false;
+  httpError?: HttpError;
+  operations: Map<string, FetchTimer> = new Map<string, FetchTimer>();
+  subressErrors: boolean = false;
+  baseHeader?: undefined;
+  clearOperations(operationId?: string, abort?: boolean) {
+    if (operationId) {
+      this.operations.get(operationId)?.clear(abort);
+      this.operations.delete(operationId);
+    } else {
+      for (let key of [...this.operations.keys()]) {
+        this.operations.get(key)?.clear(abort);
+        this.operations.delete(key);
+      }
+    }
+  }
+  constructor(ignoreAlert?: boolean) {
+    this.ignoreAlert = ignoreAlert === true;
+  }
+  header(options?: any) {
+    this.httpError = undefined;
+    return {
+      headers: {
+        cache: 'no-store',
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+        ...options,
+        ...(this.baseHeader ?? {})
+      }
+    };
+  }
+
+  queryString(url: string, item: any) {
+    for (let key in item) {
+      if (url.indexOf("?") == -1)
+        url += "?" + key + "=" + item[key];
+      else url += "&&" + key + "=" + item[key];
+    }
+    return url;
+  }
+
+  async get_html(
+    url: string,
+    baseurl?: string,
+    item?: any
+  ) {
+    try {
+      console.info("gethtml", url);
+      if (item) url = this.queryString(url, item);
+      const data = await getFetch(url, this.header(), this.ignoreAlert, this);
+      return new HttpValue(data ? await data.text() : "", baseurl || url);
+    } catch (e) {
+      console.error("httget", e);
+      this.httpError = new HttpError(e);
+      return new HttpValue(
+        "<div></div>",
+        url,
+        this.httpError
+      );
+    }
+  }
+
+  encodedPostWeb_view(url: string, ajax: Ajax, baseurl?: string) {
+    console.log("encodedPostWeb_view", ajax.url)
+    let data = [];
+    if (ajax.query instanceof FormData) {
+      ajax.query.forEach((v, k) => data.push({ key: k, value: v }))
+      ajax.query = data;
+    }
+    return this.web_view(url, baseurl, { props: { ajax } })
+  }
+
+  async web_view(
+    url: string,
+    baseurl?: string,
+    item?: { props?: WebViewProps }
+  ) {
+    try {
+      const props = item?.props;
+      if (props)
+        delete item.props;
+      if (item) url = this.queryString(url, item);
+      console.info("web_view", url);
+      const data = await getFetch(url, this.header(), this.ignoreAlert, this, true, props);
+      console.info("web_view, got result", url);
+      return new HttpValue(data ? await data.text() : "", baseurl || url);
+    } catch (e) {
+      console.error("httget", e);
+      this.httpError = new HttpError(e);
+      return new HttpValue(
+        "<div></div>",
+        url,
+        this.httpError
+      );
+    }
+  }
+
+  async formPost(url: string, item: object | FormData) {
+    try {
+      var data = new FormData();
+      if (item instanceof FormData)
+        data = item;
+      else if (item) {
+        for (let k in item) {
+          data.append(k, item[k]);
+        }
+      }
+
+      console.log("formPost", url)
+      let res = await getFetch(
+        url,
+        {
+          ...this.header(),
+          method: "POST",
+          body: data,
+        },
+        this.ignoreAlert,
+        this
+      );
+      return new HttpValue(await res.text());
+    } catch (e) {
+      this.httpError = new HttpError(e);
+      console.error("formPost", e, "body", item);
+      return null;
+    }
+  }
+
+  async encodedPost(url: any, item: object | FormData) {
+    try {
+      var formBody: any = [];
+      let values = [];
+      if (item instanceof FormData) {
+        (item as FormData).forEach((value, key) => {
+          values.push({ key, value })
+        })
+      } else if (item) Object.keys(item).forEach(x => values.push({ key: x, value: item[x] }))
+
+      for (var property of values) {
+        var encodedKey = encodeURIComponent(property.key);
+        var encodedValue = encodeURIComponent(property.value);
+
+        formBody.push(encodedKey + "=" + encodedValue);
+      }
+      formBody = formBody.join("&");
+
+      const res = await getFetch(
+        url,
+        {
+          body: formBody,
+          method: "POST",
+          ...this.header({ "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" })
+        },
+        this.ignoreAlert,
+        this
+      );
+
+      return new HttpValue(await res.text());
+    } catch (e) {
+      this.httpError = new HttpError(e);
+      console.error(e);
+      return null;
+    }
+  }
+  async imageUrlToBase64(url: string, header?: any, timeoutMs = 20000) {
+    if (!url)
+      return url;
+    if (await url.isBase64UrlAsync()) return url.toBase64UrlAsync();
+
+    const controller = new AbortController();
+    let timeout = undefined
+
+    try {
+      header = header ?? {};
+      let useWebView = false;
+      if (typeof url == "string" && url.has("header")) {
+        const h = JSON.parse(url.split("header")[1].substring(1));
+        url = url.split("header")[0].trim();
+        if (h.webView)
+          useWebView = true;
+        for (let k in h) header[k] = h[k];
+      }
+      if (!useWebView)
+        timeout = setTimeout(() => controller.abort(), timeoutMs);
+      console.log("base64Img", url)
+      if (useWebView) {
+        let html = await this.web_view(url, url, {
+          props: {
+            imageSelector: {
+              selector: "img",
+              attr: "src"
+            }
+          }
+        });
+
+        let img = await html.html.first("img").attr("src").toBase64UrlAsync();
+        return img;
+
+      }
+
+      const response = await fetch(url, { ...this.header(header), signal: useWebView ? undefined : controller.signal });
+      const blob = await response.blob();
+
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(`data:image/jpg;base64,${reader.result.toString().safeSplit(",", 1)}`);
+        reader.onerror = () => {
+          console.error("base64Image not found");
+          resolve("");
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (e: any) {
+      if (e.name === "AbortError") console.warn("Fetch aborted due to timeout:", url);
+      else console.error("HttpError", e);
+      return new HttpError(e);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
+export default HttpHandler;

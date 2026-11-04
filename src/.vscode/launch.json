@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Android (Expo Dev Build)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "android"
+    },
+    {
+      "name": "Debug iOS (Expo Dev Build)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "ios"
+    }
+  ]
+}

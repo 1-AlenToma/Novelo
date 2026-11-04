@@ -1,0 +1,21 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "allowJs": true,
+    "strict": false,
+    "target": "ES6",
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitAny": false,
+    "rootDir": ".",
+    "paths": {
+      "@global": [
+        "./Global.ts"
+      ]
+    }
+  },
+  "exclude": [
+    "./node_modules"
+  ]
+}

@@ -1,0 +1,53 @@
+import RNF from "react-native-fs-turbo";
+import FileHandler from "./FileHandler";
+import ParserWrapper from "../parsers/ParserWrapper";
+
+
+export default class ImageCache extends FileHandler {
+  constructor(path?: string) {
+    super(path ?? RNF.DocumentDirectoryPath?.path("Images") ?? "", "File", false);
+  }
+
+  async downloadImage(imgUrl: string, file: string | ParserWrapper) {
+    try {
+      if (typeof file == "object")
+        file = file.name;
+      if (!imgUrl)
+        return "";
+      let imgName = imgUrl.split("header")[0].trim().safeSplit("/", -1);
+      if (!imgName.isImage())
+        imgName = imgName.cleanFileName() + ".jpg";
+      file = this.dir.path("db", file, imgName);
+      //console.log("fileName", getFileInfo(path, this.dir), "imgurl", imgUrl);
+      let imgContent = await context.parser.current.http.imageUrlToBase64(imgUrl);
+      if (imgContent && typeof imgContent == "string" && imgContent.length > 10) {
+        let data = await this.write(file, imgContent);
+        console.info("image written", data)
+        return data ?? file;
+      }
+
+      return imgUrl;
+    } catch (e) {
+      console.error(e)
+      return imgUrl;
+    }
+
+  }
+
+  async clearImages(files?: any[]) {
+    if (!files)
+      return;
+
+    for (let file of files) {
+      let url = this.getName(file.content);
+      let fileInfo = getFileInfo(url);
+      if (file.type == "Image" && (url.startsWith("file") || url.startsWith("/"))) {
+        // console.info("Clearing Images", [fileInfo].niceJson());
+        if (await this.RNF.exists(fileInfo.folder))
+          await this.RNF.unlink(fileInfo.folder)
+        // await this.delete(fileInfo.folder);
+        break;
+      }
+    }
+  }
+}

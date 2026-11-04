@@ -1,0 +1,155 @@
+import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive';
+import RNF from "react-native-fs-turbo";
+import FileHandler from './FileHandler';
+import { ProgressBar, Text } from 'react-native-short-style';
+import * as React from "react";
+import { newId } from '../Methods';
+import { ZipEventData } from "../Types";
+import EventTrigger from './EventTrigger';
+
+
+
+export default class FilesZipper extends EventTrigger<ZipEventData, "Zip_Progress" | "CopyProgress" | "Loading"> {
+    _files: string[] = [];
+    _des: string = "";
+    _data: { content: string; path: string }[];
+    _name: string = newId() + ".zip";
+    _loading: boolean = false;
+    _fullPath?: string;
+    subscribeEvent: { remove: () => void };
+    constructor() {
+        super();
+
+        if (!fileTypes.find(x => this._name.toLocaleLowerCase().endsWith(x)))
+            this._name += ".zip";
+        this.subscribeEvent = subscribe(({ progress, filePath }) => {
+            this.trigger("Zip_Progress", { progress: progress * 100, color: "red", filePath })
+        });
+
+    }
+
+    beginNew() {
+        this._data = [];
+        this._files = [];
+        this._name = this.fileName();
+    }
+
+    set name(value: string) {
+        this._name = value;
+    }
+
+    set loading(value: boolean) {
+        this._loading = value;
+        this.trigger("Loading", { loading: value });
+    }
+
+    async unzip(path: string, des: string, ...dataFilesNames: string[]) {
+        try {
+            this._files = [];
+            this._name = getFileInfo(path).name ?? this._name;
+            this._data = [];
+            this._des = des;
+            this.loading = true;
+            let handler = new FileHandler(this.tempPath());
+            let desHandler = context.files.dir == des ? context.files : new FileHandler(this._des);
+            await handler.checkDir(); // create the folder
+            console.info("Unzipping ", path)
+            await unzip(path, handler.dir);
+            this._files = await handler.allFiles();
+
+            let index = 0;
+            for (let file of this._files) {
+                index++;
+                let fileInfo = getFileInfo(file, handler.dir);
+                if (fileInfo.filePath && !dataFilesNames.find(x => fileInfo.name && fileInfo.name.has(x))) {
+                    await desHandler.copy(file, des.path(fileInfo.filePath));
+                }
+                if (dataFilesNames.find(x => fileInfo.name?.has(x)))
+                    this._data.push({ path: file, content: (await handler.read(file)) ?? "" });
+
+                this.trigger("CopyProgress", { progress: this._files.length.procent(index), color: "green", filePath: file });
+            }
+
+            await handler.deleteDir();
+            return handler;
+        } catch (e) {
+            console.error(e);
+        } finally {
+            this.loading = false;
+        }
+    }
+
+
+    tempPath() {
+        let id = RNF.CachesDirectoryPath.path(methods.newId());
+        return id
+    }
+
+    fileName() {
+        const id = methods.newId();
+        const date = new Date().toISOString().replace(/[:.]/g, "-");
+        return `Novelo_Backup_${date}_${id.slice(0, 6)}.zip`;
+    }
+
+    files(...files: string[]) {
+        this._files = files;
+        return this;
+    }
+
+    appendFiles(...files: string[]) {
+        this._files = [...this._files, ...files];
+        return this;
+    }
+
+    data(...data: { content: string; path: string }[]) {
+        console.info("data to zip", ...data.map(x => x.path))
+        data.forEach(x => this._data.push(x))
+        return this;
+    }
+
+    async zipFiles(des: string, root: string) {
+        try {
+            console.warn("Zipping Files")
+            this.loading = true;
+            this._des = des;
+            let tPath = this.tempPath();
+
+            let handler = new FileHandler(tPath);
+
+            await handler.checkDir();
+            let index = 0;
+
+            for (let file of this._files) {
+                index++;
+                let info = getFileInfo(file, file.has(root) ? root : file.split("/").skip(-1).join("/"));
+                console.info("copy", file, "to", tPath.path(info.filePath ?? ""))
+                await handler.copy(file, tPath.path(info.filePath ?? ""));
+                this.trigger("CopyProgress", { progress: this._files.length.procent(index), color: "green", filePath: file });
+            }
+
+            for (let data of this._data) {
+                index++;
+                await handler.write(data.path, data.content);
+                this.trigger("CopyProgress", { progress: (this._files.length + this._data.length).procent(index), color: "green", filePath: data.path });
+            }
+            this._fullPath = this._des.path(this._name);
+            await zip(handler.dir, this._fullPath);
+            await handler.deleteDir();
+        } catch (e) {
+            console.error("ZipFiles", e, "des", des, "root", root);
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    ProgressBar() {
+        let state = context.zip.value("CopyProgress", "Zip_Progress");
+        let loading = context.zip.value("Loading");
+
+        return (
+            <ProgressBar value={(state?.progress ?? .1) / 100} text={state?.filePath} color={state?.color} >
+                <Text css="fow-bold co-white pal-5 tea-center">{state?.filePath?.safeSplit("/", -1)}</Text>
+            </ProgressBar>
+        )
+    }
+}

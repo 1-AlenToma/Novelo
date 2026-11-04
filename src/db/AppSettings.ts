@@ -1,0 +1,82 @@
+import TableNames from "./TableNames";
+import { public_m } from "../Methods";
+import { DBInit, TTSNames } from "../Types"
+
+
+class AppSettings extends DBInit {
+    filesDataLocation?: string = undefined;
+    parsers?: { name: string; content: string }[] = [];
+    rate: number = 1;
+    fontSize: number = 12;
+    lineHeight: number = 30;
+    fontName: string = "SourceSans3-Black";
+    textAlign: string = "left";
+    backgroundColor: string = "#FFF8E7";
+    isBold: boolean = false;
+    lockScreenType?: "Horizontal" | "Vertical" = undefined;
+    margin?: number = 37;
+    selectedParser: string = "";
+    currentNovel?: {
+        url: string;
+        parserName: string;
+        isEpub?: boolean;
+    } = {} as any;
+    navigationType?: "Scroll" | "Snap" | "ScrollSnap" = "Snap";
+    use3D?: boolean = false;
+    shadowLength?: number = 1;
+    fontStyle?: string = "normal";
+    selectedTheme: number;
+    lang?: string = "English";
+    sentenceMargin?: number = 15;
+    normalizeText?: boolean;
+    useSentenceBuilder?: {
+        enabled: boolean;
+        minLength: number;
+    } = {
+            enabled: false,
+            minLength: 100
+        };
+    voiceWordSelectionsSettings?: {
+        color?: string;
+        appendSelection?: boolean;
+    } = {};
+    autoUpdateFavoritNovels?: boolean = false;
+    ttsModol: TTSNames = null;
+    chunkWords?: boolean = false;
+    constructor() {
+        super("AppSettings");
+    }
+
+    config() {
+        return this.TableBuilder<AppSettings>("AppSettings")
+            .column("rate").decimal
+            .column("parsers").json.nullable
+            .column("normalizeText").boolean.nullable
+            .column("fontSize").number
+            .column("lineHeight").number
+            .column("margin").nullable.number
+            .column("textAlign")
+            .column("backgroundColor")
+            .column("selectedTheme").number.nullable
+            .column("isBold").boolean
+            .column("fontName")
+            .column("lockScreenType").string.nullable
+            .column("currentNovel").nullable.json
+            .column("voiceWordSelectionsSettings").nullable.json
+            .column("navigationType").nullable
+            .column("use3D").nullable.boolean
+            .column("useSentenceBuilder").nullable.json
+            .column("fontStyle").nullable
+            .column("lang").nullable
+            .column("shadowLength").nullable.number
+            .column("filesDataLocation").nullable
+            .column("sentenceMargin").nullable.number
+            .column("autoUpdateFavoritNovels").nullable.boolean
+            .column("ttsModol").nullable
+            .column("chunkWords").boolean.nullable
+            .column("selectedParser")
+            .objectPrototype(AppSettings.prototype);
+    }
+}
+public_m(AppSettings);
+export default AppSettings;

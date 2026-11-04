@@ -1,0 +1,402 @@
+import WebView from "react-native-webview";
+import * as React from "react";
+import useView from "../hooks/useView";
+import useTimer from "../hooks/Timer"
+import {
+  invertColor,
+  sleep
+} from "../Methods";
+import { View, Text as TextView, ProgressBar } from "react-native-short-style";
+import BattariView from "./BattariView";
+import WebOptions from "../native/WebOptions";
+import httpServer from "../native/HttpServer";
+import { get, funcMapper, IFuncMapper } from "../assets/WebAssets";
+import { Compressor } from "../native/compressor";
+
+
+
+const Clock = React.memo(({ secondEnabled, color }: any) => {
+  const Timer = useTimer(1000);
+  const [time, setTime] = useState("");
+  function startTime() {
+    const today = new Date();
+    let h = today.getHours();
+    let m = today.getMinutes();
+    let s = today.getSeconds();
+    h = checkTime(h);
+    m = checkTime(m);
+    s = checkTime(s);
+    if (secondEnabled)
+      setTime(h + ":" + m + ":" + s);
+    else setTime(h + ":" + m);
+    Timer(() => startTime());
+  }
+
+  function checkTime(i) {
+    if (i < 10) {
+      i = "0" + i;
+    } // add zero in front of numbers < 10
+    return i;
+  }
+
+  useEffect(() => {
+    startTime();
+  }, []);
+
+  return (
+    <View css="clb">
+      <TextView
+        style={{
+          color: invertColor(color)
+        }}
+        css="bold fos:10">
+        {time}
+      </TextView>
+    </View>
+  );
+})
+
+const Scroller = React.memo(() => {
+  context.hook(
+    "player.scrollProcent",
+    "player.showPlayer"
+  );
+
+  let svgProgress = context.player.scrollProcent;
+  if (svgProgress < 0) svgProgress = 0;
+  if (svgProgress > 100) svgProgress = 100;
+
+  return (
+    <ProgressBar
+      ifTrue={context.player.showPlayer != true}
+      speed={200}
+      color="#3b5998"
+      value={svgProgress / 100}
+    />
+  );
+})
+
+export default React.memo(({
+  click,
+  onScroll,
+  onMenu,
+  onComments,
+  menuItems,
+  style,
+  bottomReched,
+  topReched
+}: any) => {
+  const webView = useRef<IFuncMapper<"bookJs">>(null);
+  const isProduction = __DEV__ !== true;
+  const [render, state, loader, timer] = useView({
+    timer: 200,
+    component: WebView,
+    loader: {
+      text: "Loading, Please wait",
+      value: true,
+      onPress: () => {
+        click();
+      }
+    },
+    ref: r => {
+      if (r) {
+        webView.current = funcMapper(r);
+      }
+    },
+    nestedScrollEnabled: true,
+    sharedCookiesEnabled: isProduction,
+    thirdPartyCookiesEnabled: isProduction,
+    javaScriptEnabled: true,
+    domStorageEnabled: isProduction,
+    cacheEnabled: isProduction,
+    allowFileAccess: true,
+    allowFileAccessFromFileURLs: true,
+    allowUniversalAccessFromFileURLs: true,
+    contentMode: "mobile",
+    scalesPageToFit: true,
+    originWhitelist: ["*"],
+    scrollEnabled: false,
+    bounces: false,
+    refItem: {
+      loading: false,
+      assets: {},
+      firstLoad: false
+    }
+  });
+
+  const { mem } = useFunc();
+
+  context.hook("appSettings.backgroundColor", "appSettings.fontName");
+
+  const postMessage = mem(async (
+    type: string,
+    data: any,
+    method?: string,
+    id?: string
+  ) => {
+    while (!webView.current) {
+      console.warn("WebView not loaded")
+      await sleep(100);
+    }
+    let item = { type, data, id };
+    webView.current.exec(!method ? "window.loadData" : method, item);
+  });
+
+  const loadCss = mem(async () => {
+    let color = context.appSettings.backgroundColor;
+    let inverted = invertColor(color);
+    let shadow = inverted.has("white") ? "#4e4d4d" : "#919191";
+    let shadowLength = (1).sureValue(context.appSettings.shadowLength, true);
+    let cssStyle = get("webCss",
+      ["fontSize", `${context.appSettings.fontSize}px`],
+      [`highlight-co`, `${context.appSettings.voiceWordSelectionsSettings?.color ? invertColor(context.appSettings.voiceWordSelectionsSettings?.color) : color}`],
+      [`highlight-bg`, context.appSettings.voiceWordSelectionsSettings?.color ?? inverted],
+      [`fontStyle`, (context.appSettings.fontStyle ?? "normal").toLowerCase()],
+      ["fontName", context.appSettings.fontName],
+      ["text-shadow", `${context.appSettings.use3D ? `1px ${shadowLength}px 1px ${shadow}` : "0"}`],
+      ["co", color],
+      ["inverted", inverted],
+      ["line-height", `${(context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight)) + 5}px`],
+      ["marginB", `${context.appSettings.sentenceMargin ?? 5}px`]
+    )
+
+    if (context.player.showPlayer) {
+      cssStyle += `
+      .sliderView p {
+      display: block;
+      position: relative;
+      margin - top: 40px;
+    }
+    `;
+    }
+
+    await postMessage("CSS", cssStyle, undefined, "dynamicCSS");
+    await postMessage("CSS", cleanInlineStyle(), undefined, "inlineStyle");
+  });
+
+  const cleanInlineStyle = mem(() => {
+    let inlineStyle = context.player.book.inlineStyle;
+    return inlineStyle.replace(/(background-color|font-family|color|font-size|line-height|text-align|font-weight)\:.*\;/gmi, "");
+  })
+
+  const loadHtmlContent = mem(async () => {
+    try {
+      if (context.player.isloading) return;
+      loader.show();
+      let content = {
+        inlineStyle: cleanInlineStyle(),
+        content: context.player.showPlayer ? `<p>${context.player.currentPlaying()?.cleanText() ?? ""}</p> ` : context.player.html,
+        scroll: context.player.currentChapterSettings.scrollProgress
+      };
+
+      // console.warn(content)
+      const options = new WebOptions();
+      options.style = {
+        textAlignVertical: "top",
+        textAlign: context.appSettings.textAlign,
+        alignItems: (context.player.showPlayer ? "center" : "unset")
+      };
+      options.viewStyle = {
+        paddingLeft: !context.player.isNovelType ? 1 : (5).sureValue(context.appSettings.margin),
+        paddingRight: !context.player.isNovelType ? 1 : (5).sureValue(context.appSettings.margin),
+        paddingTop: "40px",
+        lineHeight: context.player.isNovelType ? context.appSettings.lineHeight ?? (context.appSettings.fontSize * context.lineHeight) : undefined,
+        fontSize: context.appSettings.fontSize,
+        maxHeight: context.player.isNovelType ? "100%" : undefined,
+        overflowY: context.player.isNovelType ? "auto" : "hidden"
+      };
+
+      if (context.appSettings.navigationType == "ScrollSnap")
+        options.viewStyle.paddingBottom = context.player.paddingBottom();
+      const nav = {
+        Snap: !context.player.isNovelChapterType || context.player.showPlayer ? undefined : "Pagination",
+        Scroll: "Scroll",
+        ScrollSnap: "PaginationScroll",
+      }
+      //console.warn("compressing..")
+      let c = new Compressor(content.content).compress();
+      //console.warn("html:", content.content)
+      //  console.warn("compressed", c.length, c.isCompressed(c))
+      let scrollType = !context.player.isNovelType ? nav[context.appSettings.navigationType] ?? "PaginationScroll" : context.player.showPlayer ? "Player" : nav[context.appSettings.navigationType] ?? "Pagination";
+      options.content = c;
+      options.scrollDisabled = false;
+      options.scrollValue = content.scroll;
+      options.scrollType = scrollType as any;
+      options.addNext = context.player.hasNext();
+      options.addPrev = context.player.hasPrev();
+      options.prevText = "Previous Chapter";
+      options.nextText = "Next Chapter";
+      options.type = context.player.novel.type as any;
+      options.menu = options.func("click", menuItems, `(item)=> window.postmsg("menu", item)`);
+      options.addFunction("onEnd", `()=> { window.postmsg("Next", true); } `);
+      options.addFunction("onStart", `()=> { window.postmsg("Prev", true); } `);
+      options.addFunction("onscroll", `(value)=> { window.postmsg("scrollValue", value); } `);
+      options.addFunction("scrollPercentageValue", `(percent) => { window.postmsg("scrollpercent", percent); } `);
+      webView.current.exec("window.loadBody", options);
+    } catch (e) {
+      console.error(e)
+    }
+  });
+
+  context.useEffect(
+    () => {
+      if (!state.refItem.firstLoad)
+        return;
+      loadCss();
+    },
+    "appSettings",
+    "player.showPlayer",
+  );
+
+  context.useEffect(
+    () => {
+      if (!state.refItem.firstLoad)
+        return;
+      loadHtmlContent();
+
+    },
+    "appSettings",
+    "player.html",
+    "player.book.inlineStyle",
+    "player.showPlayer",
+    "player.currentChapterSettings.audioProgress",
+    "player.isloading"
+  );
+
+  const onMessage = mem(async ({ nativeEvent }) => {
+    let data = JSON.parse(nativeEvent.data);
+    switch (data.type) {
+      case "loader":
+        if (data.data)
+          loader.show();
+        else
+          loader.hide();
+        break;
+      case "scrollValue":
+        if (!loader.loading)
+          onScroll?.(data.data);
+        break;
+      case "scrollpercent":
+        context.player.scrollProcent = data.data;
+        break;
+      case "bottomReched":
+      case "Next":
+
+        if (!loader.loading)
+          bottomReched?.();
+        loader.show();
+        break;
+      case "topReched":
+      case "Prev":
+
+        if (!loader.loading)
+          topReched?.();
+        loader.show();
+        break;
+      case "click":
+        click?.(data.data);
+        break;
+      case "data":
+        loadCss();
+        //alert("loading data")
+        loadHtmlContent();
+        state.refItem.firstLoad = true;
+        break;
+      case "menu":
+        onMenu?.(data.data);
+        break;
+      case "warn":
+        console.warn(data);
+        break;
+      case "log":
+        console.log(data);
+        break;
+      case "error":
+        console.error(data);
+        break;
+      case "Comments":
+        onComments?.(data.data);
+        break;
+      case "enable":
+        //  state.refItem.loading = false;
+        break;
+      case "savePage":
+        httpServer.lastPageCache = data.data;
+        console.warn("Page Save", "size", data.data.length);
+        break;
+      case "Image":
+        let images = await context.player.getImage(...data.data)
+        postMessage("images", images, "window.renderImage");
+        break;
+    }
+  }, onComments, click, onScroll, bottomReched, onMenu, topReched, loader.loading)
+
+  context.useEffect(
+    () => {
+      if (!context.player.showPlayer || !context.player.highlightedText || !context.player.highlightedText.text)
+        return;
+      let json = {
+        block: "nearest",
+        inline: "start",
+        all: !(context.appSettings.voiceWordSelectionsSettings?.appendSelection ?? false),
+        scroll: true,
+        selector: ".HTMLcontent >p",
+        text: context.player.highlightedText.text,
+        index: context.player.highlightedText.index,
+        length: context.player.highlightedText.length
+      }
+      webView.current?.exec("window.highlight", json);
+    },
+    "player.highlightedText",
+    "appSettings.voiceWordSelectionsSettings",
+    "appSettings.voiceWordSelectionsSettings.appendSelection"
+  );
+
+  let webHtml = React.useMemo(() => {
+    let html = get("webHtml",
+      ["backgroundColor", context.appSettings.backgroundColor],
+      ["address", httpServer.address],
+      ["novelType", context.player.novel.type],
+      ["fontName", context.appSettings.fontName])
+    return html;
+  }, [context.appSettings.backgroundColor, httpServer.address, context.appSettings.fontName, context.player.novel.type]);
+
+
+  return (
+    <View css={"flex wi-100% he-100%"} style={mem({ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }, loader.loading, context.appSettings.backgroundColor)}>
+      <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center clb">
+        <Scroller />
+      </View>
+      <View css="row absolute bo:1 ri:10 zi:99 juc:center ali:center clb">
+        <Clock color={
+          context.appSettings.backgroundColor
+        } />
+        <BattariView
+          color={
+            context.appSettings.backgroundColor
+          }
+        />
+      </View>
+      {loader.elem}
+      {render(null, {
+        source: mem({
+          html: webHtml,
+          basUrl: ""
+        }),
+        style: mem({
+          backgroundColor: context.appSettings.backgroundColor
+        }, context.appSettings.backgroundColor),
+        containerStyle: mem([
+          {
+            backgroundColor: context.appSettings.backgroundColor,
+            zIndex: 70,
+            flex: 0,
+            flexGrow: 1
+          },
+          style
+        ], style, context.appSettings.backgroundColor),
+        onMessage: onMessage
+      })}
+    </View>
+  );
+});

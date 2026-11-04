@@ -1,0 +1,406 @@
+import { ReactElement, ReactNode } from "react";
+import {
+  Player,
+  BGService,
+  HttpHandler,
+  ImageCache,
+  FilesZipper,
+  Notification,
+  Parser
+} from "./native";
+import FileHandler from "./native/FileHandler"
+import { AppSettings, TableNames } from "./db";
+import ParserWrapper from "./parsers/ParserWrapper";
+import DownloadManager from "./native/DownloadManager";
+import dbContext from "./db/dbContext";
+import TTSManager from 'react_native_sherpa_onnx_offline_tts';
+import {
+  IDatabase,
+  Table
+} from "react-native-ts-sqlite-orm";
+import { ReadDirItem, EncodingType as Encoding } from "react-native-fs-turbo";
+import { DimensionValue } from "react-native";
+import { ReturnState } from "react-smart-state";
+
+export type NavigationPage = "WatchAnime" | "AppMenu" | "GroupDetail" | "NovelItemDetail" | "Search" | "ReadChapter";
+
+export type CollabsData<T> = { active: boolean, title: string, data: T[], lazyLoading: boolean };
+
+export type WebViewFetchData = {
+  url: string,
+  created: Date,
+  props?: WebViewProps,
+  func: (str: string) => void,
+  id: string,
+  baseUrl: string;
+  tried: number,
+  systemJs?: string;
+}
+
+export type NavigationObject = {
+  parserName?: string;
+  url?: string;
+  name?: string;
+  epub?: boolean;
+  groupIndex?: number;
+  searchTxt?: string;
+  genre?: string;
+  chapter?: string;
+}
+
+export type ZipFileItem = {
+  path: string;
+  content: string | (() => Promise<string>);
+  load: () => Promise<string>;
+  write?: () => Promise<void>
+  base64?: boolean
+}
+
+export type OPFContent = {
+  title: string;
+  identifier: string;
+  description: string;
+  coverImage: string;
+  creator: string;
+  novelType: string;
+  manifest: {
+    item: {
+      id: string,
+      href: string;
+      mediaType: string;
+    }[]
+  };
+  spine: {
+    itemref: {
+      idref: string;
+    }[]
+  }
+}
+
+export type FileInfo = {
+  name?: string;
+  folders: string[];
+  folder: string;
+  filePath?: string;
+  path: string;
+}
+
+export type NotificationData = {
+  data: any,
+  type: "File" | "Story"
+}
+
+export type ZipEventData = {
+  progress?: number,
+  color?: string,
+  filePath?: string,
+  loading?: boolean
+}
+export type SystemDir = "Cache" | "File";
+export type EncodingType = "json" | Encoding;
+export type FileFnc = (
+  type: "Write" | "Delete",
+  file: string
+) => void;
+
+export type IImage = {
+  src: string;
+  id: string;
+  chapterIndex?: number;
+}
+
+export type SelectionType = "Folder" | "File";
+
+export type EXT = "json" | "txt" | "epub" | "zip" | "*";
+
+export const FilesPath = {
+  File: "noveloFiles",
+  Cache: "Memo",
+  Images: "Images",
+  Private: "Private",
+  Tts: "TTS",
+  Temp: "Temp"
+}
+
+export type NovelFile = {
+  fileName: string,
+  type: string,
+  content: string
+}
+
+export const OmitType = <T, K extends keyof T>(Class: new () => T, ...keys: K[]): new () => Omit<T, typeof keys[number]> => Class;
+
+
+export abstract class GenericType {
+  static n(...items: any[]) {
+    return {} as any;
+  };
+
+  clone() {
+    return this;
+  }
+
+  set<D extends keyof this>(key: D, value: typeof this[D]) {
+    this[key] = value;
+    return this;
+  }
+}
+
+
+export abstract class DBInit extends Table<TableNames> {
+  static n() {
+    return {} as any;
+  };
+
+  set<D extends keyof this>(key: D, value: typeof this[D]) {
+    this[key] = value;
+    return this;
+  }
+}
+
+type NestedKeyOf<T extends object, D extends any[] = [0, 0, 0, 0, 0]> = D extends [any, ...infer DD] ? {
+  [K in keyof T & (string | number)]: T[K] extends object ? `${K}` | `${K}.${NestedKeyOf<T[K], DD>}` : `${K}`;
+}[keyof T & (string | number)] : never;
+
+
+type ThemeMode = "light" | "dark";
+export type ISize = {
+  height: DimensionValue,
+  width: DimensionValue,
+  x?: number,
+  y?: number
+}
+
+export type Ajax = {
+  url: string,
+  type: "post" | "get",
+  method: "encodedPost" | "formPost"
+  query: object
+};
+export type WebViewProps = {
+  type?: "base64" | "webp";
+  selector?: string;
+  ajax?: Ajax;
+  protectionIdentifier?: string[];
+  timer?: number;
+  userAgent?: string;
+  imageSelector?: {
+    selector: string,
+    attr: string,
+    referer?: string,
+    regexp?: [string, string]
+  }
+}
+
+export type AppLocalSettings = {
+  serverIp: string;
+}
+
+export type TTSNames = "Kristin(Low)" | "Kristin(Medium)" | "Ryan(Low)" | "Ryan(Medium)" | "Ryan(high)";
+
+export type TTSConfig = {
+  link: string;
+  name: TTSNames;
+  path: string;
+  sampleRate: number,
+  config: {
+    modelPath: string;
+    tokensPath: string;
+    dataDirPath: string;
+  }
+};
+
+
+
+export type TTS = {
+  loaded: boolean;
+  initializing: boolean;
+  stop: typeof TTSManager.stop;
+  lastChosenConfig?: TTSNames;
+  speak: typeof TTSManager.generateAndPlay;
+  initialize: (config?: TTSNames) => Promise<boolean>;
+  deinitialize: typeof TTSManager.deinitialize;
+  base: string;
+  nameLists?: TTSNames[],
+  nameList: () => TTSNames[],
+  male: TTSConfig[],
+  female: TTSConfig[]
+}
+
+export type IReadDirItem = ReadDirItem<boolean, number>;
+export type ReadProps = {
+  name?: string;
+  url?: string;
+  parserName?: string;
+  epub?: boolean;
+  chapter?: number | string;
+}
+
+export type GlobalType =
+  {
+    navigate:{
+      read:(page: "WatchAnime" | "ReadChapter", item: ReadProps) => boolean;
+    }
+    appState: {
+      state: string;
+      inBackground: boolean
+    }
+    tts: TTS;
+    bgService: typeof BGService,
+    appLocalSettings: {
+      data: AppLocalSettings,
+      get: () => Promise<AppLocalSettings>,
+      set: (item: AppLocalSettings) => Promise<void>,
+      test: (ip: string) => Promise<boolean>;
+    }
+    dbBatch: (fn: () => Promise<void>) => Promise<void>,
+    version: number,
+    versionName: string,
+    lineHeight: number;
+    selectedFoldItem: string;
+    panEnabled: boolean;
+    zip: FilesZipper,
+    notification: Notification,
+    browser: {
+      data?: { func: Function, onCancel: (value?: any) => void, desc?: string, props: { selectionType: SelectionType, ext?: EXT[] } };
+      pickFile: (eXT: EXT[], desc?: string) => Promise<IReadDirItem | undefined>;
+      pickFolder: (desc?: string, ext?: EXT[]) => Promise<IReadDirItem | undefined>;
+    },
+    selection: {
+      downloadSelectedItem: any,
+      favoritItem: any,
+      sliderValue: number | undefined
+    },
+    alertMessage: {
+      msg: any;
+      title: string;
+      confirm?: (answer: boolean) => any;
+      toast?: boolean
+    };
+    novelFavoritInfo: any,
+    player: Player,
+    http: () => HttpHandler,
+    downloadManager: () => DownloadManager,
+    KeyboardState: boolean,
+    isFullScreen: boolean,
+    appSettings: AppSettings,
+    cache: FileHandler,
+    files: FileHandler,
+    imageCache: ImageCache,
+    nav: {
+      option: any;
+      navigate: (page: NavigationPage, item?: NavigationObject) => void;
+    },
+    orientation: (value: "Default" | "LANDSCAPE" | "PORTRAIT") => void,
+    parser: {
+      default: string;
+      parserCodes: Map<string, any>;
+      parseCode: (code: string) => any;
+      current: ParserWrapper,
+      clone: (name: string) => ParserWrapper,
+      find: (name: string) => ParserWrapper,
+      set: (p: any) => Promise<void>,
+      all: ParserWrapper[],
+    },
+    updater: string,
+    selectedThemeIndex: number,
+    db: dbContext,
+    size: {
+      window: ISize,
+      screen: ISize
+    },
+    AppStart: () => Promise<{ remove: Function }[]>
+
+  }
+
+export type IGlobalState = GlobalType & ReturnState<GlobalType>
+
+export type DataCache = {
+  date: Date;
+  data: any;
+};
+
+export type DownloadOptions = {
+  all: boolean,
+  appSettings: boolean,
+  epubs: boolean,
+  items: {
+    url: string,
+    parserName: string
+  }[]
+}
+
+export type Button = {
+  text: ReactElement<any, any> | Function;
+  press?: () => void;
+  ifTrue?: boolean;
+};
+
+export type IStorage = {
+  set: (
+    file: string,
+    value: DataCache
+  ) => Promise<void>;
+  get: (
+    file: string
+  ) => Promise<DataCache | null>;
+  has: (file: string) => Promise<boolean>;
+  delete: (...files: string[]) => Promise<void>;
+  getFiles: (
+  ) => Promise<readonly string[]>;
+};
+
+export type MemorizeOptions = {
+  isDebug?: boolean;
+  storage?: IStorage;
+  daysToSave: number | (() => number | undefined);
+  folder?: (target: any) => string
+  argsOverride?: (...args: any[]) => any[];
+  updateIfTrue?: (args: any) => boolean;
+  keyModifier?: (
+    target: any,
+    key: string
+  ) => string;
+  validator?: (params: any) => boolean;
+};
+
+export type TabIcon = {
+  name: string;
+  type: string;
+};
+export interface TabChild extends ReactElement {
+  title?: string;
+  icon?: TabIcon;
+  head?: any; /// an element
+}
+
+export interface Parameter {
+  name: string;
+  value: string;
+}
+
+export interface EpubChapter {
+  fileName?: string; // use title when is not set
+  title: string;
+  htmlBody: string;
+  parameter?: Parameter[];
+}
+
+export interface File {
+  path: string;
+  content: string;
+}
+
+
+export interface EpubSettings {
+  fileName?: string; // use title when is not set
+  title: string;
+  language?: string; // Default en
+  bookId?: string;
+  description?: string;
+  source?: string;
+  author?: string;
+  chapters: EpubChapter[];
+  stylesheet?: any;
+  parameter?: Parameter[];
+}

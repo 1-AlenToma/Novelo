@@ -1,0 +1,181 @@
+.hidden {
+  visibility: hidden !important;
+}
+
+:root {
+  --widthA: 95vw;
+  --heightA: 100vh;
+  --opStart: 0.5;
+  --opEnd: 0.2;
+  --opCenter: 0.3;
+}
+
+@keyframes flickerAnimation {
+  0% {
+    opacity: var(--opStart);
+  }
+  50% {
+    opacity: var(--opCenter);
+  }
+  100% {
+    opacity: var(--opEnd);
+  }
+}
+@-o-keyframes flickerAnimation {
+  0% {
+    opacity: var(--opStart);
+  }
+  50% {
+    opacity: var(--opCenter);
+  }
+  100% {
+    opacity: var(--opEnd);
+  }
+}
+@-moz-keyframes flickerAnimation {
+  0% {
+    opacity: var(--opStart);
+  }
+  50% {
+    opacity: var(--opCenter);
+  }
+  100% {
+    opacity: var(--opEnd);
+  }
+}
+@-webkit-keyframes flickerAnimation {
+  0% {
+    opacity: var(--opStart);
+  }
+  50% {
+    opacity: var(--opCenter);
+  }
+  100% {
+    opacity: var(--opEnd);
+  }
+}
+
+#sliderContainer {
+  width: var(--widthA);
+  min-height: var(--heightA);
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+#slider {
+  width: var(--widthA);
+  min-height: var(--heightA);
+  position: relative;
+  overflow: hidden;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--widthA);
+  flex-grow: 1;
+}
+
+#slider > div {
+  width: var(--widthA);
+  position: relative;
+  scroll-snap-stop: always;
+  scroll-snap-align: center;
+  display: block;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.blurText {
+  webkit-animation: flickerAnimation 1s infinite;
+  -moz-animation: flickerAnimation 1s infinite;
+  -o-animation: flickerAnimation 1s infinite;
+  animation: flickerAnimation 1s infinite;
+}
+#slider .sliderTemp,
+#slider .sliderTemp * {
+  opacity: 0.5;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5) !important;
+  text-decoration: line-through !important;
+  text-decoration-thickness: 100% !important;
+  text-align: center !important;
+  webkit-animation: flickerAnimation 1s infinite;
+  -moz-animation: flickerAnimation 1s infinite;
+  -o-animation: flickerAnimation 1s infinite;
+  animation: flickerAnimation 1s infinite;
+  z-index: 90 !important;
+}
+
+blur p {
+  color: black;
+  display: block;
+  font-weight: bold !important;
+}
+
+blur {
+  position: fixed;
+  opacity: 1;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  width: var(--widthA);
+  height: var(--heightA);
+  z-index: 100;
+}
+
+context {
+  min-width: 100px;
+  min-height: 40px;
+  display: inline-block;
+  opacity: 0;
+  border: 1px solid #ccc;
+  position: fixed;
+  top: 30%;
+  left: 30%;
+  z-index: 9999999;
+  border-radius: 5px;
+  background-color: #434656;
+}
+
+context > div {
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  vertical-align: center;
+}
+
+context > div:nth-child(2) {
+  border-top: 1px solid #ccc;
+}
+
+context > div > a {
+  position: relative;
+  padding: 8px;
+  font-size: 14px;
+  text-align: center;
+  vertical-align: center;
+  display: flex;
+  font-weight: bold;
+  justify-content: center;
+  color: #fff;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+context a:active {
+  opacity: 0.3;
+}
+
+context a span {
+  height: 16px;
+  display: inline-block;
+  position: relative;
+  top: -3px;
+  margin-right: 2px;
+}

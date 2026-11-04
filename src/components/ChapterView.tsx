@@ -1,0 +1,188 @@
+import useLoader from "./Loader";
+import * as React from "react";
+import { View, Text, VirtualScroller, ProgressBar, Icon, useTimer, ReadyView } from "react-native-short-style/mems";
+import { Book, Chapter } from "../db";
+import { DetailInfo, ChapterInfo } from "../native";
+import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
+import ItemList from "./ItemList";
+export const ChapterView = React.memo(({
+  book,
+  current,
+  novel,
+  onPress,
+  ignoreChapterValidation
+}: {
+  book: Book,
+  novel: DetailInfo,
+  current: any,
+  onPress: ((item: ChapterInfo) => Promise<void>) | ((item: ChapterInfo) => void),
+  ignoreChapterValidation?: boolean
+}) => {
+  let state = buildState(() =>
+  ({
+    index: { page: 0, index: 0 },
+    currentPage: 0
+  })).build();
+  const size = 100;
+  const loader = useLoader(true, "Loading Chapter");
+  const initLoading = useLoader(novel?.chapters.length > 0, "Loading Chapter");
+  const initTimer = useTimer(100);
+  const { mem } = useFunc();
+  const getChapterItems = mem((chunkIndex: number) => {
+    const chapters = novel?.chapters ?? [];
+    const start = chunkIndex * size;
+    return chapters.slice(start, start + size);
+  }, novel?.chapters.length)
+
+
+  const chArray = React.useMemo(() => {
+    const chapters = novel?.chapters;
+    if (!Array.isArray(chapters) || chapters.length === 0) return [];
+    const totalChunks = Math.ceil(chapters.length / size);
+    const data = Array.from({ length: totalChunks }, (_, chunkIndex) => ({
+      index: chunkIndex,
+      items: undefined as ChapterInfo[] | undefined,
+      hasReadContent: undefined
+    }));
+    return data;
+  }, [novel?.chapters?.length]);
+
+  const settingsMap = React.useMemo(() => {
+    const map = new Map<string, Chapter>();
+    for (const s of book?.chapterSettings ?? [])
+      map.set(s.url, s);
+    return map;
+  }, [book?.chapterSettings]);
+
+  const hasReadContent = mem((index: number) => {
+    let arr = chArray[index];
+    if (arr.hasReadContent == undefined) {
+      if (!arr.items)
+        arr.items = getChapterItems(index);
+      arr.hasReadContent = arr.items.some(x => [settingsMap.get(x.url)?.scrollProgress, settingsMap.get(x.url)?.audioPercent, settingsMap.get(x.url)?.readPercent].some(f => f != undefined && f > 0))
+    }
+
+    return arr.hasReadContent;
+  }, chArray, getChapterItems);
+
+
+  useEffect(() => {
+    loader.show();
+
+    const chapters = novel?.chapters ?? [];
+    const flatIndex = chapters.findIndex(x => x.url === current);
+
+    if (flatIndex !== -1) {
+      const page = Math.floor(flatIndex / size);
+      const index = flatIndex % size;
+
+      state.batch(() => {
+        state.index = { page, index };
+        state.currentPage = page;
+      });
+    }
+
+    loader.hide();
+  }, [current]);
+
+
+  if (chArray[state.currentPage] && !chArray[state.currentPage].items && chArray.length > 0)
+    hasReadContent(state.currentPage);
+
+  return (
+    <View css="clearboth juc:flex-start mah:98% invert po:relative">
+      <ReadyView timeout={20}>
+        <View
+          ifTrue={chArray.length > 1}
+          css="clearwidth he:50 mat:10">
+          <ItemList
+            updater={mem([state.currentPage], state.currentPage)}
+            selectedIndex={state.currentPage}
+            items={chArray}
+            onPress={mem(item => {
+              state.currentPage = item.index;
+            })}
+            container={mem(({ item, index }) => {
+              return (
+                <View
+                  css={`row di:flex ali:center bor:5 listButton invert ${state.currentPage === item.index ? " selectedRow pal:5 par:5" : ""}`}>
+                  <Text
+                    css="desc fos:15 wi-100% tea-center">
+                    {item.index > 0 ? item.index * size + 1 + " - " : "1 - "}
+                    {((item.index + 1) * size) > novel.chapters.length ? novel.chapters.length : ((item.index + 1) * size)}
+                  </Text>
+                  <Icon
+                    ifTrue={item.index == state.index.page}
+                    color="yellow"
+                    css="absolute le:2 to:2 fos-15 co-yellow"
+                    type="MaterialIcons"
+                    name="star"
+                  />
+                  <Icon
+                    ifTrue={hasReadContent(item.index)}
+                    css="absolute ri:0 to:2 fos-12 co-green"
+                    type="AntDesign"
+                    name="check-circle"
+                  />
+                </View>
+              )
+            })}
+            itemCss="pa-5 bobw-1 boc-gray invert wi-115 he-50"
+          />
+        </View>
+        <View css="clearwidth mih:50 flex invert mat-5 po-relative">
+          <ItemList
+            onload={mem(() => initTimer(() => initLoading.hide()))}
+            vMode={true}
+            updater={mem([current], current)}
+            selectedIndex={state.index.page == state.currentPage ? state.index.index : 0}
+            items={chArray[state.currentPage]?.items}
+            onPress={mem(async (item: ChapterInfo) => {
+              if (current != item.url || ignoreChapterValidation) {
+                loader.show();
+                await onPress(item);
+              }
+            }, ignoreChapterValidation, onPress)}
+            container={mem(({ item, index }: { item: ChapterInfo, index: number }) => {
+              const cssEmpty = item.empty ? "op-0.5" : "";
+              return (
+                <View css="fl-1 bac-transparent">
+                  <View
+                    css={`pa-5 flex mih:50 row juc:space-between di:flex ali:center bor:1 invert ${current == item.url ? "selectedRow" : ""}`}>
+                    <Text
+                      css={`desc fos:12 wi:85% tea:left ${current == item.url ? "co-#ffffff" : ""}${cssEmpty}`}>
+                      {item.name.safeSplit("/", -1)}
+                    </Text>
+                    <View css="_abc bo-0 wi-102% bac-transparent">
+                      <ProgressBar ifTrue={(settingsMap.get(item.url)?.readPercent ?? 0) > 0}
+                        color="#3b5998" value={(settingsMap.get(item.url)?.readPercent ?? 0) / 100} css="he-5 bor-0" />
+                      <ProgressBar ifTrue={(settingsMap.get(item.url)?.audioPercent ?? 0) > 0}
+                        color="#a75512ff" value={(settingsMap.get(item.url)?.audioPercent ?? 0) / 100} css="he-5 bor-0" />
+                    </View>
+
+                    <View css="row clb" ifTrue={item.empty != true}>
+                      <Icon
+                        css={(settingsMap.get(item.url)?.scrollProgress ?? 0) >= 200 ? "co-green" : undefined}
+                        size={20}
+                        type="MaterialIcons"
+                        name="preview"
+                      />
+                      <Icon
+                        css={settingsMap.get(item.url)?.isFinished ? "co-green" : undefined}
+                        size={20}
+                        type="AntDesign"
+                        name="check-circle"
+                      />
+                    </View>
+                  </View>
+                </View>
+              )
+            }, current)}
+            itemCss="fl-1 wi-100% he-50 bobw-1 boc-gray invert"
+          />
+        </View>
+      </ReadyView>
+      {loader.elem ?? initLoading.elem}
+    </View>
+  );
+});
