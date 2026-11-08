@@ -1,8 +1,4 @@
 import { View, Text, Button, useLoader, ProgressBar } from "react-native-short-style";
-import {
-    checkManagePermission,
-    requestManagePermission,
-} from 'manage-external-storage';
 import RNFS from 'react-native-fs-turbo';
 import { TTSConfig } from "../Types";
 import { unzip, subscribe } from 'react-native-zip-archive';
@@ -22,7 +18,7 @@ export const StartUp = ({ children }: { children: any }) => {
 
     const checkPermissions = async () => {
         await state.batch(async () => {
-            state.hasPer = await checkManagePermission();
+            state.hasPer = await methods.isStoragePermissionGranted();
             state.ttsLoaded = await exist(context.tts.male) && await exist(context.tts.female);
             if (!state.mounted) {
                 state.mounted = true;
@@ -153,7 +149,7 @@ export const StartUp = ({ children }: { children: any }) => {
                 <Text css="note co-red fos-12 fow-bold">This is very important as Novelo needs this to writes/read novel information</Text>
             </Text>
             <Button disabled={state.hasPer} onPress={async () => {
-                state.hasPer = await requestManagePermission()
+                state.hasPer = await methods.handleStoragePermission()
             }} text="Give permission" />
 
             <Text css="desc fos-15">Download the tts Models.{"\n"}

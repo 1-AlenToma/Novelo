@@ -250,8 +250,10 @@ export default React.memo(({
 
   context.useEffect(
     () => {
+     
       if (!state.refItem.firstLoad)
         return;
+       console.warn("loading html content")
       loadHtmlContent();
 
     },
@@ -265,6 +267,8 @@ export default React.memo(({
 
   const onMessage = mem(async ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
+    if (__DEV__)
+      console.warn("WebView Message:", data.type, data.data);
     switch (data.type) {
       case "loader":
         if (data.data)

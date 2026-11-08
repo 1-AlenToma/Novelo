@@ -91,37 +91,43 @@ class Player {
   }
 
   async clean(html?: string) {
-    if (this.novel.type && this.novel.type.isManga()) {
-      return (this.html = html ?? "");
-    }
-    let txt = html ?? this.currentChapter.content ?? this.html;
-    const isEpubTypeChapter = !/(<img )|(<table )/g.test(html) && this.isNovelType;
-
-    txt = new Html(txt).remove("script, style, iframe").html;
-    if (this.isNovelType && context.appSettings.normalizeText)
-      txt = txt.normalizeHtml();
-
-
-    txt = context.appSettings.useSentenceBuilder?.enabled && isEpubTypeChapter ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt;
     try {
-      for (let t of this.book.textReplacements) {
-        let rg = new RegExp(t.edit.escapeRegExp(), "gim");
-        let className = t.comments?.has() ? "comments" : "";
-        let click = className.has() ? `window.postmsg('Comments', ${this.book.textReplacements.findIndex(x => x == t)})` : "";
-        let spn = `<span onclick="${click}" class="custom ${className}" {#style}>${t.editWith}</span>`;
-        if (t.bgColor) {
-          spn = spn.replace("{#style}", `style="background-color:${t.bgColor}; color:${invertColor(t.bgColor)}"`)
-        } else spn = spn.replace("{#style}", "")
-        txt = txt.replace(/<(\/)?(strong|i)>/gmi, "").replace(rg, spn);
+      if (this.novel.type && this.novel.type.isManga()) {
+        return (this.html = html ?? "");
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-    }
+      let txt = html ?? this.currentChapter.content ?? this.html;
+      const isEpubTypeChapter = !/(<img )|(<table )/g.test(html) && this.isNovelType;
 
-    this.chapterArray = txt.htmlArray(false, true, true);
-    this.html = txt;
-    return txt;
+      txt = new Html(txt).remove("script, style, iframe").html;
+      if (this.isNovelType && context.appSettings.normalizeText)
+        txt = txt.normalizeHtml();
+
+
+      txt = context.appSettings.useSentenceBuilder?.enabled && isEpubTypeChapter ? methods.generateText(txt, context.appSettings.useSentenceBuilder?.minLength ?? 100) : txt;
+      try {
+        for (let t of this.book.textReplacements) {
+          let rg = new RegExp(t.edit.escapeRegExp(), "gim");
+          let className = t.comments?.has() ? "comments" : "";
+          let click = className.has() ? `window.postmsg('Comments', ${this.book.textReplacements.findIndex(x => x == t)})` : "";
+          let spn = `<span onclick="${click}" class="custom ${className}" {#style}>${t.editWith}</span>`;
+          if (t.bgColor) {
+            spn = spn.replace("{#style}", `style="background-color:${t.bgColor}; color:${invertColor(t.bgColor)}"`)
+          } else spn = spn.replace("{#style}", "")
+          txt = txt.replace(/<(\/)?(strong|i)>/gmi, "").replace(rg, spn);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+      }
+
+      this.chapterArray = txt.htmlArray(false, true, true);
+      this.html = txt;
+      return txt;
+    }
+    catch (e) {
+      console.error(e);
+      throw e;
+    }
   }
 
   async getChapterContent(url: string) {
@@ -145,6 +151,8 @@ class Player {
           (this.currentChapter.content?.count(10))
           ? this.currentChapter.content
           : await parser?.chapter(url);
+
+      console.info("chapterlength", str.length);
 
       this.networkError =
         parser.getError() &&

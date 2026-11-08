@@ -3,12 +3,6 @@ import { View, Text, TouchableOpacity, ScrollView, Icon, Modal, AlertDialog, Tex
 import FileHandler from "../native/FileHandler";
 import { EXT, IReadDirItem, SelectionType } from "../Types";
 
-
-import {
-    checkManagePermission,
-    requestManagePermission,
-} from 'manage-external-storage';
-
 const FileBrowser = (
     { path, use, ext, selectionType }
         :
@@ -49,7 +43,7 @@ const FileBrowser = (
     }
 
     useEffect(() => {
-        checkManagePermission().then(x => {
+        methods.isStoragePermissionGranted().then(x => {
             state.managedFiles = x;
         });
     }, []);
@@ -155,7 +149,7 @@ const FileBrowser = (
             </View>
             <View css="fl:1 juc:center ali:center invert" ifTrue={() => !state.managedFiles}>
                 <TouchableOpacity css="fileButton he:50 bow:0" onPress={async () => {
-                    if (!(state.managedFiles = await requestManagePermission())) {
+                    if (!(state.managedFiles = await methods.handleStoragePermission())) {
                         AlertDialog.alert({ message: "Please give permission to access your storage, this is importend to be able to handle file operations", title: "Attention" });
                         return;
                     }

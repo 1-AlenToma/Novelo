@@ -2,6 +2,83 @@ import uuid from "react-native-uuid";
 import { Functions } from "react-native-ts-sqlite-orm";
 export * from "./localModules/NativeEpubZipper";
 export * from "./native/SentencesSplitter";
+import { Platform, PermissionsAndroid } from 'react-native'; // Or equivalent for your framework
+import { checkManagePermission, requestManagePermission } from 'manage-external-storage';
+
+const androidVersion = () => {
+  try {
+    let version = Platform.Version as any;
+    if (typeof version === "string") {
+      version = parseInt(version, 10);
+    }
+    if (isNaN(version) || version <= 0) {
+      console.warn("Unable to determine Android version, defaulting to 0");
+      return 30;
+    }
+    return version;
+  } catch (e) {
+    console.warn("Error determining Android version:", e);
+    return 30;
+  }
+}
+
+/**
+ * Checks if the app currently has broad storage access permission.
+ * Does NOT prompt the user or open settings.
+ * 
+ * @returns {Promise<boolean>} True if authorized, False otherwise.
+ */
+export async function isStoragePermissionGranted() {
+  // Android 11 (API 30) or higher
+  let androidV = androidVersion();
+  console.log("Android Version:", androidV);
+  if (androidV >= 30) {
+    try {
+      return await checkManagePermission();
+    } catch (error) {
+      console.error("Error checking MANAGE_EXTERNAL_STORAGE:", error);
+      return false;
+    }
+  }
+
+  // Android 10 (API 29) and lower
+  else {
+    try {
+      const hasRead = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+      const hasWrite = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+
+      return hasRead && hasWrite;
+    } catch (error) {
+      console.error("Error checking traditional storage permissions:", error);
+      return false;
+    }
+  }
+
+
+}
+
+
+export async function handleStoragePermission() {
+  // If the device is Android 11 (API 30) or higher
+  let androidV = androidVersion();
+  console.log("Android Version:", androidV);
+  if (androidV >= 30) {
+    const hasPermission = await checkManagePermission();
+    if (!hasPermission) {
+      await requestManagePermission();
+    }
+  }
+  // If the device is Android 10 (API 29) or lower
+  else {
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+    ]);
+    // Check if granted...
+  }
+
+  return await isStoragePermissionGranted();
+}
 
 export const ifElem = (render: boolean, item: <T>() => T) => render ? item() : null;
 
