@@ -60,7 +60,8 @@ export default {
     ],
     "expo-sqlite",
     "expo-font",
-    "expo-asset"
+    "expo-asset",
+    "expo-status-bar"
   ],
   "extra": {
     "eas": {
