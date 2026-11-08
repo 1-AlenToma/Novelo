@@ -11,7 +11,7 @@ export default (
 ) => {
   const Container = onPress ? TouchableOpacity : View;
   const extraData = useRef(undefined);
-  const { memo } = useFunc();
+  const { locMem, locMemo } = useFunc();
   const state = buildState(() => ({
     loading: initValue ?? false,
     progressValue: undefined as number | undefined,
@@ -37,7 +37,7 @@ export default (
     },
     elem: null as any
   })).ignore("elem").build();
-  const elem = memo(() => !state.loading ? null : (
+  const elem = locMemo(() => !state.loading ? null : (
     <Container activeOpacity={1} onPress={onPress} css="absolute flex to:0 le:0 clearboth zi:9999 juc:center ali:center clb">
       <View css="clearboth blur absolute zi:1" />
       <ActivityIndicator
@@ -58,7 +58,7 @@ export default (
       </Text>
     </Container>
   ), state.loading, state.progressValue, text, size);
-  memo(() => {
+  locMemo(() => {
     delete state.elem;
     Object.defineProperty(state, "elem",
       {

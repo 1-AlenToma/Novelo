@@ -20,13 +20,13 @@ export default () => {
       }}>
 
       <Stack.Screen
-        name="WatchAnime"
-        component={WatchAnime}
+        name="AppMenu"
+        component={AppMenu}
       />
 
       <Stack.Screen
-        name="AppMenu"
-        component={AppMenu}
+        name="WatchAnime"
+        component={WatchAnime}
       />
 
       <Stack.Screen

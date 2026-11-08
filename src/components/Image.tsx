@@ -2,7 +2,7 @@
 import * as React from "react";
 import { Image } from "react-native-short-style/mems";
 let noImage = require("../assets/noimage.png");
-export default ({
+const CImage = React.memo(({
   style,
   url,
   css,
@@ -14,6 +14,7 @@ export default ({
   css?: string;
   parserName?: string;
 }) => {
+  const { locMem, locMemo } = useFunc();
   const state = buildState(() => ({
     source: noImage,
     imageSize: parserName ? context.parser.find(parserName)?.settings.imagesSize : undefined,
@@ -23,7 +24,7 @@ export default ({
     }
   })).ignore("header").build();
 
-  let loadImage = async () => {
+  let loadImage = locMem(async () => {
     let _source = noImage;
     try {
 
@@ -59,9 +60,10 @@ export default ({
     } catch (e) {
       console.error("imageErro", e)
     } finally {
-      state.source = _source;
+      if (state.source != _source)
+        state.source = _source;
     }
-  };
+  }, url);
 
   useEffect(() => {
     // state.source = noImage;
@@ -69,13 +71,13 @@ export default ({
     loadImage();
   }, [url]);
 
-  const st = React.useMemo(() => {
+  const st = locMemo(() => {
     return (style && Array.isArray(style)
       ? [...style, state.imageSize]
       : [style || {}, state.imageSize]);
-  }, [style, state.imageSize])
+  }, style, state.imageSize)
 
-  const source = React.useMemo(() => (
+  const source = locMemo(() => (
     typeof state.source == "number"
       ? state.source
       : {
@@ -85,19 +87,21 @@ export default ({
           ...state.header
         }
       }
-  ), [state.source])
+  ), state.source)
 
   return (
     <Image
       {...props}
-      onError={(e) => {
+      onError={locMem((e) => {
         if (__DEV__)
           console.warn("Failed to load image", source);
         state.source = noImage
-      }}
+      })}
       source={source}
       css={css}
       style={st}
     />
   );
-};
+});
+
+export default CImage;

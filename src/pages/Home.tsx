@@ -2,7 +2,7 @@ import {
   Image,
   SingleTouchableOpacity,
 } from "../components";
-import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, Button } from "react-native-short-style/mems";
+import { View, Text, Icon, AnimatedView, useTimer, ActionSheet, Button } from "react-native-short-style";
 
 import NovelGroup from "../components/NovelGroup"
 import * as React from "react";
@@ -30,7 +30,7 @@ const CurrentItem = ({
   }).build();
   const timer = useTimer(100);
   context.hook("appSettings.currentNovel");
-  const { mem } = useFunc();
+  const { locMem } = useFunc();
 
 
   const reloadData = () => timer(async () => state.books = (await context.db.Books.query.where.column(x => x.url).equalTo(context.appSettings.currentNovel?.url ?? "hhhh").and.column(x => x.parserName).equalTo(context.appSettings.currentNovel?.parserName ?? "gggg").toList()));
@@ -51,7 +51,7 @@ const CurrentItem = ({
   return (
     <>
       <ActionSheet
-        onHide={mem(() => state.visible = (false))}
+        onHide={locMem(() => state.visible = (false))}
         isVisible={state.visible}
         size={300}>
         {state.visible ? (<View css="invert">
@@ -62,7 +62,7 @@ const CurrentItem = ({
               book.isOnline?.() &&
               book.parserName != "epub"
             }
-            onPress={mem(() => {
+            onPress={locMem(() => {
               context
                 .nav.navigate("NovelItemDetail", {
                   url: book.url,
@@ -79,7 +79,7 @@ const CurrentItem = ({
           </SingleTouchableOpacity>
           <SingleTouchableOpacity
             css="invert listButton"
-            onPress={mem(() => {
+            onPress={locMem(() => {
               state.visible = !context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                 name: book.name,
                 url: book.url,
@@ -105,7 +105,7 @@ const CurrentItem = ({
             ifTrue={() => (context.appSettings.currentNovel?.isEpub && book.parserName != "epub" && book.isOnline?.()) as any
             }
             css="invert listButton"
-            onPress={mem(() => {
+            onPress={locMem(() => {
               state.visible = !context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                 name: book.name,
                 url: book.url,
@@ -123,7 +123,7 @@ const CurrentItem = ({
           </SingleTouchableOpacity>
           <SingleTouchableOpacity
             css="invert listButton"
-            onPress={mem(() => {
+            onPress={locMem(() => {
               context.appSettings.currentNovel = {} as any;
               context.appSettings.saveChanges();
               state.visible = false;
@@ -143,8 +143,8 @@ const CurrentItem = ({
         {children}
         <SingleTouchableOpacity
           css="flex pa:5 row"
-          onLongPress={mem(() => state.visible = true)}
-          onPress={mem(() => {
+          onLongPress={locMem(() => state.visible = true)}
+          onPress={locMem(() => {
             context.navigate.read(context.parser.find(book.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
               name: book.name,
               url: book.url,
@@ -185,6 +185,7 @@ const CurrentItem = ({
 };
 export default ({ ...props }: any) => {
   const [_, options, navop] = useNavigation(props);
+  const { locMem, locMemo } = useFunc();
   context.hook("size", "parser.current");
   context.nav.option = options;
 
@@ -218,9 +219,9 @@ export default ({ ...props }: any) => {
             }
           ],
           { useNativeDriver: false }
-        )} style={{ minWidth: context.size.window.width }}>
+        )} style={locMem({ minWidth: context.size.window.width })}>
         <CurrentItem
-          style={{ height }}
+          style={locMem({ height })}
           {...props}>
           <Header
             {...props}
@@ -230,7 +231,7 @@ export default ({ ...props }: any) => {
         {
           groups.length <= 0 ? (
             <View css="bac-transparent fl-1 ali-center juc-center">
-              <Button text="Reload" css="wi-200" onPress={() => context.parser.set(context.parser.current)} />
+              <Button text="Reload" css="wi-200" onPress={locMem(() => context.parser.set(context.parser.current))} />
             </View>
           ) : null
         }
@@ -241,7 +242,6 @@ export default ({ ...props }: any) => {
               i + context.parser.current.name
             }>
             <NovelGroup
-              {...props}
               itemIndex={i}
               vMode={false}
             />

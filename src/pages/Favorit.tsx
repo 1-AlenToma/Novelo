@@ -20,7 +20,7 @@ const ItemRender = React.memo(({
   hideParserDetail?: boolean
 }) => {
   const itemLoader = useLoader(false);
-  const { mem, memo, memKey } = useFunc();
+  const { locMem, locMemo } = useFunc();
   const state = buildState({
     novel: undefined as DetailInfo | undefined,
     showChapter: false
@@ -36,7 +36,7 @@ const ItemRender = React.memo(({
       loadNovelDetail();
   });
 
-  const loadNovelDetail = mem(async (refresh?: boolean) => {
+  const loadNovelDetail = locMem(async (refresh?: boolean) => {
     itemLoader.show();
     console.info("loading NovelDetail(Favorit)");
     for (let b of books) {
@@ -55,7 +55,7 @@ const ItemRender = React.memo(({
     itemLoader.hide();
   }, books)
 
-  const loadNovel = mem(async () => {
+  const loadNovel = locMem(async () => {
     try {
       itemLoader.show();
       let parser = context.parser.find(item.parserName);
@@ -82,12 +82,12 @@ const ItemRender = React.memo(({
   return (
     <>
 
-      <ActionSheet size={"80%"} speed={100} css="invert" isVisible={state.showChapter} onHide={mem(() => state.showChapter = false)}>
+      <ActionSheet size={"80%"} speed={100} css="invert" isVisible={state.showChapter} onHide={locMem(() => state.showChapter = false)}>
         {state.showChapter ? <ChapterView
           ignoreChapterValidation={true}
           book={item}
           novel={state.novel}
-          onPress={memKey("ChapterViewVisibile", item => {
+          onPress={locMem(() => {
             if (state.novel) {
               context.navigate.read(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
                 name: state.novel.name,
@@ -110,7 +110,7 @@ const ItemRender = React.memo(({
       <FoldableItem
         single={true}
         css="wi:98% overflow"
-        buttons={memo(() => [
+        buttons={locMemo(() => [
           {
             text: "Delete",
             icon:
@@ -240,7 +240,7 @@ const ItemRender = React.memo(({
 });
 
 export default ({ ...props }: any) => {
-  const { mem, memKey } = useFunc();
+  const { locMem, memKey } = useFunc();
   const state = buildState(() =>
   ({
     text: "",
@@ -298,7 +298,7 @@ export default ({ ...props }: any) => {
       <Header
         value={state.text}
         inputEnabled={true}
-        onInputChange={mem(txt => {
+        onInputChange={locMem(txt => {
           state.text = txt ?? "";
         })}
       />
@@ -306,7 +306,7 @@ export default ({ ...props }: any) => {
         {
           !state.text.has() ? (
             <ScrollView>
-              {mem(state.data.map((x, indx) => (
+              {locMem(state.data.map((x, indx) => (
                 <Collabse css={"collabseItem"}
                   style={memKey("CollabseStyle" + indx, { maxHeight: 50 + Math.max(Math.min(screenHeight, x.data.length * 60), 60), padding: 0, marginBottom: 10 }, screenHeight, x.data.length)}
                   icon={memKey("CollabseIcon", <Icon type="AntDesign" name='book' size={20} />)} text={x.title}
@@ -320,9 +320,9 @@ export default ({ ...props }: any) => {
                   {
                     <ItemList
                       nested={true}
-                      style={memKey("CollabseItemListStyle", { paddingTop: 5, paddingBottom: 5, height: "90%" })}
+                      style={locMem({ paddingTop: 5, paddingBottom: 5, height: "90%" })}
                       items={x.data}
-                      container={memKey("CollabseContainer", ({ item }: any) => (
+                      container={locMem(({ item }: any) => (
                         <ItemRender hideParserDetail={true} url={item.url} />
                       ))}
                       itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5 he-60"
@@ -333,8 +333,8 @@ export default ({ ...props }: any) => {
 
               )), state.data)}</ScrollView>) : (
             <ItemList
-              items={mem(books?.filter(x => !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)), state.text)}
-              container={mem(({ item }: any) => (
+              items={locMem(books?.filter(x => !state.text.has() || x.name.has(state.text) || x.parserName.has(state.text) || (context.parser.find(x.parserName)?.type ?? "").has(state.text)), state.text)}
+              container={locMem(({ item }: any) => (
                 <ItemRender url={item.url} />
               ))}
               itemCss="clearwidth ali:center juc:center mab:5 overflow bor:5 he-60"

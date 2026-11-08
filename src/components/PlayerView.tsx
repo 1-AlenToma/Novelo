@@ -8,7 +8,7 @@ import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 
 export default ({ isMenu }: { isMenu?: boolean }) => {
   const loader = useLoader();
-  const { mem } = useFunc();
+  const { locMem } = useFunc();
   context.hook(
     "player.showController",
     "appSettings.backgroundColor",
@@ -42,7 +42,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
     <View
       ifTrue={context.player.showPlayer}
       style={
-        mem({
+        locMem<any>({
           zIndex: 100,
           top: context.player.hooked && context.player.showController && !isMenu ? 48 : (isMenu ? 0 : 1),
           position: isMenu ? "relative" : "absolute",
@@ -55,7 +55,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
       {loader.elem}
       <View css="row juc:center ali:center di:flex invert">
         <SingleTouchableOpacity
-          onPress={mem(() => {
+          onPress={locMem(() => {
             context.navigate.read("ReadChapter", {
                 name: context.player.novel.name,
                 url: context.player.novel.url,
@@ -80,7 +80,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           css="clearheight flex invert">
           <Slider
             value={context.player.currentChapterSettings.audioProgress}
-            onValueChange={mem((value: number) => {
+            onValueChange={locMem((value: number) => {
               audioProgressTimer(async () => {
                 if (context.player.playing())
                   await context.player.playing(false)
@@ -93,7 +93,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </View>
         <SingleTouchableOpacity
-          onPress={mem(() =>
+          onPress={locMem(() =>
             context.player.playing(!context.player.playing())
           )}>
           <Icon
@@ -106,7 +106,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </SingleTouchableOpacity>
         <TouchableOpacity
-          onPress={mem(async () => {
+          onPress={locMem(async () => {
             if (context.player.playing())
               await context.player.playing(false)
             context.player.playPrev();
@@ -119,7 +119,7 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={mem(async () => {
+          onPress={locMem(async () => {
             if (context.player.playing())
               await context.player.playing(false)
             context.player.playNext();

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import WebView from "react-native-webview";
+import WebView, { WebViewProps } from "react-native-webview";
 import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
@@ -17,15 +17,16 @@ const webViewDefaultProps = {
   javaScriptEnabled: true,
   domStorageEnabled: true,
   cacheEnabled: true,
+  androidLayerType: __DEV__ ? "hardware" : "software",
   // userAgent: "Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
 
-}
+} as WebViewProps;
 
 const blackListed = {}
 
 const webViewProtectedJS = getSystemJS("protection");
 const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData, onHide: () => void }) => {
-  const { mem, memKey } = useFunc();
+  const { locMem } = useFunc();
   const isVisible = PrimitiveObject(item?.url !== undefined);
   const webView = useRef<IFuncMapper<"systemJs">>();
   const lastCheck = useRef();
@@ -41,8 +42,8 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
     else if (!isVisible.value && url?.has())
       isVisible.value = true;
   }, [url])
-  return (<Modal addCloser={true} css="wi-80% he-90%" isVisible={isVisible.value} onHide={mem(() => isVisible.value = false)}>
-    <View style={memKey("vStyle", { flex: 1, marginTop: 15 })}>
+  return (<Modal addCloser={true} css="wi-80% he-90%" isVisible={isVisible.value} onHide={locMem(() => isVisible.value = false)}>
+    <View style={locMem({ flex: 1, marginTop: 15 })}>
       <Text css="fos-15 fow-bold co-red">
         This {baseUrl} containe ICloude protection, so you need to validate it from time to time.
         {"\n"}
@@ -53,26 +54,25 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
         Tries left:{4 - (tried ?? 0)}
       </Text>
       <WebView
-        ref={memKey("ref", (c) => {
+        ref={locMem<any>((c) => {
           webView.current = funcMapper(c);
         }, url)}
         injectedJavaScriptBeforeContentLoaded={webViewProtectedJS}
-        androidLayerType="software"
-        source={memKey("uurl", {
+        source={locMem<any>({
           uri: url as string
         }, url)}
-        onNavigationStateChange={memKey("onNavigationStateChange", () => {
+        onNavigationStateChange={locMem(() => {
           /*  webView.current?.injectJavaScript(
               `${jsScript(tryUntilSuccess("window.checkProtection"), "DOMContentLoaded", 20)}
              true;`
             );*/
         })}
-        onMessage={memKey("onMessage", async ({ nativeEvent }) => {
+        onMessage={locMem(async ({ nativeEvent }) => {
           try {
             let data = JSON.parse(nativeEvent.data);
             if (data.type == "loaded") {
               console.info("webView loaded");
-              webView.current.exec("window.timerJs(()=> window.checkProtection(), 20, true);");
+              webView.current?.exec("window.timerJs(()=> window.checkProtection(), 20, true);");
               return;
             }
             //  console.warn("webViw", data)
@@ -86,15 +86,15 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
             console.error(e);
           }
 
-        }, url, webView.current)}
+        }, url)}
 
         {...webViewDefaultProps}
         userAgent={item?.props?.userAgent}
         contentMode="mobile"
-        originWhitelist={memKey("orgin", ["*"])}
+        originWhitelist={locMem(["*"])}
         setSupportMultipleWindows={false}
         style={
-          memKey("wvStyle", {
+          locMem<any>({
             flex: 1
           })}
         allowFileAccess={true}
@@ -117,7 +117,7 @@ export default () => {
   const timeout = 1;
   const webViews = useRef<(IFuncMapper<"systemJs"> | null)[]>([]);
   const timers = [useTimer(timeout), useTimer(timeout), useTimer(timeout)];
-  const { mem, memKey } = useFunc();
+  const { locMem, memKey } = useFunc();
 
   useEffect(() => {
     return () => {
@@ -162,16 +162,16 @@ export default () => {
     state.protection = state.protection.filter(x => x.id !== protection?.id)
   }, [protection?.id]);
 
-  const exec = (data: WebViewFetchData, args?: any) => {
+  const exec = locMem((data: WebViewFetchData, args?: any) => {
     try {
       data.func(args ?? "");
     } catch {
 
     }
-  }
+  })
 
   return (
-    <View style={mem(!debug ? {
+    <View style={locMem<any>(!debug ? {
       position: "absolute",
       top: 0,
       left: 0,
@@ -184,28 +184,27 @@ export default () => {
         htmlData.map((x, i) => {
           x.systemJs = x.systemJs ?? `${getSystemJS(x)}\ntrue;`;
           timers[i](() => exec(x), 10000);
-          const identifiers =[x,  webViews[i]];
           return (
             <WebView
-              ref={memKey("ref" + i, c => {
+              ref={c => {
                 webViews[i] = funcMapper(c);
-              }, x)}
+              }}
               key={x.id}
               userAgent={x.props?.userAgent}
               injectedJavaScriptBeforeContentLoaded={x.systemJs}
               {...webViewDefaultProps}
-              source={memKey("source" + i, {
+              source={{
                 uri: x.url
-              }, ...identifiers)}
-              onError={memKey("onError" + i, (e) => {
+              }}
+              onError={(e) => {
                 x.func("")
                 console.error("WebViewLoadError", x.url, e);
-              }, ...identifiers)}
-              onHttpError={memKey("onHttpError" + i, (e) => {
+              }}
+              onHttpError={(e) => {
                 // x.func("")
                 console.error("onHttpError", i, e.nativeEvent.statusCode);
-              }, ...identifiers)}
-              onMessage={memKey("onMessage" + i, async ({ nativeEvent }) => {
+              }}
+              onMessage={async ({ nativeEvent }) => {
                 try {
                   let data = JSON.parse(nativeEvent.data);
                   // console.log(data.type);
@@ -256,16 +255,15 @@ export default () => {
                   console.error(e);
                 }
 
-              }, ...identifiers)}
+              }}
               contentMode="mobile"
-              originWhitelist={memKey("orgin", ["*"])}
+              originWhitelist={["*"]}
               setSupportMultipleWindows={false}
               style={
-                memKey("wVStyl2", {
+                locMem<any>({
                   zIndex: -1,
-                }
-                )}
-              androidLayerType="software"
+                })
+              }
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
               allowUniversalAccessFromFileURLs={true}

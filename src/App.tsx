@@ -113,15 +113,15 @@ const App = () => {
         (async () => {
             try {
                 loader.show();
-                itemToRemove = await context.AppStart();
                 context.isFullScreen = false;
+                itemToRemove = await context.AppStart();
             } catch (e) {
                 console.error(e);
             } finally {
                 loader.hide();
             }
         })();
-        context.isFullScreen = false;
+
         return () => {
             (async () => {
 
@@ -157,13 +157,12 @@ const App = () => {
                         <NavigationContainer>
                             <AppStack />
                         </NavigationContainer>
-                        <StatusBar style={context.selectedThemeIndex == 0 ? "dark" : "light"} />
                         <GlobalFileBrowse />
                     </StartUp>
                 )
             }
 
-
+            <StatusBar style={context.selectedThemeIndex == 0 ? "dark" : "light"} />
         </ThemeContainer>
     );
 }

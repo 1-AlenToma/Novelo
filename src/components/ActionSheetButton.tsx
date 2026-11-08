@@ -27,7 +27,7 @@ export default ({
   const state = buildState({
     visible: false
   }).build();
-  const { mem, memo } = useFunc();
+  const { locMem } = useFunc();
 
   let tprops = {
     onPress: () => state.visible = (true),
@@ -67,7 +67,7 @@ export default ({
   if (ifSelector(ifTrue) === false) return null;
   return (
     <>
-      <SingleTouchableOpacity hideLoader={true} {...tprops as any} style={mem({ backgroundColor: "transparent" })}>
+      <SingleTouchableOpacity hideLoader={true} {...tprops as any} style={locMem({ backgroundColor: "transparent" })}>
         {typeof btn === "string" ? (
           <Text css={css}>{btn}</Text>
         ) : (
@@ -79,7 +79,7 @@ export default ({
         {...extra}
         speed={speed ?? 300}
         isVisible={state.visible}
-        onHide={mem(() => state.visible = (false))}>
+        onHide={locMem(() => state.visible = (false))}>
         <Container {...containerProps}>
           {ch}
         </Container>

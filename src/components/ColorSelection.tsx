@@ -65,27 +65,27 @@ const colors = [
 
 const ColorSelection = ({ selectedValue, onChange }: { onChange: (color: string) => void, selectedValue: string }) => {
   const settings = useNumColumns();
-  const { mem } = useFunc();
+  const { locMem } = useFunc();
 
   return (
-    <View style={mem({
+    <View style={locMem({
       flex: 1,
       width: "100%",
       minHeight: Math.ceil(colors.length / settings.numColumns) * 50
     }, settings.numColumns)}>
       <VirtualScroller
-        updateOn={mem([selectedValue], selectedValue)}
-        style={mem({ width: "100%", flexGrow: 1, maxWidth: "95%" })}
-        renderItem={mem(({ item }) => {
+        updateOn={locMem([selectedValue], selectedValue)}
+        style={locMem({ width: "100%", flexGrow: 1, maxWidth: "95%" })}
+        renderItem={locMem(({ item }) => {
           return (<View css={`fl-1 bac-white pa-5 juc-center ali-center bac-${(item.hex)} `}>
             <Text css={`co-${methods.invertColor(item.hex)} fos-12 fof-${context.appSettings.fontName}`}>{item.name}</Text>
             <View css="wi-10 he-10 _abc to-2 ri-5 bor-5 bac-red" ifTrue={selectedValue == item.hex}></View>
           </View>) as any
         }, selectedValue)}
         items={colors}
-        itemSize={mem({ size: 50 })}
-        itemStyle={mem({ width: settings.width - 10, marginRight: 5, marginBottom: 5 }, settings.width)}
-        onItemPress={mem(({ item }) => {
+        itemSize={locMem({ size: 50 })}
+        itemStyle={locMem({ width: settings.width - 10, marginRight: 5, marginBottom: 5 }, settings.width)}
+        onItemPress={locMem(({ item }) => {
           onChange(item.hex);
         }, onChange)}
         numColumns={settings.numColumns}

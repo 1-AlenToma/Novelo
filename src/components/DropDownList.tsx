@@ -22,7 +22,7 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
         visible: visible ?? false,
         items: items,
     })).build();
-    const { mem } = useFunc();
+    const { locMem } = useFunc();
     const timer = useTimer(100);
     let values = undefined as any[] | undefined;
     if (globalContextKeys?.has()) {
@@ -40,14 +40,14 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
 
 
     return (
-        <TouchableOpacity css={`bor-5 boc-#333 bow-0.5 wi-100% pal-5 juc-center he-30 ${css ?? ""}`} onPress={mem(() => state.visible = !state.visible)}>
+        <TouchableOpacity css={`bor-5 boc-#333 bow-0.5 wi-100% pal-5 juc-center he-30 ${css ?? ""}`} onPress={locMem(() => state.visible = !state.visible)}>
             <Text css="maw-80%">{selectedItem?.label}</Text>
             <Icon name="chevron-down-circle-sharp" css={"_abc ri-5 invert"} type="Ionicons" size={20} />
             <Modal
                 css={`he-${size ?? 200} pab-15`}
                 isVisible={state.visible}
                 addCloser={true}
-                onHide={mem(() => state.visible = false)}>
+                onHide={locMem(() => state.visible = false)}>
                 <View css="bac-transparent mat-15 fl-1 wi-100% he-100% mih-100 pal-5 pab-15">
                     <View css="wi-95% he-50 bac-transparent" ifTrue={enableSearch !== undefined && enableSearch !== false}>
                         <TextInput
@@ -55,7 +55,7 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
                             disableFullscreenUI={true}
                             enterKeyHint="search"
                             inputMode="search"
-                            onChangeText={mem((txt) => {
+                            onChangeText={locMem((txt) => {
                                 timer(() => {
                                     if (typeof enableSearch === "function") {
                                         state.items = enableSearch(txt);
@@ -64,7 +64,7 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
                                 });
                             })}
                             placeholder="Search..."
-                            style={mem({ width: "100%", height: "70%" })}
+                            style={locMem({ width: "100%", height: "70%" })}
                             css="he:90% clearwidth bow:1 bor:3 desc fos:14 boc:#ccc pal:10"
                         />
                     </View>
@@ -73,10 +73,10 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
                         vMode={true}
                         items={state.items}
                         selectedIndex={selectedIndex}
-                        itemCss={mem((item) => {
+                        itemCss={locMem((item) => {
                             return `wi-100% he-40 bobw-0.5 boc-#333 DropDownListItem invert ${item.value === selectedValue ? "selectedValue" : ""}`;
                         }, selectedValue)}
-                        container={mem(({ item }: any) => {
+                        container={locMem(({ item }: any) => {
                             if (render) {
                                 return render(item);
                             }
@@ -86,7 +86,7 @@ export const DropDownLocalList = ({ items, visible, selectedValue, css, size, re
                                 </View>
                             )
                         }, render)}
-                        onPress={mem(async (item) => {
+                        onPress={locMem(async (item) => {
                             if (await onSelect(item) === false) {
                                 state.visible = false;
                             }

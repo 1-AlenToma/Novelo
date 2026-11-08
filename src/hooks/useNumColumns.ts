@@ -2,8 +2,8 @@ import * as React from "react";
 import { PrimitiveObject } from "react-smart-state";
 
 export const useNumColumns = () => {
-    const { mem } = useFunc();
-    const calc = mem(() => {
+    const { locMem } = useFunc();
+    const calc = locMem(() => {
         const windowWidth = context.size.window.width as number * 0.9;
 
         const minItemWidth = 120;
@@ -25,7 +25,7 @@ export const useNumColumns = () => {
             numColumns
         }
     });
-    const state = buildState(()=> calc()).build();
+    const state = buildState(calc).build();
 
     context.useEffect(() => {
         state.resetState();

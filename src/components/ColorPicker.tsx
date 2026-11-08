@@ -42,30 +42,30 @@ export default ({
   value,
   onComplete
 }: any) => {
-  const {mem} = useFunc();
+  const {locMem} = useFunc();
   const visible = PrimitiveObject(false);
   return (
     <TouchableOpacity
-      onPress={mem(() => visible.value = true)}
+      onPress={locMem(() => visible.value = true)}
       css={`juc:center ali:center bor:5 flex invert ${css}`}
-      style={mem({
+      style={locMem({
         backgroundColor: value
       })}>
       <Modal
         css="he-80%"
         isVisible={visible.value}
         addCloser={true}
-        onHide={mem(() => visible.value = false)}>
-        <GestureHandlerRootView style={mem({ flex: 1 })}>
+        onHide={locMem(() => visible.value = false)}>
+        <GestureHandlerRootView style={locMem({ flex: 1 })}>
           <ScrollView>
             <View css="flex ali:center mat:20 invert bow-5 bac-gray bor-10 pa-5">
               <View
                 css="juc:center ali:center bor:5 wi:90% mab:10 pa:10 invert"
-                style={mem({
+                style={locMem({
                   backgroundColor: value ?? "gray"
                 }, value)}>
                 <Text
-                  style={mem({
+                  style={locMem({
                     color: invertColor(value)
                   }, value)}
                   css="bold fos:18">
@@ -73,16 +73,16 @@ export default ({
                 </Text>
               </View>
               <ColorPicker
-                style={mem({ width: "90%", flex: 1 })}
+                style={locMem({ width: "90%", flex: 1 })}
                 value={value}
                 boundedThumb={true}
                 sliderThickness={25}
                 thumbSize={24}
                 thumbShape='circle'
-                onCompleteJS={mem((colors) => {
+                onCompleteJS={locMem((colors) => {
                   onComplete?.(colors);
                 }, onComplete)}>
-                <PreviewText style={mem({
+                <PreviewText style={locMem({
                   color: invertColor(value),
                   fontFamily: 'Quicksand',
                 }, value)} colorFormat="hex" />
@@ -100,7 +100,7 @@ export default ({
         </GestureHandlerRootView>
       </Modal>
       <Text
-        style={mem({ color: invertColor(value) }, value)}
+        style={locMem({ color: invertColor(value) }, value)}
         css="bold pal-5 par-5">
         Pick a Color
       </Text>

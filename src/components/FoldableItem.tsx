@@ -33,7 +33,7 @@ export default ({
   position?: "Left" | "Top"
 }) => {
   const pos = position ?? "Top";
-  const { mem, memKey } = useFunc();
+  const { locMem } = useFunc();
 
   const { animateX, animateY, animate } = useAnimate({
     easing: Easing.bounce
@@ -74,7 +74,7 @@ export default ({
   }, [state.size, state.buttonsSize, state.childSize])
 
 
-  const animateView = mem((show: boolean) => {
+  const animateView = locMem((show: boolean) => {
     (pos == "Left" ? animateX : animateY)(interpolate[show ? 0 : 1], () => {
       state.visible = show;
       if (single && show) {
@@ -113,18 +113,18 @@ export default ({
   return render(
     <>
       <View
-        style={mem({
+        style={locMem({
           height: ((state.childSize?.height ?? 0) as number) - 10,
           width: "100%"
         })}
         css="wi:98% ri:5 to:5 overflow:visible bor:5 absolute zi:1 ali:flex-end juc:flex-end">
         {!disableLongPress ? (
-          <ActionSheet size={"50%"} isVisible={state.longPressVisible} onHide={mem(() => state.longPressVisible = false)}>
+          <ActionSheet size={"50%"} isVisible={state.longPressVisible} onHide={locMem(() => state.longPressVisible = false)}>
             <ScrollView
-              style={memKey("aSheetStyle", { maxWidth: "100%" })}
+              style={locMem({ maxWidth: "100%" })}
               showsVerticalScrollIndicator={true}
               css="zi:1 clearheight">
-              {memKey("btnsList", Array.isArray(buttons)
+              {locMem( Array.isArray(buttons)
                 ? [...buttons].reverse().map((x, i) => (
                   <SingleTouchableOpacity
                     css={`invert settingButton`}
@@ -149,14 +149,14 @@ export default ({
           </ActionSheet>
         ) : null}
         <ScrollView horizontal={true}
-          onContentSizeChange={mem((width, height) => {
+          onContentSizeChange={locMem((width, height) => {
             state.buttonsSize = { width, height } as any
           })}
-          style={mem({ maxWidth: "100%" })}
+          style={locMem({ maxWidth: "100%" })}
           showsHorizontalScrollIndicator={true}
-          contentContainerStyle={mem({ paddingLeft: 5, paddingRight: 5 })}
+          contentContainerStyle={locMem({ paddingLeft: 5, paddingRight: 5 })}
           css="zi:1 clearheight">
-          {mem(scrollButoons.map((x, i) => (
+          {locMem(scrollButoons.map((x, i) => (
             <SingleTouchableOpacity
               css={`mar:5 miw:50 juc:center ali:center bor:5 pa:10 he:95% invert ${i == value ? "selectedRow" : ""}`}
               ifTrue={x.ifTrue}
@@ -179,7 +179,7 @@ export default ({
       </View>
       <AnimatedView
         css="clearboth zi:2 "
-        style={mem({
+        style={locMem({
           transform: [
             pos == "Left" ? (
               {
@@ -205,16 +205,16 @@ export default ({
           ]
         } as any, pos, interpolate, animate.y, animate.x)}>
         <SingleTouchableOpacity
-          onLayout={mem(event => {
+          onLayout={locMem(event => {
             state.childSize = event.nativeEvent.layout;
           })}
           activeOpacity={0.9}
-          onLongPress={mem((e) => {
+          onLongPress={locMem((e) => {
             e.stopPropagation();
             e.preventDefault();
             state.longPressVisible = true;
           })}
-          onPress={mem(() => {
+          onPress={locMem(() => {
             if (enabled !== false)
               animateView(!state.visible)
           }, animateView)}>

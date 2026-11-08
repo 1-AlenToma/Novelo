@@ -8,7 +8,7 @@
     "zip": "npm run parse && npx bestzip ../parsers2.zip temp/parsers",
     "androidFiles": "node parsers/tsc/writeAndroidFiles.mjs",
     "update": "eas update --message [dbclick fix]",
-    "clean": "cd android && gradlew clean",
+    "clean": "cd android && (if exist app\\.cxx rmdir /s /q app\\.cxx) && gradlew --stop && gradlew clean",
     "gradlew": "npm run zip && cd android && gradlew app:assembleRelease -PreactNativeArchitectures=arm64-v8a",
     "gradLewAll": "npm run zip && cd android && gradlew app:assembleRelease",
     "debugbuild": "cross-env NODE_ENV=development npm run zip && cd android && gradlew app:assembleDebug -PreactNativeArchitectures=arm64-v8a --info",

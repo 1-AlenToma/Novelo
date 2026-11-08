@@ -27,8 +27,8 @@ export const ChapterView = React.memo(({
   const loader = useLoader(true, "Loading Chapter");
   const initLoading = useLoader(novel?.chapters.length > 0, "Loading Chapter");
   const initTimer = useTimer(100);
-  const { mem } = useFunc();
-  const getChapterItems = mem((chunkIndex: number) => {
+  const { locMem } = useFunc();
+  const getChapterItems = locMem((chunkIndex: number) => {
     const chapters = novel?.chapters ?? [];
     const start = chunkIndex * size;
     return chapters.slice(start, start + size);
@@ -54,7 +54,7 @@ export const ChapterView = React.memo(({
     return map;
   }, [book?.chapterSettings]);
 
-  const hasReadContent = mem((index: number) => {
+  const hasReadContent = locMem((index: number) => {
     let arr = chArray[index];
     if (arr.hasReadContent == undefined) {
       if (!arr.items)
@@ -96,13 +96,13 @@ export const ChapterView = React.memo(({
           ifTrue={chArray.length > 1}
           css="clearwidth he:50 mat:10">
           <ItemList
-            updater={mem([state.currentPage], state.currentPage)}
+            updater={locMem([state.currentPage], state.currentPage)}
             selectedIndex={state.currentPage}
             items={chArray}
-            onPress={mem(item => {
+            onPress={locMem(item => {
               state.currentPage = item.index;
             })}
-            container={mem(({ item, index }) => {
+            container={locMem(({ item, index }) => {
               return (
                 <View
                   css={`row di:flex ali:center bor:5 listButton invert ${state.currentPage === item.index ? " selectedRow pal:5 par:5" : ""}`}>
@@ -132,18 +132,18 @@ export const ChapterView = React.memo(({
         </View>
         <View css="clearwidth mih:50 flex invert mat-5 po-relative">
           <ItemList
-            onload={mem(() => initTimer(() => initLoading.hide()))}
+            onload={locMem(() => initTimer(() => initLoading.hide()))}
             vMode={true}
-            updater={mem([current], current)}
+            updater={locMem([current], current)}
             selectedIndex={state.index.page == state.currentPage ? state.index.index : 0}
             items={chArray[state.currentPage]?.items}
-            onPress={mem(async (item: ChapterInfo) => {
+            onPress={locMem(async (item: ChapterInfo) => {
               if (current != item.url || ignoreChapterValidation) {
                 loader.show();
                 await onPress(item);
               }
             }, ignoreChapterValidation, onPress)}
-            container={mem(({ item, index }: { item: ChapterInfo, index: number }) => {
+            container={locMem(({ item, index }: { item: ChapterInfo, index: number }) => {
               const cssEmpty = item.empty ? "op-0.5" : "";
               return (
                 <View css="fl-1 bac-transparent">

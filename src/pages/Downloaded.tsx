@@ -34,7 +34,7 @@ import { useKeepAwake } from "expo-keep-awake";
 const EpubHandler = ({
   parentState
 }: any) => {
-  const { mem, memKey } = useFunc();
+  const { locMem } = useFunc();
   const [render, state, loader] = useView({
     component: false,
     stateTimeOut: 2,
@@ -80,7 +80,7 @@ const EpubHandler = ({
           </ProgressBar>
         </View>
       </View>
-      <Modal addCloser={true} css="wi-90% he-200" isVisible={state.loadedEpubPath != undefined} disableBlurClick={true} onHide={mem(() => { state.loadedEpubPath = undefined })}>
+      <Modal addCloser={true} css="wi-90% he-200" isVisible={state.loadedEpubPath != undefined} disableBlurClick={true} onHide={locMem(() => { state.loadedEpubPath = undefined })}>
         <Text css="desc co-red fow-bold">Please how should the epub be treated as</Text>
         <ButtonGroup css="mat-15" selectedIndex={[types.findIndex(x => x == state.loadedEpubType)]} buttons={types} onPress={(x) => {
           state.loadedEpubType = types[x[0]];
@@ -90,16 +90,16 @@ const EpubHandler = ({
       </Modal>
 
       <Header
-        buttons={mem([
+        buttons={locMem([
           {
-            text: memKey("dirIeco", () => (
+            text: locMem(() => (
               <Icon
                 size={35}
                 name="file-directory"
                 type="Octicons"
               />
             )),
-            press: memKey("dirIconPress", async () => {
+            press: locMem(async () => {
               let uri = await context.browser.pickFile(["epub"], "Select Epub file");
               if (uri)
                 state.loadedEpubPath = uri;
@@ -109,7 +109,7 @@ const EpubHandler = ({
         ])}
         value={parentState.text}
         inputEnabled={true}
-        onInputChange={mem(txt => {
+        onInputChange={locMem(txt => {
           parentState.text = txt ?? "";
         })}
       />
@@ -148,7 +148,7 @@ const ItemRender = React.memo(({
   url: string;
 }) => {
   if (!name || !parserName || !url) return null;
-  const { mem, memo } = useFunc();
+  const { locMem, locMemo } = useFunc();
   let item: Book = { name, parserName, url } as any;
   context.hook("parser.all", "appState.inBackground");
   const [books, dataIsLoading] = context.db.Books.useQuery(
@@ -184,7 +184,7 @@ const ItemRender = React.memo(({
     getInfo(books.find(x => x.url === item.url) ?? item);
   }, [books, fileItems]);
 
-  let getInfo = mem(async (b: any) => {
+  let getInfo = locMem(async (b: any) => {
     loader.show();
     let novel = fileItems.find(
       x => x.url == b.url
@@ -195,9 +195,9 @@ const ItemRender = React.memo(({
     loader.hide();
   }, books, fileItems)
 
-  item = mem(books.find(x => x.url === item.url) ?? item, books);
+  item = locMemo(()=> books.find(x => x.url === item.url) ?? item, books);
 
-  const downloadEpub = mem(async () => {
+  const downloadEpub = locMem(async () => {
     let file = fileItems.find(
       x => x.url === item.url
     );
@@ -229,7 +229,7 @@ const ItemRender = React.memo(({
       single={true}
       enabled={chapterLength > 0 && downloadProgress.value <= 0}
       css="wi:98% overflow"
-      buttons={memo(() => [
+      buttons={locMemo(() => [
         {
           icon: (
             <Icon
@@ -398,7 +398,7 @@ const ItemRender = React.memo(({
 
           <TouchableOpacity
             css="button zi:6 miw:30 clb mar-10"
-            onPress={mem(async () => {
+            onPress={locMem(async () => {
               loader.show();
               context.downloadManager().stop(item.url);
               await methods.sleep(3000);
@@ -425,7 +425,7 @@ export default ({ ...props }: any) => {
     selectedItem: undefined,
     skipImages: false
   })).build();
-  const { mem, memKey } = useFunc();
+  const { locMem } = useFunc();
 
   const { fileItems, elem } = context.files.useFile<DetailInfo>("json", undefined, "NewDelete");
   const prepLoading = context.downloadManager().prepLoading();
@@ -469,7 +469,7 @@ export default ({ ...props }: any) => {
         </Text>
         <ItemList
           items={renderItems}
-          container={mem(({ item }: { item: Book | string }) => {
+          container={locMem(({ item }: { item: Book | string }) => {
             if (!item || (typeof item == "object" && !item.url))
               return null;
             if (typeof item == "object" && prepLoading.includes(item.url))

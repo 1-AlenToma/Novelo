@@ -52,9 +52,9 @@ export default function <T>({
   const onEndReachedCalledDuringMomentum = useRef(true);
   const ref = useRef<FlashListRef<T>>();
   const selected = useRef();
-  const { mem, memKey } = useFunc();
+  const { locMem, locMemo } = useFunc();
 
-  const Render = mem(({ item, index }: { item: T, index: number }) => {
+  const Render = locMem(({ item, index }: { item: T, index: number }) => {
     let d = { item, vMode: horizental, index };
     if (props) d = { ...d, ...props };
     let VR = container;
@@ -63,7 +63,6 @@ export default function <T>({
         ? SingleTouchableOpacity
         : View;
     let cnCSS = typeof itemCss == "string" ? itemCss as string : itemCss?.(item);
-    let itemAny = item as any;
     return (
       <CN
         css={cnCSS}
@@ -75,9 +74,9 @@ export default function <T>({
         <VR {...d} />
       </CN>
     );
-  }, [vMode, itemCss, onPress, onLongPress, container]);
+  }, vMode, itemCss, onPress, onLongPress, container);
 
-  const scrollTo = mem(() => {
+  const scrollTo = locMem(() => {
     if (
       selectedIndex !== undefined &&
       ref.current &&
@@ -90,14 +89,14 @@ export default function <T>({
     }
   }, selectedIndex)
 
-  const extraData = React.useMemo(() => {
+  const extraData = locMemo(() => {
     return [
       ...(updater ?? []),
       selectedIndex,
       context.selectedThemeIndex,
       numColumns
     ]
-  }, [updater, selectedIndex, context.selectedThemeIndex, numColumns])
+  }, updater, selectedIndex, context.selectedThemeIndex, numColumns)
 
 
   useEffect(() => {
@@ -116,7 +115,7 @@ export default function <T>({
 
   return (
     <View
-      style={mem([{
+      style={locMem([{
         maxHeight: "100%",
         width: "100%",
         height: "100%",
@@ -125,20 +124,20 @@ export default function <T>({
       css="flg:1 mah:100% bac-transparent po-relative">
 
       <FlashList
-        ref={c => {
-          ref.current = c;
-        }}
+        ref={locMem(c => {
+          ref.current = c as any;
+        })}
         onLoad={onload}
-        onContentSizeChange={mem(() => {
+        onContentSizeChange={locMem(() => {
           time(() => scrollTo());
         }, scrollTo)}
 
-        contentContainerStyle={mem({
+        contentContainerStyle={locMem({
           padding: 1
         })}
         numColumns={numColumns == 0 ? undefined : numColumns}
 
-        onScrollBeginDrag={mem(() => {
+        onScrollBeginDrag={locMem(() => {
           selected.current = true;
         })}
         nestedScrollEnabled={nested}
@@ -148,25 +147,29 @@ export default function <T>({
         refreshing={onRefresh?.loading}
         onRefresh={onRefresh?.onRefresh}
         onEndReachedThreshold={0.5}
-        onMomentumScrollBegin={mem(() => {
+        onMomentumScrollBegin={locMem(() => {
           onEndReachedCalledDuringMomentum.current =
             false;
-        }, onEndReachedCalledDuringMomentum.current)}
-
+        })}
+        masonry={numColumns > 1}
         extraData={extraData}
-        onEndReached={mem(() => {
+        onEndReached={locMem(() => {
           if (!onEndReachedCalledDuringMomentum.current) {
             onEndReached?.();
             onEndReachedCalledDuringMomentum.current = true;
           }
         }, onEndReached)}
-        renderItem={Render}
-        keyExtractor={mem((item, index) => {
-          let tm: any = item;
-          let key = tm && typeof tm == "object" ? tm.url ?? tm.name ?? "" : "";
-          if (!key)
-            key += String(index);
-          return key;
+        renderItem={Render as any}
+        keyExtractor={locMem((item, index) => {
+          try {
+            let tm: any = item;
+            let key = tm && typeof tm == "object" ? tm.url ?? tm.name ?? "" : "";
+            if (!key)
+              key += String(index);
+            return key;
+          } catch (e) {
+            console.error("key not found")
+          }
         })}
       />
     </View>

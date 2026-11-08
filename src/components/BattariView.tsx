@@ -8,10 +8,10 @@ import useTimer from "../hooks/Timer";
 import { PrimitiveObject } from "react-smart-state";
 
 export default ({ color }: any) => {
-  const { mem } = useFunc();
+  const { locMem } = useFunc();
   const batteryLevel = PrimitiveObject(0);
   const timer = useTimer(5000);
-  const setLvl = mem(async () => {
+  const setLvl = locMem(async () => {
     const lvl = await DeviceInfo.getBatteryLevel();
     if (lvl !== null && lvl !== undefined) {
       batteryLevel.value = lvl;
@@ -30,7 +30,7 @@ export default ({ color }: any) => {
   return (
     <View css="wi:26 mal:5 overflow juc:center ali:center clb">
       <View
-        style={mem({
+        style={locMem({
           height: height - 14,
           width: (level - (level > 30 ? 15 : 0) + "%") as any,
           backgroundColor: "#3b5998"
@@ -45,7 +45,7 @@ export default ({ color }: any) => {
         size={height}
       />
       <Text
-        style={mem({ color: invertColor(color) }, color)}
+        style={locMem({ color: invertColor(color) }, color)}
         css="desc fos:8 zi:3 absolute">
         {parseInt(Math.min(level, 99).toString())}%
       </Text>

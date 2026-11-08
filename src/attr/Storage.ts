@@ -4,7 +4,7 @@ import FileHandler from "../native/FileHandler";
 class Storage implements IStorage {
   handler: FileHandler;
   constructor() {
-    this.handler = new FileHandler(FilesPath.Cache)
+    this.handler = new FileHandler(FilesPath.Cache);
   }
   async set(file: string, value: DataCache) {
     await this.handler.write(

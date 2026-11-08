@@ -34,6 +34,7 @@ export default function <T>({
   component,
   ...props
 }: Props<T>) {
+  const { locMem } = useFunc();
   let gProps: any = props as any;
   const update = useUpdate();
   const timer = useTimer(gProps.timer ?? 100);
@@ -55,17 +56,15 @@ export default function <T>({
       "refItem", "size", ...(gProps.ignore ?? [])
     ).timeout(props.stateTimeOut).build();
 
-  let render = (children: any, prs?: any) => {
+  let render = locMem((children: any, prs?: any) => {
     if (component !== false) {
       prs = { ...props, ...(prs ?? {}) } as any;
       const Component = component ?? View;
       return (
         <Component
-
           {...prs}
           key={props.key}
           onLayout={(event: any) => {
-
             itemState.size = { ...event.nativeEvent.layout };
             gProps.onLayout?.(event);
           }}>
@@ -74,7 +73,7 @@ export default function <T>({
       );
     }
     return <>{children}</>;
-  };
+  }, props);
 
   return [
     render,

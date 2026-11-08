@@ -1058,7 +1058,7 @@ export default (props: any) => {
   const [{ name, url, parserName, epub, chapter }, nav] = useNavigation(props);
   const loader = useLoader(true);
   useKeepAwake();
-  const { mem, memo } = useFunc();
+  const { locMem } = useFunc();
   const files = context.files.useFile<DetailInfo>(
     "json",
     x => {
@@ -1188,7 +1188,7 @@ export default (props: any) => {
   return (
     <View
       css="flex"
-      style={mem({
+      style={locMem({
         zIndex: 100,
         backgroundColor: loading ? context.appSettings.backgroundColor : "transparent"
       }, context.appSettings.backgroundColor, loading)}>

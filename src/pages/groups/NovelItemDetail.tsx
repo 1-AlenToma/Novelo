@@ -377,7 +377,7 @@ export default ({ ...props }: any) => {
                     items={
                       (state.authorNovels ?? []).filter(x => x.url != state.novel?.url)
                     }
-                    container={HomeNovelItem}
+                    container={locMem(({ ...props }: any) => <HomeNovelItem {...props.item} vMode={false} />)}
                   />
                 </View>
                 <View
@@ -409,7 +409,7 @@ export default ({ ...props }: any) => {
                         if (!state.recuValidation)
                           item.image = undefined;
                         if (item.image?.has())
-                          return <HomeNovelItem item={item} vMode={false} />
+                          return <HomeNovelItem {...item} vMode={false} />
                         return <Text css="fow-bold fos-15 pal-10">{item.name}</Text>
                       }
                       )}

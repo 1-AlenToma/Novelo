@@ -14,7 +14,7 @@ import {
 } from "./native/ParserItems";
 
 import { Dimensions, Keyboard, LogBox, Platform } from "react-native";
-import StateBuilder, { newId } from "react-smart-state";
+import StateBuilder, { newId, sleep } from "react-smart-state";
 import { GlobalType, FilesPath, WebViewProps, IGlobalState, TTSConfig, TTSNames } from "./Types";
 import * as ScreenOrientation from "expo-screen-orientation";
 import ParserWrapper from "./parsers/ParserWrapper";
@@ -482,5 +482,5 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         "appSettings.parsers",
         "novelFavoritInfo",
         "bgService"
-    ).globalBuild();
+    ).timeout(10).globalBuild();
 export default data;

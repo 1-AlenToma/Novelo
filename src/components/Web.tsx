@@ -124,11 +124,11 @@ export default React.memo(({
     }
   });
 
-  const { mem } = useFunc();
+  const { locMem } = useFunc();
 
   context.hook("appSettings.backgroundColor", "appSettings.fontName");
 
-  const postMessage = mem(async (
+  const postMessage = locMem(async (
     type: string,
     data: any,
     method?: string,
@@ -142,7 +142,7 @@ export default React.memo(({
     webView.current.exec(!method ? "window.loadData" : method, item);
   });
 
-  const loadCss = mem(async () => {
+  const loadCss = locMem(async () => {
     let color = context.appSettings.backgroundColor;
     let inverted = invertColor(color);
     let shadow = inverted.has("white") ? "#4e4d4d" : "#919191";
@@ -174,12 +174,12 @@ export default React.memo(({
     await postMessage("CSS", cleanInlineStyle(), undefined, "inlineStyle");
   });
 
-  const cleanInlineStyle = mem(() => {
+  const cleanInlineStyle = locMem(() => {
     let inlineStyle = context.player.book.inlineStyle;
     return inlineStyle.replace(/(background-color|font-family|color|font-size|line-height|text-align|font-weight)\:.*\;/gmi, "");
   })
 
-  const loadHtmlContent = mem(async () => {
+  const loadHtmlContent = locMem(async () => {
     try {
       if (context.player.isloading) return;
       loader.show();
@@ -253,7 +253,7 @@ export default React.memo(({
      
       if (!state.refItem.firstLoad)
         return;
-       console.warn("loading html content")
+       // console.warn("loading html content")
       loadHtmlContent();
 
     },
@@ -265,10 +265,10 @@ export default React.memo(({
     "player.isloading"
   );
 
-  const onMessage = mem(async ({ nativeEvent }) => {
+  const onMessage = locMem(async ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
-    if (__DEV__)
-      console.warn("WebView Message:", data.type, data.data);
+    //if (__DEV__)
+     // console.warn("WebView Message:", data.type, data.data);
     switch (data.type) {
       case "loader":
         if (data.data)
@@ -362,12 +362,12 @@ export default React.memo(({
       ["address", httpServer.address],
       ["novelType", context.player.novel.type],
       ["fontName", context.appSettings.fontName])
-    return html;
+    return {  html, basUrl: ""};
   }, [context.appSettings.backgroundColor, httpServer.address, context.appSettings.fontName, context.player.novel.type]);
 
 
   return (
-    <View css={"flex wi-100% he-100%"} style={mem({ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }, loader.loading, context.appSettings.backgroundColor)}>
+    <View css={"flex wi-100% he-100%"} style={locMem({ backgroundColor: context.appSettings.backgroundColor, zIndex: loader.loading ? -1 : undefined }, loader.loading, context.appSettings.backgroundColor)}>
       <View css="absolute he:5 wi:100% le:1 bo:0 zi:99 juc:space-between ali:center clb">
         <Scroller />
       </View>
@@ -383,14 +383,11 @@ export default React.memo(({
       </View>
       {loader.elem}
       {render(null, {
-        source: mem({
-          html: webHtml,
-          basUrl: ""
-        }),
-        style: mem({
+        source: webHtml,
+        style: locMem({
           backgroundColor: context.appSettings.backgroundColor
         }, context.appSettings.backgroundColor),
-        containerStyle: mem([
+        containerStyle: locMem([
           {
             backgroundColor: context.appSettings.backgroundColor,
             zIndex: 70,
@@ -399,7 +396,7 @@ export default React.memo(({
           },
           style
         ], style, context.appSettings.backgroundColor),
-        onMessage: onMessage
+        onMessage: onMessage,
       })}
     </View>
   );

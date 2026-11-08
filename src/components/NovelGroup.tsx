@@ -7,15 +7,14 @@ import {
   memo
 } from "react";
 import * as React from "react";
-import { useParser } from "../hooks";
+import { useParser, useTimer } from "../hooks";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 import { LightInfo } from "../native/ParserItems";
 
 export default memo(
   ({
     itemIndex,
-    vMode,
-    ...props
+    vMode
   }: {
     itemIndex: number;
     vMode?: boolean;
@@ -30,9 +29,10 @@ export default memo(
     const item = context.parser.current.settings.group[itemIndex];
     const imageSize = context.parser.current.settings.imagesSize;
     const parser = useParser();
-    const { mem } = useFunc();
+    const { locMem } = useFunc();
+    const loaderTimer = useTimer(itemIndex * (__DEV__ ? 1000 : 100));
 
-    const getItems = mem(async (refreshing?: boolean) => {
+    const getItems = locMem(async (refreshing?: boolean) => {
 
       if (loading.current)
         return;
@@ -65,7 +65,7 @@ export default memo(
     });
 
     useEffect(() => {
-      getItems();
+      loaderTimer(getItems);
     }, []);
 
     useEffect(() => {
@@ -96,7 +96,7 @@ export default memo(
           {!vMode ? (
             <SingleTouchableOpacity
               css="clb"
-              onPress={mem(() => {
+              onPress={locMem(() => {
                 context.nav.navigate("GroupDetail", {
                   groupIndex: itemIndex
                 })
@@ -115,8 +115,9 @@ export default memo(
         ) : null}
         <View css="fl-1 bac-transparent">
           <ItemList
-            onRefresh={{ loading: loader.loading && loader.get(), onRefresh: () => getItems(true) }}
-            onPress={mem(item => {
+
+            onRefresh={locMem({ loading: loader.loading && loader.get(), onRefresh: () => getItems(true) })}
+            onPress={locMem(item => {
               context.nav.navigate("NovelItemDetail", {
                 url: item.url,
                 parserName: item.parserName
@@ -124,19 +125,19 @@ export default memo(
             })}
 
             vMode={vMode}
-            onEndReached={mem(() => {
+            onEndReached={locMem(() => {
               if (!loader.loading) {
                 loader.show();
                 getItems();
               }
-            }, loader.loading)}
+            })}
             itemCss={
               !vMode
                 ? `boc:#ccc bow:1 he-220 wi:170 mal:5 bor:5 overflow clb`
-                : `boc:#ccc bow:1 overflow he-${imageSize ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
+                : `boc:#ccc bow:1 overflow he-${imageSize && imageSize.height != undefined ? imageSize.height : "170"} wi:98% mat:5 mal:5 bor:5 clb`
             }
             items={state.items}
-            container={mem(({ ...props }: any) => <HomeNovelItem {...props} numberOfLines={imageSize ? 1 : 2} />)}
+            container={locMem(({ ...props }: any) => <HomeNovelItem {...props.item} vMode={vMode} numberOfLines={imageSize ? 1 : 2} />, vMode)}
           />
         </View>
         {loader.elem}

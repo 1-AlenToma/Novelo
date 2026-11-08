@@ -15,7 +15,7 @@ export default ({
   ...props
 }: any) => {
   const timer = useTimer(1000);
-  const { mem } = useFunc();
+  const { locMem } = useFunc();
   const pressedTimer = useTimer(1000);
   const valueChange = useTimer(1000);
   const state = PrimitiveObject(props.value ?? 0);
@@ -28,7 +28,7 @@ export default ({
       });
   }, [props.value]);
 
-  const change = mem((v: any) => {
+  const change = locMem((v: any) => {
     if (Array.isArray(v))
       v = v[0]
     state.value = v;
@@ -40,7 +40,7 @@ export default ({
     timer(() => props.onValueChange?.(v));
   }, props.onValueChange, disableTimer)
 
-  const increase = mem((isPress?: boolean) => {
+  const increase = locMem((isPress?: boolean) => {
     let step = props.step ?? 1;
     if (state.value + step <= props.maximumValue) {
       let v = state.value + step;
@@ -54,7 +54,7 @@ export default ({
 
   }, props.step, props.onValueChange, props.onSlidingComplete, props.maximumValue)
 
-  const decrease = mem((isPress?: boolean) => {
+  const decrease = locMem((isPress?: boolean) => {
     let step = props.step ?? 1;
     if (state.value - step >= props.minimumValue) {
       let v = state.value - step;
@@ -73,12 +73,12 @@ export default ({
       <Button
         ifTrue={buttons === true}
         css="flex miw-40 maw:40 mal:10 invert he-40 sh-none"
-        icon={mem(<Icon
+        icon={locMem(<Icon
           name="minus-square"
           type="FontAwesome"
           css="fos-35 invert"
         />)}
-        onPress={mem(() => decrease(true), decrease)}
+        onPress={locMem(() => decrease(true), decrease)}
         whilePressed={decrease}>
       </Button>
 
@@ -90,9 +90,9 @@ export default ({
           {state.value}
         </Text>
       </View>
-      <View css={`flex invert`} style={mem({ maxWidth: buttons ? "75%" : "90%" })}>
+      <View css={`flex invert`} style={locMem({ maxWidth: buttons ? "75%" : "90%" })}>
         <SliderView
-          onStartShouldSetResponder={mem(() =>
+          onStartShouldSetResponder={locMem(() =>
             false
           )}
           minimumTrackTintColor="#f17c7c"
@@ -100,9 +100,9 @@ export default ({
           step={1}
           enableButtons={false}
           {...props}
-          containerStyle={mem({ maxWidth: "99%" })}
+          containerStyle={locMem<any>({ maxWidth: "99%" })}
           value={state.value}
-          onSlidingComplete={mem((v) => props.onSlidingComplete?.(v[0]), props.onSlidingComplete)}
+          onSlidingComplete={locMem((v) => props.onSlidingComplete?.(v[0]), props.onSlidingComplete)}
           onValueChange={change}
           style={style}
           css={css}
@@ -112,12 +112,12 @@ export default ({
       <Button
         ifTrue={buttons === true}
         css="flex miw-40 maw:40 he-40 invert sh-none"
-        icon={mem(<Icon
+        icon={locMem(<Icon
           name="plus-square"
           type="FontAwesome"
           css="fos-35 invert"
         />)}
-        onPress={mem(() => increase(true), increase)}
+        onPress={locMem(() => increase(true), increase)}
         whilePressed={increase}>
 
       </Button>

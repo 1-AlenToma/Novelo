@@ -8,9 +8,9 @@ export const SingleTouchableOpacity = React.memo((props: TouchableOpacityProps &
     const timer = useTimer(500);
     const loader = useLoader(false, undefined, "small");
     const cliked = useRef(false)
-    const { mem } = useFunc();
+    const { locMem } = useFunc();
 
-    const click = mem(async (event: any) => {
+    const click = locMem(async (event: any) => {
         if (cliked.current || loader.loading)
             return;
         cliked.current = true;

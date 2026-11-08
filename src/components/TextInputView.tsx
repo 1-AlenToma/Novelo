@@ -32,7 +32,7 @@ export default React.forwardRef(
       hasFocus: false,
       txt: props.value ?? props.defaultValue ?? ""
     })).build();
-    const { mem, memKey } = useFunc();
+    const { locMem } = useFunc();
 
     if (methods.ifSelector(props.ifTrue) === false)
       return null;
@@ -44,7 +44,7 @@ export default React.forwardRef(
             addCloser={true}
             disableBlurClick={false}
             isVisible={state.visible}
-            onHide={mem(() => state.visible = false)}
+            onHide={locMem(() => state.visible = false)}
             css="he-80%">
             <View css="flex mat:20">
               <TouchableOpacity
@@ -69,14 +69,14 @@ export default React.forwardRef(
           </Modal>
           <TouchableOpacity
             ifTrue={() => inputVisible != true}
-            onPress={mem(() => state.visible = true)} css="fl-1">
+            onPress={locMem(() => state.visible = true)} css="fl-1">
             <TextInput
               disableFullscreenUI={true}
               inputMode="search"
-              {...props}
+              {...props }
               css={css}
               readOnly={true}
-              style={mem([style, { flexGrow: 1, width: 200, textAlignVertical: props.multiline ? "top" : undefined }], style, props.multiline)}
+              style={locMem([style, { flexGrow: 1, width: 200, textAlignVertical: props.multiline ? "top" : undefined }], style, props.multiline)}
             />
           </TouchableOpacity>
         </View>
@@ -91,7 +91,7 @@ export default React.forwardRef(
     } else lblBackground.color = "gray";
     return (
       <View
-        style={mem([styles.container, {
+        style={locMem([styles.container, {
           flex: props.multiline ? 1 : undefined
         }], props.multiline, styles.container)}
         css={`wi:100% ali:center fl-1 juc-center he-30 bor-2 View`}>
@@ -99,7 +99,7 @@ export default React.forwardRef(
         <Text
           ifTrue={label != undefined}
           css="invert"
-          style={mem({
+          style={locMem({
             position: "absolute",
             left: 5,
             fontSize: 12,
@@ -114,10 +114,10 @@ export default React.forwardRef(
           {label}
         </Text>
         <TextInput
-          onLayout={mem(e => {
+          onLayout={locMem(e => {
             state.size = (e.nativeEvent.layout);
           })}
-          ref={mem(c => {
+          ref={locMem(c => {
             if (ref) {
               if (typeof ref === "function")
                 ref(c);
@@ -125,8 +125,8 @@ export default React.forwardRef(
             }
             inputRef.current = c as any;
           })}
-          onFocus={mem(() => state.hasFocus = true)}
-          onBlur={mem(() => {
+          onFocus={locMem(() => state.hasFocus = true)}
+          onBlur={locMem(() => {
             state.hasFocus = false;
           })}
           disableFullscreenUI={true}
@@ -134,11 +134,11 @@ export default React.forwardRef(
           inputMode="search"
           placeholderTextColor={context.selectedThemeIndex == 0 ? "#000000" : "#FFFFFF"}
           {...props}
-          onChangeText={mem(text => {
+          onChangeText={locMem(text => {
             state.txt = text;
             props?.onChangeText?.(text);
           }, props.onChangeText)}
-          style={mem([
+          style={locMem([
             styles.input,
             {
               paddingLeft: serachBar ? 0 : 5,
@@ -153,7 +153,7 @@ export default React.forwardRef(
         />
 
         <TouchableOpacity
-          style={mem({
+          style={locMem({
             marginTop: ((state.size?.height ?? 1) as number - 24) / 2,
             left: (state.size?.width ?? 0) as number + (state.size?.x ?? 0) - 34
           }, state.size)}
@@ -164,7 +164,7 @@ export default React.forwardRef(
               || hasText
             )) as any
           }
-          onPress={mem(() => {
+          onPress={locMem(() => {
             inputRef.current?.clear();
             inputRef.current?.focus();
             state.txt = "";

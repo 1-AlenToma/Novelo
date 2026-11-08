@@ -4,18 +4,15 @@ import { LightInfo } from "../native/ParserItems";
 import * as React from "react";
 import { BlurView } from "./BlurView";
 
-export default React.memo(({
-  item,
-  vMode,
-  showParserName,
-  numberOfLines
-}: {
-  item: LightInfo;
+type HomeNovelType = LightInfo & {
   vMode?: boolean;
   showParserName?: boolean,
   numberOfLines?: number
-}) => {
-  if (!vMode) {
+}
+
+export default React.memo((item: HomeNovelType) => {
+  if (!item.vMode) {
+
     return (
       <View css="clearboth bor:5 overflow invert">
         <Image
@@ -25,7 +22,7 @@ export default React.memo(({
         />
 
         <Icon
-          ifTrue={item.isNew ?? false}
+          ifTrue={(item.isNew ?? false) && !__DEV__}
           flash="white"
           css="absolute to:2 ri:2"
           color="red"
@@ -38,7 +35,7 @@ export default React.memo(({
           <BlurView css="bottom" />
           <View css="bac-transparent overflow-hidden wi-95% mal-5 mar-5 he-100%">
             <Text
-              numberOfLines={numberOfLines ?? 1}
+              numberOfLines={item.numberOfLines ?? 1}
               css="clearwidth wi:99% header co:#fff pal-5 par-5 pat-5 tea:center">
               {item.name}
             </Text>
@@ -86,7 +83,7 @@ export default React.memo(({
         <Text css="absolute le-2 to-2 pa-2 bor-5 bac-#ffa000 co-white" ifTrue={item.langType?.has() ?? false}>{item.langType}</Text>
         <View css="flex clearboth pa:5 invert">
           <Text
-            css="header" numberOfLines={numberOfLines ?? 1}>
+            css="header" numberOfLines={item.numberOfLines ?? 1}>
             {item.name}
           </Text>
           <View ifTrue={() => item.decription?.length > 1} css="row clearwidth ali-center invert">
@@ -103,7 +100,7 @@ export default React.memo(({
           </View>
           <View css="invert bottom bo-5 pal-5">
             <Text
-              ifTrue={showParserName == true}
+              ifTrue={item.showParserName == true}
               css="desc fow-bold" numberOfLines={1}>
               Parser:{item.parserName} ({item.type ?? context.parser.find(item.parserName)?.type})
             </Text>

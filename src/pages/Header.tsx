@@ -36,7 +36,7 @@ export default ({
   buttons?: Button[];
   ifTrue?: any;
 }) => {
-  const { mem, memKey } = useFunc();
+  const { locMem } = useFunc();
   context.hook(
     "KeyboardState",
     "isFullScreen",
@@ -77,7 +77,7 @@ export default ({
     <>
       <View
         ifTrue={ifTrue}
-        css={mem(x => x.joinLeft("clearwidth zi:101 he:40 row juc:center ali:center di:flex invert").joinRight(css), css)}>
+        css={locMem(x => x.joinLeft("clearwidth zi:101 he:40 row juc:center ali:center di:flex invert").joinRight(css), css)}>
         {context.nav.option.canGoBack() ? (
           <SingleTouchableOpacity
             css="absolute le:5"
@@ -206,7 +206,7 @@ export default ({
         context.KeyboardState ? (
         <TouchableOpacity
           ifTrue={ifTrue}
-          onPress={mem(() => input.current.blur(), input.current)}
+          onPress={locMem(() => input.current.blur(), input.current)}
           css="absolute to:0 le:0 flex clearboth zi:100 blur"
         />
       ) : null}

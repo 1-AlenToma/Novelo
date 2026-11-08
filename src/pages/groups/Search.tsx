@@ -97,7 +97,7 @@ export default ({ ...props }: any) => {
     parser: parser,
     loadedParser: {} as any,
   })).ignore("parser", "items", "loadedParser").build();
-  const { mem, memKey } = useFunc();
+  const { locMem } = useFunc();
 
   const percentState = buildState({
     parser: "",
@@ -328,7 +328,7 @@ export default ({ ...props }: any) => {
         <View css="clearwidth mih:50 pab-20 flex invert" ifTrue={() => state.items.length > 0}>
           <ItemList
             page={state.currentPage}
-            onPress={mem(item => {
+            onPress={locMem(item => {
               context.nav
                 .navigate("NovelItemDetail", {
                   url: item.url,
@@ -336,18 +336,18 @@ export default ({ ...props }: any) => {
                 });
             })}
             vMode={true}
-            onEndReached={mem(() => {
+            onEndReached={locMem(() => {
               if (!loader.loading) {
                 loader.show();
                 fetchData();
               }
             }, loader.loading)}
-            itemCss={mem((item) => {
+            itemCss={locMem((item) => {
               const imageSize = context.parser.find(item.parserName).settings.imagesSize;
               return `boc:#ccc bow:1 overflow he-${imageSize?.height ?? "170"} wi:98% mat:5 mal:5 bor:5`
             })}
             items={state.items}
-            container={mem(({ item }: any) => <HomeNovelItem item={item} vMode={true} numberOfLines={2} showParserName={globalParser.hasSelection()} />)}
+            container={locMem(({ item }: any) => <HomeNovelItem {...item} vMode={true} numberOfLines={2} showParserName={globalParser.hasSelection()} />)}
           />
         </View>
       </View>
