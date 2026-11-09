@@ -5,7 +5,7 @@ import * as React from "react";
 export const useParserSelector = (onDone: () => void) => {
     const state = buildState(() =>
     ({
-        selectedParser: context.parser.all.map(x => ({ name: x.name, selected: false })),
+        selectedParser: context.parser.all.filter(x => x.enabled !== false).map(x => ({ name: x.name, selected: false })),
         visible: false,
         clear: () => {
             state.selectedParser.forEach(x => x.selected = false);
