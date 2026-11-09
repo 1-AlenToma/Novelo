@@ -24,6 +24,7 @@ export default class KunManga extends Parser {
         this.settings.searchCombination = ["Genre", "Status", "Group"];
         this.minVersion = 139;
         this.protected = true;
+        this.enabled = false;
 
     }
 
