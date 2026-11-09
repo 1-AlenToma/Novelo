@@ -3,7 +3,7 @@ import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { View } from "react-native-short-style/mems";
 import useTimer from "../hooks/Timer";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 
 export default function <T>({
   items,
@@ -23,7 +23,8 @@ export default function <T>({
   page,
   numColumns,
   onload,
-  style
+  style,
+  enableSwap
 }: {
   onload?: () => void,
   items: T[];
@@ -42,7 +43,8 @@ export default function <T>({
   onRefresh?: { loading: boolean, onRefresh: () => void },
   page?: number,
   numColumns?: number;
-  style?: any
+  style?: any,
+  enableSwap?: boolean
 }) {
   context.hook(
     "selectedThemeIndex",
@@ -50,12 +52,15 @@ export default function <T>({
   );
   const time = useTimer(100);
   const swapTimer = useTimer(500);
-  const horizental = vMode !== true
+  const horizental = vMode !== true;
   const onEndReachedCalledDuringMomentum = useRef(true);
   const ref = useRef<FlashListRef<T>>();
   const selected = useRef();
   const { locMem, locMemo } = useFunc();
-  const navigation = useNavigation();
+  let navigation = undefined as any;
+  try {
+    navigation = enableSwap ? useNavigation() : undefined
+  } catch { }
 
   const Render = locMem(({ item, index }: { item: T, index: number }) => {
     let d = { item, vMode: horizental, index };
@@ -133,11 +138,11 @@ export default function <T>({
 
         onTouchStart={locMem(() => {
           swapTimer.clear();
-          if (horizental) navigation.setOptions({ swipeEnabled: false });
+          if (horizental && navigation && enableSwap) navigation.setOptions({ swipeEnabled: false });
         }, navigation, horizental)}
 
         onTouchEnd={locMem(() => {
-          if (horizental) swapTimer(() => navigation.setOptions({ swipeEnabled: true }));
+          if (horizental && navigation && enableSwap) swapTimer(() => navigation.setOptions({ swipeEnabled: true }));
         }, navigation, horizental)}
 
         onLoad={onload}
@@ -155,7 +160,7 @@ export default function <T>({
         })}
 
         onMomentumScrollEnd={locMem(() => {
-          if (horizental)
+          if (horizental && navigation && enableSwap)
             swapTimer(() => navigation.setOptions({ swipeEnabled: true }));
         }, navigation, horizental)}
 

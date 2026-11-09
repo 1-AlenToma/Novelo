@@ -123,6 +123,7 @@ export default memo(
               });
             })}
             vMode={vMode}
+            enableSwap={vMode !== true}
             onEndReached={locMem(() => {
               if (!loader.loading) {
                 loader.show();

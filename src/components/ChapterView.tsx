@@ -126,7 +126,7 @@ export const ChapterView = React.memo(({
                   />
                 </View>
               )
-            })}
+            }, hasReadContent)}
             itemCss="pa-5 bobw-1 boc-gray invert wi-115 he-50"
           />
         </View>
