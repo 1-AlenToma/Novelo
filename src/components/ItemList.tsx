@@ -3,6 +3,7 @@ import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { View } from "react-native-short-style/mems";
 import useTimer from "../hooks/Timer";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
+import { useNavigation } from '@react-navigation/native';
 
 export default function <T>({
   items,
@@ -48,11 +49,13 @@ export default function <T>({
     ...(hooks ?? [])
   );
   const time = useTimer(100);
-  const horizental = useRef(vMode).current;
+  const swapTimer = useTimer(500);
+  const horizental = vMode !== true
   const onEndReachedCalledDuringMomentum = useRef(true);
   const ref = useRef<FlashListRef<T>>();
   const selected = useRef();
   const { locMem, locMemo } = useFunc();
+  const navigation = useNavigation();
 
   const Render = locMem(({ item, index }: { item: T, index: number }) => {
     let d = { item, vMode: horizental, index };
@@ -127,6 +130,16 @@ export default function <T>({
         ref={locMem(c => {
           ref.current = c as any;
         })}
+
+        onTouchStart={locMem(() => {
+          swapTimer.clear();
+          if (horizental) navigation.setOptions({ swipeEnabled: false });
+        }, navigation, horizental)}
+
+        onTouchEnd={locMem(() => {
+          if (horizental) swapTimer(() => navigation.setOptions({ swipeEnabled: true }));
+        }, navigation, horizental)}
+
         onLoad={onload}
         onContentSizeChange={locMem(() => {
           time(() => scrollTo());
@@ -140,9 +153,16 @@ export default function <T>({
         onScrollBeginDrag={locMem(() => {
           selected.current = true;
         })}
+
+        onMomentumScrollEnd={locMem(() => {
+          if (horizental)
+            swapTimer(() => navigation.setOptions({ swipeEnabled: true }));
+        }, navigation, horizental)}
+
+
         nestedScrollEnabled={nested}
         initialScrollIndex={scrollIndex}
-        horizontal={horizental !== true}
+        horizontal={horizental}
         data={items ?? []}
         refreshing={onRefresh?.loading}
         onRefresh={onRefresh?.onRefresh}

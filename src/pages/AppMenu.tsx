@@ -26,7 +26,7 @@ export default ({ ...props }) => {
         initialRouteName="HOME"
         tabBarPosition="bottom"          // place tab bar at bottom
         screenOptions={({ route }) => ({
-          swipeEnabled: true,           // enable swipe gestures
+          swipeEnabled: true,           // enable swipe gestures,
           tabBarIndicatorStyle: {
             backgroundColor: "#007AFF", // indicator color
             height: 2,

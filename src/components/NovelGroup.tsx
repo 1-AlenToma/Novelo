@@ -115,7 +115,6 @@ export default memo(
         ) : null}
         <View css="fl-1 bac-transparent">
           <ItemList
-
             onRefresh={locMem({ loading: loader.loading && loader.get(), onRefresh: () => getItems(true) })}
             onPress={locMem(item => {
               context.nav.navigate("NovelItemDetail", {
@@ -123,7 +122,6 @@ export default memo(
                 parserName: item.parserName
               });
             })}
-
             vMode={vMode}
             onEndReached={locMem(() => {
               if (!loader.loading) {
