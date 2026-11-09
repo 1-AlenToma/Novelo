@@ -170,7 +170,7 @@ export default ({
                 <Icon
                   size={30}
                   type="MaterialIcons"
-                  name="extension"
+                  name="extension" 
                 />
               }>
               {parserLoader.elem}

@@ -31,6 +31,7 @@ const daysToSave = (nr: number = 5) => {
   return nr;
 }
 const debugg = false;
+const disableInfo = true && debugg;
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
@@ -156,6 +157,8 @@ export default class ParserWrapper extends Parser {
     alertOnError?: boolean
   ) {
     let novel = item;
+    if (disableInfo)
+      return novel;
     switch (this.infoGeneratorName) {
       case "NovelUpdate":
         novel = await this.novelUpdate.search(item);

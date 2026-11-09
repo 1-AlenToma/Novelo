@@ -21,9 +21,6 @@ export default class NovelFull extends Parser {
         this.settings.searchEnabled = true;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
-        this.settings.imagesSize = {
-            height: 80
-        }
     }
 
     async load() {
@@ -60,21 +57,21 @@ export default class NovelFull extends Parser {
 
     toList(html) {
         return html
-            .$(".list-truyen > .row")
+            .$(".li-row")
             .map(x => {
                 return x.map(f => {
-                    if (f.find(".cover").attr("src").has())
+                    if (f.find("img").attr("src").has())
                         return LightInfo.n()
-                            .Name(f.find(".truyen-title").text)
+                            .Name(f.find(".tit").text)
                             .Url(
-                                f.find(".truyen-title a").url("href")
+                                f.find(".tit a").url("href")
                             )
                             .Image(
                                 f
-                                    .find(".cover")
+                                    .find("img")
                                     .url("src")
                             )
-                            .Info(f.find(".text-info").text)
+                            .Info(f.find(".chapter").text)
                             .Decription(f.find(".author").text)
                             .IsNew(
                                 f.find(".label-new, label-hot").hasValue
@@ -134,43 +131,36 @@ export default class NovelFull extends Parser {
 
         let item = DetailInfo.n();
         item
-            .Name(body.find(".books .title").text)
+            .Name(body.find(".col-content .tit").eq(0).text)
             .Url(url)
             .Image(
                 body
-                    .find(".books img")
+                    .find(".col-content .pic img")
                     .url("src")
             )
-            .Decription(body.find(".desc-text").text)
-            .AlternativeNames(
-                body
-                    .find(
-                        '.info h3:contains("Alternative")'
-                    )
-                    .parent.remove("h3").text
-            )
+            .Decription(body.find("#novel-summary-inner").text)
             .Author(
-                body.first('.info a[href*="author"]')
+                body.first('a[href*="author"]')
                     .text
             )
-            .AuthorUrl(body.first('.info a[href*="author"]').url("href"))
+            .AuthorUrl(body.first('a[href*="author"]').url("href"))
             .Genre(
                 body
-                    .find('.info a[href*="genre"]')
+                    .find('a[href*="genre"]')
                     .map(x => x.text)
             )
             .Status(
                 body
                     .find(
-                        '.info h3:contains("Status")'
+                        '.glyphicon[title="Status"]'
                     )
                     .parent.find("a").text
             )
             .Rating(
-                body.first(".desc-text").parent.first("em").text
+                body.first(".vote-summary").text
             )
             .LastUpdated(
-                body.find("div.item-time").text?.trim()
+                body.find(".lastupdate").text?.trim()
             )
             .ParserName(this.name);
         let cHhtml = (
