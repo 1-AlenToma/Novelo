@@ -25,13 +25,13 @@ import WebNovel from "./infos/WebNovel";
 import AnimePlanet from "./infos/AnimePlanet";
 import Memo from "../attr/Memo";
 import { AlertDialog } from "react-native-short-style";
+import {Debugger} from "../JSConstant";
 const daysToSave = (nr: number = 5) => {
   if (!context.appSettings.autoUpdateFavoritNovels)
     return undefined;
   return nr;
 }
-const debugg = false;
-const disableInfo = true && debugg;
+
 export default class ParserWrapper extends Parser {
   parser: Parser;
   novelUpdate: NovelUpdate;
@@ -103,7 +103,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: debugg,
+    isDebug: Debugger.parserDebugger,
     argsOverride: (args: any[]) => {
       return args[0];
     },
@@ -134,7 +134,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: debugg,
+    isDebug: Debugger.parserDebugger,
     argsOverride: (args: any[]) => {
       return [args.firstOrDefault("url")];
     },
@@ -157,7 +157,7 @@ export default class ParserWrapper extends Parser {
     alertOnError?: boolean
   ) {
     let novel = item;
-    if (disableInfo)
+    if (Debugger.disableInfo)
       return novel;
     switch (this.infoGeneratorName) {
       case "NovelUpdate":
@@ -182,7 +182,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: () => daysToSave(20),
-    isDebug: debugg,
+    isDebug: Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
@@ -220,7 +220,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: () => daysToSave(20),
-    isDebug: debugg,
+    isDebug: Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `${key}${target.name}`,
     validator: (data: any) =>
@@ -240,7 +240,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 2,
-    isDebug: debugg,
+    isDebug: Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `group_${key}${target.name}`,
     argsOverride: (args) => [args[0], args[1]],

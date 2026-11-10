@@ -20,6 +20,10 @@ import { Platform, Text } from "react-native";
 import * as icons from '@expo/vector-icons';
 import { useKeepAwake } from "expo-keep-awake";
 import httpServer from './native/HttpServer';
+import ParserTester from './components/ParserTester';
+import { Debugger } from './JSConstant';
+
+
 let colors = NestedStyleSheet.create({
     lightco: "co-#15181f",
     lightbg: "bac-#ffffff",
@@ -153,12 +157,16 @@ const App = () => {
             <HtmlGetter />
             {
                 loader.loading ? loader.elem : fontLoader.loading ? fontLoader.elem : (
-                    <StartUp>
-                        <NavigationContainer>
-                            <AppStack />
-                        </NavigationContainer>
-                        <GlobalFileBrowse />
-                    </StartUp>
+
+                    Debugger.parserTestMode ? <ParserTester /> : (
+                        <StartUp>
+                            <NavigationContainer>
+                                <AppStack />
+                            </NavigationContainer>
+                            <GlobalFileBrowse />
+                        </StartUp>
+                    )
+
                 )
             }
 

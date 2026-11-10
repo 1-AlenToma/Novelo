@@ -2,172 +2,191 @@ import * as React from "react";
 import {
   Text,
   View,
-  StyleSheet,
-  ScrollView
-} from "react-native";
-import { Parser, SearchDetail } from "../native/ParserItems";
+  ScrollView,
+  DropdownList,
+  Button,
+  TextInput,
+  Collabse,
+} from "react-native-short-style";
+import { ChapterDetail, DetailInfo, LightInfo, Parser, ParserDetail, SearchDetail } from "../native/ParserItems";
 import useLoader from "./Loader";
 import { sleep } from "../Methods";
+import ParserWrapper from "../parsers/ParserWrapper";
 
-export default ({
-  parser
-}: {
-  parser: Parser;
-}) => {
-  const [p] = useState({} as Parser);
-  const loader = useLoader(true);
-  const [logs, setLogs] = useState([]);
-  const lastItems = useRef<any>({});
-  let serilize = (item: any) => {
-    let items: any[] = [];
-    if (!item) return [];
+export default () => {
+  const state = buildState({
+    GroupItems: [] as { label: string; value: LightInfo[] }[],
+    book: undefined as DetailInfo | undefined,
+    selectedParser: undefined as ParserWrapper | undefined,
+    searchResult: [] as LightInfo[],
+    collsbeOpen: { groupItems: true, book: true, searchResult: true, chapter: true, settings: true },
+    chapter: undefined as string | ChapterDetail | undefined,
+    parserSettings: undefined as ParserDetail | undefined
+  }).ignore("selectedParser", "book").build();
+  const loader = useLoader(false);
+
+  const loadSettings = async () => {
+    state.parserSettings = await state.selectedParser.load();
+  }
+
+  const loadGroups = async () => {
     try {
-      if (
-        Array.isArray(item) &&
-        typeof item === "object"
-      ) {
-        for (let i of item)
-          items = [...items, ...serilize(i)];
-      } else if (typeof item === "object") {
-        for (let i of Object.keys(item)) {
-          let v = item[i];
-          if (v === undefined || v === null)
-            continue;
-          if (typeof v === "object") {
-            items = [
-              ...items,
-              i + ":-",
-              ...serilize(v)
-            ];
-          } else {
-            items.push(`${i}:"${v}"`);
-          }
-        }
-      } else {
-        items.push(`"${item}"`);
+      loader.show();
+      console.log("Loading parser settings for", state.selectedParser?.name);
+
+      console.log("Loaded parser settings, now loading groups...");
+      for (const group of state.parserSettings.group) {
+        console.log(`Loading group: ${group.text}`);
+        const items = await state.selectedParser.group(group, 1);
+        console.log(`Loaded group: ${group.text}, items count: ${items.length}`);
+        state.GroupItems.push({ label: group.text, value: items });
       }
+
+      loader.hide();
     } catch (e) {
       console.error(e);
     }
-    return items;
-  };
-  const tryfn = async (
-    id: string,
-    fn: Function
-  ) => {
-    let item = {
-      id,
-      text: "testing-",
-      items: [] as any[]
-    };
+    console.log("Finished loading groups.");
+    loader.hide();
+  }
+
+
+  const loadBook = async () => {
     try {
-      let v = await fn();
-      if (!v) {
-        item.text += "value is null";
-      } else {
-        lastItems.current = v;
-        item.items = serilize(v);
-      }
+      loader.show();
+      const grItem = [...state.GroupItems.map(x => x.value).flatMap(x => x), ...state.searchResult];
+      const lNovel = grItem[Math.floor(Math.random() * ((grItem.length - 1) - 0 + 1) + 0)];
+      console.log("Loading book details for", lNovel.name);
+      state.book = await state.selectedParser.detail(lNovel.url, true, "RenewMemo");
+      console.info("book loaded");
+
+
     } catch (e) {
-      item.text += "failed " + e;
+      console.error(e);
     }
 
-    setLogs(x => [...x, item] as any);
-    await sleep(1000);
-  };
-  useEffect(() => {
-    (async () => {
-      /* await tryfn(
-        "load",
-        async () => await p.load()
-      );*/
+    loader.hide();
+  }
 
-      await tryfn(
-        "search",
-        async () =>
-          await p.search(
-            SearchDetail.n().Text("g")
-          )
-      );
+  const loadSearch = async () => {
+    try {
+      loader.show();
+      const search = new SearchDetail("ge")
+      console.log("Loading Search details for", search.text);
+      state.searchResult = await state.selectedParser.search(search, true)
+      console.info("Search loaded");
 
-      await tryfn(
-        "detail",
-        async () =>
-          await p.detail(lastItems.current[0].url)
-      );
-      
-      await tryfn(
-        "chapter",
-        async () =>
-          await p.chapter(lastItems.current.chapters[0].url)
-      );
-    })();
-  }, []);
 
-  useEffect(() => {
-    //console.info(logs);
-  }, [logs]);
+    } catch (e) {
+      console.error(e);
+    }
+
+    loader.hide();
+  }
+
+  const loadChapter = async () => {
+    try {
+      loader.show();
+      const ch = state.book.chapters[0];
+      console.log("Loading chapter details for", ch.name, " with url", ch.url);
+      state.chapter = await state.selectedParser.chapter(ch.url);
+      console.info("chapter loaded");
+
+
+    } catch (e) {
+      console.error(e);
+    }
+
+    loader.hide();
+  }
+
+
+  const getBook = () => {
+    let item = { ...state.book };
+    item.chapters = [item.chapters[0]]
+    return item;
+  }
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={{ width: "100%" }}>
-        <View style={{ flex: 1 }}>
-          {logs.map((x: any, i) => (
-            <View
-              style={{
-                width: "100%"
-              }}
-              key={i + "pr"}
-            >
-              <View style={styles.textContainer}>
-                <Text style={styles.txt}>
-                  {x.id}
-                </Text>
-                <Text style={styles.txt}>
-                  {x.text}
-                </Text>
-              </View>
-              {x.items.map((f: string, index: number) => (
-                <Text
-                  key={index + x.id}
-                  style={[
-                    styles.txt,
-                    {
-                      backgroundColor: f.has(":-") ? "#ccc" : null
-                    } as any
-                  ]}
-                >
-                  {f}
-                </Text>
-              ))}
-            </View>
-          ))}
+    <View css="fl-1 invert pa-10">
+      <DropdownList
+        css="invert"
+        placeHolder="Select Parser"
+        textInputPlaceHolder="Select Parser"
+        render={(item) => <Text css="fos-15 invert">{item.label}</Text>}
+        updateOn={[state.selectedParser]}
+        selectedValue={state.selectedParser?.name}
+        items={context.parser.all.filter(x => x.enabled !== false).map(x => ({ label: x.name, value: x.name }))}
+        onSelect={async ({ value }) => {
+          loader.show();
+          state.batch(async () => {
+            state.selectedParser = context.parser.find(value);
+            state.GroupItems = [];
+            state.book = undefined;
+            state.chapter = undefined;
+            state.parserSettings = undefined;
+            state.searchResult = [];
+            state.collsbeOpen = {} as any;
+            await loadSettings();
+            loader.hide();
+          });
+        }} />
+      <View css="flg-1 mah-60 fld-row juc-center pa-10">
+        <Button css="ma-2" text="Test Search" disabled={!state.selectedParser} onPress={loadSearch} />
+        <Button css="ma-2" text="Load Groups" disabled={!state.selectedParser} onPress={loadGroups} />
+        <Button css="ma-2" text="Test DetailInfo" disabled={!state.GroupItems.has() && !state.searchResult.has()} onPress={loadBook} />
+        <Button css="ma-2" text="Test Chapter" disabled={state.book == undefined || !state.book.chapters.has()} onPress={loadChapter} />
+      </View>
+      <ScrollView css="fl-1">
+        <View ifTrue={state.parserSettings != undefined} css="fl-1 pa-5">
+          <Collabse css="fl-1 mih-" text="ParserSettings" defaultActive={state.collsbeOpen.settings}
+            onActiveStateChange={(open) => state.collsbeOpen.settings = open}>
+            <ScrollView style={{ minHeight: 500 }} css="fl-1" nestedScrollEnabled={true}>
+              <Text selectable={true} css="fos-12" style={{ fontFamily: 'Courier' }}>
+                {[state.parserSettings].niceJson()}
+              </Text>
+            </ScrollView>
+          </Collabse>
+        </View>
+        <View ifTrue={state.GroupItems.has()} css="fl-1 pa-5">
+          <Collabse css="fl-1 mih-" text="Group Items" defaultActive={state.collsbeOpen.groupItems}
+            onActiveStateChange={(open) => state.collsbeOpen.groupItems = open}>
+            <ScrollView style={{ minHeight: 500 }} css="fl-1" nestedScrollEnabled={true}>
+              <Text selectable={true} css="fos-12" style={{ fontFamily: 'Courier' }}>
+                {state.GroupItems.niceJson()}
+              </Text>
+            </ScrollView>
+          </Collabse>
+        </View>
+        <View ifTrue={state.book != undefined} css="fl-1 pa-5">
+          <Collabse css="fl-1" text={`${state.book.name} with ${state.book?.chapters.length} chapters`} defaultActive={state.collsbeOpen.book} onActiveStateChange={(open) => state.collsbeOpen.book = open}>
+            <ScrollView style={{ minHeight: 500 }} css="fl-1" nestedScrollEnabled={true}>
+              <Text selectable={true} css="fos-11" style={{ fontFamily: 'Courier' }}>
+                {[getBook()].niceJson()}
+              </Text>
+            </ScrollView>
+          </Collabse>
+        </View>
+        <View ifTrue={state.searchResult.has()} css="fl-1 pa-5">
+          <Collabse css="fl-1" text="SearchResult" defaultActive={state.collsbeOpen.searchResult} onActiveStateChange={(open) => state.collsbeOpen.searchResult = open}>
+            <ScrollView style={{ minHeight: 500 }} css="fl-1" nestedScrollEnabled={true}>
+              <Text selectable={true} css="fos-11" style={{ fontFamily: 'Courier' }}>
+                {state.searchResult.niceJson()}
+              </Text>
+            </ScrollView>
+          </Collabse>
+        </View>
+        <View ifTrue={state.chapter != undefined} css="fl-1 pa-5">
+          <Collabse css="fl-1" text="Chapter" defaultActive={state.collsbeOpen.chapter} onActiveStateChange={(open) => state.collsbeOpen.chapter = open}>
+            <ScrollView style={{ minHeight: 500 }} css="fl-1" nestedScrollEnabled={true}>
+              <Text selectable={true} css="fos-11" style={{ fontFamily: 'Courier' }}>
+                {[state.chapter].niceJson()}
+              </Text>
+            </ScrollView>
+          </Collabse>
         </View>
       </ScrollView>
+      {loader.elem}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#1F1E17",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    width: "100%",
-    paddingTop: 30
-  },
-  textContainer: {
-    flexDirection: "row",
-    width: "90%",
-    backgroundColor: "red"
-  },
-  txt: {
-    fontSize: 12,
-    color: "#ffffff",
-    padding: 10,
-    borderBottomColor: "#fff",
-    borderBottomWidth: 1,
-    textAlign: "left"
-  }
-});
