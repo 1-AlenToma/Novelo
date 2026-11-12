@@ -22,6 +22,54 @@ class Html {
     }
   }
 
+  /**
+   * Evaluates a chained query DSL string against the current `Html` instance.
+   *
+   * ### Syntax Rules
+   * Steps are separated by `->` and executed left-to-right:
+   * 1. **CSS Selector (default)**: Any unrecognized step is passed to `.find(selector)`.
+   * 2. **Method with Argument (`method::arg`)**: Calls a method on `Html` with the given argument
+   *    (e.g. `attr::href`, `url::data-src|src`, `eq::0`, `closest::li`, `data::id`, `hasClass::active`).
+   * 3. **Getter Property**: Accesses `Html` getters directly
+   *    (`text`, `html`, `outerHtml`, `parent`, `children`, `length`, `hasValue`).
+   *
+   * @example
+   * f.run('.info-meta li h3:contains("Alternative") -> parent -> url::src');
+   *   const genres = body.run<string[]>('.info-meta a[href*="genres"] -> map::text');
+   *  const genreLinks = body.run<string[]>('.info-meta a[href*="genres"] -> map::attr::href');
+   */
+  // Maps every matching genre link to its text -> string[]
+
+  run<T = any>(query: string): T {
+    return query.split("->").map(s => s.trim()).reduce((acc: any, step) => {
+      if (acc == undefined || !step) return acc;
+
+      const idx = step.indexOf("::");
+      const fn = (idx !== -1 ? step.slice(0, idx) : step).trim();
+
+      // 1. Special handling for map::subquery (e.g., "map::text" or "map::attr::href")
+      if (fn === "map" && idx !== -1 && typeof acc.map === "function") {
+        const subQuery = step.slice(idx + 2).trim();
+        return acc.map((x: Html) => x.run(subQuery));
+      }
+
+      // 2. Method with argument (e.g., "attr::href", "first::.info-meta", "eq::0")
+      if (idx !== -1 && typeof acc[fn] === "function") {
+        const arg = step.slice(idx + 2).trim();
+        return acc[fn](fn === "eq" ? Number(arg) : arg);
+      }
+
+      // 3. Getter property on Html (e.g., "text", "html", "parent", "hasValue")
+      const descriptor = Object.getOwnPropertyDescriptor(Html.prototype, fn);
+      if (descriptor && typeof descriptor.get === "function") {
+        return acc[fn];
+      }
+
+      // 4. Fallback: treat the step as a CSS selector for find()
+      return typeof acc.find === "function" ? acc.find(step) : undefined;
+    }, this);
+  }
+
   log(...name: any[]) {
     console.log(...name);
   }
@@ -67,8 +115,8 @@ class Html {
     );
   }
 
-  map(fn: (x: Html, index: number) => any) {
-    let items: any[] = [];
+  map<T>(fn: (x: Html, index: number) => T) {
+    let items: T[] = [];
     this.elements.forEach((x, index) => {
       let item = fn(new Html(x, this.uurl), index);
       if (item !== undefined && item !== null)

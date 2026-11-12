@@ -26,7 +26,7 @@ export default () => {
   const loader = useLoader(false);
 
   const loadSettings = async () => {
-    state.parserSettings = await state.selectedParser.load();
+    state.parserSettings = await state.selectedParser.load("RenewMemo");
   }
 
   const loadGroups = async () => {
@@ -37,7 +37,7 @@ export default () => {
       console.log("Loaded parser settings, now loading groups...");
       for (const group of state.parserSettings.group) {
         console.log(`Loading group: ${group.text}`);
-        const items = await state.selectedParser.group(group, 1);
+        const items = await state.selectedParser.group(group, 1, true, "RenewMemo");
         console.log(`Loaded group: ${group.text}, items count: ${items.length}`);
         state.GroupItems.push({ label: group.text, value: items });
       }
@@ -71,7 +71,7 @@ export default () => {
   const loadSearch = async () => {
     try {
       loader.show();
-      const search = new SearchDetail("ge")
+      const search = new SearchDetail("gen")
       console.log("Loading Search details for", search.text);
       state.searchResult = await state.selectedParser.search(search, true)
       console.info("Search loaded");

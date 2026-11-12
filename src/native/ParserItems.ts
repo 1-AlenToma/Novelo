@@ -22,7 +22,7 @@ class LightInfo extends ChapterInfo {
   type: ParserType = "Novel";
 }
 
-class CommentScript {
+class CommentScript extends GenericType {
   script: string = "";
   url: string = "";
 }
@@ -49,7 +49,7 @@ class DetailInfo extends LightInfo {
   startFromIndex?: number; // only used when downloading the novel 
 }
 
-class Value {
+class Value extends GenericType {
   text: string = "";
   value: any = "";
 }

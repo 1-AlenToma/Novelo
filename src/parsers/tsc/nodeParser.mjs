@@ -34,13 +34,16 @@ try {
         // FORCE TARGET ES5: This outputs the exact __extends, __awaiter, and __generator boilerplate
         const transpileResult = ts.transpileModule(cleanedCode, {
             compilerOptions: {
-                target: ts.ScriptTarget.ES2020,   // Keeps native 'class' and 'extends' blocks intact
-                module: 0,       // Keeps cleanly formatted browser strings
+                target: ts.ScriptTarget.ES2020,
+                module: ts.ModuleKind.CommonJS,
+                esModuleInterop: false,
                 removeComments: true
             }
         });
 
-        const result = transpileResult.outputText;
+        const result = transpileResult.outputText
+            .replace(/^"use strict";\s*/m, "")
+            .replace(/^Object\.defineProperty\(exports,\s*"__esModule".*\r?\n/m, "");
 
         // Output filenames strictly to standard JavaScript (.js)
         const outputFilename = f.replace(/\.ts$/, '.js');

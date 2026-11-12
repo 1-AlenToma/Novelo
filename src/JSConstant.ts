@@ -2,9 +2,9 @@ import { WebViewFetchData } from "./Types";
 import { keyBuilder, get } from "./assets/WebAssets";
 
 export const Debugger = {
-    disableInfo: false, // disable info generation for parsers
+    disableInfo: true, // disable info generation for parsers
     parserTestMode: false, // load only the parser tester in app start
-    parserDebugger: false, //make it so that the parsers data wont be cashed and will be reloaded on every request
+    parserDebugger: true, //make it so that the parsers data wont be cashed and will be reloaded on every request
 }
 
 export const getSystemJS = (settings?: any, methods?: string, ...args: any[]) => {

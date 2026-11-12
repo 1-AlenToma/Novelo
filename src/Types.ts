@@ -6,7 +6,8 @@ import {
   ImageCache,
   FilesZipper,
   Notification,
-  Parser
+  Parser,
+  Html
 } from "./native";
 import FileHandler from "./native/FileHandler"
 import { AppSettings, TableNames } from "./db";
@@ -132,16 +133,22 @@ export const OmitType = <T, K extends keyof T>(Class: new () => T, ...keys: K[])
 
 
 export abstract class GenericType {
-  static n(...items: any[]) {
-    return {} as any;
-  };
+  static n<T extends GenericType>(this: new (...items: any[]) => T, ...items: any[]): T {
+    return new this(...items);
+  }
 
   clone() {
     return this;
   }
 
-  set<D extends keyof this>(key: D, value: typeof this[D]) {
-    this[key] = value;
+  set<K1 extends keyof this>(k1: K1, v1: this[K1]): this;
+  set<K1 extends keyof this, K2 extends keyof this>(k1: K1, v1: this[K1], k2: K2, v2: this[K2]): this;
+  set<K1 extends keyof this, K2 extends keyof this>(k1: K1, v1: this[K1], k2: K2, v2: this[K2], k3: K2, v3: this[K2]): this;
+  set(...args: any[]): this {
+    for (let i = 0; i < args.length; i += 2) {
+      const key = args[i] as keyof this;
+      this[key] = args[i + 1];
+    }
     return this;
   }
 }
@@ -166,7 +173,7 @@ type NestedKeyOf<T extends object, D extends any[] = [0, 0, 0, 0, 0]> = D extend
 type ThemeMode = "light" | "dark";
 export type ISize = {
   height: DimensionValue,
-  width: DimensionValue,
+  width?: DimensionValue,
   x?: number,
   y?: number
 }
@@ -175,7 +182,7 @@ export type Ajax = {
   url: string,
   type: "post" | "get",
   method: "encodedPost" | "formPost"
-  query: object
+  query?: object
 };
 export type WebViewProps = {
   type?: "base64" | "webp";
@@ -238,8 +245,8 @@ export type ReadProps = {
 
 export type GlobalType =
   {
-    navigate:{
-      read:(page: "WatchAnime" | "ReadChapter", item: ReadProps) => boolean;
+    navigate: {
+      read: (page: "WatchAnime" | "ReadChapter", item: ReadProps) => boolean;
     }
     appState: {
       state: string;

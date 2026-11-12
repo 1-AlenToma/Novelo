@@ -1,4 +1,4 @@
-const {
+import {
     HttpHandler,
     Html,
     Value,
@@ -8,7 +8,7 @@ const {
     ParserDetail,
     SearchDetail,
     Parser
-} = require("../native");
+} from "../native";
 
 export default class MangaKakalot extends Parser {
     constructor() {
@@ -22,35 +22,32 @@ export default class MangaKakalot extends Parser {
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
-        this.minVersion = 122;
+        this.minVersion = 155;
         this.protected = true;
 
     }
 
     async load() {
-        let html = (
-            await this.http.web_view(this.url, this.url)
-        ).html;
+        let html = (await this.http.web_view(this.url, this.url)).html;
 
-        this.settings.Genre(
-            html.$(".panel-category table td a").filter(x => x.attr("href").has("genre/")).map(x =>
-                Value.n()
-                    .Text(x.text)
-                    .Value(x.attr("href"))
-            )
+        this.settings.set("genre",
+            html.$(".panel-category table td a").filter(x => x.attr("href").has("genre/"))
+                .map(x => Value.n()
+                    .set("text", x.text)
+                    .set("value", x.attr("href")))
         );
 
-        this.settings.Group(
+        this.settings.set("group",
             [
                 Value.n()
-                    .Text("Latest Manga")
-                    .Value("/manga-list/latest-manga"),
+                    .set("text", "Latest Manga")
+                    .set("value", "/manga-list/latest-manga"),
                 Value.n()
-                    .Text("Hot Manga")
-                    .Value("/manga-list/hot-manga"),
+                    .set("text", "Hot Manga")
+                    .set("value", "/manga-list/hot-manga"),
                 Value.n()
-                    .Text("New Manga")
-                    .Value("/manga-list/new-manga")
+                    .set("text", "New Manga")
+                    .set("value", "/manga-list/new-manga")
             ]
         );
         //console.warn([this.settings].niceJson());
@@ -59,25 +56,25 @@ export default class MangaKakalot extends Parser {
 
 
 
-    parse(html) {
+    parse(html: Html) {
 
         let items = html.$(".panel_story_list .story_item,.truyen-list .list-truyen-item-wrap,.list-comic-item-wrap")
             .map(f => {
                 let name = f.find(".story_name a").hasValue ? f.find(".story_name a") : f.first("img").parent;
                 let title = name.attr("title").has() ? name.attr("title") : name.text;
                 return LightInfo.n()
-                    .Name(title)
-                    .Url(name.url("href"))
-                    .Type("Manga")
-                    .Image(f.find("img").url("src", { Referer: this.url + "/" }))
-                    .Info(f.first(".story_item_right .story_chapter, .list-story-item-wrap-chapter").text)
-                    .ParserName(this.name);
+                    .set("name", title)
+                    .set("url", name.url("href"))
+                    .set("type", "Manga")
+                    .set("image", f.find("img").url("src", { Referer: this.url + "/" }))
+                    .set("info", f.run("first::.story_item_right .story_chapter, .list-story-item-wrap-chapter -> text"))
+                    .set("parserName", this.name);
             });
         // console.warn("items", items,  html.html)
         return items;
     }
 
-    async search(options) {
+    async search(options: SearchDetail) {
         let url = this.url.join("search/story/", options.text.replace(/ /g, "_"));
         if (options.group?.has()) {
             url = this.url.join(options.group.lastOrDefault("value"));
@@ -97,13 +94,11 @@ export default class MangaKakalot extends Parser {
         return this.parse(html);
     }
 
-    async group(value, page) {
-        return await this.search(
-            SearchDetail.n().Group([value]).Page(page)
-        );
+    async group(value: Value, page: number) {
+        return await this.search(SearchDetail.n().set("group", [value], "page", page));
     }
 
-    async getByAuthor(url) {
+    async getByAuthor(url: string) {
         let html = (
             await this.http.web_view(url, this.url)
         ).html;
@@ -111,7 +106,7 @@ export default class MangaKakalot extends Parser {
         return this.parse(html);
     }
 
-    async chapter(url) {
+    async chapter(url: string) {
         let html = (
             await this.http.web_view(url, this.url)
         ).html;
@@ -127,9 +122,9 @@ export default class MangaKakalot extends Parser {
             if (json.data.chapters.length <= 0)
                 return [];
             return json.data.chapters.map(a => ChapterInfo.n()
-                .Name(a.chapter_name)
-                .Url(uurl.join(a.chapter_slug))
-                .ParserName(this.name)).reverse();
+                .set("name", a.chapter_name)
+                .set("url", uurl.join(a.chapter_slug))
+                .set("parserName", this.name)).reverse();
 
         } catch (e) {
             console.error(e)
@@ -137,51 +132,26 @@ export default class MangaKakalot extends Parser {
         }
     }
 
-    async detail(url) {
-        let html = (
-            await this.http.web_view(url, this.url)
-        ).html;
+    async detail(url: string) {
+        let html = (await this.http.web_view(url, this.url)).html;
         let body = html.find("body");
 
         let item = DetailInfo.n();
         item
-            .Name(body.find('.manga-info-text h1').text)
-            .Url(url)
-            .Type("Manga")
-            .Image(
-                body
-                    .find('.manga-info-pic img')
-                    .url("src", { Referer: this.url + "/" })
-            )
-            .Decription(body.find("#contentBox").text)
-            .Author(
-                body.find('.manga-info-text a[href*="author"]')
-                    .text
-            )
-            .AuthorUrl(
-                body.find('.manga-info-text a[href*="author"]').url("href")
-            )
-            .Genre(
-                body
-                    .find('.manga-info-text[href*="genre"]')
-                    .map(x => x.text)
-            )
-            .Status(
-                body
-                    .find(
-                        '.manga-info-text li:contains("Status")'
-                    ).text.safeSplit(":", 1)
-            )
-            .Rating(
-                body
-                    .find('#rate_row_cmd').text
-            )
-            .LastUpdated(
-                body.first('.manga-info-text li:contains("Last updated")').text.safeSplit(":", 1)
-            )
-            .ParserName(this.name);
+            .set("name", body.run('.manga-info-text h1 -> text'))
+            .set("url", url)
+            .set("type", "Manga")
+            .set("image", body.find('.manga-info-pic img').url("src", { Referer: this.url + "/" }))
+            .set("decription", body.run("#contentBox -> text"))
+            .set("author", body.run('.manga-info-text a[href*="author"] -> text'))
+            .set("authorUrl", body.run('.manga-info-text a[href*="author"] -> url::href'))
+            .set("genre", body.run('.manga-info-text[href*="genre"] -> map::text'))
+            .set("status", body.run('.manga-info-text li:contains("Status") -> text').safeSplit(":", 1))
+            .set("rating", body.run('#rate_row_cmd -> text'))
+            .set("lastUpdated", body.run('first::.manga-info-text li:contains("Last updated")').safeSplit(":", 1))
+            .set("parserName", this.name);
 
-        item.Chapters(await this.getChapters(url))
+        item.set("chapters", await this.getChapters(url))
 
         /*  item.Chapters(
               body.findAll(".manga-info-chapter .chapter-list a")

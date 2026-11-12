@@ -10,13 +10,9 @@ import ReadNovelFull from "./ReadNovelFull";
 import NovelFull from "./NovelFull";
 import NovelFullCom from "./NovelFullCom";
 import MangaBerri from "./MangaBerri";
-import NovelBin from "./Novelbin";
-import NovelBinCom from "./NovelBinCom";
 import GogoAnime from "./GogoAnime";
 import MangaKakalot from "./MangaKakalot";
-import KunManga from "./KunManga";
 import RizzFables from "./RizzFables";
-import ManHwaClan from "./ManHwaClan";
 import WTRLabCom from "./WtrLabCom";
 
 import NovelUpdate from "./infos/NovelUpdates";
@@ -25,7 +21,7 @@ import WebNovel from "./infos/WebNovel";
 import AnimePlanet from "./infos/AnimePlanet";
 import Memo from "../attr/Memo";
 import { AlertDialog } from "react-native-short-style";
-import {Debugger} from "../JSConstant";
+import { Debugger } from "../JSConstant";
 const daysToSave = (nr: number = 5) => {
   if (!context.appSettings.autoUpdateFavoritNovels)
     return undefined;
@@ -83,14 +79,10 @@ export default class ParserWrapper extends Parser {
     let prs = [ReadNovelFull,
       NovelFullCom,
       NovelFull,
-      NovelBinCom,
-      NovelBin,
       RizzFables,
-      KunManga,
       MangaKakalot,
       MangaBerri,
       GogoAnime,
-      ManHwaClan,
       WTRLabCom
     ].map(
       x => new ParserWrapper(new (x as any)())
