@@ -17,6 +17,7 @@ const webViewDefaultProps = {
   javaScriptEnabled: true,
   domStorageEnabled: true,
   cacheEnabled: true,
+  incognito: false,
   androidLayerType: "software",
   // userAgent: "Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
 
@@ -136,7 +137,7 @@ export default () => {
       return htmlContext.html.data.filter(d =>
         !state.protection.some(x => d.baseUrl === x.baseUrl)
       )
-    }catch(e){
+    } catch (e) {
       console.error(e);
       throw "protected could no be verified"
     }

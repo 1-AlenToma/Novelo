@@ -310,13 +310,11 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             },
             deleteParser: async (...parserNames: string[]) => {
                 await context.batch(async () => {
-                    for (let name of parserNames) {
-                        data.appSettings.parsers = data.appSettings.parsers.filter(x => x.name !== name);
-                    }
+                    data.appSettings.parsers = data.appSettings.parsers.filter(x => !parserNames.includes(x.name));
                     data.parser.all = data.parser.all.filter(x => !parserNames.includes(x.name));
-                    await data.appSettings.saveChanges();
                     if (parserNames.includes(data.parser.current.name) && data.parser.all.has())
                         data.parser.set(data.parser.all[0]);
+                    await data.appSettings.saveChanges();
                 })
             },
             all: []

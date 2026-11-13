@@ -63,8 +63,7 @@ export default class MangaFire extends Parser {
     async search(options: SearchDetail) {
         let url = this.url.join("browse").query({
             q: options.text.replace(/ /gmi, "+"),
-            sort: options.genre?.firstOrDefault("value") ?? "Latest",
-            status: options.status?.firstOrDefault("value") ?? "",
+            sort: options.status?.firstOrDefault("value") ?? "Latest",
             genre: options.genre.firstOrDefault("value") ?? ""
         });
 
@@ -88,7 +87,7 @@ export default class MangaFire extends Parser {
     }
 
     async group(value: Value, page: number) {
-        return await this.search(SearchDetail.n().set("group", [value], "page", page));
+        return await this.search(SearchDetail.n().set("status", [value], "page", page));
     }
 
     async getByAuthor(url: string) {

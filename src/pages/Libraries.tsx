@@ -33,9 +33,9 @@ const addToDelete = (parserName: string, onBegin: Function, onEnd: Function) => 
             item.favorit = false;
             await item.saveChanges();
           } else await context.db.deleteBook(item.id);
-          context.parser.deleteParser(pName);
-          deleteQue.delete(pName);
         }
+        context.parser.deleteParser(pName);
+        deleteQue.delete(pName);
       }
       onEnd?.()
     }
