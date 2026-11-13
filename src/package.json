@@ -26,7 +26,8 @@
     "js": "jsjoiner join -o /data/data/com.termux/files/home/Novelo/assets/index.ts -f '/storage/emulated/0/Documents/Projects/ContextMenu/*.js.css'",
     "check:circles": "madge ./ --circular",
     "connect": "adb connect 127.0.0.1:5555",
-    "clearGrade": "cd D: && python \"cureppted files check.py\" \"C:\\Users\\alen\\.gradle\\caches.old\""
+    "clearGrade": "cd D: && python \"cureppted files check.py\" \"C:\\Users\\alen\\.gradle\\caches.old\"",
+    "preBuild": "npx expo prebuild --platform android --clean"
   },
   "codegenConfig": {
     "name": "EpubZipperSpec",

@@ -172,7 +172,7 @@ class Player {
 
   getImage = async (...href: IImage[]) => {
     try {
-      console.warn("here ")
+
       let imgs: (IImage & { cn: any, path?: string, })[] = [];
       let path = this.novel?.imagePath as string;
       if (path) {

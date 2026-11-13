@@ -116,6 +116,14 @@ class HttpValue {
     this.httpError = httpError;
   }
 
+  removeScripts() {
+    this.value = this.value
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+
+      return this;
+  }
+
   cleanUnfinishedAttributes(html) {
     return html.replace(/<(\w+)([^>]*)>/g, (match, tag, attrs) => {
       // Match only properly formatted attributes with non-empty values

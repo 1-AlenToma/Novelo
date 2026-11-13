@@ -27,7 +27,7 @@ export default class MangaFire extends Parser {
     }
 
     async load() {
-        let html = (await this.http.get_html(this.url.join("browse"))).html;
+        let html = (await this.http.get_html(this.url.join("browse"))).removeScripts().html;
 
         this.settings.set("genre",
             html
@@ -70,7 +70,7 @@ export default class MangaFire extends Parser {
 
         let html = (
             await this.http.get_html(url, this.url)
-        ).html;
+        ).removeScripts().html;
         let data = html.$(".manga-card")
             .map(f => {
                 let name = f.findAll("h3");
@@ -103,10 +103,9 @@ export default class MangaFire extends Parser {
     }
 
     async detail(url: string) {
-        let html = (await this.http.get_html(url, this.url)).html;
+        let html = (await this.http.get_html(url, this.url)).removeScripts().html;
 
-        let body = html.find(".container");
-
+        let body = html.find("body");
         let item = DetailInfo.n();
         item
             .set("name", body.run('.detail h1 -> text'))
@@ -133,7 +132,6 @@ export default class MangaFire extends Parser {
                         .set("parserName", this.name)
                 ).reverse()
         );
-
         return item;
     }
 }
