@@ -185,19 +185,20 @@ const Libraries = ({ ...props }) => {
   }, [])
 
   const loadAddedParsers = (parser: Parser) => {
-    if (!state.refItem.lodadedParser.some(x => x.name === parser.name))
+    if (!state.refItem.lodadedParser.some(x => x.name === parser.name)) {
       state.refItem.lodadedParser.push(parser);
-    lodadedParsertimer(() => {
-      try {
+      lodadedParsertimer(() => {
+        try {
 
-        if (context.appSettings.parsers && context.appSettings.parsers.has()) {
-          let notFoundParsers = context.appSettings.parsers.filter(x => !state.refItem.lodadedParser.some(s => s.name == x.name));
-          notFoundParsers.forEach(f => addToDelete(f.name, () => loader.show(), () => loader.hide()));
+          if (context.appSettings.parsers && context.appSettings.parsers.has()) {
+            let notFoundParsers = context.appSettings.parsers.filter(x => !state.refItem.lodadedParser.some(s => s.name == x.name));
+            notFoundParsers.forEach(f => addToDelete(f.name, () => loader.show(), () => loader.hide()));
+          }
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-      }
-    })
+      })
+    }
   }
 
   const loadeParser = async () => {
