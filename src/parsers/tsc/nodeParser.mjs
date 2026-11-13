@@ -25,7 +25,7 @@ try {
     const files = fs.readdirSync(parserPath).filter(x => x.endsWith(".js") || x.endsWith(".ts"));
     deleteFolderRecursive(des);
 
-    for (let f of files) {
+    for (let f of files.filter(x=> !x.includes("ParserWrapper"))) {
         const code = fs.readFileSync(path.join(parserPath, f)).toString();
 
         // Clean out your custom default exports structure

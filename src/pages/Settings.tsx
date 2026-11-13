@@ -63,8 +63,6 @@ export default (props: any) => {
           context.parser.set(context.parser.current);// update the parser which will trigger load
           console.warn("Cache Deleted")
 
-
-
         } catch (e) {
           console.error(e);
         }

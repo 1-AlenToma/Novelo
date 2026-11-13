@@ -135,7 +135,6 @@ export default class MangaKakalot extends Parser {
     async detail(url: string) {
         let html = (await this.http.web_view(url, this.url)).removeScripts().html;
         let body = html.find("body");
-
         let item = DetailInfo.n();
         item
             .set("name", body.run('.manga-info-text h1 -> text'))

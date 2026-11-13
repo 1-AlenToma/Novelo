@@ -3,7 +3,7 @@ import {
   ItemList,
   useLoader,
 } from "../components";
-import { View, Text, Icon, AlertDialog, Button, ScrollView } from "react-native-short-style";
+import { View, Text, Icon, AlertDialog, Button, ScrollView, useTimer } from "react-native-short-style";
 import * as React from "react";
 import Header from "./Header";
 import { useView } from "../hooks";
@@ -13,7 +13,38 @@ import { Parser } from "../native/ParserItems";
 
 
 type BtnTextType = "Install" | "Update" | "Uninstall";
-const ListItem = ({ item, zip }: any) => {
+
+const deleteQue: Map<string, string> = new Map();
+let deleteQueTimer = undefined;
+
+const addToDelete = (parserName: string, onBegin: Function, onEnd: Function) => {
+  deleteQue.set(parserName, parserName);
+  clearTimeout(deleteQueTimer);
+  deleteQueTimer = setTimeout(async () => {
+    const parserNames = [...deleteQue.keys()];
+    const answer = await AlertDialog.confirm({ title: "Missing Parsers", message: `${[...deleteQue.keys()].join()} no longer work. should i remove them from the app.\nnote: that will also clear all added books in favorit section that depends on those parsers.` })
+    if (answer) {
+      onBegin?.()
+      for (let pName of parserNames) {
+        const favItems = await context.db.Books.query.where.column(x => x.parserName).equalTo(pName).and.column(x => x.favorit).equalTo(true).toList();
+        for (const item of favItems) {
+          let file = await context.files.exists("".fileName(item.name, item.parserName));
+          if (file) {
+            item.favorit = false;
+            await item.saveChanges();
+          } else await context.db.deleteBook(item.id);
+
+          deleteQue.delete(pName);
+        }
+      }
+      onEnd?.()
+    }
+
+  }, 1000);
+}
+
+
+const ListItem = ({ item, zip, onParsed }: { item: string, zip: JSZip, onParsed: (parser: Parser) => void }) => {
   const state = buildState(() =>
   ({
     btnText: "Install" as BtnTextType,
@@ -28,10 +59,9 @@ const ListItem = ({ item, zip }: any) => {
       state.parserCode = await zip.file(item)?.async("text");
       if (state.parserCode) {
         let classfn = context.parser.parseCode(state.parserCode);
-        if (classfn)
-        {
-          console.log("classfn", classfn)
-            state.parser = new classfn();
+        if (classfn) {
+          //console.log("classfn", classfn)
+          state.parser = new classfn();
         }
       }
     } catch (e) {
@@ -43,6 +73,7 @@ const ListItem = ({ item, zip }: any) => {
   const validate = () => {
     if (!state.parser)
       return
+    onParsed(state.parser);
     let appSettings = context.appSettings;
     let btnText: BtnTextType = "Install";
     if (!appSettings.parsers)
@@ -133,6 +164,7 @@ const ListItem = ({ item, zip }: any) => {
 
 const Libraries = ({ ...props }) => {
   const libUrl = "https://raw.githubusercontent.com/1-AlenToma/Novelo/refs/heads/main/parsers2.zip";
+  const lodadedParsertimer = useTimer(2000);
   const [render, state, loader] = useView({
     component: ItemList,
     loader: {
@@ -140,8 +172,9 @@ const Libraries = ({ ...props }) => {
       value: true
     },
     state: {
-      parserNames: [] as string[],
+      parserFileNames: [] as string[],
       refItem: {
+        lodadedParser: [] as Parser[],
         zip: undefined as JSZip | undefined
       }
     }
@@ -151,6 +184,24 @@ const Libraries = ({ ...props }) => {
     loadeParser();
   }, [])
 
+  const loadAddedParsers = (parser: Parser) => {
+    console.log("parser", state.refItem)
+    if (!state.refItem.lodadedParser.find(x => x.name === parser.name))
+      state.refItem.lodadedParser.push(parser);
+    lodadedParsertimer(() => {
+      try {
+
+        if (context.appSettings.parsers && context.appSettings.parsers.has()) {
+          let notFoundParsers = context.appSettings.parsers.filter(x => !state.refItem.lodadedParser.find(s => s.name == x.name));
+          notFoundParsers.forEach(f => addToDelete(f.name, () => loader.show(), () => loader.hide()));
+        }
+      } catch (e) {
+        console.error(e);
+
+      }
+    })
+  }
+
   const loadeParser = async () => {
     try {
       loader.show()
@@ -159,7 +210,7 @@ const Libraries = ({ ...props }) => {
         throw "Parsers could not be reached";
       const blob = await response.arrayBuffer();
       state.refItem.zip = await JSZip.loadAsync(blob);
-      state.parserNames = Object.keys(state.refItem.zip.files ?? {}).filter(x => x.endsWith(".js")).reverse();
+      state.parserFileNames = Object.keys(state.refItem.zip.files ?? {}).filter(x => x.endsWith(".js")).reverse();
     } catch (e) {
       if (!__DEV__)
         AlertDialog.toast({ type: "Info", title: "Network Error", message: "Extensions could no be loaded,Something went wrong when fetching the data, please check your internet connection." });
@@ -182,8 +233,8 @@ const Libraries = ({ ...props }) => {
           <View css="itemListContainer">
             <Text css="desc fos-12 co-red fow-bold tea-left wi-100% pal-5">Browse between installed parsers in Home tab </Text>
             {render(undefined, {
-              items: state.parserNames,
-              container: ({ item }: any) => <ListItem zip={state.refItem.zip} item={item} />,
+              items: state.parserFileNames,
+              container: ({ item }: any) => <ListItem zip={state.refItem.zip} item={item} onParsed={(p)=> loadAddedParsers.bind(state)(p)} />,
               itemCss: "clearwidth ali:center juc:center mab:5 overflow bor:5",
               vMode: true
             })}
