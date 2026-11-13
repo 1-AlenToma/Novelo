@@ -36,7 +36,7 @@ export default class ParserWrapper extends Parser {
   animePlanetInfo: AnimePlanet;
   infoGeneratorName: InfoGeneratorName = "NovelUpdate";
   infoEnabled: boolean = true;
-  enabled?: boolean;
+
   constructor(parser: Parser) {
     super(parser.url, parser.name, parser.icon, parser.type);
     this.parser = parser;
@@ -95,7 +95,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: Debugger.parserDebugger,
+    isDebug: ()=> Debugger.parserDebugger,
     argsOverride: (args: any[]) => {
       return args[0];
     },
@@ -126,7 +126,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: Debugger.parserDebugger,
+    isDebug: ()=> Debugger.parserDebugger,
     argsOverride: (args: any[]) => {
       return [args.firstOrDefault("url")];
     },
@@ -174,7 +174,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: () => daysToSave(20),
-    isDebug: Debugger.parserDebugger,
+    isDebug: ()=> Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
@@ -212,7 +212,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: () => daysToSave(20),
-    isDebug: Debugger.parserDebugger,
+    isDebug: ()=> Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `${key}${target.name}`,
     validator: (data: any) =>
@@ -232,7 +232,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 2,
-    isDebug: Debugger.parserDebugger,
+    isDebug: ()=> Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `group_${key}${target.name}`,
     argsOverride: (args) => [args[0], args[1]],

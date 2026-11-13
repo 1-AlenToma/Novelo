@@ -111,7 +111,7 @@ class HttpValue {
     baseUrl?: string,
     httpError?: HttpError
   ) {
-    this.value = value;
+    this.value = value ?? "";
     this.baseUrl = baseUrl || "";
     this.httpError = httpError;
   }

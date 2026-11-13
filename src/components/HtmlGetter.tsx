@@ -132,15 +132,14 @@ export default () => {
 
 
   const iProtected = useMemo(() => {
-    /*  htmlContext.html.data.forEach(x => {
-        if (state.protection.some(p => p.baseUrl == x.baseUrl)) {
-          x.created = new Date();
-        }
-      });*/
-
-    return htmlContext.html.data.filter(d =>
-      !state.protection.some(x => d.baseUrl === x.baseUrl)
-    )
+    try {
+      return htmlContext.html.data.filter(d =>
+        !state.protection.some(x => d.baseUrl === x.baseUrl)
+      )
+    }catch(e){
+      console.error(e);
+      throw "protected could no be verified"
+    }
   },
     [htmlContext.html.updatedNr, state.protection]);
 

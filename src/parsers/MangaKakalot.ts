@@ -127,13 +127,14 @@ export default class MangaKakalot extends Parser {
                 .set("parserName", this.name)).reverse();
 
         } catch (e) {
-            console.error(e)
+            console.error("getChapters", e)
             return [];
         }
     }
 
     async detail(url: string) {
         let html = (await this.http.web_view(url, this.url)).removeScripts().html;
+        console.log("buildning that data")
         let body = html.find("body");
         let item = DetailInfo.n();
         item
@@ -152,15 +153,6 @@ export default class MangaKakalot extends Parser {
 
         item.set("chapters", await this.getChapters(url))
 
-        /*  item.Chapters(
-              body.findAll(".manga-info-chapter .chapter-list a")
-                  .map(a =>
-                      ChapterInfo.n()
-                          .Name(a.text)
-                          .Url(a.url("href"))
-                          .ParserName(this.name)
-                  ).reverse()
-          );*/
         return item;
     }
 }

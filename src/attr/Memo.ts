@@ -1,38 +1,41 @@
-import {
-  DataCache,
-  MemorizeOptions
-} from "../Types";
-import { sleep, days_between } from "../Methods";
+import { DataCache, MemorizeOptions } from "../Types";
+import { days_between } from "../Methods";
 import Storage from "./Storage";
+
+const inFlightRequests = new Map<string, Promise<any>>();
 
 const getKey = (
   option: MemorizeOptions,
   propertyName: string,
   target: any,
   ...args: any[]
-) => {
-  if (option.argsOverride)
-    args = option.argsOverride(args); 
-  let key = JSON.stringify(args);
-  if (!option.argsOverride)
-    key += propertyName;
+): string => {
+  const effectiveArgs = option.argsOverride ? option.argsOverride(args) : args;
+  let key = JSON.stringify(effectiveArgs) ?? "";
 
-  if (option.keyModifier !== undefined)
+  if (!option.argsOverride) {
+    key += propertyName;
+  }
+
+  if (option.keyModifier !== undefined) {
     key += option.keyModifier(target, key);
-  key = "memoizing." + key.replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\%|\’|\+|\?|\!)/gim, "").toLowerCase();
+  }
+
+  key =
+    "memoizing." +
+    key
+      .replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\%|\’|\+|\?|\!)/gim, "")
+      .toLowerCase();
+
   return key.toLowerCase() + ".json";
 };
 
-const callingFun = new Map<string, boolean>();
-
-export default function Memorize(
-  option: MemorizeOptions
-) {
-  if (!option.storage)
-    option.storage = new Storage();
+export default function Memo(option: MemorizeOptions) {
   if (!option.storage) {
-    console.error("storage cannnot be null");
-    throw "storage cannnot be null";
+    option.storage = new Storage();
+  }
+  if (!option.storage) {
+    throw new Error("storage cannot be null");
   }
 
   return function (
@@ -40,72 +43,97 @@ export default function Memorize(
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    const currentFn = descriptor.value as (
-      ...args: any[]
-    ) => Promise<any>;
+    const currentFn = descriptor.value as (...args: any[]) => Promise<any>;
+
     descriptor.value = async function (...args: any[]) {
-      let RenewMemo = args.some(x => x == "RenewMemo");
-      args = args.filter(x => x != "RenewMemo" && x !== undefined && x !== null);
+      const renewMemo = args.some((x) => x === "RenewMemo");
+      const cleanArgs = args.filter((x) => x !== "RenewMemo");
+
       const folder = option.folder ? option.folder(this) : undefined;
-      let key = getKey(
-        option,
-        propertyKey,
-        this,
-        ...args
-      );
+      let key = getKey(option, propertyKey, this, ...cleanArgs);
 
-      if (folder && folder.has())
+      if (folder && folder.has()) {
         key = folder.path(key);
-      while (callingFun.has(key)) await sleep(100);
-      let data = null as DataCache | null;
-      callingFun.set(key, true);
-      try {
-        if (option.storage) {
-          if ((await option.storage.has(key)) && !option.isDebug) {
-            data = await option.storage.get(key);
-          }
+      }
 
-          if (data && typeof data.date === "string")
-            data.date = new Date(data.date);
-          const dayesToSave = typeof option.daysToSave == "function" ? option.daysToSave() : option.daysToSave;
+      // Coalesce concurrent requests instead of polling with while/sleep
+      const existingRequest = inFlightRequests.get(key);
+      if (existingRequest) {
+        return existingRequest;
+      }
 
-          if (!data || RenewMemo || (dayesToSave != undefined && days_between(data.date) >= dayesToSave) || (option.updateIfTrue && option.updateIfTrue(data.data))) {
-            try {
-              let data2 = await currentFn.bind(this)(...args);
-              if (!option.isDebug) {
-                if (data2) {
-                  if (!option.validator || option.validator(data2)) {
-                    await option.storage.set(key,
-                      {
-                        date: new Date(),
-                        data: data2
-                      }
-                    );
-                    return data2;
+      const requestPromise = (async () => {
+        let data: DataCache | null = null;
+        const isDebug =
+          typeof option.isDebug === "function"
+            ? option.isDebug()
+            : Boolean(option.isDebug);
+
+        try {
+          if (option.storage) {
+            if (!isDebug && (await option.storage.has(key))) {
+              data = await option.storage.get(key);
+            }
+
+            if (data && typeof data.date === "string") {
+              data.date = new Date(data.date);
+            }
+
+            const daysToSave =
+              typeof option.daysToSave === "function"
+                ? option.daysToSave()
+                : option.daysToSave;
+
+            const shouldFetch =
+              !data ||
+              renewMemo || (daysToSave !== undefined && days_between(data.date) >= daysToSave) || 
+              (option.updateIfTrue && option.updateIfTrue(data.data));
+
+            if (shouldFetch) {
+              try {
+                const freshData = await currentFn.apply(this, cleanArgs);
+
+                if (isDebug) {
+                  return freshData;
+                }
+
+                if (freshData !== undefined && freshData !== null) {
+                  if (!option.validator || option.validator(freshData)) {
+                    await option.storage.set(key, {
+                      date: new Date(),
+                      data: freshData,
+                    });
+                    return freshData;
                   } else {
                     if (data) {
                       data.date = new Date();
-                      await option.storage.set(key, data); // extend the date
+                      await option.storage.set(key, data);
                     }
-                    return data?.data ?? data2;
+                    return data?.data ?? freshData;
                   }
                 }
-              } else
-                data = {
-                  data: data2,
-                  date: new Date()
-                };
-            } catch (e) {
-              console.error("MemoizingError", e, propertyKey, descriptor);
+              } catch (e) {
+                console.error("MemoizingError", e, propertyKey);
+              }
             }
           }
+
+          return data?.data;
+        } catch (e) {
+          console.error("MemoizingError", e, propertyKey);
+          return data?.data;
         }
-        return data?.data;
-      } catch (e) {
-        console.error("MemoizingError", e, propertyKey, descriptor);
+      })();
+
+      inFlightRequests.set(key, requestPromise);
+
+      try {
+        return await requestPromise;
       } finally {
-        callingFun.delete(key);
+        inFlightRequests.delete(key);
       }
     };
-  } as any
+
+    return descriptor;
+  };
 }

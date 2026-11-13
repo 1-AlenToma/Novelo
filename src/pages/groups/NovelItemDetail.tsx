@@ -71,13 +71,12 @@ export default ({ ...props }: any) => {
               .and.column(x => x.parserName)
               .equalTo(parserName)
               .firstOrDefault();
+            loadInfo(novel);
+            await fetchAuthorNovels();
           }
-
-          loadInfo(novel);
-          await fetchAuthorNovels();
         }
       } catch (e) {
-        console.error(e);
+        console.error("Error in NovelDetail", e);
       } finally {
         loader.hide();
       }
@@ -340,11 +339,11 @@ export default ({ ...props }: any) => {
                         onPress={locMem(item => {
                           chapterRef.current?.close();
                           context.navigate.read(state.novel.type == "Anime" || parser?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                              name: state.novel.name,
-                              chapter: item.url,
-                              url: state.novel.url,
-                              parserName: state.novel.parserName
-                            });
+                            name: state.novel.name,
+                            chapter: item.url,
+                            url: state.novel.url,
+                            parserName: state.novel.parserName
+                          });
                         })}
                         current={
                           state.novel?.chapters?.at(
@@ -476,10 +475,10 @@ export default ({ ...props }: any) => {
                 css="mar:5 button pa:5 wi:65% clearheight invert"
                 onPress={locMem(() => {
                   context.navigate.read(state.novel.type == "Anime" || context.parser.find(state.novel.parserName)?.type == "Anime" ? "WatchAnime" : "ReadChapter", {
-                      name: state.novel.name,
-                      url: state.novel.url,
-                      parserName: state.novel.parserName
-                    });
+                    name: state.novel.name,
+                    url: state.novel.url,
+                    parserName: state.novel.parserName
+                  });
                 })}>
                 <Text
                   css="fos:30 tea-center wi-100%">

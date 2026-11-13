@@ -70,13 +70,13 @@ const generateTTsConfig = (name: TTSNames, fileName: string, sampleRate: number 
 }
 
 
-const data: IGlobalState = StateBuilder<GlobalType>( 
+const data: IGlobalState = StateBuilder<GlobalType>(
     () => ({
         navigate: {
-            read:(page, item: any)=> {
-                if (!httpServer.started){
+            read: (page, item: any) => {
+                if (!httpServer.started) {
                     AlertDialog.alert("Ops: Background Service did not start, please wait..");
-                   return false;
+                    return false;
                 }
                 data.nav.navigate(page, item);
                 return true
@@ -307,6 +307,17 @@ const data: IGlobalState = StateBuilder<GlobalType>(
 
                 // data.updater = newId();
                 //alert(p.name)
+            },
+            deleteParser: async (...parserNames: string[]) => {
+                await context.batch(async () => {
+                    for (let name of parserNames) {
+                        data.appSettings.parsers = data.appSettings.parsers.filter(x => x.name !== name);
+                    }
+                    data.parser.all = data.parser.all.filter(x => !parserNames.includes(x.name));
+                    await data.appSettings.saveChanges();
+                    if (parserNames.includes(data.parser.current.name) && data.parser.all.has())
+                        data.parser.set(data.parser.all[0]);
+                })
             },
             all: []
         },

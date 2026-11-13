@@ -47,10 +47,10 @@ export default function <T>({
   const itemState = buildState<ViewState<T>>(() =>
   (
     {
+      refItem: gProps.refItem ?? {},
       ...(state ?? {}),
       size: { width: 0, height: 0 },
       update: () => update(),
-      refItem: gProps.refItem ?? {},
       id: methods.newId()
     })).ignore(
       "refItem", "size", ...(gProps.ignore ?? [])

@@ -33,7 +33,7 @@ const addToDelete = (parserName: string, onBegin: Function, onEnd: Function) => 
             item.favorit = false;
             await item.saveChanges();
           } else await context.db.deleteBook(item.id);
-
+          context.parser.deleteParser(pName);
           deleteQue.delete(pName);
         }
       }
@@ -185,19 +185,17 @@ const Libraries = ({ ...props }) => {
   }, [])
 
   const loadAddedParsers = (parser: Parser) => {
-    console.log("parser", state.refItem)
-    if (!state.refItem.lodadedParser.find(x => x.name === parser.name))
+    if (!state.refItem.lodadedParser.some(x => x.name === parser.name))
       state.refItem.lodadedParser.push(parser);
     lodadedParsertimer(() => {
       try {
 
         if (context.appSettings.parsers && context.appSettings.parsers.has()) {
-          let notFoundParsers = context.appSettings.parsers.filter(x => !state.refItem.lodadedParser.find(s => s.name == x.name));
+          let notFoundParsers = context.appSettings.parsers.filter(x => !state.refItem.lodadedParser.some(s => s.name == x.name));
           notFoundParsers.forEach(f => addToDelete(f.name, () => loader.show(), () => loader.hide()));
         }
       } catch (e) {
         console.error(e);
-
       }
     })
   }
@@ -234,7 +232,7 @@ const Libraries = ({ ...props }) => {
             <Text css="desc fos-12 co-red fow-bold tea-left wi-100% pal-5">Browse between installed parsers in Home tab </Text>
             {render(undefined, {
               items: state.parserFileNames,
-              container: ({ item }: any) => <ListItem zip={state.refItem.zip} item={item} onParsed={(p)=> loadAddedParsers.bind(state)(p)} />,
+              container: ({ item }: any) => <ListItem zip={state.refItem.zip} item={item} onParsed={loadAddedParsers} />,
               itemCss: "clearwidth ali:center juc:center mab:5 overflow bor:5",
               vMode: true
             })}

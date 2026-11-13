@@ -308,6 +308,7 @@ export type GlobalType =
       find: (name: string) => ParserWrapper,
       set: (p: any) => Promise<void>,
       all: ParserWrapper[],
+      deleteParser: (...args: string[]) => Promise<void>
     },
     updater: string,
     selectedThemeIndex: number,
@@ -358,7 +359,7 @@ export type IStorage = {
 };
 
 export type MemorizeOptions = {
-  isDebug?: boolean;
+  isDebug?: () => boolean;
   storage?: IStorage;
   daysToSave: number | (() => number | undefined);
   folder?: (target: any) => string

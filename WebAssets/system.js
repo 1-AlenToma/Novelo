@@ -2,7 +2,7 @@ AssetsLinkEditor.funcMaps("window.tryUntilSuccess", "window.getHtml", "window.ti
 let appSettings = AssetsLinkEditor.keys.appSettings;
 if (appSettings && typeof appSettings !== "string") {
     Object.assign(window, appSettings);
-} else appSettings = {}; 
+} else appSettings = {};
 
 const sleep = (ms) => {
     return new Promise((r) => setTimeout(r, ms));
@@ -48,7 +48,7 @@ const blockedCheck = [
     "temporarily blocked",
 ];
 
-const getCode = function(js, exec) {
+const getCode = function (js, exec) {
     if (typeof js === "function") {
         if (exec)
             js();
@@ -66,7 +66,7 @@ const getCode = function(js, exec) {
 };
 
 
-const timerJs = function(js, timer, exec) {
+const timerJs = function (js, timer, exec) {
     try {
         if ((timer ?? 0) < 0)
             return getCode(js, exec);
@@ -79,7 +79,7 @@ const timerJs = function(js, timer, exec) {
     }
 }
 
-const pageReady = function(fn, js, timer) {
+const pageReady = function (fn, js, timer) {
     try {
         if (document.readyState === "loading") {
             document.addEventListener(fn || "load", () => timerJs(js, timer, true), {
@@ -94,15 +94,15 @@ const pageReady = function(fn, js, timer) {
     }
 }
 
-const checkProtection = function() {
+const checkProtection = function () {
     setTimeout(() => {
         const text = document.documentElement.outerHTML.toLowerCase();
-        const isProtected = window.requiredCheck.some(p => text.includes(p.toLowerCase()));
+        const isProtected = requiredCheck && requiredCheck.some(p => text.includes(p.toLowerCase()));
         postData("pCheck", isProtected, "protection");
     }, 300)
 }
 
-const tryUntilSuccess = function(method, ...args) {
+const tryUntilSuccess = function (method, ...args) {
     try {
         let fn = getCode(method);
         if (typeof fn !== "function") {
@@ -135,7 +135,7 @@ const postData = async (type, data, id) => {
 
 
 
-const formPost = async function(ajax) {
+const formPost = async function (ajax) {
     try {
         var data = new FormData();
         if (ajax.query && Array.isArray(ajax.query)) {
@@ -168,7 +168,7 @@ const formPost = async function(ajax) {
     }
 }
 
-const encodedPost = async function(ajax) {
+const encodedPost = async function (ajax) {
     try {
         const res = await fetch(ajax.url, {
             method: ajax.type.toUpperCase(),
@@ -191,7 +191,7 @@ const encodedPost = async function(ajax) {
     }
 }
 
-const fetchWebPToBase64 = function(url, referer) {
+const fetchWebPToBase64 = function (url, referer) {
     return new Promise(async (resolve) => {
         try {
             referer = referer ?? window.location.origin;
@@ -219,7 +219,7 @@ const fetchWebPToBase64 = function(url, referer) {
 }
 
 
-const getHtml = async function(settings) {
+const getHtml = async function (settings) {
     try {
         settings = settings ?? appSettings;
         let protection = requiredCheck;
