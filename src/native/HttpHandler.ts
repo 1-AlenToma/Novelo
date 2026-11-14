@@ -1,9 +1,6 @@
 import { Ajax, WebViewProps } from "../Types";
 import Html from "./Html";
-import MapCacher from "./MapCacher";
 import { newId } from "react-native-short-style";
-
-
 
 const createKey = (...args) => {
   return JSON.stringify(args).replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "");
