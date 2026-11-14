@@ -310,20 +310,25 @@ const loadImages = (view, option) => {
     for (let img of imgs) {
         setId(img);
         const src = img.getAttribute("src") || "";
-        if (src.length > 0 && !src.startsWith("data:")) {
-            img.setAttribute("src", `${document.body.getAttribute("imageaddress")}/${encodeURIComponent(src)}/${img.id}`);
+        const iBase64Data = src && src.startsWith("data:");
+        if (src.length > 0) {
+            if (!iBase64Data)
+                img.setAttribute("src", `${document.body.getAttribute("imageaddress")}/${encodeURIComponent(src)}/${img.id}`);
             if (option.type == "Manga") {
                 const imgContainer = document.createElement("div");
                 imgContainer.className = "lazy";
                 img.replaceWith(imgContainer);
                 imgContainer.appendChild(img);
+
                 img.setAttribute("onload", "this.parentNode.classList.add('loaded')");
-                img.setAttribute("onerror", "this.parentNode.classList.add('error')");
-                const btnRetry = document.createElement("div");
-                btnRetry.className = "retry";
-                btnRetry.innerHTML = "Retry";
-                btnRetry.setAttribute("onclick", "window.imageRetry(event, this)");
-                imgContainer.appendChild(btnRetry);
+                if (!iBase64Data) {
+                    img.setAttribute("onerror", "this.parentNode.classList.add('error')");
+                    const btnRetry = document.createElement("div");
+                    btnRetry.className = "retry";
+                    btnRetry.innerHTML = "Retry";
+                    btnRetry.setAttribute("onclick", "window.imageRetry(event, this)");
+                    imgContainer.appendChild(btnRetry);
+                }
             }
         }
     }

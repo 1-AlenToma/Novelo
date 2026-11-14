@@ -108,10 +108,18 @@ export default class MangaKakalot extends Parser {
 
     async chapter(url: string) {
         let html = (
-            await this.http.web_view(url, this.url)
-        ).html;
-        let imgs = html.findAll(".container-chapter-reader img").map(x => `<img id="${methods.newId()}" src='${x.url("src", { Referer: this.url + "/", webView: true })}'  />`).join("\n");
-        return imgs;
+            await this.http.web_view(url, this.url, {
+                props: {
+                    imageSelector: {
+                        selector: ".container-chapter-reader img",
+                        attr: "src"
+                    }
+                }
+            })
+        ).removeScripts().html;
+        let imgs = html.findAll(".container-chapter-reader img")
+            .map(x => `<img id="${methods.newId()}" src='${x.attr("src")}' />`);
+        return imgs.join("\n");
     }
 
     async getChapters(uurl) {
@@ -134,10 +142,8 @@ export default class MangaKakalot extends Parser {
 
     async detail(url: string) {
         let html = (await this.http.web_view(url, this.url)).removeScripts().html;
-        console.log("buildning that data")
         let body = html.find("body");
-        let item = DetailInfo.n();
-        item
+        let item = DetailInfo.n()
             .set("name", body.run('.manga-info-text h1 -> text'))
             .set("url", url)
             .set("type", "Manga")
@@ -148,9 +154,8 @@ export default class MangaKakalot extends Parser {
             .set("genre", body.run('.manga-info-text[href*="genre"] -> map::text'))
             .set("status", body.run('.manga-info-text li:contains("Status") -> text').safeSplit(":", 1))
             .set("rating", body.run('#rate_row_cmd -> text'))
-            .set("lastUpdated", body.run('first::.manga-info-text li:contains("Last updated")').safeSplit(":", 1))
+            .set("lastUpdated", body.run('first::.manga-info-text li:contains("Last updated") -> text').safeSplit(":", 1))
             .set("parserName", this.name);
-
         item.set("chapters", await this.getChapters(url))
 
         return item;
