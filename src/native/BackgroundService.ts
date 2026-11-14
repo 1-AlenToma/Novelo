@@ -32,7 +32,7 @@ const veryIntensiveTask =
 
     // TempImages
     tasks.push(
-      new EventEmitter<string>(10, async function () {
+      new EventEmitter<string>(50, async function () {
         try {
           let dChecked = [...this.dataCheckedToday.entries()] as [string, Date][];
           this.extra = (
@@ -40,7 +40,8 @@ const veryIntensiveTask =
               ? (await context.imageTempCache.allFiles()).filter(Boolean)
               : this.extra
           ).filter(x => !dChecked.some(a => a[0] == x && days_between(a[1]) < 1));
-          let i = 5;
+          let i = 20;
+          context.imageTempCache.clear();
           while (i > 0 && this.extra.length > 0) {
             i--;
             let f: string = this.extra.shift();
@@ -50,6 +51,7 @@ const veryIntensiveTask =
               await context.imageTempCache.delete(f);
             } else this.dataCheckedToday.set(f, getDate(1));
           }
+          
         } catch (e) {
           console.error("Background Periodic cleanup failed:", e);
         }
