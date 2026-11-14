@@ -96,6 +96,10 @@ declare global {
         toCode: () => number[];
         niceSentences(): string;
         decodeURIComponentSafe(): string;
+        /** eg test=$value */
+        formatString(...params: any[]);
+        /** eg test={Prefix}Value */
+        formatStringWithPrefix(id: string, ...params: any[]);
     }
 
     interface Number {
@@ -115,6 +119,14 @@ Date.prototype.formatDateMMDDYY = function (this: Date) {
     const yy = String(date.getFullYear()).slice(-2);
 
     return `${mm}/${dd}/${yy}`;
+}
+
+String.prototype.formatString = function (this: string, ...params: any[]) {
+    return Methods.createUrlBuilder("$")(String(this), ...params);
+}
+
+String.prototype.formatStringWithPrefix = function (this: string, id: string, ...params: any[]) {
+    return Methods.createUrlBuilder(id)(String(this), ...params);
 }
 
 String.prototype.isImage = function (globalSearch?: boolean) {
@@ -460,7 +472,7 @@ String.prototype.normalizeHtml = function () {
     const norm = function (node: Node) {
         if (node.nodeValue && !node.nodeValue.empty() && (node.nodeType == 3 || (node.children.length <= 0 && node.nodeType == 1))) {
             let before = node.nodeValue;
-            let nplDoc = nlp(before); 
+            let nplDoc = nlp(before);
             nplDoc.normalize({
                 whitespace: true,
                 contractions: false

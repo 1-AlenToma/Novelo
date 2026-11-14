@@ -110,7 +110,7 @@ export default class MangaKakalot extends Parser {
         let html = (
             await this.http.web_view(url, this.url, {
                 props: {
-                    timer:2000,
+                    timer: 2000,
                     selector: ".container-chapter-reader",
                     imageSelector: {
                         selector: ".container-chapter-reader > img",
@@ -121,13 +121,13 @@ export default class MangaKakalot extends Parser {
             })
         ).removeScripts().html;
         let imgs = html.findAll(".container-chapter-reader img")
-            .map(x => `<img id="${methods.newId()}" src='${x.attr("src")}' />`);
+            .map(x => `<img id="$id" src='$src' />`.formatString(methods.newId(), x.attr("src")))
         return imgs.join("\n");
     }
 
     async getChapters(uurl) {
         try {
-            const url = `https://www.mangakakalot.gg/api/manga/${uurl.safeSplit("/", -1)}/chapters?limit=90000&offset=0`;
+            const url = `https://www.mangakakalot.gg/api/manga/$url/chapters?limit=90000&offset=0`.formatString(uurl.safeSplit("/", -1));
             const data = await this.http.get_html(url, this.url);
             const json = data.json;
             if (json.data.chapters.length <= 0)

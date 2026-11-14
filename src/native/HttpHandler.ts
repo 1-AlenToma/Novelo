@@ -368,6 +368,8 @@ class HttpHandler {
         });
 
         let img = await html.html.first("img").attr("src").toBase64UrlAsync();
+        if (img && typeof img == "string" && img.startsWith("Cached_"))
+          img = (await context.imageTempCache.read(img.trimStr("Cached_")))?.safeSplit("\n", 1);
         return img;
 
       }

@@ -108,7 +108,7 @@ export default class WTRLabCom extends Parser {
         try {
             let html = (await this.http.web_view(url, this.baseUrl, {
                 props: {
-                    timer: 100
+                    timer: 100,
                 }
             })).html;
             let body = html.$("body");

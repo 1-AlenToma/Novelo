@@ -5,6 +5,50 @@ export * from "./native/SentencesSplitter";
 import { Platform, PermissionsAndroid } from 'react-native'; // Or equivalent for your framework
 import { checkManagePermission, requestManagePermission } from 'manage-external-storage';
 
+/**
+ * Creates a reusable URL builder function configured with a custom placeholder prefix.
+ *
+ * @param {string} [id="$"] - The prefix symbol or string used to identify placeholders (e.g. "$", "@", ":", "__").
+ * @returns {function(string, ...any): string} A builder function that takes a URL template followed by positional values.
+ *
+ * @example
+ * const buildUrl = createUrlBuilder("$");
+ * buildUrl("test/$text=$value", "ttx", "ttvalue");
+ * // => "test/ttx=ttvalue"
+ *
+ * @example
+ * const buildAtUrl = createUrlBuilder("@");
+ * buildAtUrl("test/@user=@data", "alice", { id: 1 });
+ * // => "test/alice=%7B%22id%22%3A1%7D"
+ */
+export function createUrlBuilder(id = "$") {
+  const escapedId = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`${escapedId}(\\w+)`, "g");
+
+  /**
+   * Replaces placeholders in a URL template with URL-encoded positional arguments.
+   *
+   * @param {string} template - The URL template containing prefixed placeholders (e.g. "test/$text=$value").
+   * @param {...(string|number|boolean|object)} values - Positional values to inject in order of appearance. Objects are automatically serialized with JSON.stringify().
+   * @returns {string} The formatted and safely URL-encoded string.
+   */
+  return function buildUrl(template, ...values) {
+    let index = 0;
+
+    return template.replace(regex, (match) => {
+      if (index >= values.length) return match;
+
+      const raw = values[index++];
+      const val = typeof raw === "object" && raw !== null
+        ? JSON.stringify(raw)
+        : raw;
+
+      return encodeURIComponent(val);
+    });
+  };
+}
+
+
 const androidVersion = () => {
   try {
     let version = Platform.Version as any;

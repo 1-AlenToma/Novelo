@@ -298,13 +298,15 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             find: (name: string) => data.parser.all.find(x => x.name == name) as ParserWrapper,
             set: async (p) => {
                 await context.batch(async () => {
-                    p = data.parser.find(p.name);
-                    p.settings = await p.load("RenewMemo");
-                    data.parser.current = p;
-                    if (data.appSettings.selectedParser != p.name) {
-                        data.appSettings.selectedParser = p.name;
-                        await data.appSettings.saveChanges();
-                    }
+                    try {
+                        p = data.parser.find(p.name);
+                        p.settings = await p.load("RenewMemo");
+                        data.parser.current = p;
+                        if (data.appSettings.selectedParser != p.name) {
+                            data.appSettings.selectedParser = p.name;
+                            await data.appSettings.saveChanges();
+                        }
+                    } catch { }
                 })
 
                 // data.updater = newId();
@@ -346,6 +348,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                             const defaultParser = ParserWrapper.getAllParsers(data.parser.default) as ParserWrapper;
                             if (debugMode) {
                                 data.parser.all = ParserWrapper.getAllParsers() as ParserWrapper[];
+
                                 return;
                             }
 
@@ -391,7 +394,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                     }
                     await loadParsers();
                     if (data.parser.find(data.appSettings.selectedParser)) {
-                        data.parser.set(data.parser.find(data.appSettings.selectedParser))
+                        await data.parser.set(data.parser.find(data.appSettings.selectedParser))
                     }
 
                     appSettingWatcher = globalDb.watch("AppSettings");

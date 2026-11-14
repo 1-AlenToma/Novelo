@@ -230,13 +230,20 @@ class Html {
     return value || "";
   }
 
-  url(key: string, header?: any, serilize?: (value: string) => string) {
+  //** uurl override this.uurl */
+  url(key: string, header?: Record<string, any> & { uurl?: string }, serilize?: (value: string) => string) {
     let value: any = "";
+    let uurl = this.uurl;
+    if (header && header.uurl)
+        {
+          uurl = header.uurl;
+          delete header.uurl;
+        }
     key.split("|").forEach(k => {
       if (!value || value.empty()) {
         value = this.elements.find(x => x.getAttribute(k) && x.getAttribute(k).length > 0)?.getAttribute(k);
-        if (value && !value.empty() && this.uurl) {
-          value = serilize ? this.uurl.join(serilize(value)) : this.uurl.join(value);
+        if (value && !value.empty() && uurl) {
+          value = serilize ? uurl.join(serilize(value)) : uurl.join(value);
         }
       }
     });

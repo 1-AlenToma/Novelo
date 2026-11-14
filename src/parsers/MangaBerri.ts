@@ -72,7 +72,6 @@ export default class MangaFire extends Parser {
         ).removeScripts().html;
         let data = html.$(".manga-card")
             .map(f => {
-                let name = f.findAll("h3");
                 if (f.run("img -> attr::src")?.has())
                     return LightInfo.n()
                         .set("name", f.run("h3 -> text"))

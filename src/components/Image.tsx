@@ -43,19 +43,19 @@ const CImage = React.memo(({
           let h = JSON.parse(url.split("header")[1].substring(1));
           if (h.webView) {
             let img = await context.parser.current.http.imageUrlToBase64(url);
-            if (typeof img == "string")
+            if (typeof img == "string") {
               url = img;
+            }
           } else {
             url = url.split("header")[0].trim();
 
             for (let k in h)
               state.header[k] = h[k];
           }
-        } else if (url && typeof url == "string" && await url.isBase64UrlAsync())
-          url = await url.toBase64UrlAsync();
-        else if (url && url.toString().startsWith("Cached_"))
+        } else if (url && typeof url == "string" && url.startsWith("Cached_"))
           url = (await context.imageTempCache.read(url.trimStr("Cached_")))?.safeSplit("\n", 1);
-
+        else if (url && typeof url == "string" && await url.isBase64UrlAsync())
+          url = await url.toBase64UrlAsync();
 
         _source = url;
       }
