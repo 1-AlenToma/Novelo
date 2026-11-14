@@ -127,6 +127,7 @@ class HttpServer {
                         const imgKey = `${decodedSrc}${context.player.book.name}${context.player.currentChapter.name}${context.player.novel.parserName}`;
 
                         let data = tempImageData.get(imgKey);
+                        data = undefined;
                         if (/\?(\s)?time(\s)?=.*/ig.test(src)) {
                             data = undefined;
                             tempImageData.set(imgKey, undefined);
@@ -134,6 +135,9 @@ class HttpServer {
 
                         if (!data) {
                             data = (await context.player.getImage({ src: decodedSrc, id })).firstOrDefault();
+                            if (!data || !data.cn)
+                                console.warn("image could not be found")
+                                
                         }
                         let base64Data = data && data.cn && typeof data.cn == "string" ? data.cn.toBase64Url().split(',')[1] : undefined;
                         if (base64Data && base64Data.has()) {

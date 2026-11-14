@@ -4,28 +4,7 @@ if (appSettings && typeof appSettings !== "string") {
     Object.assign(window, appSettings);
 } else appSettings = {};
 
-const sleep = (ms) => {
-    return new Promise((r) => setTimeout(r, ms));
-}
-
-const logger = {
-    log: (...args) => {
-        if (window.__DEV__) {
-            postData("log", args);
-        }
-    },
-    error: (...args) => {
-        if (appSettings)
-            args.push(appSettings);
-
-        if (window.__DEV__)
-            postData("error", args);
-    },
-    warn: (...args) => {
-        if (window.__DEV__)
-            postData("warn", args);
-    }
-}
+AssetsLinkEditor.loadFiles("webMessageHandler");
 
 const requiredCheck = [
     "Please complete the challenge below to continue",
@@ -81,8 +60,17 @@ const timerJs = function (js, timer, exec) {
 
 const pageReady = function (fn, js, timer) {
     try {
-        if (document.readyState === "loading") {
-            document.addEventListener(fn || "load", () => timerJs(js, timer, true), {
+        const eventName = fn || "load";
+        const isLoadEvent = eventName === "load";
+
+        // Wait if "loading" (for DOMContentLoaded) or not yet "complete" (for load)
+        const shouldWait = isLoadEvent
+            ? document.readyState !== "complete"
+            : document.readyState === "loading";
+
+        if (shouldWait) {
+            const target = isLoadEvent ? window : document;
+            target.addEventListener(eventName, () => timerJs(js, timer, true), {
                 once: true
             });
         } else {
@@ -92,7 +80,8 @@ const pageReady = function (fn, js, timer) {
         if (window.__DEV__) alert(e);
         logger.error(e.message);
     }
-}
+};
+
 
 const checkProtection = function () {
     setTimeout(() => {
@@ -130,7 +119,7 @@ const postData = async (type, data, id) => {
             ...data
         }
     }
-    window.ReactNativeWebView?.postMessage(JSON.stringify(item));
+    postToView(item);
 }
 
 
@@ -191,32 +180,49 @@ const encodedPost = async function (ajax) {
     }
 }
 
-const fetchWebPToBase64 = function (url, referer) {
-    return new Promise(async (resolve) => {
-        try {
-            referer = referer ?? window.location.origin;
+const fetchWebPToBase64 = async function (url, referer) {
+    try {
+        referer = referer ?? window.location.origin;
+        if (!url || url === "undefined") return null;
+        if (url.startsWith("data:")) return url;
 
-            const response = await fetch(url, {
-                headers: {
-                    "Referer": referer,
-                    "User-Agent": navigator.userAgent,
-                },
-            });
-            const blob = await response.blob();
+        const imgData = await sendRequest("getImage", url);
+        if (imgData) {
+            return imgData;
+        }
+
+        const response = await fetch(url, {
+            headers: {
+                "Referer": referer,
+                "User-Agent": navigator.userAgent,
+            },
+        });
+        if (!response.ok) {
+            if (window.__DEV__) logger.error("error fetching image:", url);
+            return null;
+        }
+        const blob = await response.blob();
+
+        return await new Promise((resolve) => {
             const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = (event) => {
-                if (window.__DEV__)
-                    logger.warn("error fetching image:", url);
+            reader.onloadend = async () => {
+                const filePath = await sendRequest("setImage", {
+                    url,
+                    base64: reader.result
+                });
+                resolve(filePath);
+            };
+            reader.onerror = () => {
+                if (window.__DEV__) logger.warn("error fetching image:", url);
                 resolve(null);
             };
-        } catch (e) {
-            // logger.warn(e.toString());
-            resolve(null);
-        }
-    });
-}
+            reader.readAsDataURL(blob);
+        });
+    } catch (e) {
+        if (window.__DEV__) logger.warn(e.toString());
+        return null;
+    }
+};
 
 
 const getHtml = async function (settings) {
@@ -254,6 +260,9 @@ const getHtml = async function (settings) {
             return;
         }
 
+        const domContainer = document.createElement("div");
+        domContainer.innerHTML = document.documentElement.outerHTML;
+
         if (props?.imageSelector) {
             const {
                 selector,
@@ -261,45 +270,63 @@ const getHtml = async function (settings) {
                 regexp,
                 referer
             } = props.imageSelector;
-            const attrList = attr.split("|");
-            const images = Array.from(document.querySelectorAll(selector));
+            const attrList = (attr ?? "src").split("|");
+
 
             // Precompile regexp safely (avoid eval)
             const regex = regexp ? new RegExp(regexp[0].slice(1, regexp[0].lastIndexOf("/")), regexp[0].split("/").pop()) : null;
 
             // Process all images concurrently (parallel fetching)
-            const results = await Promise.allSettled(
-                images.map(async (img) => {
-                    let src = "";
-                    let attrUsed = "";
+            const ProcessImages = async () => {
+                const images = Array.from(domContainer.querySelectorAll(selector)).filter(x => !x.classList.contains("validated"));
+                const batchSize = 5;
+                for (let i = 0; i < images.length; i += batchSize) {
+                    const batch = images.slice(i, i + batchSize);
+                    await Promise.allSettled(
+                        batch.map(async (img) => {
+                            let src = "";
+                            let attrUsed = "";
 
-                    // Find first non-empty attribute value
-                    for (const x of attrList) {
-                        src = img.getAttribute(x);
-                        if (src) {
-                            attrUsed = x;
-                            break;
-                        }
-                    }
-                    if (!src) return;
+                            // Find first non-empty attribute value
+                            for (const x of attrList) {
+                                src = img.getAttribute(x);
+                                if (src) {
+                                    attrUsed = x;
+                                    break;
+                                }
+                            }
+                            if (src) {
+                                img.removeAttribute("onerror")
+                                img.removeAttribute("onload")
+                                let originalSrc = src;
+                                if (regex) src = src.replace(regex, regexp[1]);
 
-                    let originalSrc = src;
-                    if (regex) src = src.replace(regex, regexp[1]);
+                                let base64 = await fetchWebPToBase64(src, referer);
+                                if (!base64 && src !== originalSrc) {
+                                    base64 = await fetchWebPToBase64(originalSrc, referer);
+                                }
 
-                    let base64 = await fetchWebPToBase64(src, referer);
-                    if (!base64 && src !== originalSrc) {
-                        base64 = await fetchWebPToBase64(originalSrc, referer);
-                    }
-
-                    if (base64) img.setAttribute(attrUsed, base64);
-                })
-            );
-
+                                if (base64) {
+                                    // If source came from a lazy attribute, update both or set 'src' so it renders
+                                    img.setAttribute(attrUsed, base64);
+                                    if (attrUsed !== "src") {
+                                        img.setAttribute("src", base64);
+                                    }
+                                    img.classList.add("validated");
+                                } else logger.warn("image could not be loaded ", src)
+                            } else logger.warn("attr not found", src)
+                        })
+                    );
+                }
+            }
+            await ProcessImages();
+            while (requests.size > 0)
+                await sleep(100)
             // Reconstruct HTML only once
-            text = document.documentElement.outerHTML;
+            text = domContainer.innerHTML;
         }
         if (props && props.selector) {
-            text = [...document.querySelectorAll(props.selector)].map((x) => x.outerHTML).join("");
+            text = [...domContainer.querySelectorAll(props.selector)].map((x) => x.outerHTML).join("");
         }
 
         var payload = {
@@ -335,7 +362,7 @@ try {
         htmlGetterJsCode
     };
     Object.assign(window, toWindow);
-    pageReady("DOMContentLoaded", () => {
+    pageReady("load", () => {
         postData("loaded", true);
     }, appSettings?.props?.timer ?? 5);
 } catch (e) {

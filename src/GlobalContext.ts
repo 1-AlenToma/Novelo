@@ -49,6 +49,7 @@ const globalHttp = new HttpHandler();
 let currentParser = ParserWrapper.getAllParsers("ReadNovelFull") as ParserWrapper;
 const downloadManager = new DownloadManager();
 const cache = new FileHandler(FilesPath.Cache, "Cache");
+const imageTempCache = new FileHandler(FilesPath.ImageTemp, "Cache");
 const zip = new FilesZipper();
 const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
@@ -217,6 +218,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         isFullScreen: false,
         appSettings: new AppSettings(),
         cache: cache,
+        imageTempCache: imageTempCache,
         files: new FileHandler(FilesPath.File, "File", true),
         imageCache: new ImageCache(),
         nav: {
@@ -474,6 +476,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         "files",
         "imageCache",
         "cache",
+        "imageTempCache",
         "parser.current",
         "parser.all",
         "nav",

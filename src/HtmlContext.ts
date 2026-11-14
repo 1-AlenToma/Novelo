@@ -1,7 +1,9 @@
 import StateBuilder, { newId } from "react-smart-state";
 import { WebViewFetchData, WebViewProps } from "./Types";
+import MapCacher from "./native/MapCacher";
 
-const contextData = StateBuilder({
+const contextData = StateBuilder(() => ({
+    globalTemp: new MapCacher<any>(100),
     html: {
         data: [] as WebViewFetchData[],
         updatedNr: 0,
@@ -36,6 +38,6 @@ const contextData = StateBuilder({
 
         }
     }
-}).ignore("html.data").globalBuild()
+})).ignore("html.data", "globalTemp").globalBuild()
 
 export default contextData;

@@ -118,6 +118,7 @@ export const FilesPath = {
   File: "noveloFiles",
   Cache: "Memo",
   Images: "Images",
+  ImageTemp: "ImageTemp",
   Private: "Private",
   Tts: "TTS",
   Temp: "Temp"
@@ -195,7 +196,8 @@ export type WebViewProps = {
     selector: string,
     attr: string,
     referer?: string,
-    regexp?: [string, string]
+    regexp?: [string, string],
+    parserName: string
   }
 }
 
@@ -293,6 +295,7 @@ export type GlobalType =
     appSettings: AppSettings,
     cache: FileHandler,
     files: FileHandler,
+    imageTempCache: FileHandler,
     imageCache: ImageCache,
     nav: {
       option: any;

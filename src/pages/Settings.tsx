@@ -60,6 +60,9 @@ export default (props: any) => {
           console.warn("deleting cache")
           await context.cache.deleteDir();
           await context.cache.checkDir();
+          await context.imageTempCache.deleteDir();
+          await context.imageTempCache.checkDir();
+          htmlContext.globalTemp.clear();
           context.parser.set(context.parser.current);// update the parser which will trigger load
           console.warn("Cache Deleted")
 

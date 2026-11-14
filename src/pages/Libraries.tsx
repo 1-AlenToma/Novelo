@@ -101,6 +101,7 @@ const ListItem = ({ item, zip, onParsed }: { item: string, zip: JSZip, onParsed:
     if (state.parser.minVersion != undefined && state.parser.minVersion > context.version) {
       AlertDialog.alert({ message: `The new parser require app version to at least be ${state.parser.minVersion}, and the current app version is ${context.version} \n please update your app to the newset version`, title: "App Version error" });
     } else {
+      htmlContext.globalTemp.clear();
       context.parser.parserCodes.clear();
       appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser?.name);
       appSettings.parsers.push({ name: state.parser.name, content: state.parserCode });
@@ -123,6 +124,7 @@ const ListItem = ({ item, zip, onParsed }: { item: string, zip: JSZip, onParsed:
     context.parser.parserCodes.clear();
     appSettings.parsers = appSettings.parsers.filter(x => x.name != state.parser?.name);
     await appSettings.saveChanges();
+    htmlContext.globalTemp.clear();
     loader.hide();
   }
 

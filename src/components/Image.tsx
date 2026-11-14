@@ -53,6 +53,8 @@ const CImage = React.memo(({
           }
         } else if (url && typeof url == "string" && await url.isBase64UrlAsync())
           url = await url.toBase64UrlAsync();
+        else if (url && url.toString().startsWith("Cached_"))
+          url = (await context.imageTempCache.read(url.trimStr("Cached_")))?.safeSplit("\n", 1);
 
 
         _source = url;

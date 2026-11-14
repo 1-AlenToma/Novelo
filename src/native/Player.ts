@@ -177,6 +177,12 @@ class Player {
       let path = this.novel?.imagePath as string;
       if (path) {
         for (let image of href) {
+          if (image.src && image.src.startsWith("Cached_")) {
+            let img = (await context.imageTempCache.read(image.src.trimStr("Cached_")))?.safeSplit("\n", 1);
+            imgs.push({ ...image, cn: img });
+            continue;
+          }
+
           if (image.src && (image.src?.has(" header") || ["http", "https", "www"].some(x => image.src?.startsWith(x)))) {
             imgs.push({ ...image, cn: await context.parser.current.http.imageUrlToBase64(image.src) });
             continue;
@@ -194,6 +200,12 @@ class Player {
         }
       } else {
         for (let image of href) {
+          if (image.src && image.src.startsWith("Cached_")) {
+            let img = (await context.imageTempCache.read(image.src.trimStr("Cached_")))?.safeSplit("\n", 1);
+            imgs.push({ ...image, cn: img });
+            continue;
+          }
+
           if (image.src && (image.src?.has(" header") || ["http", "https", "www"].some(x => image.src?.startsWith(x)))) {
             imgs.push({ ...image, cn: (await context.parser.current.http.imageUrlToBase64(image.src)) });
             continue;

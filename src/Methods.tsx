@@ -315,18 +315,14 @@ const joinKeys = function <T>(
   return a;
 };
 
-const days_between = function (date: Date) {
-  // The number of milliseconds in one day
-  const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-  let firstDate = date as any;
-  let secondDate = new Date() as any;
+const days_between = function (date: Date | string | number) {
+  const oneDay = 24 * 60 * 60 * 1000;
+  const firstDate = new Date(date).getTime();
+  const secondDate = Date.now();
 
-  // Convert back to days and return
-  const diffDays = Math.round(
-    Math.abs((firstDate - secondDate) / oneDay)
-  );
+  if (Number.isNaN(firstDate)) return Infinity; // Treat corrupted dates as expired
 
-  return diffDays;
+  return Math.round(Math.abs((firstDate - secondDate) / oneDay));
 };
 
 const arrayBuffer = (arr: any[]) => {

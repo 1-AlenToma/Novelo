@@ -110,9 +110,12 @@ export default class MangaKakalot extends Parser {
         let html = (
             await this.http.web_view(url, this.url, {
                 props: {
+                    timer:2000,
+                    selector: ".container-chapter-reader",
                     imageSelector: {
-                        selector: ".container-chapter-reader img",
-                        attr: "src"
+                        selector: ".container-chapter-reader > img",
+                        attr: "src",
+                        parserName: this.name
                     }
                 }
             })

@@ -1,6 +1,7 @@
 import BackgroundService from "react-native-background-actions";
 import EventEmitter from "./EventEmitter";
 import HTTPServer from "./HttpServer";
+import { days_between } from "../Methods";
 
 
 const sleep = time =>
@@ -29,29 +30,57 @@ const veryIntensiveTask =
       }
     }));
 
+    // TempImages
+    tasks.push(
+      new EventEmitter<string>(10, async function () {
+        try {
+          let dChecked = [...this.dataCheckedToday.entries()] as [string, Date][];
+          this.extra = (
+            !this.extra || this.extra.length <= 0
+              ? (await context.imageTempCache.allFiles()).filter(Boolean)
+              : this.extra
+          ).filter(x => !dChecked.some(a => a[0] == x && days_between(a[1]) < 1));
+          let i = 5;
+          while (i > 0 && this.extra.length > 0) {
+            i--;
+            let f: string = this.extra.shift();
+            let imageDate = new Date((await context.imageTempCache.read(f)).split("\n")[0]);
+            if (days_between(imageDate) > 1) {
+              this.dataCheckedToday.delete(f);
+              await context.imageTempCache.delete(f);
+            } else this.dataCheckedToday.set(f, getDate(1));
+          }
+        } catch (e) {
+          console.error("Background Periodic cleanup failed:", e);
+        }
+      })
+    );
+
     // file cleaner
     tasks.push(
       new EventEmitter<string>(10, async function () {
         try {
+          let dChecked = [...this.dataCheckedToday.entries()] as [string, Date][];
           this.extra = (
             !this.extra || this.extra.length <= 0
               ? (await context.cache.allFiles()).filter(Boolean)
               : this.extra
-          );
+          ).filter(x => !dChecked.some(a => a[0] == x && days_between(a[1]) < 2));
           let i = 5;
           while (i > 0 && this.extra.length > 0 && context.downloadManager().items.size <= 0) {
             i--;
             let f: string = this.extra.shift();
-            let date = getDate(30);
             let data = JSON.parse((await context.cache.read(f)) ?? "");
-            if (data.date > date) {
+            if (days_between(data.date) >= 20) {
+              this.dataCheckedToday.delete(f);
               await context.cache.delete(f);
               let book = await context.db.Books.query.where
                 .column(x => x.url).equalTo(data.data.url)
                 .firstOrDefault();
               if (book && !book.favorit)
                 await context.db.deleteBook(book.id);
-            }
+
+            } else this.dataCheckedToday.set(f, getDate(2));
           }
         } catch (e) {
           console.error("Background Periodic cleanup failed:", e);
@@ -125,7 +154,7 @@ export class BgService {
   async stop() {
     try {
       await BackgroundService.stop();
-      
+
     } catch (e) { }
   }
 }

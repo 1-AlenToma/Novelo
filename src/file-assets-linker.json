@@ -35,6 +35,10 @@
             {
                 "name": "fontCss",
                 "path": "../WebAssets/font.css"
+            },
+            {
+                "path": "../WebAssets/webMessageHandler.js",
+                "inbuild": false
             }
         ],
         "keys": [

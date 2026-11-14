@@ -3,7 +3,7 @@ import Html from "./Html";
 import MapCacher from "./MapCacher";
 import { newId } from "react-native-short-style";
 
-const tempData = new MapCacher<HttpTemp>(100);
+
 
 const createKey = (...args) => {
   return JSON.stringify(args).replace(/(\/|-|\.|:|"|'|\{|\}|\[|\]|\,| |\’)/gim, "");
@@ -44,8 +44,8 @@ const getFetch = async (
   props?: WebViewProps
 ) => {
   let key = createKey({ url, options, props });
-  if (tempData.has(key))
-    return tempData.get(key);
+  if (htmlContext.globalTemp.has(key))
+    return htmlContext.globalTemp.get(key) as HttpTemp;
   const timer = new FetchTimer();
   try {
     httpHandler.operations.set(timer.id, timer);
@@ -58,7 +58,7 @@ const getFetch = async (
       let text = await data.text();
       let item = new HttpTemp(text, key);
       if (text !== "")
-        tempData.set(key, item);
+        htmlContext.globalTemp.set(key, item);
       return item;
     } else {
       if (data.status === 404)
@@ -79,7 +79,7 @@ const getFetch = async (
     }
   } catch (e) {
     httpHandler.clearOperations(timer.id);
-    tempData.delete(key);
+    htmlContext.globalTemp.delete(key);
     if (httpHandler.subressErrors) {
       console.warn("aborted")
       return new HttpTemp("", key);;
@@ -121,7 +121,7 @@ class HttpValue {
       .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 
-      return this;
+    return this;
   }
 
   cleanUnfinishedAttributes(html) {
@@ -364,7 +364,8 @@ class HttpHandler {
           props: {
             imageSelector: {
               selector: "img",
-              attr: "src"
+              attr: "src",
+              parserName: "global"
             }
           }
         });

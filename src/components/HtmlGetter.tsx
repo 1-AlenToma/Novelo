@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { Modal, Text, useTimer } from "react-native-short-style"
 import { WebViewFetchData } from "../Types";
 import { getSystemJS } from "../JSConstant";
-import { funcMapper, IFuncMapper } from "../assets/WebAssets";
+import { funcMapper, IFileNames, IFuncMapper } from "../assets/WebAssets";
 import { PrimitiveObject } from "react-smart-state";
 
 const debug = false;
@@ -19,6 +19,12 @@ const webViewDefaultProps = {
   cacheEnabled: true,
   incognito: false,
   androidLayerType: "software",
+  allowUniversalAccessFromFileURLs: true,
+  contentMode: "mobile",
+  originWhitelist: ["*"],
+  setSupportMultipleWindows: false,
+  allowFileAccess: true,
+  allowFileAccessFromFileURLs: true,
   // userAgent: "Mozilla/5.0 (Linux; Android 4.1.1; Galaxy Nexus Build/JRO03C) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
 
 } as WebViewProps;
@@ -56,7 +62,8 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
       </Text>
       <WebView
         ref={locMem<any>((c) => {
-          webView.current = funcMapper(c);
+          if (c !== null)
+            webView.current = funcMapper(c);
         }, url)}
         injectedJavaScriptBeforeContentLoaded={webViewProtectedJS}
         source={locMem<any>({
@@ -91,22 +98,23 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
 
         {...webViewDefaultProps}
         userAgent={item?.props?.userAgent}
-        contentMode="mobile"
-        originWhitelist={locMem(["*"])}
-        setSupportMultipleWindows={false}
+
         style={
           locMem<any>({
             flex: 1
           })}
-        allowFileAccess={true}
-        allowFileAccessFromFileURLs={true}
-        allowUniversalAccessFromFileURLs={true}
       />
 
     </View>
 
   </Modal>)
 })
+
+type InFuncMappar<T extends IFileNames> = {
+  webview: WebView;
+  mapper: IFuncMapper<T>
+}
+
 
 export default () => {
   htmlContext.hook("html.updatedNr");
@@ -115,8 +123,8 @@ export default () => {
     updateNr: 0,
     protection: [] as WebViewFetchData[],
   })).build();
-  const timeout = 1;
-  const webViews = useRef<(IFuncMapper<"systemJs"> | null)[]>([]);
+  const timeout = 20000;
+  const webViews = useRef<(InFuncMappar<"systemJs"> | null)[]>([]).current;
   const timers = [useTimer(timeout), useTimer(timeout), useTimer(timeout)];
   const { locMem, memKey } = useFunc();
 
@@ -182,12 +190,16 @@ export default () => {
       <ProtectionModal item={protection} onHide={handleHide} />
       {
         htmlData.map((x, i) => {
+          const waitTime = x.props?.imageSelector ? 1080000 : 20000;
           x.systemJs = x.systemJs ?? `${getSystemJS(x)}\ntrue;`;
-          timers[i](() => exec(x), 10000);
+          timers[i](() => exec(x), waitTime);
           return (
             <WebView
               ref={c => {
-                webViews[i] = funcMapper(c);
+                webViews[i] = {
+                  mapper: funcMapper(c),
+                  webview: c as any
+                }
               }}
               key={x.id}
               userAgent={x.props?.userAgent}
@@ -204,10 +216,13 @@ export default () => {
                 // x.func("")
                 console.error("onHttpError", i, e.nativeEvent.statusCode);
               }}
+
               onMessage={async ({ nativeEvent }) => {
                 try {
+
                   let data = JSON.parse(nativeEvent.data);
-                  // console.log(data.type);
+                  //if (__DEV__)
+                  // console.log("wbview msgType", data.type, data.pType,);
                   switch (data.type) {
                     case "html":
                     case "ajax":
@@ -243,8 +258,30 @@ export default () => {
                       console.error("WebViewError", data);
                       break;
                     case "loaded":
-                      webViews[i].exec("window.getHtml");
-                      timers[i](() => x.func(""), 10000);
+                      webViews[i].mapper.exec("window.getHtml");
+                      timers[i](() => x.func(""), waitTime);
+                      break;
+                    case "Promise":
+                      timers[i].clear();
+                      switch (data.pType) {
+                        case "getImage":
+                          if (!data.data)
+                            return webViews[i].webview.postMessage(JSON.stringify({ data: undefined, id: data.id }));
+                          let imagePath = x.props.imageSelector.parserName.path(`${data.data.cleanFileName()}.json`);
+                          let src = undefined;
+                          if (await context.imageTempCache.exists(imagePath))
+                            src = `Cached_${imagePath}`;
+
+                          webViews[i].webview.postMessage(JSON.stringify({ data: src, id: data.id }));
+                          break;
+                        case "setImage":
+                          if (!data.data?.url || !data.data?.base64)
+                            return webViews[i].webview.postMessage(JSON.stringify({ data: undefined, id: data.id }));
+                          let saveImagePath = x.props.imageSelector.parserName.path(`${data.data.url.cleanFileName()}.json`);
+                          await context.imageTempCache.write(saveImagePath, `${new Date().toDateString()}\n${data.data.base64}`);
+                          webViews[i].webview.postMessage(JSON.stringify({ data: `Cached_${saveImagePath}`, id: data.id }));
+                          break;
+                      }
                       break;
                     default:
                       console.warn(data)
@@ -252,21 +289,17 @@ export default () => {
 
                   }
                 } catch (e) {
-                  console.error(e);
+                  console.error("WebViewMsgError", e);
                 }
 
               }}
-              contentMode="mobile"
-              originWhitelist={["*"]}
-              setSupportMultipleWindows={false}
+
               style={
                 locMem<any>({
                   zIndex: -1,
                 })
               }
-              allowFileAccess={true}
-              allowFileAccessFromFileURLs={true}
-              allowUniversalAccessFromFileURLs={true}
+
             />)
         })}
     </View>)

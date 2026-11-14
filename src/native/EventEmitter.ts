@@ -4,7 +4,8 @@ export default class EventEmitter<T> {
   running = false;
   nextRun: number; // timestamp in ms
   extra?: T[];
-  progress?:number;
+  progress?: number;
+  dataCheckedToday: Map<string, Date> = new Map();
 
   constructor(minutes: number, func: Function) {
     this.func = func;

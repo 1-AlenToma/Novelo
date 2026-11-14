@@ -37,4 +37,8 @@ export default class MapCacher<T> {
     delete(key: string) {
         this.item.delete(key);
     }
+
+    clear() {
+        this.item.clear();
+    }
 }
