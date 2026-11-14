@@ -41,7 +41,8 @@ const veryIntensiveTask =
               : this.extra
           ).filter(x => !dChecked.some(a => a[0] == x && days_between(a[1]) < 1));
           let i = 20;
-          context.imageTempCache.clear();
+          if (this.extra.length > 0)
+            htmlContext.globalTemp.clear();
           while (i > 0 && this.extra.length > 0) {
             i--;
             let f: string = this.extra.shift();
@@ -51,7 +52,7 @@ const veryIntensiveTask =
               await context.imageTempCache.delete(f);
             } else this.dataCheckedToday.set(f, getDate(1));
           }
-          
+
         } catch (e) {
           console.error("Background Periodic cleanup failed:", e);
         }
