@@ -867,7 +867,7 @@ const Controller = ({ state, ...props }: any) => {
                     </FormItem>
                     <FormView title="Reading Voice">
 
-                      <DropDownLocalList size={"80%"} css="mat-10" items={context.tts.nameList}
+                      <DropDownLocalList size={"80%"} css="mat-1" items={context.tts.nameList}
                         selectedValue={context.appSettings.ttsVoiceId ?? "af_bella"}
                         onSelect={locMem((item) => {
                           editSettings({ ttsVoiceId: item.value });
