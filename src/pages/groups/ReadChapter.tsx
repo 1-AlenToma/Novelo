@@ -328,10 +328,7 @@ const Controller = ({ state, ...props }: any) => {
 
   const editSettings = locMem(({
     fontSize,
-    ttsVoiceId,
     lockScreenType,
-    ttsTargetChars,
-    firstChunkMode,
     ...rest
   }: AppSettings | Record<string, any>, timerSpeed?: number) => {
     Timer(() => {
@@ -341,18 +338,9 @@ const Controller = ({ state, ...props }: any) => {
           context.appSettings.lineHeight = fontSize * context.lineHeight;
         }
 
-        if (ttsVoiceId != undefined) {
-          context.appSettings.ttsVoiceId = ttsVoiceId;
-        }
 
-        if (ttsTargetChars != undefined) {
-          context.appSettings.ttsTargetChars = ttsTargetChars;
-        }
 
-        if (firstChunkMode != undefined)
-          context.appSettings.firstChunkMode = firstChunkMode;
-
-        if (ttsTargetChars != undefined || ttsVoiceId != undefined || firstChunkMode != undefined) {
+        if (rest.ttsTargetChars != undefined || rest.ttsVoiceId != undefined || rest.firstChunkMode != undefined || rest.rate != undefined) {
           if (context.tts.isInitialized) {
             if (context.player.playing())
               context.player.playing(false);

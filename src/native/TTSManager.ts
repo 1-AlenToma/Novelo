@@ -1,7 +1,7 @@
 import { PLAYBACK_START_PRESETS, SerializedTTS_NAMES_List, TTSConfig, TTSNames, TTS_NAMES, onStreamProgress } from "../Types";
 import Speech, { SpeechStream, StreamProgressEvent, TTSEngine } from '@pocketpalai/react-native-speech';
 import RNFS from 'react-native-fs-turbo';
-import { setBackgroundPlayback } from "./backgroundPlayback";
+//import { setBackgroundPlayback } from "./backgroundPlayback";
 
 export class TTSManager implements TTSConfig {
     link = "https://github.com/1-AlenToma/Novelo/releases/download/tts-modolsV2/TTSModols.zip";
@@ -81,7 +81,6 @@ export class TTSManager implements TTSConfig {
             this.loading = false;
         this.currentPlaying = "";
         this.status = "stopped";
-        setBackgroundPlayback(false)
     }
 
 
@@ -111,7 +110,6 @@ export class TTSManager implements TTSConfig {
             await this.stop();
             this.loading = typeof onIndexChanged === "function";
             await this.init();
-            setBackgroundPlayback(true)
             savedParagraphIndex = savedParagraphIndex ?? 0;
             const chunks = methods.buildChunksFromArray(rawText, savedParagraphIndex);
             if (chunks.length === 0) {
@@ -188,7 +186,6 @@ export class TTSManager implements TTSConfig {
             }
         } finally {
             unsubscribe?.();
-            setBackgroundPlayback(false)
         }
     }
 
