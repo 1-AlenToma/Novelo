@@ -128,7 +128,8 @@ const App = () => {
 
         return () => {
             (async () => {
-
+                if (__DEV__)
+                    return;
                 try {
                     await context.db.rollbackTransaction(); // if there is an open connection
                 } catch { }

@@ -116,5 +116,11 @@ export default NestedStyleSheet.create({
 
   formRow: "clearwidth mab:5",
   "formRow>Text": "desc fos:13 tea:left par:10 wi:100",
-  "formRow>chackBox": "ali:center mar:10"
+  "formRow>chackBox": "ali:center mar:10",
+  formView: "flex clearboth juc:flex-start mih:100 invert bobw-0.8 bobc-.co-gray300",
+  "formView > desc": "desc fos:13 pab-10 pal-5",
+  "formView > header": ".fos-sm fow:bold !important"
+
+
+  
 });

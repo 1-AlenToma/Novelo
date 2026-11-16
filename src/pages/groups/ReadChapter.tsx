@@ -12,7 +12,8 @@ import {
   PlayerView,
   ContextContainer,
   Tabbs,
-  SingleTouchableOpacity
+  SingleTouchableOpacity,
+  FormView
 } from "../../components/";
 import {
   View, Text, Icon, ButtonGroup,
@@ -864,38 +865,37 @@ const Controller = ({ state, ...props }: any) => {
                         />
                       </SingleTouchableOpacity>
                     </FormItem>
-                    <FormItem title="Reading Voice">
-                      <View css="he-100% wi-100%">
-                        <DropDownLocalList size={"80%"} items={context.tts.nameList}
-                          selectedValue={context.appSettings.ttsVoiceId ?? "af_bella"}
-                          onSelect={locMem((item) => {
-                            editSettings({ ttsVoiceId: item.value });
-                            return false;
-                          })}
-                          render={locMem(item => (
-                            <View css={`ali:center bac:transparent pal:10 bor:5 flex row juc:space-between mih:24 clb`}>
-                              <Text css={`desc fos:13`}>{item.label}</Text>
-                              <SingleTouchableOpacity
-                                isLoading={context.tts.loading}
-                                onPress={() =>
-                                  context.tts.testPlay(item.value as any)
-                                }>
-                                <Icon
-                                  name={context.tts.status == "playing"
-                                    ? "pause-circle"
-                                    : "play-circle"
-                                  }
-                                  type="Ionicons"
-                                  css="fos-35"
-                                />
-                              </SingleTouchableOpacity>
-                            </View>
-                          ))}
-                        />
-                      </View>
-                    </FormItem>
-                    <FormItem title="Playback Start">
-                      <Text css={`desc fos:13`}>Choose between starting narration immediately or buffering more words for smoother pacing.</Text>
+                    <FormView title="Reading Voice">
+
+                      <DropDownLocalList size={"80%"} css="mat-10" items={context.tts.nameList}
+                        selectedValue={context.appSettings.ttsVoiceId ?? "af_bella"}
+                        onSelect={locMem((item) => {
+                          editSettings({ ttsVoiceId: item.value });
+                          return false;
+                        })}
+                        render={locMem(item => (
+                          <View css={`ali:center bac:transparent pal:10 bor:5 flex row juc:space-between mih:24 clb`}>
+                            <Text css={`desc`}>{item.label}</Text>
+                            <SingleTouchableOpacity
+                              isLoading={context.tts.loading}
+                              onPress={() =>
+                                context.tts.testPlay(item.value as any)
+                              }>
+                              <Icon
+                                name={context.tts.status == "playing"
+                                  ? "pause-circle"
+                                  : "play-circle"
+                                }
+                                type="Ionicons"
+                                css="fos-35"
+                              />
+                            </SingleTouchableOpacity>
+                          </View>
+                        ))}
+                      />
+
+                    </FormView>
+                    <FormView title="Playback Start" desc="Choose between starting narration immediately or buffering more words for smoother pacing.">
                       <ButtonGroup onPress={locMem((indexes) => {
                         editSettings({
                           firstChunkMode: PLAYBACK_START_PRESETS[indexes[0]].id
@@ -907,10 +907,9 @@ const Controller = ({ state, ...props }: any) => {
                             return [1];
                           return [index];
                         }, context.appSettings.firstChunkMode)} />
-                    </FormItem>
-                    <FormItem
-                      title="Voice Response">
-
+                    </FormView>
+                    <FormView
+                      title="Voice Response" desc="Fast Start begins speaking sooner. Smooth Flow gives more natural pauses between sentences.">
                       <Slider
                         css=""
                         renderValue={true}
@@ -930,11 +929,9 @@ const Controller = ({ state, ...props }: any) => {
                         minimumValue={200}
                         maximumValue={600}
                       >
-                        <Text css="desc fos:12">
-                          Fast Start begins speaking sooner. Smooth Flow gives more natural pauses between sentences.
-                        </Text>
+
                       </Slider>
-                    </FormItem>
+                    </FormView>
 
                     <FormItem title="Rate/Speed">
                       <Slider
