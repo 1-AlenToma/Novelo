@@ -1,7 +1,7 @@
-import { SerializedTTS_NAMES_List, TTSConfig, TTSNames, TTS_NAMES, onStreamProgress } from "../Types";
+import { PLAYBACK_START_PRESETS, SerializedTTS_NAMES_List, TTSConfig, TTSNames, TTS_NAMES, onStreamProgress } from "../Types";
 import Speech, { SpeechStream, StreamProgressEvent, TTSEngine } from '@pocketpalai/react-native-speech';
 import RNFS from 'react-native-fs-turbo';
-import { sleep } from "react-smart-state";
+import { setBackgroundPlayback } from "./backgroundPlayback";
 
 export class TTSManager implements TTSConfig {
     link = "https://github.com/1-AlenToma/Novelo/releases/download/tts-modolsV2/TTSModols.zip";
@@ -81,6 +81,7 @@ export class TTSManager implements TTSConfig {
             this.loading = false;
         this.currentPlaying = "";
         this.status = "stopped";
+        setBackgroundPlayback(false)
     }
 
 
@@ -110,7 +111,7 @@ export class TTSManager implements TTSConfig {
             await this.stop();
             this.loading = typeof onIndexChanged === "function";
             await this.init();
-
+            setBackgroundPlayback(true)
             savedParagraphIndex = savedParagraphIndex ?? 0;
             const chunks = methods.buildChunksFromArray(rawText, savedParagraphIndex);
             if (chunks.length === 0) {
@@ -125,11 +126,14 @@ export class TTSManager implements TTSConfig {
             this.loading = typeof onIndexChanged === "function";
             this.isCanceled = false;
             this.status = "playing";
-
+            const stripSettings = PLAYBACK_START_PRESETS.find(x => x.id == (context.appSettings.firstChunkMode ?? "balanced"));
+            if (__DEV__)
+                    console.info("tts settings", stripSettings)
             const stream = (this.currentStream = Speech.createSpeechStream(_voiceId, {
                 stripMarkdown: true, // Already stripped cleanly by `md` above
                 firstChunk: 'clause',
-                firstChunkMaxWords: 25,
+                firstChunkMaxWords: 12,
+                ...stripSettings,
                 targetChars: context.appSettings.ttsTargetChars ?? 300,
                 silentMode: "respect",
                 onError: (err) => {
@@ -172,7 +176,9 @@ export class TTSManager implements TTSConfig {
                 this.currentPlaying = "";
                 this.status = "idle";
                 if (this.loading) this.loading = false;
+
                 onDone?.();
+
             }
         } catch (err) {
             if (!this.isCanceled) {
@@ -182,6 +188,7 @@ export class TTSManager implements TTSConfig {
             }
         } finally {
             unsubscribe?.();
+            setBackgroundPlayback(false)
         }
     }
 

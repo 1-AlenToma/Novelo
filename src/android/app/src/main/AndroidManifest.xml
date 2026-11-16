@@ -46,6 +46,6 @@
       <meta-data tools:replace="android:resource" android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths" />
     </provider>
     <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask" android:exported="false" android:foregroundServiceType="dataSync" />
-    <service android:name=".playback.BackgroundPlaybackService" android:exported="false" android:stopWithTask="true" android:foregroundServiceType="mediaPlayback" />
+    <service android:name=".BackgroundPlaybackService" android:exported="false" android:stopWithTask="true" android:foregroundServiceType="mediaPlayback" />
   </application>
 </manifest>

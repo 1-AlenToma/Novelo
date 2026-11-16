@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
-import speech.example.MainActivity
 
 /**
  * Foreground service of type mediaPlayback. While it runs, Android keeps the

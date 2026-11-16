@@ -6,6 +6,7 @@ import useTimer from "../hooks/Timer"
 import useLoader from "./Loader";
 import { SingleTouchableOpacity } from "./SingleTouchableOpacity";
 import { PrimitiveObject } from "react-smart-state";
+import { useKeepAwake } from "expo-keep-awake";
 
 const EmulateTTsLoadingProgress = () => {
   context.hook("tts.loading");
@@ -17,7 +18,7 @@ const EmulateTTsLoadingProgress = () => {
 
   // ~1.0s base startup + ~4ms per character in the first batch
   const estimatedMs = 1000 + effectiveChars * 4;
-  const tickMs = 500;
+  const tickMs = 300;
 
   const timer = useTimer(tickMs);
   const elapsedMs = PrimitiveObject(0);
@@ -63,6 +64,7 @@ const EmulateTTsLoadingProgress = () => {
 
 export default ({ isMenu }: { isMenu?: boolean }) => {
   const loader = useLoader();
+  useKeepAwake();
   const { locMem } = useFunc();
   context.hook(
     "player.showController",

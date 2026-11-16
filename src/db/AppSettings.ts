@@ -30,6 +30,7 @@ class AppSettings extends DBInit {
     lang?: string = "English";
     sentenceMargin?: number = 15;
     normalizeText?: boolean;
+    firstChunkMode?: 'instant' | 'balanced' | 'smooth' | 'full';
     useSentenceBuilder?: {
         enabled: boolean;
         minLength: number;
@@ -73,6 +74,7 @@ class AppSettings extends DBInit {
             .column("sentenceMargin").nullable.number
             .column("autoUpdateFavoritNovels").nullable.boolean
             .column("ttsVoiceId").nullable
+            .column("firstChunkMode").nullable
             .column("ttsTargetChars").nullable.number
             .column("selectedParser")
             .objectPrototype(AppSettings.prototype);

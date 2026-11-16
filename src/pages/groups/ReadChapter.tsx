@@ -39,6 +39,7 @@ import { AppSettings, Book } from "../../db";
 import { invertColor, sleep } from "../../Methods";
 import { useKeepAwake } from "expo-keep-awake";
 import httpServer from "../../native/HttpServer";
+import { PLAYBACK_START_PRESETS } from "../../Types";
 
 const lang: any = {};
 
@@ -330,6 +331,7 @@ const Controller = ({ state, ...props }: any) => {
     ttsVoiceId,
     lockScreenType,
     ttsTargetChars,
+    firstChunkMode,
     ...rest
   }: AppSettings | Record<string, any>, timerSpeed?: number) => {
     Timer(() => {
@@ -341,15 +343,16 @@ const Controller = ({ state, ...props }: any) => {
 
         if (ttsVoiceId != undefined) {
           context.appSettings.ttsVoiceId = ttsVoiceId;
-          if (context.tts.isInitialized) {
-            if (context.player.playing())
-              context.player.playing(false);
-            //  context.tts.deinitialize();
-          }
         }
 
         if (ttsTargetChars != undefined) {
           context.appSettings.ttsTargetChars = ttsTargetChars;
+        }
+
+        if (firstChunkMode != undefined)
+          context.appSettings.firstChunkMode = firstChunkMode;
+
+        if (ttsTargetChars != undefined || ttsVoiceId != undefined || firstChunkMode != undefined) {
           if (context.tts.isInitialized) {
             if (context.player.playing())
               context.player.playing(false);
@@ -902,6 +905,20 @@ const Controller = ({ state, ...props }: any) => {
                           ))}
                         />
                       </View>
+                    </FormItem>
+                    <FormItem title="Playback Start">
+                      <Text css={`desc fos:13`}>Choose between starting narration immediately or buffering more words for smoother pacing.</Text>
+                      <ButtonGroup onPress={locMem((indexes) => {
+                        editSettings({
+                          firstChunkMode: PLAYBACK_START_PRESETS[indexes[0]].id
+                        }, 100);
+                      })} buttons={locMemo(() => PLAYBACK_START_PRESETS.map(x => x.label))}
+                        selectedIndex={locMemo(() => {
+                          let index = PLAYBACK_START_PRESETS.map(x => x.id).indexOf(context.appSettings.firstChunkMode);
+                          if (index < 0)
+                            return [1];
+                          return [index];
+                        }, context.appSettings.firstChunkMode)} />
                     </FormItem>
                     <FormItem
                       title="Voice Response">

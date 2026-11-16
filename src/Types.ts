@@ -26,6 +26,46 @@ import { StreamProgressEvent } from "@pocketpalai/react-native-speech";
 import { TTSManager } from "./native/TTSManager";
 import { DropdownItem } from "react-native-short-style";
 
+export interface PlaybackStartPreset {
+  id: 'instant' | 'balanced' | 'smooth' | 'full';
+  label: string;
+  description: string;
+  firstChunk: 'clause' | 'sentence';
+  firstChunkMaxWords: number;
+}
+
+export const PLAYBACK_START_PRESETS: PlaybackStartPreset[] = [
+  {
+    id: 'instant',
+    label: 'Instant',
+    description: 'Begins speaking after the first few words',
+    firstChunk: 'clause',
+    firstChunkMaxWords: 12,
+  },
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    description: 'Quick start with natural clause phrasing',
+    firstChunk: 'clause',
+    firstChunkMaxWords: 25,
+  },
+  {
+    id: 'smooth',
+    label: 'Smooth',
+    description: 'Buffers a full sentence first for best flow',
+    firstChunk: 'sentence',
+    firstChunkMaxWords: 50,
+  },
+  {
+    id: 'full',
+    label: 'Full',
+    description: 'Buffers the full chapter',
+    firstChunk: 'sentence',
+    firstChunkMaxWords: undefined,
+  },
+];
+
+
 export interface ParagraphChunk {
   index: number;
   text: string;
