@@ -32,11 +32,3 @@ class BackgroundPlaybackModule(private val context: ReactApplicationContext) :
     promise.resolve(null)
   }
 }
-
-class BackgroundPlaybackPackage : ReactPackage {
-  override fun createNativeModules(context: ReactApplicationContext): List<NativeModule> =
-    listOf(BackgroundPlaybackModule(context))
-
-  override fun createViewManagers(context: ReactApplicationContext): List<ViewManager<*, *>> =
-    emptyList()
-}
