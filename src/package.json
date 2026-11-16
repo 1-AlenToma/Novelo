@@ -27,7 +27,8 @@
     "check:circles": "madge ./ --circular",
     "connect": "adb connect 127.0.0.1:7555",
     "clearGrade": "cd D: && python \"cureppted files check.py\" \"C:\\Users\\alen\\.gradle\\caches.old\"",
-    "preBuild": "npx expo prebuild --platform android --clean"
+    "preBuild": "npx expo prebuild --platform android --clean",
+    "postinstall": "patch-package"
   },
   "codegenConfig": {
     "name": "EpubZipperSpec",
@@ -46,7 +47,6 @@
           "react-native-fs",
           "react-native-exit-app",
           "manage-external-storage",
-          "react_native_sherpa_onnx_offline_tts",
           "rn-update-apk"
         ]
       }
@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
+    "@pocketpalai/react-native-speech": "^2.11.4",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-navigation/bottom-tabs": "^7.15.5",
     "@react-navigation/material-top-tabs": "^7.4.18",
@@ -77,8 +78,8 @@
     "js-base64": "^3.7.8",
     "jszip": "^3.10.2",
     "manage-external-storage": "^0.1.3",
+    "onnxruntime-react-native": "^1.24.3",
     "react": "19.3.0",
-    "react_native_sherpa_onnx_offline_tts": "git+https://github.com/1-AlenToma/react-native-sherpa-onnx-offline-tts.git",
     "react-native": "0.88.1",
     "react-native-background-actions": "^4.0.1",
     "react-native-config": "^1.6.1",
@@ -116,6 +117,7 @@
     "bestzip": "^4.0.3",
     "cross-env": "^10.1.0",
     "expo-dev-client": "~58.0.20",
+    "patch-package": "^8.0.1",
     "react-native-codegen": "^0.70.7",
     "typescript": "~6.0.3"
   },

@@ -47,6 +47,7 @@ class Player {
     define: undefined as any
   };
   isloading: boolean = false;
+  currentPlaying: string;
   constructor(
     novel: DetailInfo,
     book: Book,
@@ -55,6 +56,7 @@ class Player {
     this.book = book;
     this.novel = novel;
     this.isEpup = isEpup;
+    this.currentPlaying = "";
   }
 
   usePlayerLoader = () => {
@@ -120,7 +122,7 @@ class Player {
       } finally {
       }
 
-      this.chapterArray = txt.htmlArray(false, true, true);
+      this.chapterArray = txt.htmlArray(false, true, true, true);
       this.html = txt;
       return txt;
     }
@@ -337,21 +339,10 @@ class Player {
 
   playing(v?: boolean) {
     if (v == undefined) return this._playing;
-    if (!v)
-      this.currentTextSpeacking = "";
-
     if (!v) this.stop();
     else this.speak();
     this._playing = v;
     return this._playing;
-  }
-
-  currentPlaying() {
-    let txt =
-      this.chapterArray[
-      this.currentChapterSettings.audioProgress
-      ];
-    return txt;
   }
 
   getNextPlayingText() {
@@ -400,39 +391,32 @@ class Player {
     }
   }
 
-  private currentTextSpeacking = "";
-  private lastSpeekDate = new Date();
   async speak() {
-
-    let text = this.currentPlaying()?.cleanText() ?? "";
-    if (!/[a-zA-Z0-9]/gim.test(text)) {
-      await this.playNext();
-      return;
-    }
-
-    if (this.currentTextSpeacking == text && this.playing())
-      return;
-
-    await context.tts.stop();
-
-    this.currentTextSpeacking = text;
-    this.lastSpeekDate = new Date();
-    await context.tts.speak({
-      text: this.currentTextSpeacking,
-      onDone: async (msg) => {
-        console.log("onDone", msg);
-        if (this.playing() && msg == "PlaybackFinished") {
+    await context.tts.playChapter(
+      {
+        rawText: this.chapterArray,
+        voiceId: context.appSettings.ttsVoiceId,
+        savedParagraphIndex: this.currentChapterSettings.audioProgress,
+        onProgress: (event) => {
+          this.currentPlaying = event.chunkText;
+        },
+        onDone: async () => {
+          await this.playNext();
+        },
+        onIndexChanged: async (newIndex, isFinalChunk) => {
+          console.log("onDone Player", newIndex);
+          this.currentChapterSettings.audioProgress = isFinalChunk ? this.chapterArray.length - 1 : newIndex;
           this.currentChapterSettings.audioPercent = this.chapterArray.length.downloadPercent(this.currentChapterSettings.audioProgress);
           await this.currentChapterSettings.saveChanges();
-          await this.playNext();
         }
       }
-    });
+    )
     // await this.stop();
   }
 
 
   async stop() {
+    context.player.currentPlaying = "";
     await context.tts.stop();
   }
 

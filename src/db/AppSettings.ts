@@ -24,6 +24,7 @@ class AppSettings extends DBInit {
     navigationType?: "Scroll" | "Snap" | "ScrollSnap" = "Snap";
     use3D?: boolean = false;
     shadowLength?: number = 1;
+    ttsTargetChars?: number;
     fontStyle?: string = "normal";
     selectedTheme: number;
     lang?: string = "English";
@@ -41,8 +42,7 @@ class AppSettings extends DBInit {
         appendSelection?: boolean;
     } = {};
     autoUpdateFavoritNovels?: boolean = false;
-    ttsModol: TTSNames = null;
-    chunkWords?: boolean = false;
+    ttsVoiceId: TTSNames = null;
     constructor() {
         super("AppSettings");
     }
@@ -72,8 +72,8 @@ class AppSettings extends DBInit {
             .column("filesDataLocation").nullable
             .column("sentenceMargin").nullable.number
             .column("autoUpdateFavoritNovels").nullable.boolean
-            .column("ttsModol").nullable
-            .column("chunkWords").boolean.nullable
+            .column("ttsVoiceId").nullable
+            .column("ttsTargetChars").nullable.number
             .column("selectedParser")
             .objectPrototype(AppSettings.prototype);
     }

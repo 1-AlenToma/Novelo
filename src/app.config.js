@@ -39,7 +39,8 @@ export default {
       "android.permission.WAKE_LOCK",
       "android.permission.WRITE_EXTERNAL_STORAGE",
       "android.permission.MANAGE_EXTERNAL_STORAGE",
-      "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION"
+      "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION",
+      "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
     ],
     "adaptiveIcon": {
       "foregroundImage": "./assets/ic_launcher_foreground.png",
@@ -51,6 +52,7 @@ export default {
     "favicon": "./assets/ic_launcher.png"
   },
   "plugins": [
+    "onnxruntime-react-native",
     "expo-splash-screen",
     [
       "expo-screen-orientation",

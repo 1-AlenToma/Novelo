@@ -14,7 +14,7 @@ import { AppSettings, TableNames } from "./db";
 import ParserWrapper from "./parsers/ParserWrapper";
 import DownloadManager from "./native/DownloadManager";
 import dbContext from "./db/dbContext";
-import TTSManager from 'react_native_sherpa_onnx_offline_tts';
+
 import {
   IDatabase,
   Table
@@ -22,6 +22,16 @@ import {
 import { ReadDirItem, EncodingType as Encoding } from "react-native-fs-turbo";
 import { DimensionValue } from "react-native";
 import { ReturnState } from "react-smart-state";
+import { StreamProgressEvent } from "@pocketpalai/react-native-speech";
+import { TTSManager } from "./native/TTSManager";
+import { DropdownItem } from "react-native-short-style";
+
+export interface ParagraphChunk {
+  index: number;
+  text: string;
+  start: number;
+  end: number;
+}
 
 export type NavigationPage = "WatchAnime" | "AppMenu" | "GroupDetail" | "NovelItemDetail" | "Search" | "ReadChapter";
 
@@ -205,7 +215,24 @@ export type AppLocalSettings = {
   serverIp: string;
 }
 
-export type TTSNames = "Kristin(Low)" | "Kristin(Medium)" | "Ryan(Low)" | "Ryan(Medium)" | "Ryan(high)";
+export type onStreamProgress = (event: StreamProgressEvent) => void | Promise<void>;
+
+export const TTS_NAMES = ["af_heart", "af_alloy", "af_aoede", "af_bella", "af_jessica", "af_kore", "af_nicole", "af_nova", "af_river", "af_sarah", "af_sky", "am_adam", "am_echo", "am_eric", "am_fenrir", "am_liam", "am_michael", "am_onyx", "am_puck", "am_santa", "bf_alice", "bf_emma", "bf_isabella", "bf_lily", "bm_daniel", "bm_fable", "bm_george", "bm_lewis"] as const;
+
+export const SerializedTTS_NAMES_List = TTS_NAMES.map((c): DropdownItem => {
+  const lang = c.startsWith("b") ? "British" : "American";
+  const gender = c.charAt(1) === "f" ? "Female" : "Male";
+  const rawName = c.safeSplit("_", -1).displayName();
+
+  return {
+    label: `${rawName} (${lang}, ${gender})`,
+    value: c,
+  };
+});
+
+export type TTSNames = (typeof TTS_NAMES)[number];
+
+
 
 export type TTSConfig = {
   link: string;
@@ -214,27 +241,16 @@ export type TTSConfig = {
   sampleRate: number,
   config: {
     modelPath: string;
-    tokensPath: string;
-    dataDirPath: string;
+    model_quantized: string;
+    tokenizerPath: string;
+    dictPath: string;
+    voicesPath: string; // voices dir
   }
 };
 
 
 
-export type TTS = {
-  loaded: boolean;
-  initializing: boolean;
-  stop: typeof TTSManager.stop;
-  lastChosenConfig?: TTSNames;
-  speak: typeof TTSManager.generateAndPlay;
-  initialize: (config?: TTSNames) => Promise<boolean>;
-  deinitialize: typeof TTSManager.deinitialize;
-  base: string;
-  nameLists?: TTSNames[],
-  nameList: () => TTSNames[],
-  male: TTSConfig[],
-  female: TTSConfig[]
-}
+
 
 export type IReadDirItem = ReadDirItem<boolean, number>;
 export type ReadProps = {
@@ -254,7 +270,7 @@ export type GlobalType =
       state: string;
       inBackground: boolean
     }
-    tts: TTS;
+    tts: TTSManager;
     bgService: typeof BGService,
     appLocalSettings: {
       data: AppLocalSettings,

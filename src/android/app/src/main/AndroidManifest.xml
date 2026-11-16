@@ -12,6 +12,9 @@
   <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
@@ -43,5 +46,6 @@
       <meta-data tools:replace="android:resource" android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths" />
     </provider>
     <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask" android:exported="false" android:foregroundServiceType="dataSync" />
+    <service android:name=".playback.BackgroundPlaybackService" android:exported="false" android:stopWithTask="true" android:foregroundServiceType="mediaPlayback" />
   </application>
 </manifest>

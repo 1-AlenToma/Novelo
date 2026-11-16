@@ -3,12 +3,16 @@ import { TouchableOpacityProps } from "react-native";
 import useLoader from "./Loader";
 import React from "react";
 
-export const SingleTouchableOpacity = React.memo((props: TouchableOpacityProps & StyledProps & { hideLoader?: boolean }) => {
+export const SingleTouchableOpacity = React.memo((props: TouchableOpacityProps & StyledProps & { hideLoader?: boolean, isLoading?: boolean }) => {
 
     const timer = useTimer(500);
-    const loader = useLoader(false, undefined, "small");
+    const loader = useLoader(props.isLoading ?? false, undefined, "small");
     const cliked = useRef(false)
     const { locMem } = useFunc();
+
+    useEffect(() => {
+        props.isLoading ? loader.show() : loader.hide();
+    }, [props.isLoading])
 
     const click = locMem(async (event: any) => {
         if (cliked.current || loader.loading)

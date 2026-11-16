@@ -42,8 +42,8 @@ export default ({
 
   const increase = locMem((isPress?: boolean) => {
     let step = props.step ?? 1;
-    if (state.value + step <= props.maximumValue) {
-      let v = state.value + step;
+    if (Math.min(state.value + step, props.maximumValue) <= props.maximumValue) {
+      let v = Math.min(state.value + step, props.maximumValue)
       state.value = v;
       if (disableTimer)
         props.onValueChange?.(v)
@@ -56,8 +56,8 @@ export default ({
 
   const decrease = locMem((isPress?: boolean) => {
     let step = props.step ?? 1;
-    if (state.value - step >= props.minimumValue) {
-      let v = state.value - step;
+    if (Math.max(state.value - step, props.minimumValue) >= props.minimumValue) {
+      let v = Math.max(state.value - step, props.minimumValue);
       state.value = v;
       if (disableTimer)
         props.onValueChange?.(v)
@@ -91,6 +91,7 @@ export default ({
         </Text>
       </View>
       <View css={`flex invert`} style={locMem({ maxWidth: buttons ? "75%" : "90%" })}>
+        {children}
         <SliderView
           onStartShouldSetResponder={locMem(() =>
             false

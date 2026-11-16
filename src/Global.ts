@@ -13,7 +13,7 @@ import nlp from 'compromise';
 
 
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
-const fileTypesExt = [".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
+const fileTypesExt = [".onnx", ".bin", ".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
 
 declare global {
     var fileTypes: string[];
@@ -80,7 +80,7 @@ declare global {
         eSpace(total?: number): string;
         cleanHtml(): string;
         cleanText(): string;
-        htmlArray(normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean): string[];
+        htmlArray(normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean, removeParagraf?: boolean): string[];
         normalizeHtml(): string;
         html(): Html;
         htmlImagesSources(): string[];
@@ -492,7 +492,7 @@ String.prototype.normalizeHtml = function () {
 
 }
 
-String.prototype.htmlArray = function (normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean) {
+String.prototype.htmlArray = function (normalize?: boolean, useSmartSentences?: boolean, forAudio?: boolean, removeParagraf?: boolean) {
 
     let str = normalize ? this.toString().normalizeHtml() : this.toString().replace(/<\/?(strong|i|b|span)\b[^<>]*>/gim, "");
     // console.log(str)
@@ -540,7 +540,7 @@ String.prototype.htmlArray = function (normalize?: boolean, useSmartSentences?: 
         }
     }
 
-    return result.map(x => `<p>${x}</p>`);
+    return result.map(x => removeParagraf ? x : `<p>${x}</p>`);
 };
 
 String.prototype.htmlImagesSources = function () {

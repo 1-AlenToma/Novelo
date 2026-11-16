@@ -35,10 +35,11 @@ export default ({
   };
 
   if (refItem) {
-    if (!refItem.current)
+    if (!refItem.current) {
       refItem.current = {};
-    refItem.current.close = () => state.visible = (false);
-    refItem.current.show = () => state.visible = (true);
+      refItem.current.close = () => state.visible = false;
+      refItem.current.show = () => state.visible = true;
+    }
   }
 
   useEffect(() => {
@@ -48,9 +49,9 @@ export default ({
 
   if (onPress) {
     tprops.onPress = onPress;
-    tprops.onLongPress = () => state.visible = (true);
+    tprops.onLongPress = () => state.visible = true;
   }
-  let extra = controller == "Modal" ? { css: `he-${props.size} wi-95%` } : {}
+  let extra = locMem(controller == "Modal" ? { css: `he-${props.size} wi-95%` } : {}, props.size, controller)
   const CN = controller == "Modal" ? Modal : ActionSheet;
   const Container = ready !== false ? ReadyView : React.Fragment;
   let containerProps: any = {};
@@ -61,7 +62,6 @@ export default ({
     if (Array.isArray(children))
       ch = children.map(x => typeof x == "function" ? x() : x);
     else ch.push(typeof children == "function" ? children() : children);
-
   }
 
   if (ifSelector(ifTrue) === false) return null;
@@ -79,7 +79,7 @@ export default ({
         {...extra}
         speed={speed ?? 300}
         isVisible={state.visible}
-        onHide={locMem(() => state.visible = (false))}>
+        onHide={locMem(() => state.visible = false)}>
         <Container {...containerProps}>
           {ch}
         </Container>

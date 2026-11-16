@@ -9,6 +9,7 @@ import FilesZipper from "./Zip";
 import Notification from "./Notification";
 export * from "./ParserItems";
 export * from "./EpubBuilder";
+export * from "./TTSManager";
 
 
 export {

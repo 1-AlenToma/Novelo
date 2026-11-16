@@ -4,6 +4,38 @@ export * from "./localModules/NativeEpubZipper";
 export * from "./native/SentencesSplitter";
 import { Platform, PermissionsAndroid } from 'react-native'; // Or equivalent for your framework
 import { checkManagePermission, requestManagePermission } from 'manage-external-storage';
+import { ParagraphChunk } from "./Types";
+
+export function buildChunksFromArray(
+  rawText: string[],
+  startIndex = 0
+): ParagraphChunk[] {
+  const chunks: ParagraphChunk[] = [];
+  let cursor = 0;
+
+  for (let i = startIndex; i < rawText.length; i++) {
+    // Collapse any internal newlines inside a paragraph so it stays 1 item = 1 index
+    const line = (rawText[i] ?? "").replace(/\s+/g, " ").trim();
+
+    // Skip empty items in rawText without shifting `i` for later items
+    if (!line) continue;
+
+    const needsPunctuation = !/[.!?…"'”’]$/.test(line);
+    const formatted = needsPunctuation ? `${line}. ` : `${line} `;
+
+    chunks.push({
+      index: i, // Exact index in rawText (0 .. rawText.length - 1)
+      text: formatted,
+      start: cursor,
+      end: cursor + formatted.length,
+    });
+
+    cursor += formatted.length;
+  }
+
+  return chunks;
+}
+
 
 /**
  * Creates a reusable URL builder function configured with a custom placeholder prefix.

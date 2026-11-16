@@ -185,7 +185,7 @@ export default React.memo(({
       loader.show();
       let content = {
         inlineStyle: cleanInlineStyle(),
-        content: context.player.showPlayer ? `<p>${context.player.currentPlaying()?.cleanText() ?? ""}</p> ` : context.player.html,
+        content: context.player.showPlayer ? `<p>${context.player.currentPlaying.onEmpty(context.tts.loading ? "Loading Please wait" : "Click Play to Start")}</p> ` : context.player.html,
         scroll: context.player.currentChapterSettings.scrollProgress
       };
 
@@ -250,10 +250,10 @@ export default React.memo(({
 
   context.useEffect(
     () => {
-     
+
       if (!state.refItem.firstLoad)
         return;
-       // console.warn("loading html content")
+      // console.warn("loading html content")
       loadHtmlContent();
 
     },
@@ -262,13 +262,15 @@ export default React.memo(({
     "player.book.inlineStyle",
     "player.showPlayer",
     "player.currentChapterSettings.audioProgress",
-    "player.isloading"
+    "player.isloading",
+    "player.currentPlaying",
+    "tts.loading"
   );
 
   const onMessage = locMem(async ({ nativeEvent }) => {
     let data = JSON.parse(nativeEvent.data);
     //if (__DEV__)
-     // console.warn("WebView Message:", data.type, data.data);
+    // console.warn("WebView Message:", data.type, data.data);
     switch (data.type) {
       case "loader":
         if (data.data)
@@ -362,8 +364,12 @@ export default React.memo(({
       ["address", httpServer.address],
       ["novelType", context.player.novel.type],
       ["fontName", context.appSettings.fontName])
-    return {  html, basUrl: ""};
+    return { html, basUrl: "" };
   }, [context.appSettings.backgroundColor, httpServer.address, context.appSettings.fontName, context.player.novel.type]);
+
+  context.useEffect(() => {
+    context.tts.loading ? loader.show() : loader.hide();
+  }, "tts.loading")
 
 
   return (

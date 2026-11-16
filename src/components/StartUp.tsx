@@ -19,7 +19,7 @@ export const StartUp = ({ children }: { children: any }) => {
     const checkPermissions = async () => {
         await state.batch(async () => {
             state.hasPer = await methods.isStoragePermissionGranted();
-            state.ttsLoaded = await exist(context.tts.male) && await exist(context.tts.female);
+            state.ttsLoaded = await exist()
             if (!state.mounted) {
                 state.mounted = true;
                 loader.hide();
@@ -31,85 +31,71 @@ export const StartUp = ({ children }: { children: any }) => {
         checkPermissions();
     }, [])
 
-    const exist = async (configs: TTSConfig[]) => {
-        for (let config of configs) {
-            if (!await RNFS.exists(context.tts.base.path(config.path))) {
-                console.warn("Modol", context.tts.base.path(config.path), "not found")
-                return false;
-            }
-            if (!await RNFS.exists(config.config.dataDirPath) || !await RNFS.exists(config.config.modelPath) || !await RNFS.exists(config.config.tokensPath)) {
-                console.warn("Modol", config.config.dataDirPath, config.config.modelPath, config.config.tokensPath, "not found")
-                return false;
+    const exist = async () => {
 
-            }
+        if (!await RNFS.exists(context.tts.config.modelPath)
+            || !await RNFS.exists(context.tts.config.voicesPath)
+            || !await RNFS.exists(context.tts.config.tokenizerPath)) {
+            console.warn("TTs modols not found")
+            return false;
         }
+
         return true;
     }
-    const downloadModel = async (config: TTSConfig, toPath: string) => {
-        let sub = subscribe(({ progress }) => {
-            state.progress = progress * 100
+    const downloadModel = async () => {
+        const sub = subscribe(({ progress }) => {
+            state.progress = progress * 100;
         });
-        const name = config.name.replace(/\(|\)/g, "");
-        console.log("tpPath", toPath)
-        toPath = toPath.split("/").filter(x => x.length > 0).skip(-1).join("/");
-        const zipFile = downloadPath.path(name + ".zip");
-        if (await RNFS.exists(zipFile))
+
+        const zipFile = downloadPath.path(context.tts.modoleName);
+        if (await RNFS.exists(zipFile)) {
             await RNFS.unlink(zipFile);
+        }
+
         try {
+            state.progress = 0;
+            state.modolName = `Downloading ${context.tts.modoleName}`;
 
-            if (!(await RNFS.exists(zipFile))) {
-                state.modolName = `Downloading ${config.name}`;
-
-                await RNFS.downloadFile({
-                    fromUrl: config.link,
-                    toFile: zipFile,
-                    progress: value => {
+            const res = await RNFS.downloadFile({
+                fromUrl: context.tts.link,
+                toFile: zipFile,
+                progress: (value) => {
+                    if (value.contentLength > 0) {
                         state.progress = value.contentLength.downloadPercent(value.bytesWritten);
                     }
-                }).promise;
+                },
+            }).promise;
+
+            if (res.statusCode !== 200) {
+                throw new Error(`Download failed with HTTP ${res.statusCode}`);
             }
 
-
-            // ✅ ENSURE TARGET DIRECTORY EXISTS
-            if (!(await RNFS.exists(toPath))) {
-                await RNFS.mkdir(toPath);
+            if (!(await RNFS.exists(context.tts.fullPath))) {
+                await RNFS.mkdir(context.tts.fullPath);
             }
 
-            state.modolName = `Extracting ${config.name}`;
-            console.log(`Extracting ${zipFile} to ${toPath}`)
+            state.progress = 0; // ✅ Reset bar for extraction phase
+            state.modolName = `Extracting ${context.tts.modoleName}`;
+            const extractedPath = await unzip(zipFile, context.tts.fullPath);
 
-            // ✅ FORCE UNZIP
-            const extractedPath = await unzip(zipFile, toPath);
-
-            console.log("Unzipped to:", extractedPath);
-
+            // ✅ Verify exact extracted filenames in Metro logs
+            const files = await RNFS.readDir(extractedPath);
+            console.log("Extracted files:", files.map((f) => f.name));
         } catch (e) {
-            console.error("Unzip error:", e);
+            console.error("TTS Model setup error:", e);
         } finally {
-            sub.remove();
-            if (await RNFS.exists(zipFile))
+            sub?.remove();
+            if (await RNFS.exists(zipFile)) {
                 await RNFS.unlink(zipFile);
+            }
         }
     };
-
 
     async function copyAssetsToFS() {
         try {
             loader.show();
-            if (!await exist(context.tts.male)) {
-                for (let config of context.tts.male) {
-                    state.modolName = `Parsing model for ${config.name}`;
-                    // Recursively copy folder
-                    await downloadModel(config, context.tts.base.path(config.path));
-                }
-            }
-
-            if (!await exist(context.tts.female)) {
-                for (let config of context.tts.female) {
-                    state.modolName = `Parsing model for ${config.name}`;
-                    // Recursively copy folder
-                    await downloadModel(config, context.tts.base.path(config.path));
-                }
+            if (!await exist()) {
+                await downloadModel();
             }
 
             await checkPermissions();
@@ -120,20 +106,6 @@ export const StartUp = ({ children }: { children: any }) => {
         }
     }
 
-
-
-
-    async function sayHello() {
-        try {
-            const text = 'Hello world – spoken entirely offline!';
-            const text2 = 'Hello world – spoken entirely online!';
-            await context.tts.initialize("Kristin(Low)");
-            await context.tts.speak({ text });
-            await context.tts.speak({ text: text2 });
-        } catch (e) {
-            console.error(e);
-        }
-    }
 
 
 

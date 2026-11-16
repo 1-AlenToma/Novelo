@@ -27,7 +27,7 @@ import ImageCache from "./native/ImageCache";
 import BGService from "./native/BackgroundService";
 import { ConsoleInterceptor } from "./native/ConsoleInterceptor";
 import RNFS from 'react-native-fs-turbo';
-import TTSManager from 'react_native_sherpa_onnx_offline_tts';
+import { TTSManager } from "./native/TTSManager";
 import { AppState, AppStateStatus } from "react-native"
 import httpServer from "./native/HttpServer";
 import { AlertDialog } from "react-native-short-style";
@@ -54,21 +54,6 @@ const zip = new FilesZipper();
 const notification = new Notification();
 const privateData = new FileHandler(FilesPath.Private, "File");
 const debugMode = __DEV__;
-const ttsLocalPathBase = RNFS.DocumentDirectoryPath;
-
-const generateTTsConfig = (name: TTSNames, fileName: string, sampleRate: number = 22050): TTSConfig => {
-    return {
-        link: `https://github.com/1-AlenToma/Novelo/releases/download/tts-modols/${fileName}.zip`,
-        name: name,
-        path: `tts/${fileName}`,
-        sampleRate,
-        config: {
-            modelPath: `${ttsLocalPathBase}/tts/${fileName}/${fileName.replace(/(vits-piper-)|(-fp16)/gim, "").trim()}.onnx`,
-            tokensPath: `${ttsLocalPathBase}/tts/${fileName}/tokens.txt`,
-            dataDirPath: `${ttsLocalPathBase}/tts/${fileName}/espeak-ng-data`,
-        }
-    }
-}
 
 
 const data: IGlobalState = StateBuilder<GlobalType>(
@@ -87,65 +72,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
             state: AppState.currentState,
             inBackground: false
         },
-        tts: {
-            initializing: false,
-            loaded: false,
-            lastChosenConfig: undefined,
-            nameLists: undefined,
-            stop: async () => {
-                return await TTSManager.stop();
-            },
-            deinitialize: async () => {
-                data.tts.loaded = false;
-                data.tts.lastChosenConfig = undefined;
-                return TTSManager.deinitialize();
-            },
-            speak: async (item) => {
-                try {
-                    if (!data.tts.loaded)
-                        await data.tts.initialize(data.tts.lastChosenConfig ?? data.appSettings.ttsModol);
-                    return await TTSManager.generateAndPlay({ ...item, splitWords: data.appSettings.chunkWords ?? false, speed: data.appSettings.rate });
-                } catch (e) {
-                    console.error(e)
-                }
-            },
-            initialize: async (config) => {
-                console.log("initializing tts")
-                try {
-
-                    data.tts.initializing = true;
-                    if (data.tts.loaded) {
-                        if (data.tts.lastChosenConfig == config)
-                            return;// already loaded
-                        await TTSManager.deinitialize();
-                    }
-
-                    data.tts.loaded = true;
-                    data.tts.lastChosenConfig = config;
-                    let ttsConfig = [...data.tts.female, ...data.tts.male].find(x => x.name == config) ?? data.tts.male[1];
-                    //console.log(ttsConfig);
-                    return await TTSManager.initialize(JSON.stringify(ttsConfig.config), ttsConfig.sampleRate, false, 1);
-                } catch (e) {
-                    console.error(e)
-                } finally {
-                    data.tts.initializing = false;
-                }
-            },
-            base: ttsLocalPathBase,
-            nameList: () => {
-                if (data.tts.nameLists)
-                    return data.tts.nameLists;
-                return (data.tts.nameLists = [...data.tts.male.map(x => x.name), ...data.tts.female.map(x => x.name)])
-            },
-            female: [
-                generateTTsConfig("Kristin(Low)", "vits-piper-en_US-kristin-medium-fp16"),
-                generateTTsConfig("Kristin(Medium)", "vits-piper-en_US-kristin-medium")
-            ],
-            male: [
-                generateTTsConfig("Ryan(Low)", "vits-piper-en_US-ryan-low", 16000),
-                generateTTsConfig("Ryan(Medium)", "vits-piper-en_US-ryan-medium")
-            ]
-        },
+        tts: new TTSManager(),
         bgService: BGService,
         appLocalSettings: {
             data: {} as any,
@@ -474,8 +401,11 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         }
     })).ignore(
         "appState.state",
-        "tts.female",
-        "tts.male",
+        "tts.config",
+        "tts.nameList",
+        "tts.voiceId",
+        "tts.currentStream",
+        "tts.onStreamProgress",
         "files",
         "imageCache",
         "cache",
@@ -489,6 +419,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
         "player.book.chapterSettings",
         "player.book.textReplacements",
         "player.currentChapter",
+        "player.currentPlaying",
         "player.novel",
         "zip",
         "notification",

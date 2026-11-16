@@ -11,7 +11,8 @@ import {
   ColorSelection,
   PlayerView,
   ContextContainer,
-  Tabbs
+  Tabbs,
+  SingleTouchableOpacity
 } from "../../components/";
 import {
   View, Text, Icon, ButtonGroup,
@@ -219,7 +220,7 @@ const Modoles = () => {
               `}
               nestedScrollEnabled={true}
               cacheEnabled={true}
-              source={locMemo(()=> ({
+              source={locMemo(() => ({
                 uri: `https://translate.google.com/m?hl=en&sl=en&tl=${LANGUAGE_TABLE[
                   context.appSettings.lang ?? "English"
                 ].google
@@ -326,9 +327,9 @@ const Controller = ({ state, ...props }: any) => {
 
   const editSettings = locMem(({
     fontSize,
-    ttsModol,
-    chunkWords,
+    ttsVoiceId,
     lockScreenType,
+    ttsTargetChars,
     ...rest
   }: AppSettings | Record<string, any>, timerSpeed?: number) => {
     Timer(() => {
@@ -338,19 +339,20 @@ const Controller = ({ state, ...props }: any) => {
           context.appSettings.lineHeight = fontSize * context.lineHeight;
         }
 
-        if (ttsModol != undefined) {
-          context.appSettings.ttsModol = ttsModol;
-          if (context.tts.loaded) {
+        if (ttsVoiceId != undefined) {
+          context.appSettings.ttsVoiceId = ttsVoiceId;
+          if (context.tts.isInitialized) {
             if (context.player.playing())
               context.player.playing(false);
-            context.tts.deinitialize();
+            //  context.tts.deinitialize();
           }
         }
 
-        if (chunkWords != undefined) {
-          context.appSettings.chunkWords = chunkWords;
-          if (context.player.playing()) {
-            context.player.playing(false);
+        if (ttsTargetChars != undefined) {
+          context.appSettings.ttsTargetChars = ttsTargetChars;
+          if (context.tts.isInitialized) {
+            if (context.player.playing())
+              context.player.playing(false);
           }
         }
 
@@ -375,8 +377,8 @@ const Controller = ({ state, ...props }: any) => {
   });
 
   const isManga = locMemo(() => state.novel.type?.isManga() === true, state.novel.type);
+  console.log("isManga", isManga, state.novel.type)
 
-  const selectedTTsModel = locMemo(() => context.tts.nameList().indexOf(context.appSettings.ttsModol), context.appSettings.ttsModol);
   return (
     <>
       {context.player.showController ? <View
@@ -427,536 +429,582 @@ const Controller = ({ state, ...props }: any) => {
       <Header
         ifTrue={context.player.showController}
         css={`absolute to:0 bobw:1 he-45 boc:${invertColor(context.appSettings.backgroundColor)}`}
-        buttons={[
-          isManga ? {
-            ifTrue: !isManga,
-            text: locMemo(() =>
-              <Icon
-                name="featured-play-list"
-                type="MaterialIcons"
-                css="fos-35"
-              />
-            ),
-            press: locMem(() => {
-              context.player.playing(false);
-              context.player.showPlayer = !context.player.showPlayer;
-            })
-          } : null,
-          {
-            text: (
-              <ActionSheetButton
-                ready={false}
-                title="Chapters"
-                size="80%"
-                btn={locMemo(() =>
-                  <Icon
-                    type="MaterialCommunityIcons"
-                    name="menu"
-                    css="fos-35"
-                  />)
-                }
-              >
-                {() => (<ContextContainer
-                  globalStateKeys={locMem(["player.currentChapter"])}
-                  render={locMem(() => (
-                    <ChapterView
-                      book={state.book}
-                      novel={state.novel}
-                      onPress={locMem(async item => {
-                        await context.player.jumpTo(item.url);
-                      })}
-                      current={context.player.currentChapter.url}
-                    />
-                  ))}
-                />)}
-
-              </ActionSheetButton>
-            )
-          },
-          {
-            text: () => (
-              <ActionSheetButton
-                ready={true}
-                controller="ActionSheet"
-                addCloser={true}
-                size="80%"
-                btn={locMemo(() =>
-                  <Icon
-                    type="Ionicons"
-                    name="settings"
-                    css="fos-35"
+        buttons={[{
+          ifTrue: !isManga,
+          text: locMemo(() =>
+            <Icon
+              name="featured-play-list"
+              type="MaterialIcons"
+              css="fos-35"
+            />
+          ),
+          press: locMem(() => {
+            context.player.playing(false);
+            context.player.showPlayer = !context.player.showPlayer;
+          })
+        },
+        {
+          text: (
+            <ActionSheetButton
+              ready={false}
+              title="Chapters"
+              size="80%"
+              btn={locMemo(() =>
+                <Icon
+                  type="MaterialCommunityIcons"
+                  name="menu"
+                  css="fos-35"
+                />)
+              }>
+              {() => (<ContextContainer
+                globalStateKeys={locMem(["player.currentChapter"])}
+                render={locMem(() => (
+                  <ChapterView
+                    book={state.book}
+                    novel={state.novel}
+                    onPress={locMem(async item => {
+                      await context.player.jumpTo(item.url);
+                    })}
+                    current={context.player.currentChapter.url}
                   />
-                )}
-              >
-                {() => (<View css="flex">
-                  <Tabbs lazyLoading={true} css="mat-5" position="Top">
-                    <TabView
-                      icon={locMem({
-                        name: "format-font",
-                        type: "MaterialCommunityIcons"
-                      })}
-                      css="invert"
+                ))}
+              />)}
+            </ActionSheetButton>
+          )
+        },
+        {
+          text: () => (
+            <ActionSheetButton
+              ready={true}
+              controller="ActionSheet"
+              addCloser={true}
+              size="80%"
+              btn={locMemo(() =>
+                <Icon
+                  type="Ionicons"
+                  name="settings"
+                  css="fos-35"
+                />
+              )}
+            >
+              {() => (<View css="flex">
+                <Tabbs lazyLoading={true} css="mat-5" position="Top">
+                  <TabView
+                    icon={locMem({
+                      name: "format-font",
+                      type: "MaterialCommunityIcons"
+                    })}
+                    css="invert"
+                  >
+                    <FormItem title="LockScreen:" labelPosition="Top">
+                      <CheckBoxList selectionType="Radio" labelPostion="Left" checkBoxType="RadioButton"
+                        onChange={locMem((chks) => {
+                          if (chks[0].checked) editSettings({ lockScreenType: "Horizontal" });
+                          else if (chks[1].checked) editSettings({ lockScreenType: "Vertical" });
+                        })}>
+                        <CheckBox
+                          css="pal:1 invert"
+                          label="Horizental"
+                          checked={
+                            context.appSettings
+                              .lockScreenType === "Horizontal"
+                          }
+                        />
+
+                        <CheckBox
+                          css="pal:1 invert"
+                          label="Vertical"
+                          checked={
+                            context.appSettings
+                              .lockScreenType === "Vertical"
+                          }
+                        />
+                      </CheckBoxList>
+                    </FormItem>
+                    <FormItem title="NavigationMethod">
+                      <ButtonGroup
+                        buttons={locMemo(() => ["Scroll", "Snap", "ScrollSnap"].filter(x => isManga ? x !== "Snap" : true), state.novel.type)}
+                        onPress={locMem((_, items) => {
+                          editSettings({
+                            navigationType: items[0]
+                          });
+                        })}
+                        selectedIndex={locMemo(() => [context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (isManga ? 1 : 2) : 1)], state.novel.type, context.appSettings.navigationType)}
+                      />
+                    </FormItem>
+                    <FormItem title="FontStyle" ifTrue={!isManga}>
+                      <ButtonGroup
+                        buttons={oSettings.fontStyles}
+                        onPress={locMem((_, items) => {
+                          editSettings({
+                            fontStyle: items[0].toLowerCase()
+                          });
+                        })}
+                        selectedIndex={locMemo(
+                          () => [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle?.toLowerCase())].filter(x => x >= 0)
+                          , context.appSettings.fontStyle)}
+                      />
+                    </FormItem>
+                    <FormItem title="TextAlign" ifTrue={!isManga}>
+                      <ButtonGroup
+                        buttons={oSettings.textAlign}
+                        onPress={locMem((_, items) => {
+                          editSettings({
+                            textAlign:
+                              items[0].safeSplit(
+                                "-",
+                                1
+                              )
+                          });
+                        })}
+                        render={locMem((x, i) => (
+                          <Icon
+                            type="Feather"
+                            name={x}
+                            size={30}
+                            style={{
+                              ...(x.has(
+                                context
+                                  .appSettings
+                                  .textAlign
+                              )
+                                ? {
+                                  color: "red"
+                                }
+                                : { color: "gray" })
+                            }}
+                          />)
+                        )}
+                        selectedIndex={locMemo(() => [oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0), context.appSettings.textAlign)}
+                      />
+                    </FormItem>
+
+
+                    <FormItem title="Font" ifTrue={!isManga}>
+                      <DropDownLocalList
+                        size={"80%"}
+                        css={"invert"}
+                        items={oSettings.fonts}
+                        render={locMem(item => {
+                          return (
+                            <View
+                              css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between he-30`}>
+                              <Text css={`header invertco fontFamily-${item.value}`}>
+                                {item.label}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                        onSelect={locMem(fontName => {
+                          editSettings({
+                            fontName: fontName.value
+                          });
+                          return false;
+                        })}
+                        selectedValue={
+                          context.appSettings.fontName || "SourceSans3-Black"
+                        }
+                      />
+                    </FormItem>
+                    <FormItem title="FontSize" ifTrue={!isManga}>
+                      <Slider
+                        css="flex"
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        value={
+                          context.appSettings
+                            .fontSize
+                        }
+                        onSlidingComplete={locMem((fontSize: any) => {
+                          editSettings({
+                            fontSize
+                          }, 100);
+                        })}
+                        minimumValue={10}
+                        maximumValue={40}
+                      />
+                    </FormItem>
+
+                    <FormItem title="LineHeight" ifTrue={!isManga}>
+                      <Slider
+                        css="flex"
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        value={
+                          context.appSettings
+                            .lineHeight
+                        }
+                        onSlidingComplete={locMem((lineHeight: any) => {
+                          editSettings({
+                            lineHeight
+                          }, 100);
+                        })}
+                        minimumValue={Math.max((context.appSettings.fontSize * context.lineHeight) - 20, 10)}
+                        maximumValue={(context.appSettings.fontSize * context.lineHeight) + 20}
+                      />
+                    </FormItem>
+
+                    <FormItem title="Sentence Margin" ifTrue={!isManga}>
+                      <Slider
+                        css="flex"
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        value={
+                          context.appSettings
+                            .sentenceMargin ?? 5
+                        }
+                        onSlidingComplete={locMem((sentenceMargin: any) => {
+                          editSettings({
+                            sentenceMargin
+                          }, 100);
+                        })}
+                        minimumValue={5}
+                        maximumValue={15}
+                      />
+                    </FormItem>
+
+                    <FormItem title="Padding" ifTrue={!isManga}>
+                      <Slider
+                        css="flex"
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        value={
+                          context.appSettings
+                            .margin
+                        }
+                        onSlidingComplete={locMem((margin: any) => {
+                          editSettings({
+                            margin
+                          }, 100);
+                        })}
+                        minimumValue={5}
+                        maximumValue={40}
+                      />
+                    </FormItem>
+                    <View css="flg-1 fl-0 wi-100% mat-10 invert">
+                      <Text css="fow-bold">BackgroundColor</Text>
+                      <ColorSelection selectedValue={context.appSettings.backgroundColor}
+                        onChange={locMem((hex) => {
+                          editSettings({
+                            backgroundColor: hex
+                          })
+                        })} />
+                    </View>
+                  </TabView>
+                  <TabView
+                    ifTrue={!isManga}
+                    css="flex invert"
+                    icon={locMem({
+                      name: "text-fields",
+                      type: "MaterialIcons"
+                    })}
+                  >
+
+                    <Text
+                      ifTrue={context.player.isNovelType}
+                      css="desc fos:12"
                     >
-                      <FormItem title="LockScreen:" labelPosition="Top">
-                        <CheckBoxList selectionType="Radio" labelPostion="Left" checkBoxType="RadioButton"
-                          onChange={locMem((chks) => {
-                            if (chks[0].checked) editSettings({ lockScreenType: "Horizontal" });
-                            else if (chks[1].checked) editSettings({ lockScreenType: "Vertical" });
-                          })}>
-                          <CheckBox
-                            css="pal:1 invert"
-                            label="Horizental"
-                            checked={
-                              context.appSettings
-                                .lockScreenType === "Horizontal"
+                      Enabling This Option Will Make
+                      Novelo Try and Reorder the
+                      Sentences of The Chapter Too
+                      Follow A Specific novelo Rules,
+                      Making the Chapter More
+                      Readiable. Offcourse this COULD
+                      ALSO MAKE SMALL Mistakes
+                      Depending on How The Auther
+                      wrote it.
+                    </Text>
+                    <FormItem ifTrue={context.player.isNovelType} title="UseSentenceBuilder:" labelPosition="Left">
+                      <CheckBox
+                        css="pal:1 invert"
+                        checked={
+                          context.appSettings
+                            .useSentenceBuilder
+                            ?.enabled ?? false
+                        }
+                        onChange={locMem(() => {
+                          editSettings({
+                            useSentenceBuilder: {
+                              ...(context
+                                .appSettings
+                                .useSentenceBuilder ??
+                                {}),
+                              enabled: !(
+                                context
+                                  .appSettings
+                                  .useSentenceBuilder
+                                  ?.enabled ??
+                                false
+                              )
                             }
-                          />
-
-                          <CheckBox
-                            css="pal:1 invert"
-                            label="Vertical"
-                            checked={
-                              context.appSettings
-                                .lockScreenType === "Vertical"
+                          });
+                        })}
+                      />
+                    </FormItem>
+                    <FormItem
+                      title="MinLength"
+                      ifTrue={context.appSettings.useSentenceBuilder?.enabled == true}>
+                      <Slider
+                        step={10}
+                        css="flex"
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        value={
+                          context.appSettings
+                            .useSentenceBuilder
+                            ?.minLength ??
+                          100
+                        }
+                        onSlidingComplete={locMem((length: any) => {
+                          editSettings({
+                            useSentenceBuilder:
+                            {
+                              ...(context
+                                .appSettings
+                                .useSentenceBuilder ??
+                                {}),
+                              minLength:
+                                length
                             }
-                          />
-                        </CheckBoxList>
-                      </FormItem>
-                      <FormItem title="NavigationMethod">
-                        <ButtonGroup
-                          buttons={locMemo(() => ["Scroll", "Snap", "ScrollSnap"].filter(x => isManga ? x !== "Snap" : true), state.novel.type)}
-                          onPress={locMem((_, items) => {
-                            editSettings({
-                              navigationType: items[0]
-                            });
-                          })}
-                          selectedIndex={locMemo(()=> [context.appSettings.navigationType == "Scroll" ? 0 : (context.appSettings.navigationType == "ScrollSnap" ? (isManga ? 1 : 2) : 1)], state.novel.type, context.appSettings.navigationType)}
+                          }, 100);
+                        })}
+                        minimumValue={100}
+                        maximumValue={400}
+                      />
+                    </FormItem>
+                    <FormItem ifTrue={context.player.isNovelType} title="NormalizeText:" labelPosition="Left">
+                      <CheckBox
+                        css="pal:1 invert"
+                        checked={
+                          context.appSettings
+                            .normalizeText ?? false
+                        }
+                        onChange={locMem((isChecked) => {
+                          editSettings({
+                            normalizeText: isChecked
+                          });
+                        })}
+                      />
+                    </FormItem>
+                    <FormItem title="Add Shadow:" labelPosition="Left">
+                      <CheckBox
+                        css="pal:1 invert"
+                        checked={
+                          context.appSettings.use3D ?? false
+                        }
+                        onChange={locMem(() => {
+                          editSettings({
+                            use3D: !context
+                              .appSettings.use3D
+                          });
+                        })}
+                      />
+                    </FormItem>
+                    <FormItem
+                      title="Shadow Length"
+                      ifTrue={context.appSettings.use3D == true}>
+                      <Slider
+                        css="flex"
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        value={(1).sureValue(
+                          context.appSettings
+                            .shadowLength,
+                          true
+                        )}
+                        onSlidingComplete={locMem((shadowLength: any) => {
+                          editSettings({
+                            shadowLength
+                          }, 100);
+                        })}
+                        minimumValue={1}
+                        maximumValue={3}
+                      />
+                    </FormItem>
+                    <FormItem
+                      ifTrue={context.player.book.parserName === "epub"}
+                      css="he:200 "
+                      title="InlineStyle"
+                      labelPosition="Top"
+                    >
+                      <TextInput
+                        isModole={true}
+                        css="wi:100% pa:5 bor:2 he:100%"
+                        multiline={true}
+                        defaultValue={
+                          context.player.book
+                            .inlineStyle
+                        }
+                        onChangeText={locMem(t => {
+                          context.player.book.inlineStyle =
+                            t;
+                          context.player.book.saveChanges();
+                        })}
+                      />
+                    </FormItem>
+                  </TabView>
+                  <TabView
+                    ifTrue={context.player.isNovelType}
+                    css="flex invert pab-30"
+                    icon={{
+                      name: "settings-voice",
+                      type: "MaterialIcons"
+                    }}
+                  >
+                    <FormItem title="Test Reading Settings">
+                      <SingleTouchableOpacity
+                        isLoading={context.tts.loading}
+                        onPress={locMem(() =>
+                          context.tts.testPlay(context.appSettings.ttsVoiceId)
+                        )}>
+                        <Icon
+                          name={context.tts.status == "playing"
+                            ? "pause-circle"
+                            : "play-circle"
+                          }
+                          type="Ionicons"
+                          css="fos-35"
                         />
-                      </FormItem>
-                      <FormItem title="FontStyle" ifTrue={!isManga}>
-                        <ButtonGroup
-                          buttons={oSettings.fontStyles}
-                          onPress={locMem((_, items) => {
-                            editSettings({
-                              fontStyle: items[0].toLowerCase()
-                            });
-                          })}
-                          selectedIndex={locMemo(
-                            () => [oSettings.fontStyles.findIndex(x => x.toLowerCase() == context.appSettings.fontStyle?.toLowerCase())].filter(x => x >= 0)
-                            , context.appSettings.fontStyle)}
-                        />
-                      </FormItem>
-                      <FormItem title="TextAlign" ifTrue={!isManga}>
-                        <ButtonGroup
-                          buttons={oSettings.textAlign}
-                          onPress={locMem((_, items) => {
-                            editSettings({
-                              textAlign:
-                                items[0].safeSplit(
-                                  "-",
-                                  1
-                                )
-                            });
-                          })}
-                          render={locMem((x, i) => (
-                            <Icon
-                              type="Feather"
-                              name={x}
-                              size={30}
-                              style={{
-                                ...(x.has(
-                                  context
-                                    .appSettings
-                                    .textAlign
-                                )
-                                  ? {
-                                    color: "red"
-                                  }
-                                  : { color: "gray" })
-                              }}
-                            />)
-                          )}
-                          selectedIndex={locMemo(() => [oSettings.textAlign.findIndex(x => x.has(context.appSettings.textAlign))].filter(x => x >= 0), context.appSettings.textAlign)}
-                        />
-                      </FormItem>
-
-
-                      <FormItem title="Font" ifTrue={!isManga}>
-                        <DropDownLocalList
-                          size={"80%"}
-                          css={"invert"}
-                          items={oSettings.fonts}
-                          render={locMem(item => {
-                            return (
-                              <View
-                                css={`bac:transparent ali:center pal:10 bor:5 flex row juc:space-between he-30`}>
-                                <Text css={`header invertco fontFamily-${item.value}`}>
-                                  {item.label}
-                                </Text>
-                              </View>
-                            );
-                          })}
-                          onSelect={locMem(fontName => {
-                            editSettings({
-                              fontName: fontName.value
-                            });
+                      </SingleTouchableOpacity>
+                    </FormItem>
+                    <FormItem title="Reading Voice">
+                      <View css="he-100% wi-100%">
+                        <DropDownLocalList size={"80%"} items={context.tts.nameList}
+                          selectedValue={context.appSettings.ttsVoiceId ?? "af_bella"}
+                          onSelect={locMem((item) => {
+                            editSettings({ ttsVoiceId: item.value });
                             return false;
                           })}
-                          selectedValue={
-                            context.appSettings.fontName || "SourceSans3-Black"
-                          }
-                        />
-                      </FormItem>
-                      <FormItem title="FontSize" ifTrue={!isManga}>
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          value={
-                            context.appSettings
-                              .fontSize
-                          }
-                          onSlidingComplete={locMem((fontSize: any) => {
-                            editSettings({
-                              fontSize
-                            }, 100);
-                          })}
-                          minimumValue={10}
-                          maximumValue={40}
-                        />
-                      </FormItem>
-
-                      <FormItem title="LineHeight" ifTrue={!isManga}>
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          value={
-                            context.appSettings
-                              .lineHeight
-                          }
-                          onSlidingComplete={locMem((lineHeight: any) => {
-                            editSettings({
-                              lineHeight
-                            }, 100);
-                          })}
-                          minimumValue={Math.max((context.appSettings.fontSize * context.lineHeight) - 20, 10)}
-                          maximumValue={(context.appSettings.fontSize * context.lineHeight) + 20}
-                        />
-                      </FormItem>
-
-                      <FormItem title="Sentence Margin" ifTrue={!isManga}>
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          value={
-                            context.appSettings
-                              .sentenceMargin ?? 5
-                          }
-                          onSlidingComplete={locMem((sentenceMargin: any) => {
-                            editSettings({
-                              sentenceMargin
-                            }, 100);
-                          })}
-                          minimumValue={5}
-                          maximumValue={15}
-                        />
-                      </FormItem>
-
-                      <FormItem title="Padding" ifTrue={!isManga}>
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          value={
-                            context.appSettings
-                              .margin
-                          }
-                          onSlidingComplete={locMem((margin: any) => {
-                            editSettings({
-                              margin
-                            }, 100);
-                          })}
-                          minimumValue={5}
-                          maximumValue={40}
-                        />
-                      </FormItem>
-                      <View css="flg-1 fl-0 wi-100% mat-10 invert">
-                        <Text css="fow-bold">BackgroundColor</Text>
-                        <ColorSelection selectedValue={context.appSettings.backgroundColor}
-                          onChange={locMem((hex) => {
-                            editSettings({
-                              backgroundColor: hex
-                            })
-                          })} />
-                      </View>
-                    </TabView>
-                    <TabView
-                      ifTrue={!isManga}
-                      css="flex invert"
-                      icon={locMem({
-                        name: "text-fields",
-                        type: "MaterialIcons"
-                      })}
-                    >
-
-                      <Text
-                        ifTrue={context.player.isNovelType}
-                        css="desc fos:12"
-                      >
-                        Enabling This Option Will Make
-                        Novelo Try and Reorder the
-                        Sentences of The Chapter Too
-                        Follow A Specific novelo Rules,
-                        Making the Chapter More
-                        Readiable. Offcourse this COULD
-                        ALSO MAKE SMALL Mistakes
-                        Depending on How The Auther
-                        wrote it.
-                      </Text>
-                      <FormItem ifTrue={context.player.isNovelType} title="UseSentenceBuilder:" labelPosition="Left">
-                        <CheckBox
-                          css="pal:1 invert"
-                          checked={
-                            context.appSettings
-                              .useSentenceBuilder
-                              ?.enabled ?? false
-                          }
-                          onChange={locMem(() => {
-                            editSettings({
-                              useSentenceBuilder: {
-                                ...(context
-                                  .appSettings
-                                  .useSentenceBuilder ??
-                                  {}),
-                                enabled: !(
-                                  context
-                                    .appSettings
-                                    .useSentenceBuilder
-                                    ?.enabled ??
-                                  false
-                                )
-                              }
-                            });
-                          })}
-                        />
-                      </FormItem>
-                      <FormItem
-                        title="MinLength"
-                        ifTrue={context.appSettings.useSentenceBuilder?.enabled == true}>
-                        <Slider
-                          step={10}
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          value={
-                            context.appSettings
-                              .useSentenceBuilder
-                              ?.minLength ??
-                            100
-                          }
-                          onSlidingComplete={locMem((length: any) => {
-                            editSettings({
-                              useSentenceBuilder:
-                              {
-                                ...(context
-                                  .appSettings
-                                  .useSentenceBuilder ??
-                                  {}),
-                                minLength:
-                                  length
-                              }
-                            }, 100);
-                          })}
-                          minimumValue={100}
-                          maximumValue={400}
-                        />
-                      </FormItem>
-                      <FormItem ifTrue={context.player.isNovelType} title="NormalizeText:" labelPosition="Left">
-                        <CheckBox
-                          css="pal:1 invert"
-                          checked={
-                            context.appSettings
-                              .normalizeText ?? false
-                          }
-                          onChange={locMem((isChecked) => {
-                            editSettings({
-                              normalizeText: isChecked
-                            });
-                          })}
-                        />
-                      </FormItem>
-                      <FormItem title="Add Shadow:" labelPosition="Left">
-                        <CheckBox
-                          css="pal:1 invert"
-                          checked={
-                            context.appSettings.use3D ?? false
-                          }
-                          onChange={locMem(() => {
-                            editSettings({
-                              use3D: !context
-                                .appSettings.use3D
-                            });
-                          })}
-                        />
-                      </FormItem>
-                      <FormItem
-                        title="Shadow Length"
-                        ifTrue={context.appSettings.use3D == true}>
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          value={(1).sureValue(
-                            context.appSettings
-                              .shadowLength,
-                            true
-                          )}
-                          onSlidingComplete={locMem((shadowLength: any) => {
-                            editSettings({
-                              shadowLength
-                            }, 100);
-                          })}
-                          minimumValue={1}
-                          maximumValue={3}
-                        />
-                      </FormItem>
-                      <FormItem
-                        css="he:200 "
-                        title="InlineStyle"
-                        labelPosition="Top"
-                      >
-                        <TextInput
-                          isModole={true}
-                          css="wi:100% pa:5 bor:2 he:100%"
-                          multiline={true}
-                          defaultValue={
-                            context.player.book
-                              .inlineStyle
-                          }
-                          onChangeText={locMem(t => {
-                            context.player.book.inlineStyle =
-                              t;
-                            context.player.book.saveChanges();
-                          })}
-                        />
-                      </FormItem>
-                    </TabView>
-                    <TabView
-                      ifTrue={context.player.isNovelType}
-                      css="flex invert pab-30"
-                      icon={{
-                        name: "settings-voice",
-                        type: "MaterialIcons"
-                      }}
-                    >
-                      <FormItem css="mih-130" title="Voices Choose TTS Model">
-                        <View css="he-100% wi-100%">
-                          <Text css="note co-red fos-12 fow-bold wi-100% pal-10 mab-10">For older phones, try using the low models as those tend to be faster.</Text>
-                          <ButtonGroup scrollable={true}
-                            buttons={locMemo(() => context.tts.nameList())}
-                            selectedIndex={locMem([selectedTTsModel == -1 ? 1 : selectedTTsModel], selectedTTsModel)}
-                            onPress={locMem(x => {
-                              editSettings({ ttsModol: context.tts.nameList()[x[0]] })
-                            })} />
-                        </View>
-                      </FormItem>
-                      <FormItem title="Split Words into chunks">
-                        <Text css="note co-red fos-12 fow-bold wi-100% pal-10">Split sentences into chunks, This is optional if you have an old phone.</Text>
-                        <CheckBox
-                          css="pal:1 invert"
-                          checked={
-                            context.appSettings
-                              .chunkWords ?? false
-                          }
-                          onChange={locMem(() => {
-                            editSettings({
-                              chunkWords: !(context.appSettings.chunkWords ?? false)
-                            });
-                          })}
-                        />
-                      </FormItem>
-                      <FormItem title="Rate/Speed">
-                        <Slider
-                          css="flex"
-                          renderValue={true}
-                          invertColor={true}
-                          buttons={true}
-                          step={0.1}
-                          value={
-                            context.appSettings.rate
-                          }
-                          onSlidingComplete={locMem((rate: any) => {
-                            editSettings({
-                              rate
-                            }, 100);
-                          })}
-                          minimumValue={0.5}
-                          maximumValue={2}
-                        />
-                      </FormItem>
-                    </TabView>
-                    <TabView
-                      ifTrue={!isManga}
-                      css="flex invert"
-                      icon={locMem({
-                        name: "format-color-highlight",
-                        type: "MaterialCommunityIcons"
-                      })}
-                    >
-                      <View css="flex clearboth juc:flex-start mih:100 invert">
-                        <Text css="header fos:18">
-                          Text Replacements
-                        </Text>
-                        <ItemList
-                          items={context.player.book.textReplacements}
-                          container={locMem(({ item }: any) => (
-                            <View
-                              style={{
-                                backgroundColor:
-                                  item.bgColor
-                              }}
-                              css="flex di:flex row juc:space-between ali:center pal:10 bor:2"
-                            >
-                              <View css="flex overflow maw:80% clb">
-                                <Text css="desc fos:13">
-                                  {item.edit}
-                                  {"\n=>"}
-                                </Text>
-                                <Text
-                                  css="desc fos:13">
-                                  {
-                                    item.editWith
+                          render={locMem(item => (
+                            <View css={`ali:center bac:transparent pal:10 bor:5 flex row juc:space-between mih:24 clb`}>
+                              <Text css={`desc fos:13`}>{item.label}</Text>
+                              <SingleTouchableOpacity
+                                isLoading={context.tts.loading}
+                                onPress={() =>
+                                  context.tts.testPlay(item.value as any)
+                                }>
+                                <Icon
+                                  name={context.tts.status == "playing"
+                                    ? "pause-circle"
+                                    : "play-circle"
                                   }
-                                </Text>
-                              </View>
-                              <Button text="Delete" onPress={async () => {
-                                context.player.show();
-                                context.player.book.textReplacements = context.player.book.textReplacements.filter(x => x != item);
-
-                                await context.player.book.saveChanges();
-                                await context.player.clean();
-                                context.player.hide();
-                              }}></Button>
+                                  type="Ionicons"
+                                  css="fos-35"
+                                />
+                              </SingleTouchableOpacity>
                             </View>
                           ))}
-                          itemCss="pa:5 clearwidth bobw:1 boc:gray"
-                          vMode={true}
                         />
                       </View>
-                    </TabView>
-                  </Tabbs>
-                </View >)}
-              </ActionSheetButton >
-            )
-          }
+                    </FormItem>
+                    <FormItem
+                      title="Voice Response">
+
+                      <Slider
+                        css=""
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        value={(300).sureValue(
+                          context.appSettings
+                            .ttsTargetChars,
+                          true
+                        )}
+                        onSlidingComplete={locMem((ttsTargetChars: any) => {
+                          editSettings({
+                            ttsTargetChars
+                          }, 100);
+                        })}
+                        step={50}
+                        minimumValue={200}
+                        maximumValue={600}
+                      >
+                        <Text css="desc fos:12">
+                          Fast Start begins speaking sooner. Smooth Flow gives more natural pauses between sentences.
+                        </Text>
+                      </Slider>
+                    </FormItem>
+
+                    <FormItem title="Rate/Speed">
+                      <Slider
+                        css="flex"
+                        renderValue={true}
+                        invertColor={true}
+                        buttons={true}
+                        step={0.1}
+                        value={
+                          context.appSettings.rate
+                        }
+                        onSlidingComplete={locMem((rate: any) => {
+                          editSettings({
+                            rate
+                          }, 100);
+                        })}
+                        minimumValue={0.5}
+                        maximumValue={2}
+                      />
+                    </FormItem>
+                  </TabView>
+                  <TabView
+                    ifTrue={!isManga}
+                    css="flex invert"
+                    icon={locMem({
+                      name: "format-color-highlight",
+                      type: "MaterialCommunityIcons"
+                    })}
+                  >
+                    <View css="flex clearboth juc:flex-start mih:100 invert">
+                      <Text css="header fos:18">
+                        Text Replacements
+                      </Text>
+                      <ItemList
+                        items={context.player.book.textReplacements}
+                        container={locMem(({ item }: any) => (
+                          <View
+                            style={{
+                              backgroundColor:
+                                item.bgColor
+                            }}
+                            css="flex di:flex row juc:space-between ali:center pal:10 bor:2"
+                          >
+                            <View css="flex overflow maw:80% clb">
+                              <Text css="desc fos:13">
+                                {item.edit}
+                                {"\n=>"}
+                              </Text>
+                              <Text
+                                css="desc fos:13">
+                                {
+                                  item.editWith
+                                }
+                              </Text>
+                            </View>
+                            <Button text="Delete" onPress={async () => {
+                              context.player.show();
+                              context.player.book.textReplacements = context.player.book.textReplacements.filter(x => x != item);
+
+                              await context.player.book.saveChanges();
+                              await context.player.clean();
+                              context.player.hide();
+                            }}></Button>
+                          </View>
+                        ))}
+                        itemCss="pa:5 clearwidth bobw:1 boc:gray"
+                        vMode={true}
+                      />
+                    </View>
+                  </TabView>
+                </Tabbs>
+              </View >)}
+            </ActionSheetButton >
+          )
+        }
         ]}
         {...props}
       />
