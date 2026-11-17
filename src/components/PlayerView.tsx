@@ -79,10 +79,6 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
     "player"
   );
 
-  context.useEffect(() => {
-    console.log("tts.initializing", context.tts.isInitialized)
-    !context.tts.isInitialized ? loader.show() : loader.hide();
-  }, "tts.isInitialized")
 
   const audioProgressTimer = useTimer(100);
 
@@ -194,6 +190,17 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
             type="Ionicons"
           />
         </TouchableOpacity>
+        <SingleTouchableOpacity
+          onPress={locMem(async () => {
+            await context.player.stopAndRelease();
+          }
+          )}>
+          <Icon
+            name="stop"
+            css="fos-35"
+            type="Ionicons"
+          />
+        </SingleTouchableOpacity>
       </View>
     </View>
   );

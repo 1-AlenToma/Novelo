@@ -185,7 +185,10 @@ export default React.memo(({
       loader.show();
       let content = {
         inlineStyle: cleanInlineStyle(),
-        content: context.player.showPlayer ? `<p>${context.player.currentPlaying.onEmpty(context.tts.loading ? "Loading Please wait" : "Click Play to Start")}</p> ` : context.player.html,
+        content: context.player.showPlayer ? `${context.player.currentPlaying
+          .onEmpty(context.tts.loading ? "<p>Loading Please wait</p>" : "<p>Click Play to Start</p>")
+          .split(/(?<!\b(?:Mr|Mrs|Ms|Miss|Dr|Mt|mr|mrs|ms|miss|dr|mt)\.)(?<=[.!?])\s+(?=[A-Z])/g)
+          .filter(Boolean).map(sentence => `<p>${sentence.trim()}</p>`).join("\n")} ` : context.player.html,
         scroll: context.player.currentChapterSettings.scrollProgress
       };
 

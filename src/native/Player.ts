@@ -420,6 +420,12 @@ class Player {
     await context.tts.stop();
   }
 
+  async stopAndRelease() {
+    this._playing = false;
+    await this.stop();
+    await context.tts.stopAndRelease();
+  }
+
 }
 
 export default Player;

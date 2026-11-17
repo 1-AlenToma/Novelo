@@ -66,6 +66,20 @@ export class TTSManager implements TTSConfig {
         this.isInitialized = true;
     }
 
+    async stopAndRelease() {
+        try {
+            await this.stop();
+            await Speech.reset();
+            await Speech.release();
+
+        } catch (e) {
+            console.error(e);
+        } finally {
+            this.isInitialized = false;
+            this.loading = false;
+        }
+    }
+
 
     async stop() {
         console.log("Speach Stop")
@@ -126,7 +140,7 @@ export class TTSManager implements TTSConfig {
             this.status = "playing";
             const stripSettings = PLAYBACK_START_PRESETS.find(x => x.id == (context.appSettings.firstChunkMode ?? "balanced"));
             if (__DEV__)
-                    console.info("tts settings", stripSettings)
+                console.info("tts settings", stripSettings)
             const stream = (this.currentStream = Speech.createSpeechStream(_voiceId, {
                 stripMarkdown: true, // Already stripped cleanly by `md` above
                 firstChunk: 'clause',
