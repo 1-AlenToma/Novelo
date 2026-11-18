@@ -152,9 +152,11 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
         </View>
         <SingleTouchableOpacity
           isLoading={context.tts.loading}
-          onPress={locMem(() =>
-            context.player.playing(!context.player.playing())
-          )}>
+          onPress={locMem(async () => {
+            context.player.playing(!context.player.playing());
+            if (!context.player._playing)
+              await context.tts.stopAndRelease();
+          })}>
           <Icon
             name={context.player._playing
               ? "pause-circle"
@@ -177,30 +179,18 @@ export default ({ isMenu }: { isMenu?: boolean }) => {
             type="Ionicons"
           />
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={locMem(async () => {
-            if (context.player.playing())
-              await context.player.playing(false)
-            context.player.playNext();
-          }
-          )}>
+        <TouchableOpacity onPress={locMem(async () => {
+          if (context.player.playing())
+            await context.player.playing(false)
+          context.player.playNext();
+        }
+        )}>
           <Icon
             name="play-forward-circle"
             css="fos-35"
             type="Ionicons"
           />
         </TouchableOpacity>
-        <SingleTouchableOpacity
-          onPress={locMem(async () => {
-            await context.player.stopAndRelease();
-          }
-          )}>
-          <Icon
-            name="stop"
-            css="fos-35"
-            type="Ionicons"
-          />
-        </SingleTouchableOpacity>
       </View>
     </View>
   );
