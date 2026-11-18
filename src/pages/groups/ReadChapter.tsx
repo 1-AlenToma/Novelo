@@ -433,6 +433,7 @@ const Controller = ({ state, ...props }: any) => {
           press: locMem(() => {
             context.player.playing(false);
             context.player.showPlayer = !context.player.showPlayer;
+            context.tts.stopAndRelease();
           })
         },
         {

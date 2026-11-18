@@ -60,6 +60,7 @@ const WatchAnime = (props: any) => {
             if (context.player) {
                 context.player.stop?.();
                 context.player.showPlayer = false;
+                context.tts.stopAndRelease();
             }
 
             await context.appSettings.saveChanges();

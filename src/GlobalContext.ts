@@ -305,7 +305,7 @@ const data: IGlobalState = StateBuilder<GlobalType>(
                             if (data.player && !data.player.isEpup && data.player.book && data.player.book.parserName && !parsers.find(x => x.name == data.player.book.parserName)) {
                                 data.player.showPlayer = data.player.hooked = false;
                                 data.player.playing(false);
-                                await context.tts.stop();
+                                await context.tts.stopAndRelease();
 
                             }
                         });
