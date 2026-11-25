@@ -346,11 +346,23 @@ class HttpHandler {
     try {
       header = header ?? {};
       let useWebView = false;
+      let cacheIt = false;
+      let parserName = undefined;
       if (typeof url == "string" && url.has("header")) {
         const h = JSON.parse(url.split("header")[1].substring(1));
         url = url.split("header")[0].trim();
-        if (h.webView)
+        if (h.webView) {
           useWebView = true;
+          delete h.webView;
+        }
+        if (h.cacheIt) {
+          cacheIt = true;
+          delete h.cacheIt;
+        }
+        if (h.parserName) {
+          parserName = h.parserName;
+          delete h.parserName;
+        }
         for (let k in h) header[k] = h[k];
       }
       if (!useWebView)
@@ -373,13 +385,25 @@ class HttpHandler {
         return img;
 
       }
+      let imagePath = cacheIt && parserName ? parserName.path(`${url.cleanFileName()}.json`) : undefined;
+      if (imagePath) {
+        if (await context.imageTempCache.exists(imagePath))
+          return (await context.imageTempCache.read(imagePath.trimStr("Cached_")))?.safeSplit("\n", 1);
+      }
+
 
       const response = await fetch(url, { ...this.header(header), signal: useWebView ? undefined : controller.signal });
       const blob = await response.blob();
 
       return await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(`data:image/jpg;base64,${reader.result.toString().safeSplit(",", 1)}`);
+        reader.onload = async () => {
+          const base64 = `data:image/jpg;base64,${reader.result.toString().safeSplit(",", 1)}`
+          if (imagePath)
+            await context.imageTempCache.write(imagePath, `${new Date().toDateString()}\n${base64}`);
+
+          resolve(base64);
+        }
         reader.onerror = () => {
           console.error("base64Image not found");
           resolve("");

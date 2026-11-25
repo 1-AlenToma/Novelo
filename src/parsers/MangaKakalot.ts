@@ -13,7 +13,7 @@ import {
 export default class MangaKakalot extends Parser {
     constructor() {
         super(
-            "https://www.katamanga.com",
+            "https://www.mangakakalot.gg",
             "MangaKakalot",
             "/favicon.ico",
             "Manga"
@@ -22,7 +22,7 @@ export default class MangaKakalot extends Parser {
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
-        this.minVersion = 155;
+        this.minVersion = 156;
         this.protected = true;
 
     }
@@ -33,7 +33,7 @@ export default class MangaKakalot extends Parser {
         this.settings.set("genre",
             html.$("div a").filter(x => x.attr("href").has("genre/"))
                 .map(x => Value.n()
-                    .set("text", x.text)
+                    .set("text", x.text.replace(/\n\s+/g, " "))
                     .set("value", x.attr("href")))
         );
 
@@ -58,7 +58,7 @@ export default class MangaKakalot extends Parser {
 
     parse(html: Html) {
 
-        let items = html.$(".grid .group")
+        let items = html.$(".grid .group, .list-comic-item-wrap, .story_item")
             .map(f => {
                 let name = f.find("h3 a").hasValue ? f.find("h3 a") : f.first("a").parent;
                 let title = name.attr("title").has() ? name.attr("title") : name.text;
@@ -67,7 +67,7 @@ export default class MangaKakalot extends Parser {
                     .set("url", name.url("href"))
                     .set("type", "Manga")
                     .set("image", f.find("img").url("src", { Referer: this.url + "/" }))
-                    .set("info", f.run(".absolute.bottom-1.5 -> text"))
+                    .set("info", f.run(".absolute.bottom-1.5,.list-story-item-wrap-chapter, .story_item_right > .story_chapter:first-child -> text"))
                     .set("parserName", this.name);
             });
         // console.warn("items", items,  html.html)
@@ -75,7 +75,7 @@ export default class MangaKakalot extends Parser {
     }
 
     async search(options: SearchDetail) {
-        let url = this.url.join("search/");
+        let url = this.url.join("search/story/", options.text.replace(/ /g, "_"));
         if (options.group?.has()) {
             url = this.url.join(options.group.lastOrDefault("value"));
         }
@@ -109,20 +109,21 @@ export default class MangaKakalot extends Parser {
 
     async chapter(url: string) {
         let html = (
-            await this.http.web_view(url, this.url, {
+            await this.http.web_view(url, this.url, /*{
                 props: {
                     timer: 2000,
-                    selector: "div[data-reader-column='true']",
+                    selector: "div[data-reader-column='true'], .container-chapter-reader",
                     imageSelector: {
-                        selector: "div[data-reader-column='true'] img",
+                        selector: "div[data-reader-column='true'] img, .container-chapter-reader img",
                         attr: "src",
-                        parserName: this.name
+                        parserName: this.name,
+                        referer: "https://www.mangagoku.com/"
                     }
                 }
-            })
+            }*/)
         ).removeScripts().html;
-        let imgs = html.findAll("div[data-reader-column='true'] img")
-            .map(x => `<img id="$id" src='$src' />`.formatString(methods.newId(), x.attr("src")))
+        let imgs = html.findAll("div[data-reader-column='true'] img, .container-chapter-reader img")
+            .map(x => `<img id="$id" src='$src' />`.formatString(methods.newId(), x.attr("src").has("Cached_") ? x.attr("src") : x.url("src", { Referer: this.url + "/", cacheIt: true, parserName: this.name })))
         return imgs.join("\n");
     }
 
@@ -148,15 +149,15 @@ export default class MangaKakalot extends Parser {
         let html = (await this.http.web_view(url, this.url)).removeScripts().html;
         let body = html.find("body");
         let item = DetailInfo.n()
-            .set("name", body.run('.container h1 -> text'))
+            .set("name", body.run('.container h1, .manga-info-text h1 -> text'))
             .set("url", url)
             .set("type", "Manga")
-            .set("image", body.find('img.object-cover, img').url("src", { Referer: this.url + "/" }))
-            .set("decription", body.run(".prose-summary -> text"))
+            .set("image", body.find('img.object-cover,.manga-info-pic img').url("src", { Referer: this.url + "/" }))
+            .set("decription", body.run(".prose-summary, #contentBox -> remove::h2 -> text"))
             //.set("author", body.run('.manga-info-text a[href*="author"] -> text'))
             //.set("authorUrl", body.run('.manga-info-text a[href*="author"] -> url::href'))
-            .set("genre", body.run('.container a[href*="genre"] -> map::text'))
-            .set("status", body.find('span:contains("Ongoing")').hasValue ? "Ongoing" : "Completed")
+            .set("genre", body.run('.container a[href*="genre"], .genres a -> map::text'))
+            .set("status", body.find('span:contains("Ongoing"), .manga-info-text li:contains("Ongoing")').hasValue ? "Ongoing" : "Completed")
             //.set("rating", body.run('#rate_row_cmd -> text'))
             // .set("lastUpdated", body.run('first::.manga-info-text li:contains("Last updated") -> text').safeSplit(":", 1))
             .set("parserName", this.name);

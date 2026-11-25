@@ -231,7 +231,7 @@ class Html {
   }
 
   //** uurl override this.uurl */
-  url(key: string, header?: Record<string, any> & { uurl?: string }, serilize?: (value: string) => string) {
+  url(key: string, header?: Record<string, any> & { uurl?: string, cacheIt?: boolean, parserName?: string }, serilize?: (value: string) => string) {
     let value: any = "";
     let uurl = this.uurl;
     if (header && header.uurl)
