@@ -22,6 +22,7 @@ import AnimePlanet from "./infos/AnimePlanet";
 import Memo from "../attr/Memo";
 import { AlertDialog } from "react-native-short-style";
 import { Debugger } from "../JSConstant";
+import MangaDex from "./MangaDex";
 const daysToSave = (nr: number = 5) => {
   if (!context.appSettings.autoUpdateFavoritNovels)
     return undefined;
@@ -83,7 +84,8 @@ export default class ParserWrapper extends Parser {
       MangaKakalot,
       MangaBerri,
       GogoAnime,
-      WTRLabCom
+      WTRLabCom,
+      MangaDex
     ].map(
       x => new ParserWrapper(new (x as any)())
     );

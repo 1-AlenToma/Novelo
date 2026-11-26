@@ -142,12 +142,10 @@ class HttpValue {
   get json() {
     let text = this.value;
     try {
-      if (
-        text.indexOf("{") !== -1 ||
-        text.indexOf("[") != 1
-      )
+      if (text.indexOf("{") !== -1 || text.indexOf("[") != 1)
         return JSON.parse(text);
-    } catch (e) { }
+    } catch (e) { __DEV__ && console.warn("Json Error", e) }
+
     return text;
   }
 }
@@ -176,7 +174,7 @@ class HttpHandler {
   httpError?: HttpError;
   operations: Map<string, FetchTimer> = new Map<string, FetchTimer>();
   subressErrors: boolean = false;
-  baseHeader?: undefined;
+  baseHeader?: undefined | Object;
   clearOperations(operationId?: string, abort?: boolean) {
     if (operationId) {
       this.operations.get(operationId)?.clear(abort);
@@ -192,16 +190,26 @@ class HttpHandler {
     this.ignoreAlert = ignoreAlert === true;
   }
   header(options?: any) {
-    this.httpError = undefined;
-    return {
-      headers: {
-        cache: 'no-store',
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
-        ...options,
-        ...(this.baseHeader ?? {})
-      }
-    };
+    try {
+      __DEV__ && console.log("loading headers")
+      this.httpError = undefined;
+      const header = {
+        headers: {
+          cache: 'no-store',
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+          ...options,
+          ...(this.baseHeader ?? {})
+        }
+      };
+      __DEV__ && this.baseHeader && console.info("headers loaded", header)
+      return header;
+    }catch(e){
+      console.error("Error loading headers", this.baseHeader, options);
+      throw e;
+    }
+
+
   }
 
   queryString(url: string, item: any) {
@@ -222,7 +230,9 @@ class HttpHandler {
       console.info("gethtml", url);
       if (item) url = this.queryString(url, item);
       const data = await getFetch(url, this.header(), this.ignoreAlert, this);
-      return new HttpValue(data ? await data.text() : "", baseurl || url);
+      const txt = data ? await data.text() : "";
+      __DEV__ && console.log("Gott data from getHrml")
+      return new HttpValue(txt, baseurl || url);
     } catch (e) {
       console.error("httget", e);
       this.httpError = new HttpError(e);

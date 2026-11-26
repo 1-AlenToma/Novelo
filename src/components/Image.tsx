@@ -96,7 +96,7 @@ const CImage = React.memo(({
       {...props}
       onError={locMem((e) => {
         if (__DEV__)
-          console.warn("Failed to load image", source);
+          console.warn("Failed to load image", url?.substring(0, 500), "headers", state.header);
         state.source = noImage
       })}
       source={source}
