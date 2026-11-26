@@ -39,7 +39,7 @@ export default class MangaDex extends Parser {
     }
 
     private getImage(img: string, cacheIt?: boolean) {
-        let header: any = { "User-Agent": null };
+        let header: any = { "User-Agent": null, Accept: "*/*" };
         if (cacheIt)
             header.cacheIt = cacheIt;
         img += ` header=${JSON.stringify(header)}`;

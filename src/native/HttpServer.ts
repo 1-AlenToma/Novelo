@@ -127,7 +127,6 @@ class HttpServer {
                         const imgKey = `${decodedSrc}${context.player.book.name}${context.player.currentChapter.name}${context.player.novel.parserName}`;
 
                         let data = tempImageData.get(imgKey);
-                        data = undefined;
                         if (/\?(\s)?time(\s)?=.*/ig.test(src)) {
                             data = undefined;
                             tempImageData.set(imgKey, undefined);
