@@ -125,7 +125,8 @@ export default class RizzFables extends Parser {
     async chapter(url: string) {
         let html = (await this.http.get_html(url, this.url)).html;
 
-        let imgs = html.findAll("#readerarea img").map(x => x.url("src|data-src", { Referer: this.url + "/" }, a => a.trimStr(" ", "_").trim()))
+        let imgs = html.remove("#readerarea > a").findAll("#readerarea img")
+            .map(x => x.url("src|data-src", { Referer: this.url + "/" }, a => a.trimStr(" ", "_").trim()))
             .filter(x => x && !x.isAdUrl())
             .map(x => `<img loading="lazy" id="$id" src="$src"  />`.formatString(methods.newId(), x)).join("\n");
         return imgs;
