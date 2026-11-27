@@ -51,7 +51,7 @@ export default function <T>({
     ...(hooks ?? [])
   );
   const time = useTimer(100);
-  const swapTimer = useTimer(500);
+  const swapTimer = useTimer(5000);
   const horizental = vMode !== true;
   const onEndReachedCalledDuringMomentum = useRef(true);
   const ref = useRef<FlashListRef<T>>();
