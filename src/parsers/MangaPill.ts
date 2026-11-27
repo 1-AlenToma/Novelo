@@ -143,7 +143,7 @@ export default class MangaPill extends Parser {
                 const rawSrc = x.url("data-src|src")
                 if (!rawSrc) return "";
                 const src = this.getImage(rawSrc, true);
-                return `<img src='${src}' />`;
+                return `<img src='${src}' loading="lazy" />`;
             })
             .filter(x => x !== "")
             .join("\n");

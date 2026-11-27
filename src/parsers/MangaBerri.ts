@@ -96,7 +96,7 @@ export default class MangaFire extends Parser {
     async chapter(url: string) {
         let html = (await this.http.get_html(url, this.url)).html;
 
-        let imgs = html.run("first::.reader-pages -> findAll::img").map(x => `<img src="${x.url("src") || x.attr("src")}"  />`).join("\n");
+        let imgs = html.run("first::.reader-pages -> findAll::img").map(x => `<img loading="lazy" src="${x.url("src") || x.attr("src")}"  />`).join("\n");
         return imgs;
     }
 

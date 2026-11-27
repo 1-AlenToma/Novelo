@@ -126,7 +126,7 @@ export default class RizzFables extends Parser {
         let html = (await this.http.get_html(url, this.url)).html;
 
         let imgs = html.findAll("#readerarea img")
-            .map(x => `<img id="$id" src="$src"  />`
+            .map(x => `<img loading="lazy" id="$id" src="$src"  />`
                 .formatString(methods.newId(),
                     x.url("src", { Referer: this.url + "/" },
                         a => a.trimStr(" ", "_").trim()))).join("\n");

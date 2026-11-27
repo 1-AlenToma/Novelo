@@ -123,7 +123,7 @@ export default class MangaKakalot extends Parser {
             }*/)
         ).removeScripts().html;
         let imgs = html.findAll("div[data-reader-column='true'] img, .container-chapter-reader img")
-            .map(x => `<img id="$id" src='$src' />`.formatString(methods.newId(), x.attr("src").has("Cached_") ? x.attr("src") : x.url("src", { Referer: this.url + "/", cacheIt: true, parserName: this.name })))
+            .map(x => `<img id="$id" loading="lazy" src='$src' />`.formatString(methods.newId(), x.attr("src").has("Cached_") ? x.attr("src") : x.url("src", { Referer: this.url + "/", cacheIt: true, parserName: this.name })))
         return imgs.join("\n");
     }
 

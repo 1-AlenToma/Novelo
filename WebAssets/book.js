@@ -84,20 +84,20 @@ let options = {
     content: 'document.getElementById("chapter").innerHTML',
     menu: {
         items: [{
-                text: "Copy",
-                icon: "content_copy"
-            },
-            {
-                text: "Paste",
-                icon: "content_paste"
-            },
-            {
-                text: "Bold",
-                icon: "format_bold"
-            }
+            text: "Copy",
+            icon: "content_copy"
+        },
+        {
+            text: "Paste",
+            icon: "content_paste"
+        },
+        {
+            text: "Bold",
+            icon: "format_bold"
+        }
         ],
         minlength: 1,
-        click: function(item) {
+        click: function (item) {
             // alert(item.text);
         }
     }
@@ -196,7 +196,7 @@ const validateJson = (jsonItem) => {
     return jsonItem;
 }
 
-const trySplit = function(htmlString) {
+const trySplit = function (htmlString) {
     if (["<div", "<table", "<img"].find(x => htmlString.indexOf(x) != -1))
         return undefined;
     const p = document.createElement("p");
@@ -291,13 +291,14 @@ const getElements = (html) => {
     }
 }
 window.imageRetry = (event, btn) => {
+    event.preventDefault();
+    event.stopPropagation();
     btn.parentElement.classList.remove('error', 'loaded');
     const img = btn.parentElement.querySelector("img");
 
     const src = `${img.getAttribute("src").replace(/\?(\s)?time(\s)?=.*/ig, "").trim()}?time=${Date.now()}`
     img.setAttribute("src", src);
-    event.preventDefault();
-    event.stopPropagation();
+
 };
 
 const loadImages = (view, option) => {
@@ -310,6 +311,7 @@ const loadImages = (view, option) => {
     for (let img of imgs) {
         setId(img);
         const src = img.getAttribute("src") || "";
+        img.setAttribute("loading", "lazy");
         const iBase64Data = src && src.startsWith("data:");
         if (src.length > 0) {
             if (!iBase64Data)
@@ -319,7 +321,7 @@ const loadImages = (view, option) => {
                 imgContainer.className = "lazy";
                 img.replaceWith(imgContainer);
                 imgContainer.appendChild(img);
-                img.setAttribute("onload", "this.parentNode.classList.add('loaded')");
+                img.setAttribute("onload", "this.parentNode.classList.add('loaded'); this.classList.add('loaded')");
                 if (!iBase64Data) {
                     img.setAttribute("onerror", "this.parentNode.classList.add('error')");
                     const btnRetry = document.createElement("div");
@@ -1002,12 +1004,12 @@ const mangaZoom = (e) => {
         }
 
         mangaPage.page.style.transform = `scale(${mangaPage.scale}) translate(${mangaPage.offsetX}px, ${mangaPage.offsetY}px)`;
-    } catch {}
+    } catch { }
 }
 
 let timerClick = null;
 let lastTap = 0;
-window.addEventListener('click', function(event) {
+window.addEventListener('click', function (event) {
     try {
         if (event.target.classList.contains("retry") || event.target.classList.contains("lazy"))
             return;
@@ -1049,7 +1051,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-window.cleanStyle = function(selector) {
+window.cleanStyle = function (selector) {
     try {
         const elements = document.querySelectorAll(selector);
         elements.forEach(e => e.querySelectorAll("[style]").forEach(x => {
@@ -1070,7 +1072,7 @@ window.cleanStyle = function(selector) {
 };
 
 const regChar = "[\-=%+*<>|/\[\]{}()$#!&?,:;.'’‘ _]";
-window.highlight = function(options) {
+window.highlight = function (options) {
     var inputText = document.querySelector(options.selector);
     if (!options.text)
         options.text = inputText.innerText;

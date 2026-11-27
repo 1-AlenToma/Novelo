@@ -267,6 +267,11 @@
             display: none !important;
         }
 
+        img:not([width]):not(.loaded),
+        .lazy:not(.loaded) {
+            min-height: 30vh !important;
+        }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
