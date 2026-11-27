@@ -117,7 +117,7 @@ export default class MangaPill extends Parser {
                         .set("url", linkEl.url("href"))
                         .set("type", "Manga")
                         .set("image", rawImg)
-                        .set("info", f.find("div.text-xs").text.trim())
+                        //.set("info", f.find("div.text-xs").text.trim())
                         .set("parserName", this.name);
                 }
             })
