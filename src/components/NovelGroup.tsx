@@ -46,7 +46,6 @@ export default memo(
           oldItems.distinct("url", gitems as any);
           if (oldItems.length > state.items.length) {
             page.current = p;
-
             state.items = oldItems;
           }
         } catch (e) {
@@ -63,7 +62,6 @@ export default memo(
       if (!parserName || parserName == context.parser.current.name)
         getItems(true);
     });
-
     useEffect(() => {
       loaderTimer(getItems);
     }, []);

@@ -22,7 +22,7 @@ export default class MangaPill extends Parser {
         this.settings.searchEnabled = true;
         this.settings.genreMultiSelection = true;
         this.settings.searchCombination = ["Genre", "Status", "Group"];
-        this.minVersion = 156;
+        this.minVersion = 157;
     }
 
     private getImage(img: string, cacheIt?: boolean) {
@@ -141,7 +141,7 @@ export default class MangaPill extends Parser {
             .find("chapter-page img,chapter img, div.my-3 img")
             .map(x => {
                 const rawSrc = x.url("data-src|src")
-                if (!rawSrc) return "";
+                if (!rawSrc || rawSrc.isAdUrl()) return "";
                 const src = this.getImage(rawSrc, true);
                 return `<img src='${src}' loading="lazy" />`;
             })

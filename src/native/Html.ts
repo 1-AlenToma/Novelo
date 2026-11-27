@@ -251,7 +251,7 @@ class Html {
       value = serilize(value)
     if (header && value && value.length > 0)
       value += ` header=${JSON.stringify(header)}`
-    return value || "";
+    return (value || "") as string;
   }
 }
 export default Html;

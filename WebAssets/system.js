@@ -22,12 +22,29 @@ const requiredCheck = [
     "Attention Required! | Cloudflare"
 ];
 
+const AD_BLOCKLIST = [
+    "doubleclick.net", "googlesyndication.com", "googleadservices.com", "://google.com",
+    "adnxs.com", "rubiconproject.com", "pubmatic.com", "openx.net", "criteo.com",
+    "taboola.com", "outbrain.com", "mgid.com", "revcontent.com",
+    "pubadx.one", "exoclick.com", "exosrv.com", "realsrv.com", "tsyndicate.com",
+    "popads.net", "popcash.net", "propellerads.com", "adsterra.com", "acscdn.com",
+    "juicyads.com", "trafficjunky.com", "trafficfactory.biz", "hilltopads.net", "clickadu.com",
+    "monetag.com", "galaksion.com", "admaven.com", "richads.com", "a-ads.com",
+    "google-analytics.com", "googletagmanager.com", "yandex.ru", "histats.com",
+    "statcounter.com", "hotjar.com", "clarity.ms"
+];
+
+const isAdUrl = function (url) {
+    if (!url) return false;
+    return AD_BLOCKLIST.some(domain => url.toLowerCase().includes(domain));
+}
+
 const blockedCheck = [
     "Sorry, you have been blocked",
     "temporarily blocked",
 ];
 
-const getCode = function(js, exec) {
+const getCode = function (js, exec) {
     if (typeof js === "function") {
         if (exec)
             js();
@@ -45,7 +62,7 @@ const getCode = function(js, exec) {
 };
 
 
-const timerJs = function(js, timer, exec) {
+const timerJs = function (js, timer, exec) {
     try {
         if ((timer ?? 0) < 0)
             return getCode(js, exec);
@@ -58,7 +75,7 @@ const timerJs = function(js, timer, exec) {
     }
 }
 
-const pageReady = function(fn, js, timer) {
+const pageReady = function (fn, js, timer) {
     try {
         const eventName = fn || "load";
         const isLoadEvent = eventName === "load";
@@ -83,7 +100,7 @@ const pageReady = function(fn, js, timer) {
 };
 
 
-const checkProtection = function() {
+const checkProtection = function () {
     setTimeout(() => {
         const text = document.documentElement.outerHTML.toLowerCase();
         const isProtected = requiredCheck && requiredCheck.some(p => text.includes(p.toLowerCase()));
@@ -91,7 +108,7 @@ const checkProtection = function() {
     }, 300)
 }
 
-const tryUntilSuccess = function(method, ...args) {
+const tryUntilSuccess = function (method, ...args) {
     try {
         let fn = getCode(method);
         if (typeof fn !== "function") {
@@ -124,7 +141,7 @@ const postData = async (type, data, id) => {
 
 
 
-const formPost = async function(ajax) {
+const formPost = async function (ajax) {
     try {
         var data = new FormData();
         if (ajax.query && Array.isArray(ajax.query)) {
@@ -157,7 +174,7 @@ const formPost = async function(ajax) {
     }
 }
 
-const encodedPost = async function(ajax) {
+const encodedPost = async function (ajax) {
     try {
         const res = await fetch(ajax.url, {
             method: ajax.type.toUpperCase(),
@@ -180,7 +197,7 @@ const encodedPost = async function(ajax) {
     }
 }
 
-const fetchWebPToBase64 = async function(url, referer) {
+const fetchWebPToBase64 = async function (url, referer) {
     try {
         referer = referer ?? window.location.origin;
         if (!url || url === "undefined") return null;
@@ -225,7 +242,7 @@ const fetchWebPToBase64 = async function(url, referer) {
 };
 
 
-const getHtml = async function(settings) {
+const getHtml = async function (settings) {
     try {
         settings = settings ?? appSettings;
         let protection = requiredCheck;
@@ -295,26 +312,29 @@ const getHtml = async function(settings) {
                                     break;
                                 }
                             }
-                            if (src) {
-                                img.removeAttribute("onerror")
-                                img.removeAttribute("onload")
-                                let originalSrc = src;
-                                if (regex) src = src.replace(regex, regexp[1]);
 
-                                let base64 = await fetchWebPToBase64(src, referer);
-                                if (!base64 && src !== originalSrc) {
-                                    base64 = await fetchWebPToBase64(originalSrc, referer);
-                                }
+                            if (!isAdUrl(src)) {
+                                if (src) {
+                                    img.removeAttribute("onerror")
+                                    img.removeAttribute("onload")
+                                    let originalSrc = src;
+                                    if (regex) src = src.replace(regex, regexp[1]);
 
-                                if (base64) {
-                                    // If source came from a lazy attribute, update both or set 'src' so it renders
-                                    img.setAttribute(attrUsed, base64);
-                                    if (attrUsed !== "src") {
-                                        img.setAttribute("src", base64);
+                                    let base64 = await fetchWebPToBase64(src, referer);
+                                    if (!base64 && src !== originalSrc) {
+                                        base64 = await fetchWebPToBase64(originalSrc, referer);
                                     }
-                                    img.classList.add("validated");
-                                } else logger.warn("image could not be loaded ", src)
-                            } else logger.warn("attr not found", src)
+
+                                    if (base64) {
+                                        // If source came from a lazy attribute, update both or set 'src' so it renders
+                                        img.setAttribute(attrUsed, base64);
+                                        if (attrUsed !== "src") {
+                                            img.setAttribute("src", base64);
+                                        }
+                                        img.classList.add("validated");
+                                    } else logger.warn("image could not be loaded ", src)
+                                } else logger.warn("attr not found", src)
+                            }
                         })
                     );
                 }

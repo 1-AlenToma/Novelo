@@ -22,7 +22,7 @@ export default class MangaKakalot extends Parser {
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
-        this.minVersion = 156;
+        this.minVersion = 157;
         this.protected = true;
 
     }
@@ -123,7 +123,12 @@ export default class MangaKakalot extends Parser {
             }*/)
         ).removeScripts().html;
         let imgs = html.findAll("div[data-reader-column='true'] img, .container-chapter-reader img")
-            .map(x => `<img id="$id" loading="lazy" src='$src' />`.formatString(methods.newId(), x.attr("src").has("Cached_") ? x.attr("src") : x.url("src", { Referer: this.url + "/", cacheIt: true, parserName: this.name })))
+            .map(x => {
+                const src = x.attr("src|data-src").has("Cached_") ? x.attr("src|data-src") : x.url("src|data-src", { Referer: this.url + "/", cacheIt: true, parserName: this.name });
+                if (src.isAdUrl())
+                    return undefined;
+                return `<img id="$id" loading="lazy" src='$src' />`.formatString(methods.newId(), src)
+            }).filter(Boolean)
         return imgs.join("\n");
     }
 

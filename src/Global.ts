@@ -14,6 +14,17 @@ import nlp from 'compromise';
 
 const imageFileTypes = ".jpeg .jpg .gif .png .webp".split(" ").filter(x => x.length > 0);
 const fileTypesExt = [".onnx", ".bin", ".json", ".html", ".epub", ".zip", ".rar", "mimetype", ".xhtml", ".css", ".xml", ".opf", ".html", ".ncx", ...imageFileTypes];
+const AD_BLOCKLIST = [
+    "doubleclick.net", "googlesyndication.com", "googleadservices.com", "://google.com",
+    "adnxs.com", "rubiconproject.com", "pubmatic.com", "openx.net", "criteo.com",
+    "taboola.com", "outbrain.com", "mgid.com", "revcontent.com",
+    "pubadx.one", "exoclick.com", "exosrv.com", "realsrv.com", "tsyndicate.com",
+    "popads.net", "popcash.net", "propellerads.com", "adsterra.com", "acscdn.com",
+    "juicyads.com", "trafficjunky.com", "trafficfactory.biz", "hilltopads.net", "clickadu.com",
+    "monetag.com", "galaksion.com", "admaven.com", "richads.com", "a-ads.com",
+    "google-analytics.com", "googletagmanager.com", "yandex.ru", "histats.com",
+    "statcounter.com", "hotjar.com", "clarity.ms"
+];
 
 declare global {
     var fileTypes: string[];
@@ -49,6 +60,7 @@ declare global {
     }
 
     interface String {
+        isAdUrl(): boolean;
         isManga(): boolean;
         fileName(name: string, parserName: string, ext?: string): string;
         cleanFileName(): string;
@@ -108,6 +120,11 @@ declare global {
         procent: (index: number) => number;
         downloadPercent: (index: number) => number;
     }
+}
+
+String.prototype.isAdUrl = function () {
+    let url = this.toString();
+    return AD_BLOCKLIST.some(domain => url.toLowerCase().includes(domain));
 }
 
 Date.prototype.formatDateMMDDYY = function (this: Date) {

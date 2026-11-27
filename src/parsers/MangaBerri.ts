@@ -22,7 +22,7 @@ export default class MangaFire extends Parser {
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
-        this.minVersion = 155;
+        this.minVersion = 157;
 
     }
 
@@ -96,7 +96,10 @@ export default class MangaFire extends Parser {
     async chapter(url: string) {
         let html = (await this.http.get_html(url, this.url)).html;
 
-        let imgs = html.run("first::.reader-pages -> findAll::img").map(x => `<img loading="lazy" src="${x.url("src") || x.attr("src")}"  />`).join("\n");
+        let imgs = html.run("first::.reader-pages -> findAll::img")
+            .map(x => x.url("src|data-src") || x.attr("src|data-src"))
+            .filter(x => x && !x.isAdUrl())
+            .map(x => `<img loading="lazy" src="${x}"  />`).join("\n");
         return imgs;
     }
 

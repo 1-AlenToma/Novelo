@@ -20,10 +20,7 @@ class Book extends DBInit {
     bgColor?: string;
     comments?: string;
   }[] = [] as any[];
-  chapterSettings: IQueryResultItem<
-    Chapter,
-    TableNames
-  >[];
+  chapterSettings: IQueryResultItem<Chapter, TableNames>[];
 
   constructor() {
     super("Books");

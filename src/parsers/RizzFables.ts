@@ -26,7 +26,7 @@ export default class RizzFables extends Parser {
         this.settings.searchEnabled = true;
         this.settings.genreMultiSelection = true;
         this.settings.searchCombination = ["Genre", "Group", "Status"];
-        this.minVersion = 155;
+        this.minVersion = 157;
         this.protected = false;
 
     }
@@ -125,11 +125,9 @@ export default class RizzFables extends Parser {
     async chapter(url: string) {
         let html = (await this.http.get_html(url, this.url)).html;
 
-        let imgs = html.findAll("#readerarea img")
-            .map(x => `<img loading="lazy" id="$id" src="$src"  />`
-                .formatString(methods.newId(),
-                    x.url("src", { Referer: this.url + "/" },
-                        a => a.trimStr(" ", "_").trim()))).join("\n");
+        let imgs = html.findAll("#readerarea img").map(x => x.url("src|data-src", { Referer: this.url + "/" }, a => a.trimStr(" ", "_").trim()))
+            .filter(x => x && !x.isAdUrl())
+            .map(x => `<img loading="lazy" id="$id" src="$src"  />`.formatString(methods.newId(), x)).join("\n");
         return imgs;
     }
 
