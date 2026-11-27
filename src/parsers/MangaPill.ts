@@ -38,7 +38,7 @@ export default class MangaPill extends Parser {
     }
 
     async load() {
-        let html = (await this.http.get_html(this.url.join("search"))).removeScripts().html;
+        let html = (await this.http.web_view(this.url.join("search"))).removeScripts().html;
 
         // MangaPill uses checkboxes for genres on /search
         const genres = html
@@ -67,7 +67,7 @@ export default class MangaPill extends Parser {
         // Handle "Recent Chapters" and "New Mangas" tabs from group()
         if (sortOrGroup === "chapters" || sortOrGroup?.has("mangas")) {
             const feedUrl = this.url.join(sortOrGroup);
-            const html = (await this.http.get_html(feedUrl, this.url)).removeScripts().html;
+            const html = (await this.http.web_view(feedUrl, this.url)).removeScripts().html;
             return html.$("div.container figure")
                 .map(fig => {
                     const f = fig.parent.parent;
@@ -102,7 +102,7 @@ export default class MangaPill extends Parser {
             (genreParams ? `&${genreParams}` : "");
 
         const searchUrl = `${this.url}/search?${queryStr}`;
-        const html = (await this.http.get_html(searchUrl, this.url)).removeScripts().html;
+        const html = (await this.http.web_view(searchUrl, this.url)).removeScripts().html;
 
         return html.$("div.my-3.grid > div")
             .map(f => {
@@ -133,7 +133,7 @@ export default class MangaPill extends Parser {
     }
 
     async chapter(url: string) {
-        const html = (await this.http.get_html(url, this.url)).removeScripts().html;
+        const html = (await this.http.web_view(url, this.url)).removeScripts().html;
 
         // MangaPill lazy-loads chapter pages using data-src on chapter-page images
 
@@ -152,7 +152,7 @@ export default class MangaPill extends Parser {
     }
 
     async detail(url: string) {
-        const html = (await this.http.get_html(url, this.url)).removeScripts().html;
+        const html = (await this.http.web_view(url, this.url)).removeScripts().html;
         const body = html.find("body");
 
         const imgEl = body.find("div.container img");
