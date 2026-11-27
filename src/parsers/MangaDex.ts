@@ -40,8 +40,10 @@ export default class MangaDex extends Parser {
 
     private getImage(img: string, cacheIt?: boolean) {
         let header: any = { "User-Agent": null, Accept: "*/*" };
-        if (cacheIt)
+        if (cacheIt) {
             header.cacheIt = cacheIt;
+            delete header["User-Agent"];
+        }
         img += ` header=${JSON.stringify(header)}`;
         return img;
 
@@ -70,14 +72,6 @@ export default class MangaDex extends Parser {
             Value.n().set("text", "Most Followed").set("value", "popular")
         ]);
 
-        this.settings.set("status", [
-            Value.n().set("text", "All").set("value", ""),
-            Value.n().set("text", "Ongoing").set("value", "ongoing"),
-            Value.n().set("text", "Completed").set("value", "completed"),
-            Value.n().set("text", "Hiatus").set("value", "hiatus"),
-            Value.n().set("text", "Cancelled").set("value", "cancelled")
-        ]);
-
         return this.settings;
     }
 
@@ -91,7 +85,9 @@ export default class MangaDex extends Parser {
             `offset=${offset}`,
             `includes[]=cover_art`,
             `contentRating[]=safe`,
-            `contentRating[]=suggestive`
+            `contentRating[]=suggestive`,
+            `hasAvailableChapters=true`,
+            `availableTranslatedLanguage[]=en`
         ];
 
         if (options.text && options.text.trim() !== "") {
@@ -99,7 +95,7 @@ export default class MangaDex extends Parser {
         }
 
         // Handle sorting/group selection
-        const sortVal = options.status?.firstOrDefault("value") || "";
+        const sortVal = options.group?.firstOrDefault("value") || "";
         if (sortVal === "popular") {
             params.push(`order[followedCount]=desc`);
         } else if (sortVal === "latest") {
@@ -143,7 +139,7 @@ export default class MangaDex extends Parser {
     }
 
     async group(value: Value, page: number) {
-        return await this.search(SearchDetail.n().set("status", [value], "page", page));
+        return await this.search(SearchDetail.n().set("group", [value], "page", page));
     }
 
     async getByAuthor(url: string) {
@@ -152,7 +148,7 @@ export default class MangaDex extends Parser {
         if (!authorId) return [];
 
         const res = await this.fetchJson(
-            `${this.url}/manga?authors[]=${authorId}&limit=50&includes[]=cover_art`
+            `${this.url}/manga?authors[]=${authorId}&limit=50&includes[]=cover_art&hasAvailableChapters=true&availableTranslatedLanguage[]=en`
         );
 
         return (res?.data || []).map((manga: any) => {
@@ -183,16 +179,18 @@ export default class MangaDex extends Parser {
         // Use 'data' for original quality, or 'dataSaver' for compressed images
         const pages: string[] = atHomeRes?.chapter?.data || [];
 
-        return pages
+        const data = pages
             .map((filename: string) => {
                 const src = this.getImage(`${baseUrl}/data/${hash}/${filename}`, true);
-                return `<img src="${src}" />`;
+                return `<img src='${src}' />`;
             })
             .join("\n");
+        return data;
     }
 
     async detail(url: string) {
-        const mangaId = url.split("/").pop();
+        // Strip trailing slashes or query params before extracting ID
+        const mangaId = url.split("?")[0].replace(/\/$/, "").split("/").pop();
 
         // 1. Fetch Manga Details + Cover + Author
         const mangaRes = await this.fetchJson(
@@ -204,7 +202,9 @@ export default class MangaDex extends Parser {
 
         const coverRel = rels.find((r: any) => r.type === "cover_art");
         const coverFile = coverRel?.attributes?.fileName;
-        const coverUrl = coverFile ? this.getImage(`https://uploads.mangadex.org/covers/${mangaId}/${coverFile}`) : "";
+        const coverUrl = coverFile
+            ? this.getImage(`https://uploads.mangadex.org/covers/${mangaId}/${coverFile}`)
+            : "";
 
         const authorRel = rels.find((r: any) => r.type === "author");
         const authorName = authorRel?.attributes?.name || "";
@@ -214,21 +214,45 @@ export default class MangaDex extends Parser {
         const statusRaw = attr.status || "ongoing";
         const statusFormatted = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
 
-        // 2. Fetch English Chapters (up to 500 per request)
-        const feedRes = await this.fetchJson(
-            `${this.url}/manga/${mangaId}/feed?translatedLanguage[]=en&limit=500&order[chapter]=asc&includeExternalUrl=0`
-        );
+        // 2. Fetch all valid English Chapters (paginated & filtered)
+        const allChapters: any[] = [];
+        let offset = 0;
+        const limit = 500;
+        let total = 1;
 
-        const chapters = (feedRes?.data || []).map((ch: any) => {
-            const cAttr = ch.attributes || {};
-            const chNum = cAttr.chapter ? `Ch. ${cAttr.chapter}` : "Oneshot";
-            const chTitle = cAttr.title ? ` - ${cAttr.title}` : "";
+        while (offset < total) {
+            const feedUrl =
+                `${this.url}/manga/${mangaId}/feed` +
+                `?translatedLanguage[]=en` +
+                `&limit=${limit}` +
+                `&offset=${offset}` +
+                `&order[chapter]=asc` +
+                `&includeExternalUrl=0` +
+                `&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic&includeUnavailable=0`;
 
-            return ChapterInfo.n()
-                .set("name", `${chNum}${chTitle}`)
-                .set("url", `${this.url}/chapter/${ch.id}`)
-                .set("parserName", this.name);
-        });
+            const feedRes = await this.fetchJson(feedUrl);
+            const batch = feedRes?.data || [];
+            total = feedRes?.total ?? batch.length;
+
+            allChapters.push(...batch);
+            offset += limit;
+
+            if (batch.length === 0) break;
+        }
+
+        const chapters = allChapters
+            // Exclude unavailable/deleted chapters that have 0 pages
+            .filter((ch: any) => (ch.attributes?.pages ?? 0) > 0)
+            .map((ch: any) => {
+                const cAttr = ch.attributes || {};
+                const chNum = cAttr.chapter ? `Ch. ${cAttr.chapter}` : "Oneshot";
+                const chTitle = cAttr.title ? ` - ${cAttr.title}` : "";
+
+                return ChapterInfo.n()
+                    .set("name", `${chNum}${chTitle}`)
+                    .set("url", `${this.url}/chapter/${ch.id}`)
+                    .set("parserName", this.name);
+            });
 
         const item = DetailInfo.n();
         item

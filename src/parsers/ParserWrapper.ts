@@ -23,6 +23,7 @@ import Memo from "../attr/Memo";
 import { AlertDialog } from "react-native-short-style";
 import { Debugger } from "../JSConstant";
 import MangaDex from "./MangaDex";
+import MangaPill from "./MangaPill";
 const daysToSave = (nr: number = 5) => {
   if (!context.appSettings.autoUpdateFavoritNovels)
     return undefined;
@@ -85,7 +86,8 @@ export default class ParserWrapper extends Parser {
       MangaBerri,
       GogoAnime,
       WTRLabCom,
-      MangaDex
+      MangaDex,
+      MangaPill
     ].map(
       x => new ParserWrapper(new (x as any)())
     );
@@ -97,7 +99,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: ()=> Debugger.parserDebugger,
+    isDebug: () => Debugger.parserDebugger,
     argsOverride: (args: any[]) => {
       return args[0];
     },
@@ -128,7 +130,7 @@ export default class ParserWrapper extends Parser {
   @Memo({
     daysToSave: daysToSave,
     folder: (target: Parser) => target.name,
-    isDebug: ()=> Debugger.parserDebugger,
+    isDebug: () => Debugger.parserDebugger,
     argsOverride: (args: any[]) => {
       return [args.firstOrDefault("url")];
     },
@@ -176,7 +178,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: () => daysToSave(20),
-    isDebug: ()=> Debugger.parserDebugger,
+    isDebug: () => Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) =>
       `${key}${target.name}`,
@@ -214,7 +216,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: () => daysToSave(20),
-    isDebug: ()=> Debugger.parserDebugger,
+    isDebug: () => Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `${key}${target.name}`,
     validator: (data: any) =>
@@ -234,7 +236,7 @@ export default class ParserWrapper extends Parser {
 
   @Memo({
     daysToSave: 2,
-    isDebug: ()=> Debugger.parserDebugger,
+    isDebug: () => Debugger.parserDebugger,
     folder: (target: Parser) => target.name,
     keyModifier: (target, key) => `group_${key}${target.name}`,
     argsOverride: (args) => [args[0], args[1]],

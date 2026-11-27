@@ -203,7 +203,7 @@ class HttpHandler {
       };
       __DEV__ && this.baseHeader && console.info("headers loaded", header)
       return header;
-    }catch(e){
+    } catch (e) {
       console.error("Error loading headers", this.baseHeader, options);
       throw e;
     }
@@ -348,7 +348,7 @@ class HttpHandler {
     if (!url)
       return url;
     if (await url.isBase64UrlAsync()) return url.toBase64UrlAsync();
-
+    __DEV__ && console.log("base64Img", url)
     const controller = new AbortController();
     let timeout = undefined
 
@@ -376,7 +376,7 @@ class HttpHandler {
       }
       if (!useWebView)
         timeout = setTimeout(() => controller.abort(), timeoutMs);
-      console.log("base64Img", url)
+
       if (useWebView) {
         let html = await this.web_view(url, url, {
           props: {

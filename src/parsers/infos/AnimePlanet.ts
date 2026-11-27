@@ -17,7 +17,15 @@ class AnimePlanet extends NovelInfo {
                 q: item.name.replace(/ /g, "+")
             });
 
-            let json = (await this.http.get_html(url, this.url)).json
+            let json = (await this.http.web_view(this.url, this.url, {
+                props: {
+                    ajax: {
+                        method: "formPost",
+                        type: "get",
+                        url: url
+                    }
+                }
+            })).json
             if (!json || !json.data || json.data.length <= 0)
                 return item;
             let serUrl = "";

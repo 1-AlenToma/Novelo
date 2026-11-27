@@ -18,7 +18,7 @@ export default class MangaFire extends Parser {
             "/favicon.ico",
             "Manga"
         );
-        this.infoGeneratorName = "";
+        this.infoGeneratorName = "MyAnimeList";
         this.settings.searchEnabled = false;
         this.settings.genreMultiSelection = false;
         this.settings.searchCombination = [];
