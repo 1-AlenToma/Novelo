@@ -110,11 +110,6 @@ const ProtectionModal = React.memo(({ item, onHide }: { item?: WebViewFetchData,
   </Modal>)
 })
 
-type InFuncMappar<T extends IFileNames> = {
-  webview: WebView;
-  mapper: IFuncMapper<T>
-}
-
 
 export default () => {
   htmlContext.hook("html.updatedNr");
@@ -124,7 +119,7 @@ export default () => {
     protection: [] as WebViewFetchData[],
   })).build();
   const timeout = 20000;
-  const webViews = useRef<(InFuncMappar<"systemJs"> | null)[]>([]).current;
+  const webViews = useRef<(IFuncMapper<"systemJs"> | null)[]>([]).current;
   const timers = [useTimer(timeout), useTimer(timeout), useTimer(timeout)];
   const { locMem, memKey } = useFunc();
 
@@ -196,10 +191,7 @@ export default () => {
           return (
             <WebView
               ref={c => {
-                webViews[i] = {
-                  mapper: funcMapper(c),
-                  webview: c as any
-                }
+                webViews[i] = funcMapper(c);
               }}
               key={x.id}
               userAgent={x.props?.userAgent}
@@ -258,7 +250,7 @@ export default () => {
                       console.error("WebViewError", data);
                       break;
                     case "loaded":
-                      webViews[i].mapper.exec("window.getHtml");
+                      webViews[i].exec("window.getHtml");
                       timers[i](() => x.func(""), waitTime);
                       break;
                     case "Promise":
@@ -266,20 +258,20 @@ export default () => {
                       switch (data.pType) {
                         case "getImage":
                           if (!data.data)
-                            return webViews[i].webview.postMessage(JSON.stringify({ data: undefined, id: data.id }));
+                            return webViews[i].postMessage(JSON.stringify({ data: undefined, id: data.id }));
                           let imagePath = x.props.imageSelector.parserName.path(`${data.data.cleanFileName()}.json`);
                           let src = undefined;
                           if (await context.imageTempCache.exists(imagePath))
                             src = `Cached_${imagePath}`;
 
-                          webViews[i].webview.postMessage(JSON.stringify({ data: src, id: data.id }));
+                          webViews[i].postMessage(JSON.stringify({ data: src, id: data.id }));
                           break;
                         case "setImage":
                           if (!data.data?.url || !data.data?.base64)
-                            return webViews[i].webview.postMessage(JSON.stringify({ data: undefined, id: data.id }));
+                            return webViews[i].postMessage(JSON.stringify({ data: undefined, id: data.id }));
                           let saveImagePath = x.props.imageSelector.parserName.path(`${data.data.url.cleanFileName()}.json`);
                           await context.imageTempCache.write(saveImagePath, `${new Date().toDateString()}\n${data.data.base64}`);
-                          webViews[i].webview.postMessage(JSON.stringify({ data: `Cached_${saveImagePath}`, id: data.id }));
+                          webViews[i].postMessage(JSON.stringify({ data: `Cached_${saveImagePath}`, id: data.id }));
                           break;
                       }
                       break;

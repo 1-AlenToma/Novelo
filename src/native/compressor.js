@@ -3,10 +3,7 @@ export class Compressor {
     #str = "";
     #orgin = "#";
     #letterRegex = "A-Za-z";
-    #validReg = (ch) => new RegExp(
-        `[${this.#letterRegex}\\-+()^~!.?&{}\\[\\]=*/;:_|$@£% ]`,
-        "u"
-    ).test(ch);
+    #validReg = (ch) => new RegExp(`[${this.#letterRegex}\\-+()^~!.?&{}\\[\\]=*/;:_|$@£% ]`, "u").test(ch);
     #isNum = (ch) => /[0-9]+/.test(ch);
     #seperator = ",";
     #mapped = null;
